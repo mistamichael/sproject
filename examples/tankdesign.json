@@ -1,0 +1,53 @@
+{
+  "project": "Tank Design Project",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "design tank projekt",
+      "duration": 10,
+      "dependencies": [2, 3]
+    },
+    {
+      "id": 2,
+      "name": "Select Tank supplyer",
+      "duration": 8,
+      "dependencies": [4, 5]
+    },
+    {
+      "id": 3,
+      "name": "construct tank foundation",
+      "duration": 25,
+      "dependencies": [7]
+    },
+    {
+      "id": 4,
+      "name": "manufacture tank components",
+      "duration": 10,
+      "dependencies": [6]
+    },
+    {
+      "id": 5,
+      "name": "prepare Installation drawings",
+      "duration": 3,
+      "dependencies": [7]
+    },
+    {
+      "id": 6,
+      "name": "Deliver tank components",
+      "duration": 4,
+      "dependencies": [7]
+    },
+    {
+      "id": 7,
+      "name": "assemble tank",
+      "duration": 15,
+      "dependencies": [8]
+    },
+    {
+      "id": 8,
+      "name": "test commisions tank",
+      "duration": 0,
+      "dependencies": []
+    }
+  ]
+}

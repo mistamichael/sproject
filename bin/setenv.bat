@@ -1,10 +1,10 @@
 @echo off
 
 REM ================================================================
-REM PDF Rechnungen Organisator - Umgebungsvariablen Setup
+REM SPROJECT - Umgebungsvariablen Setup
 REM ================================================================
 
-echo Setting up environment variables for PDF Organizer...
+echo Setting up environment variables for SPROJECT ...
 
 REM Basis-Projektpfad (aktueller Ordner)
 set "PROJECT=%~dp0.."
@@ -18,6 +18,7 @@ set "PV_DATA=%PROJECT%\data"
 set "PV_CFG=%PROJECT%\cfg"
 set "PV_LOG=%PROJECT%\log"
 set "PV_RESULTS=%PROJECT%\results"
+set "PV_EXAMPLES=%PROJECT%\examples"
 
 REM Python-Pfad erweitern (nur wenn noch nicht vorhanden)
 echo %PYTHONPATH% | find /i "%PV_LIB%" >nul
@@ -34,11 +35,12 @@ if not exist "%PV_LIB%" mkdir "%PV_LIB%"
 if not exist "%PV_DATA%" mkdir "%PV_DATA%"
 if not exist "%PV_LOG%" mkdir "%PV_LOG%"
 if not exist "%PV_RESULTS%" mkdir "%PV_RESULTS%"
+if not exist "%PV_EXAMPLES%" mkdir "%PV_EXAMPLES%"
 
 REM Umgebungsvariablen anzeigen
 echo.
 echo ================================================================
-echo PDF ORGANIZER ENVIRONMENT SETUP COMPLETE
+echo SPROJECT ENVIRONMENT SETUP COMPLETE
 echo ================================================================
 echo PROJECT         = %PROJECT%
 echo PV_BIN          = %PV_BIN%
@@ -47,10 +49,11 @@ echo PV_LIB          = %PV_LIB%
 echo PV_DATA         = %PV_DATA%
 echo PV_RESULTS      = %PV_RESULTS%
 echo PV_LOG          = %PV_LOG%
+echo PV_EXAMPLES     = %PV_EXAMPLES%
 echo PYTHONPATH      = %PYTHONPATH%
 echo ================================================================
 echo.
-echo Ready to use! Run: bin\run_organizer.bat
+echo Ready to use! Run: bin\create_reports.bat
 echo.
 
 REM Optionally keep window open
