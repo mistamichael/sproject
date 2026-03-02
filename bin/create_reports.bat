@@ -7,7 +7,7 @@ if errorlevel 1 (
 
 pushd "%PROJECT%"
 
-"%VIRTUAL_ENV%\Scripts\python.exe" -m lib.split %*
+"%VIRTUAL_ENV%\Scripts\python.exe" -m lib.sproject %*
 set PYTHON_EXIT=%ERRORLEVEL%
 
 popd
