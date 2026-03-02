@@ -230,6 +230,192 @@ class ProjectMeta(TJPBase):
     now:                 str
     workinghours_ref:    str  # → WorkingHours.id
 
+    def calculate_cpm(self, tasks: list['Task']) -> dict[str, dict[str, Any]]:
+        """
+        Berechnet den kritischen Pfad mittels Vorwärts- und Rückwärtsrechnung.
+
+        Args:
+            tasks: Liste aller Tasks
+
+        Returns:
+            Dictionary mit task_id als Key und CPM-Daten (FAZ, FEZ, SAZ, SEZ, Puffer)
+        """
+        from datetime import datetime, timedelta
+
+        # Baue Abhängigkeiten-Graph auf
+        task_dict = {t.id: t for t in tasks}
+        cpm_data = {}
+
+        # Initialisiere CPM-Daten
+        for task in tasks:
+            duration = self._parse_duration(task.duration or task.effort or "0d")
+            cpm_data[task.id] = {
+                'duration': duration,
+                'faz': 0,  # Frühester Anfangszeitpunkt
+                'fez': 0,  # Frühester Endzeitpunkt
+                'saz': 0,  # Spätester Anfangszeitpunkt
+                'sez': 0,  # Spätester Endzeitpunkt
+                'puffer': 0,  # Pufferzeit
+            }
+
+        # Vorwärtsrechnung (FAZ, FEZ)
+        self._forward_pass(tasks, task_dict, cpm_data)
+
+        # Rückwärtsrechnung (SAZ, SEZ)
+        self._backward_pass(tasks, task_dict, cpm_data)
+
+        # Pufferzeiten berechnen
+        for task_id, data in cpm_data.items():
+            data['puffer'] = data['saz'] - data['faz']
+
+        return cpm_data
+
+    def _parse_duration(self, duration_str: str) -> float:
+        """
+        Parst Duration-String zu Tagen (float).
+        Unterstützt: 10d, 2w, 8h, etc.
+        """
+        duration_str = duration_str.strip()
+        if not duration_str or duration_str == "0":
+            return 0.0
+
+        if duration_str.endswith('d'):
+            return float(duration_str[:-1])
+        elif duration_str.endswith('w'):
+            return float(duration_str[:-1]) * 5  # 5 Arbeitstage
+        elif duration_str.endswith('h'):
+            return float(duration_str[:-1]) / 8  # 8h Arbeitstag
+        else:
+            # Fallback: versuche als Zahl zu parsen (Tage)
+            try:
+                return float(duration_str)
+            except ValueError:
+                return 0.0
+
+    def _forward_pass(self, tasks: list['Task'], task_dict: dict, cpm_data: dict) -> None:
+        """Vorwärtsrechnung: Berechnet FAZ und FEZ für alle Tasks."""
+        # Topologische Sortierung für korrekte Reihenfolge
+        visited = set()
+        sorted_tasks = []
+
+        def visit(task_id: str):
+            if task_id in visited:
+                return
+            visited.add(task_id)
+            task = task_dict.get(task_id)
+            if task:
+                # Erst alle Abhängigkeiten besuchen
+                for dep in task.depends:
+                    visit(dep.task_id)
+                sorted_tasks.append(task_id)
+
+        for task in tasks:
+            visit(task.id)
+
+        # Berechne FAZ und FEZ
+        for task_id in sorted_tasks:
+            task = task_dict[task_id]
+            data = cpm_data[task_id]
+
+            # FAZ ist Maximum aller FEZ der Vorgänger
+            if task.depends:
+                max_fez = 0
+                for dep in task.depends:
+                    pred_data = cpm_data.get(dep.task_id)
+                    if pred_data:
+                        gap = dep.gap_days() or 0
+                        max_fez = max(max_fez, pred_data['fez'] + gap)
+                data['faz'] = max_fez
+            else:
+                data['faz'] = 0
+
+            # FEZ = FAZ + Duration
+            data['fez'] = data['faz'] + data['duration']
+
+    def _backward_pass(self, tasks: list['Task'], task_dict: dict, cpm_data: dict) -> None:
+        """Rückwärtsrechnung: Berechnet SAZ und SEZ für alle Tasks."""
+        # Finde maximalen FEZ (Projektende)
+        max_fez = max(data['fez'] for data in cpm_data.values())
+
+        # Topologische Sortierung rückwärts
+        visited = set()
+        sorted_tasks = []
+
+        def visit(task_id: str):
+            if task_id in visited:
+                return
+            visited.add(task_id)
+            sorted_tasks.append(task_id)
+            task = task_dict.get(task_id)
+            if task:
+                # Besuche alle Tasks, die von diesem abhängen
+                for other_task in tasks:
+                    for dep in other_task.depends:
+                        if dep.task_id == task_id:
+                            visit(other_task.id)
+
+        # Starte mit Tasks ohne Nachfolger
+        tasks_with_successors = set()
+        for task in tasks:
+            for dep in task.depends:
+                tasks_with_successors.add(dep.task_id)
+
+        for task in tasks:
+            if task.id not in tasks_with_successors:
+                visit(task.id)
+
+        # Initialisiere SEZ für Tasks ohne Nachfolger
+        for task_id in cpm_data:
+            if task_id not in tasks_with_successors:
+                cpm_data[task_id]['sez'] = cpm_data[task_id]['fez']
+
+        # Berechne SEZ und SAZ rückwärts
+        for task_id in sorted_tasks:
+            task = task_dict[task_id]
+            data = cpm_data[task_id]
+
+            # Finde Nachfolger
+            successors = []
+            for other_task in tasks:
+                for dep in other_task.depends:
+                    if dep.task_id == task_id:
+                        successors.append((other_task.id, dep))
+
+            # SEZ ist Minimum aller SAZ der Nachfolger
+            if successors:
+                min_saz = float('inf')
+                for succ_id, dep in successors:
+                    succ_data = cpm_data[succ_id]
+                    gap = dep.gap_days() or 0
+                    min_saz = min(min_saz, succ_data['saz'] - gap)
+                data['sez'] = min_saz
+            elif 'sez' not in data or data['sez'] == 0:
+                # Endknoten: SEZ = FEZ
+                data['sez'] = data['fez']
+
+            # SAZ = SEZ - Duration
+            data['saz'] = data['sez'] - data['duration']
+
+    def get_critical_path(self, tasks: list['Task']) -> list[str]:
+        """
+        Ermittelt den kritischen Pfad.
+
+        Args:
+            tasks: Liste aller Tasks
+
+        Returns:
+            Liste der Task-IDs auf dem kritischen Pfad
+        """
+        cpm_data = self.calculate_cpm(tasks)
+
+        # Kritische Tasks haben Puffer = 0
+        critical_tasks = [
+            task_id for task_id, data in cpm_data.items()
+            if abs(data['puffer']) < 0.001  # Floating-point Vergleich
+        ]
+
+        return critical_tasks
+
 
 class Account(TJPBase):
     """Buchführungskonto, optional mit Unterkonten."""

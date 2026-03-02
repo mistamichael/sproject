@@ -1,7 +1,8 @@
 {
   "_schema": "tjp-workinghours-absences/1.0",
   "_refs": {
-    "persons": "persons.json"
+    "persons": "persons.json",
+    "holidays": "holidays_BY_2026.json"
   },
 
   "global_workinghours": {

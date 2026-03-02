@@ -22,6 +22,7 @@ except ImportError:
     HAS_GRAPH_SUPPORT = False
 
 from tjp_models import TJPRegistry
+from cpm_calculator import SimpleCPMCalculator
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
@@ -265,10 +266,10 @@ def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = Non
         if output_dir is None:
             output_dir = project_file.parent
 
-        output_file = output_dir / f"{project_file.stem}_graph.png"
+        output_file = output_dir / f"{project_file.stem}_graph.svg"
 
-        # Speichere Graph
-        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        # Speichere Graph als SVG
+        plt.savefig(output_file, format='svg', bbox_inches='tight')
         plt.close()
 
         if logger:
@@ -362,6 +363,18 @@ Beispiele:
         help="Ausgabeverzeichnis für generierte Graphen (Standard: gleiches Verzeichnis wie Projektdatei)"
     )
 
+    parser.add_argument(
+        "--calculate-cpm",
+        action="store_true",
+        help="Berechnet den kritischen Pfad (Critical Path Method) für die Projektdatei(en)"
+    )
+
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        help="Projektstartdatum für CPM-Berechnung (YYYY-MM-DD, default: heute)"
+    )
+
     args = parser.parse_args()
 
     # Logging einrichten
@@ -405,6 +418,40 @@ Beispiele:
         if args.create_graph:
             if create_dependency_graph(project_file, args.output_dir, logger):
                 success_count += 1
+            continue
+
+        # Wenn CPM-Berechnung gewünscht ist
+        if args.calculate_cpm:
+            try:
+                calc = SimpleCPMCalculator.from_file(project_file)
+
+                # Setze Startdatum falls angegeben
+                if args.start_date:
+                    from datetime import datetime
+                    calc.start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
+                    logger.info(f"Verwende Startdatum: {args.start_date}")
+
+                # Berechne CPM
+                calc.calculate()
+
+                # Ausgabe auf Konsole
+                calc.print_summary()
+
+                # Bestimme Ausgabedatei
+                if args.output_dir:
+                    output_file = args.output_dir / f"{project_file.stem}_cpm.json"
+                else:
+                    # Standard: results Ordner
+                    results_dir = Path("results")
+                    results_dir.mkdir(exist_ok=True)
+                    output_file = results_dir / f"{project_file.stem}_cpm.json"
+
+                # Exportiere zu JSON
+                calc.export_to_json(output_file, include_dates=True)
+                logger.info(f"CPM-Ergebnisse gespeichert in: {output_file}")
+                success_count += 1
+            except Exception as e:
+                logger.error(f"Fehler bei CPM-Berechnung für {project_file.name}: {e}", exc_info=True)
             continue
 
         # Normale Projektverarbeitung
