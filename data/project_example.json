@@ -1,0 +1,109 @@
+{
+  "_schema": "tjp-project/1.0",
+  "_refs": {
+    "persons":              "persons.json",
+    "workinghours_absences":"workinghours_absences.json",
+    "reports":              "reports.json"
+  },
+
+  "project": {
+    "id":        "Beispiel_Projekt",
+    "name":      "Beispiel_Projekt",
+    "version":   "1.0",
+    "start":     "2024-03-01",
+    "duration":  "+6m",
+    "timezone":  "Europe/Berlin",
+    "timeformat":"%Y-%m-%d",
+    "currency":  "EUR",
+    "now":       "2024-03-01",
+    "workinghours_ref": "wh_global"
+  },
+
+  "accounts": [
+    {
+      "id":   "cost",
+      "name": "Projektkosten",
+      "accounts": [
+        {"id": "dev_costs", "name": "Entwicklung"},
+        {"id": "mgt_costs", "name": "Management"}
+      ]
+    },
+    {
+      "id":   "rev",
+      "name": "Einnahmen",
+      "accounts": []
+    }
+  ],
+
+  "balance": {
+    "cost_account": "cost",
+    "rev_account":  "rev"
+  },
+
+  "tasks": [
+    {
+      "id":   "development",
+      "name": "Software Projekt",
+      "tasks": [
+        {
+          "id":        "start",
+          "name":      "Projektstart",
+          "milestone": true,
+          "start":     "2024-03-01"
+        },
+        {
+          "id":      "design_phase",
+          "name":    "Design Phase",
+          "depends": [
+            {"task_id": "start", "gapduration": null}
+          ],
+          "effort":   "10d",
+          "allocate": ["bob"]
+        },
+        {
+          "id":      "coding_phase",
+          "name":    "Implementierung",
+          "depends": [
+            {"task_id": "design_phase", "gapduration": "2d"}
+          ],
+          "effort":   "20d",
+          "allocate": ["alice"]
+        },
+        {
+          "id":      "testing_phase",
+          "name":    "Qualitätssicherung",
+          "depends": [
+            {
+              "task_id":    "coding_phase",
+              "gapduration": "-10d",
+              "_comment":   "Negativ = LEAD/Überlappung"
+            }
+          ],
+          "effort":   "10d",
+          "allocate": ["charlie"]
+        },
+        {
+          "id":        "beta_ready",
+          "name":      "Beta-Version fertig",
+          "milestone": true,
+          "depends": [
+            {"task_id": "coding_phase", "gapduration": null}
+          ]
+        },
+        {
+          "id":      "review",
+          "name":    "Abnahme",
+          "depends": [
+            {"task_id": "beta_ready", "gapduration": "1w"}
+          ],
+          "duration": "5d",
+          "allocate": ["charlie"],
+          "charge": [
+            {"amount": 500.0, "event": "onstart"}
+          ],
+          "chargeset": ["mgt_costs"]
+        }
+      ]
+    }
+  ]
+}

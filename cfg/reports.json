@@ -1,0 +1,52 @@
+{
+  "_schema": "tjp-reports/1.0",
+  "_refs": {
+    "project": "project.json"
+  },
+
+  "reports": [
+    {
+      "id":       "gantt_chart",
+      "type":     "taskreport",
+      "name":     "Gantt Chart",
+      "headline": "Projekt Zeitplan",
+      "columns":  ["hierarchindex", "name", "start", "end", "effort", "chart"],
+      "timeformat":   "%Y-%m-%d",
+      "loadunit":     "days",
+      "hideresource": 0,
+      "filters": []
+    },
+    {
+      "id":       "cost_overview",
+      "type":     "accountreport",
+      "name":     "Kostenübersicht",
+      "headline": "Finanzstatus des Projekts",
+      "columns":  ["no", "name", "total", "monthly"],
+      "filters":  []
+    },
+    {
+      "id":       "status_update",
+      "type":     "taskreport",
+      "name":     "StatusUpdate",
+      "headline": "Projektstatusbericht",
+      "columns":  ["hierarchindex", "name", "start", "end", "effort", "complete", "status", "note"],
+      "filters": [
+        {
+          "directive": "hidetask",
+          "expression": "complete == 100",
+          "_comment": "Nur unfertige Aufgaben anzeigen"
+        }
+      ]
+    },
+    {
+      "id":   "journal",
+      "type": "textreport",
+      "name": "Journal",
+      "header": "### Projekt Logbuch",
+      "directives": [
+        "journalmessages"
+      ],
+      "filters": []
+    }
+  ]
+}

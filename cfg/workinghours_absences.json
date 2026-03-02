@@ -1,0 +1,75 @@
+{
+  "_schema": "tjp-workinghours-absences/1.0",
+  "_refs": {
+    "persons": "persons.json"
+  },
+
+  "global_workinghours": {
+    "id": "wh_global",
+    "description": "Standardarbeitszeit für alle Ressourcen",
+    "schedules": [
+      {
+        "days": ["mon", "tue", "wed", "thu", "fri"],
+        "hours": [
+          {"from": "09:00", "to": "12:00"},
+          {"from": "13:00", "to": "18:00"}
+        ]
+      },
+      {
+        "days": ["sat", "sun"],
+        "hours": "off"
+      }
+    ]
+  },
+
+  "workinghours_overrides": [
+    {
+      "id": "wh_bob_parttime",
+      "description": "Bob Teilzeit – nur Vormittags",
+      "resource_id": "bob",
+      "schedules": [
+        {
+          "days": ["mon", "tue", "wed", "thu", "fri"],
+          "hours": [
+            {"from": "08:00", "to": "12:00"}
+          ]
+        },
+        {
+          "days": ["sat", "sun"],
+          "hours": "off"
+        }
+      ]
+    }
+  ],
+
+  "global_leaves": [
+    {
+      "type": "holiday",
+      "name": "Tag der Arbeit",
+      "date": "2024-05-01",
+      "applies_to": "all"
+    },
+    {
+      "type": "holiday",
+      "name": "Christi Himmelfahrt",
+      "date": "2024-05-09",
+      "applies_to": "all"
+    }
+  ],
+
+  "personal_absences": [
+    {
+      "resource_id": "alice",
+      "type": "vacation",
+      "name": "Urlaub Alice",
+      "from": "2024-04-01",
+      "to":   "2024-04-05"
+    },
+    {
+      "resource_id": "charlie",
+      "type": "special",
+      "name": "Fortbildung",
+      "date": "2024-03-15"
+    }
+  ]
+}
