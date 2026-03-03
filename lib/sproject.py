@@ -282,7 +282,24 @@ Beispiele:
         # Wenn CPM-Berechnung gewünscht ist
         if args.calculate_cpm:
             try:
-                calc = SimpleCPMCalculator.from_file(project_file)
+                # Lade Projekt mit Pydantic-Modellen
+                from models import load_project
+                from models.project import CycleProject, LoopProject
+
+                project = load_project(project_file)
+
+                # Expandiere Cycle/Loop-Tasks falls nötig
+                if isinstance(project, CycleProject):
+                    logger.info(f"Expandiere Cycle-Tasks fuer {project_file.name}...")
+                    project = project.expand_cycles()
+                    logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
+                elif isinstance(project, LoopProject):
+                    logger.info(f"Expandiere Loop-Tasks fuer {project_file.name}...")
+                    project = project.expand_loops()
+                    logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
+
+                # Erstelle CPM Calculator mit expandiertem Projekt
+                calc = SimpleCPMCalculator(project)
 
                 # Setze Startdatum falls angegeben
                 if args.start_date:

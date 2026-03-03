@@ -82,6 +82,38 @@ def load_project(file_path: Union[str, Path]) -> Project:
         raise
 
 
+def load_project_from_dict(data: dict) -> Project:
+    """
+    Lädt ein Projekt aus einem Dictionary.
+
+    Erkennt automatisch den Projekt-Typ und erstellt das entsprechende Modell.
+
+    Args:
+        data: Dictionary mit Projektdaten
+
+    Returns:
+        Pydantic-Projekt-Modell (SimpleProject, CycleProject, LoopProject, oder PersonProject)
+
+    Examples:
+        >>> data = {"project": "Test", "tasks": []}
+        >>> project = load_project_from_dict(data)
+        >>> isinstance(project, SimpleProject)
+        True
+    """
+    # Erkenne Projekt-Typ
+    project_type = detect_project_type(data)
+
+    # Lade entsprechendes Modell
+    if project_type == 'person':
+        return PersonProject(**data)
+    elif project_type == 'cycle':
+        return CycleProject(**data)
+    elif project_type == 'loop':
+        return LoopProject(**data)
+    else:
+        return SimpleProject(**data)
+
+
 def load_project_raw(file_path: Union[str, Path]) -> dict:
     """
     Lädt eine Projekt-JSON-Datei als rohes Dictionary.

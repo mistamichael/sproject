@@ -9,8 +9,11 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Union, List
 from datetime import datetime
 
-# Import utils (relative import from parent package)
-from ..utils import parse_duration_to_days, validate_duration_string
+# Import utils - try relative import first, then absolute
+try:
+    from ..utils import parse_duration_to_days, validate_duration_string
+except (ImportError, ValueError):
+    from utils import parse_duration_to_days, validate_duration_string
 
 
 class TaskBase(BaseModel):

@@ -6,7 +6,9 @@ REM
 REM Usage:
 REM   run_test.bat                      - Verarbeitet alle .json Dateien im examples Ordner
 REM   run_test.bat <filename>           - Verarbeitet eine einzelne Projekt-Datei
+REM   run_test.bat --calculate-cpm          - Berechnet CPM für alle Projekte
 REM   run_test.bat --create_svg_graph       - Erstellt Abhängigkeitsdiagramme für alle Projekte
+REM   run_test.bat <filename> --calculate-cpm - Berechnet CPM für einzelne Datei
 REM   run_test.bat <filename> --create_svg_graph - Erstellt Graph für einzelne Datei
 REM
 REM ============================================================================
@@ -20,6 +22,13 @@ call "%~dp0setenv.bat"
 if exist "%~dp0_setenv.bat" (
     echo Lade lokale Umgebungseinstellungen aus _setenv.bat...
     call "%~dp0_setenv.bat"
+)
+
+REM Prüfe auf --calculate-cpm Flag
+set "CALCULATE_CPM="
+if /i "%1"=="--calculate-cpm" (
+    set "CALCULATE_CPM=--calculate-cpm"
+    goto process_all_examples
 )
 
 REM Prüfe auf --create_svg_graph Flag
@@ -52,6 +61,9 @@ REM Sammle zusätzliche Parameter
 set "PARAMS=--project "%PROJECT_FILE%""
 :parse_args
 if "%2"=="" goto run_test
+if /i "%2"=="--calculate-cpm" (
+    set "PARAMS=%PARAMS% --calculate-cpm"
+)
 if /i "%2"=="--create_svg_graph" (
     set "PARAMS=%PARAMS% --create_svg_graph"
 )
@@ -98,6 +110,7 @@ call "%~dp0setenv.bat"
 echo.
 echo ============================================================================
 echo Verarbeite alle JSON-Dateien im examples Ordner
+if defined CALCULATE_CPM echo Berechne CPM
 if defined CREATE_GRAPH echo Erstelle Abhängigkeitsdiagramme
 echo ============================================================================
 echo.
@@ -109,13 +122,14 @@ REM Verarbeite alle .json Dateien im examples Ordner
 for %%F in ("%PV_EXAMPLES%\*.json") do (
     echo.
     echo --- Verarbeite: %%~nxF ---
-    if defined CREATE_GRAPH (
-        python sproject.py --project "%%F" --create_svg_graph
-        set LAST_RESULT=!ERRORLEVEL!
-    ) else (
-        python sproject.py --project "%%F"
-        set LAST_RESULT=!ERRORLEVEL!
-    )
+
+    REM Baue Parameterliste auf
+    set "FILE_PARAMS=--project "%%F""
+    if defined CALCULATE_CPM set "FILE_PARAMS=!FILE_PARAMS! --calculate-cpm"
+    if defined CREATE_GRAPH set "FILE_PARAMS=!FILE_PARAMS! --create_svg_graph"
+
+    python sproject.py !FILE_PARAMS!
+    set LAST_RESULT=!ERRORLEVEL!
 
     REM Vergleiche Ergebnisse wenn erfolgreich
     if !LAST_RESULT! EQU 0 (
@@ -208,14 +222,17 @@ echo                     Die Datei wird im examples Ordner gesucht.
 echo                     Ohne Angabe werden alle .json Dateien im examples Ordner verarbeitet.
 echo.
 echo Optionen:
+echo   --calculate-cpm       Berechnet den kritischen Pfad (Critical Path Method)
 echo   --create_svg_graph    Erstellt Abhängigkeitsdiagramm(e) als PNG-Datei(en)
 echo.
 echo Beispiele:
-echo   %~nx0                          Verarbeitet alle .json Dateien im examples Ordner
+echo   %~nx0                              Verarbeitet alle .json Dateien im examples Ordner
+echo   %~nx0 --calculate-cpm              Berechnet CPM für alle Projektdateien
 echo   %~nx0 --create_svg_graph           Erstellt Graphen für alle Projektdateien
-echo   %~nx0 tankdesign               Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign.json          Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign --create_svg_graph  Erstellt nur den Graphen für tankdesign.json
+echo   %~nx0 tankdesign                   Verarbeitet tankdesign.json
+echo   %~nx0 tankdesign.json              Verarbeitet tankdesign.json
+echo   %~nx0 tankdesign --calculate-cpm   Berechnet CPM für tankdesign.json
+echo   %~nx0 tankdesign --create_svg_graph  Erstellt Graph für tankdesign.json
 echo.
 echo Hinweis:
 echo   Ergebnisse werden in %PV_RESULTS% erzeugt und automatisch mit

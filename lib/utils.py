@@ -170,6 +170,40 @@ def format_time_value(days: float, unit: Literal['minutes', 'hours', 'days']) ->
         return f"{days:.1f}d"
 
 
+def format_time_value_auto(days: float) -> str:
+    """
+    Formatiert einen Zeitwert (in Tagen) mit automatischer Einheiten-Wahl.
+
+    Wählt automatisch die beste Einheit basierend auf der Größe:
+    - < 0.125 Tage (< 1h) -> Minuten
+    - < 1 Tag -> Stunden
+    - >= 1 Tag -> Tage
+
+    Args:
+        days: Zeitwert in Tagen
+
+    Returns:
+        Formatierter String mit optimaler Einheit
+
+    Examples:
+        >>> format_time_value_auto(0.0104)  # ~5 min
+        '5.0m'
+        >>> format_time_value_auto(0.25)  # 2h
+        '2.0h'
+        >>> format_time_value_auto(5.5)  # 5.5 Tage
+        '5.5d'
+    """
+    minutes = days * 480  # 8h * 60min
+    hours = days * 8
+
+    if days < 0.125:  # < 1 Stunde
+        return f"{minutes:.1f}m"
+    elif days < 1.0:  # < 1 Tag
+        return f"{hours:.1f}h"
+    else:
+        return f"{days:.1f}d"
+
+
 def format_datetime_value(days: float, unit: Literal['minutes', 'hours', 'days'],
                          start_date: datetime) -> str:
     """

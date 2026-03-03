@@ -4,9 +4,16 @@ cpm_calculator.py
 =================
 Berechnet den kritischen Pfad (Critical Path Method) für einfache Projektdateien.
 Unterstützt JSON-Dateien mit vereinfachter Struktur (wie tankdesign.json).
+
+DEPRECATED: Diese Klasse wird in Zukunft durch Project.calculate_cpm() ersetzt.
+Verwenden Sie stattdessen:
+    from models import load_project
+    project = load_project("file.json")
+    result = project.calculate_cpm()
 """
 
 import json
+import warnings
 from pathlib import Path
 from typing import Any, Optional, Union
 from datetime import datetime, timedelta
@@ -21,17 +28,43 @@ except ImportError:
 class SimpleCPMCalculator:
     """
     Berechnet CPM für einfache Projektdateien ohne vollständige TJP-Struktur.
+
+    DEPRECATED: Verwenden Sie stattdessen Project.calculate_cpm() aus dem models Package.
+    Diese Klasse wird für Rückwärtskompatibilität beibehalten, delegiert aber
+    an die neue Pydantic-basierte Implementierung.
     """
 
-    def __init__(self, project_data: dict):
+    def __init__(self, project_data: Union[dict, 'ProjectBase']):
         """
         Initialisiert den Calculator mit Projektdaten.
 
         Args:
-            project_data: Dictionary mit 'project' und 'tasks' Keys
+            project_data: Dictionary mit 'project' und 'tasks' Keys ODER ProjectBase-Instanz
         """
-        self.project_name = project_data.get('project', 'Unbekanntes Projekt')
-        self.tasks = project_data.get('tasks', [])
+        # Konvertiere dict zu Project falls nötig
+        if isinstance(project_data, dict):
+            try:
+                from models import load_project_from_dict
+            except ImportError:
+                from .models import load_project_from_dict
+            self.project = load_project_from_dict(project_data)
+            self._is_legacy = True
+        else:
+            # Bereits ein Pydantic-Project
+            self.project = project_data
+            self._is_legacy = False
+
+        # Für Rückwärtskompatibilität
+        self.project_name = self.project.project
+        self.tasks = [
+            {
+                'id': task.id,
+                'name': task.name,
+                'duration': task.duration,
+                'dependencies': task.dependencies or []
+            }
+            for task in self.project.tasks
+        ]
 
         # Lade Defaults aus Config
         if HAS_CONFIG:
@@ -45,14 +78,21 @@ class SimpleCPMCalculator:
         self.cpm_data = {}
 
         # Erkenne die dominante Zeiteinheit in den Tasks
-        self.time_unit = self._detect_time_unit()
+        self.time_unit = self.project.get_time_unit()
+
+        # Interner Calculator (wird bei Bedarf erstellt)
+        self._calculator = None
+        self._result = None
 
     @classmethod
     def from_file(cls, file_path: Path) -> 'SimpleCPMCalculator':
         """Lädt Projektdaten aus JSON-Datei."""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return cls(data)
+        try:
+            from models import load_project
+        except ImportError:
+            from .models import load_project
+        project = load_project(file_path)
+        return cls(project)
 
     def calculate(self) -> dict[Union[int, str], dict[str, Any]]:
         """
@@ -61,17 +101,32 @@ class SimpleCPMCalculator:
         Returns:
             Dictionary mit task_id als Key und CPM-Daten
         """
-        # Initialisiere CPM-Daten
-        self._initialize_cpm_data()
+        # Delegiere an neue Implementation
+        try:
+            from models.cpm import CPMCalculator
+        except ImportError:
+            from .models.cpm import CPMCalculator
 
-        # Vorwärtsrechnung
-        self._forward_pass()
+        self._calculator = CPMCalculator(self.project, self.start_date)
+        self._result = self._calculator.calculate()
 
-        # Rückwärtsrechnung
-        self._backward_pass()
-
-        # Pufferzeiten berechnen
-        self._calculate_slack()
+        # Konvertiere zurück zu Legacy-Format für Rückwärtskompatibilität
+        self.cpm_data = {}
+        for task_id, task_result in self._result.tasks.items():
+            self.cpm_data[task_id] = {
+                'id': task_result.id,
+                'name': task_result.name,
+                'duration': task_result.duration,
+                'successors': task_result.successors,
+                'predecessors': task_result.predecessors,
+                'faz': task_result.faz,
+                'fez': task_result.fez,
+                'saz': task_result.saz,
+                'sez': task_result.sez,
+                'puffer': task_result.puffer,
+                'free_puffer': task_result.free_puffer,
+                'is_critical': task_result.is_critical,
+            }
 
         return self.cpm_data
 
@@ -345,6 +400,11 @@ class SimpleCPMCalculator:
         Returns:
             Liste der Task-IDs (sortiert nach FAZ)
         """
+        # Verwende Ergebnis aus neuer Implementation wenn verfügbar
+        if self._result:
+            return self._result.critical_path
+
+        # Fallback auf Legacy-Daten
         critical_tasks = [
             task_id for task_id, data in self.cpm_data.items()
             if data['is_critical']
@@ -478,6 +538,28 @@ class SimpleCPMCalculator:
             output_path: Ausgabepfad
             include_dates: Ob Kalenderdaten eingeschlossen werden sollen
         """
+        # Verwende neue Implementation falls verfügbar
+        if self._result:
+            output_data = self._result.export_to_dict(include_dates=include_dates)
+
+            # Füge Config-basierte Felder hinzu falls verfügbar
+            if self.config:
+                default_resource = self.config.get_default_resource()
+                if default_resource:
+                    output_data['default_resource'] = default_resource
+
+            # Bestimme JSON-Einrückung aus Config
+            indent = 2
+            if self.config:
+                output_settings = self.config.get_output_settings()
+                indent = output_settings.get('json_indent', 2)
+
+            # Schreibe JSON
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(output_data, f, indent=indent, ensure_ascii=False)
+            return
+
+        # Legacy-Implementation (sollte nicht mehr erreicht werden)
         # Original-Projektdaten laden
         original_tasks = []
         for task in self.tasks:
@@ -559,20 +641,23 @@ class SimpleCPMCalculator:
 
     def print_summary(self) -> None:
         """Gibt eine Zusammenfassung der CPM-Berechnung aus."""
+        from utils import format_time_value_auto
+
         critical_path = self.get_critical_path()
         project_duration = max(data['fez'] for data in self.cpm_data.values())
 
         print("=" * 70)
         print(f"Projekt: {self.project_name}")
-        print(f"Projektdauer: {project_duration} Tage")
+        print(f"Projektdauer: {format_time_value_auto(project_duration)}")
         print(f"Startdatum: {self.start_date.strftime('%Y-%m-%d')}")
-        print(f"Enddatum (geschätzt): {self._add_workdays(self.start_date, project_duration).strftime('%Y-%m-%d')}")
+        print(f"Enddatum (geschaetzt): {self._add_workdays(self.start_date, project_duration).strftime('%Y-%m-%d')}")
         print("=" * 70)
         print()
         print("Kritischer Pfad:")
         for task_id in critical_path:
             data = self.cpm_data[task_id]
-            print(f"  [{task_id}] {data['name']:<30} (Dauer: {data['duration']} Tage)")
+            duration_str = format_time_value_auto(data['duration'])
+            print(f"  [{task_id}] {data['name']:<30} (Dauer: {duration_str})")
         print()
         print("=" * 70)
         print("Alle Tasks:")

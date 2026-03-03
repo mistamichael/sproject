@@ -6,9 +6,19 @@ Erweitert Tasks mit Zyklen/Instanzen und Loop-Tasks in separate Aufgaben.
 Unterstützt:
 - Tasks mit "instances": "order_volume" (Pizzas)
 - Tasks mit "is_loop": true (Erdaushub)
+
+DEPRECATED: Diese Klasse wird in Zukunft durch Project.expand_cycles() / expand_loops() ersetzt.
+Verwenden Sie stattdessen:
+    from models import load_project
+    project = load_project("file.json")
+    if hasattr(project, 'expand_cycles'):
+        expanded = project.expand_cycles()
+    elif hasattr(project, 'expand_loops'):
+        expanded = project.expand_loops()
 """
 
 import json
+import warnings
 from pathlib import Path
 from typing import Any, Optional, Union
 import math
@@ -17,32 +27,71 @@ import math
 class CycleExpander:
     """
     Expandiert Tasks mit mehreren Instanzen oder Loops in separate Task-Einträge.
+
+    DEPRECATED: Verwenden Sie stattdessen CycleProject.expand_cycles() oder
+    LoopProject.expand_loops() aus dem models Package.
+    Diese Klasse wird für Rückwärtskompatibilität beibehalten, delegiert aber
+    an die neue Pydantic-basierte Implementierung.
     """
 
-    def __init__(self, project_data: dict):
+    def __init__(self, project_data: Union[dict, 'ProjectBase']):
         """
         Initialisiert den Expander mit Projektdaten.
 
         Args:
-            project_data: Dictionary mit Projektdaten (project, tasks, resources, etc.)
+            project_data: Dictionary mit Projektdaten ODER ProjectBase-Instanz
         """
-        self.project_data = project_data.copy()
-        self.project_name = project_data.get('project', 'Unbekanntes Projekt')
-        self.tasks = project_data.get('tasks', [])
-        self.resources = project_data.get('resources', [])
+        # Konvertiere dict zu Project falls nötig
+        if isinstance(project_data, dict):
+            try:
+                from models import load_project_from_dict
+            except ImportError:
+                from .models import load_project_from_dict
+            self.project = load_project_from_dict(project_data)
+            self._is_legacy = True
+            # Behalte original data für Rückwärtskompatibilität
+            self.project_data = project_data.copy()
+        else:
+            # Bereits ein Pydantic-Project
+            self.project = project_data
+            self._is_legacy = False
+            # Erstelle dict-Repräsentation
+            self.project_data = self.project.model_dump(by_alias=True, exclude_none=True)
+
+        # Für Rückwärtskompatibilität
+        self.project_name = self.project.project
+        self.tasks = [
+            {
+                'id': task.id,
+                'name': task.name,
+                'duration': task.duration,
+                'dependencies': task.dependencies or []
+            }
+            for task in self.project.tasks
+        ]
+
+        # Hole Ressourcen falls verfügbar
+        if hasattr(self.project, 'resources'):
+            self.resources = [r.model_dump(by_alias=True) for r in self.project.resources]
+        else:
+            self.resources = []
 
         # Hole globale Parameter
-        self.order_volume = project_data.get('order_volume', 1)
-        self.total_volume = project_data.get('total_volume', 0)
+        self.order_volume = getattr(self.project, 'order_volume', 1)
+        self.total_volume = getattr(self.project, 'total_volume', 0)
 
         self.expanded_tasks = []
+        self._expanded_project = None
 
     @classmethod
     def from_file(cls, file_path: Path) -> 'CycleExpander':
         """Lädt Projektdaten aus JSON-Datei."""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return cls(data)
+        try:
+            from models import load_project
+        except ImportError:
+            from .models import load_project
+        project = load_project(file_path)
+        return cls(project)
 
     def expand(self) -> dict:
         """
@@ -51,43 +100,33 @@ class CycleExpander:
         Returns:
             Dictionary mit erweiterten Tasks
         """
-        for task in self.tasks:
-            task_id = task.get('id')
+        # Delegiere an neue Implementation
+        try:
+            from models.project import CycleProject, LoopProject
+        except ImportError:
+            from .models.project import CycleProject, LoopProject
 
-            # Prüfe auf "instances" (Pizzas-Fall)
-            if 'instances' in task:
-                instances_value = task['instances']
+        if isinstance(self.project, CycleProject):
+            self._expanded_project = self.project.expand_cycles()
+        elif isinstance(self.project, LoopProject):
+            self._expanded_project = self.project.expand_loops()
+        else:
+            # Kein expandierbares Projekt - gebe Original zurück
+            self._expanded_project = self.project
 
-                # Ersetze "order_volume" mit dem tatsächlichen Wert
-                if isinstance(instances_value, str) and instances_value == 'order_volume':
-                    num_instances = self.order_volume
-                else:
-                    num_instances = int(instances_value)
+        # Konvertiere zu dict für Rückwärtskompatibilität
+        result = self._expanded_project.model_dump(by_alias=True, exclude_none=True)
 
-                # Hole oder generiere Präfix
-                prefix = task.get('cycle_prefix', 'P')
-
-                # Expandiere in mehrere Instanzen
-                self._expand_instances(task, num_instances, prefix)
-
-            # Prüfe auf "is_loop" (Erdaushub-Fall)
-            elif task.get('is_loop', False):
-                # Berechne Anzahl der Loop-Iterationen
-                num_loops = self._calculate_loop_count(task)
-
-                # Hole oder generiere Präfix
-                prefix = task.get('cycle_prefix', 'F')
-
-                # Expandiere Loop
-                self._expand_loop(task, num_loops, prefix)
-
-            else:
-                # Normaler Task ohne Expansion
-                self.expanded_tasks.append(task.copy())
-
-        # Erstelle Ausgabe-Struktur
-        result = self.project_data.copy()
-        result['tasks'] = self.expanded_tasks
+        # Update expanded_tasks für Legacy-Code
+        self.expanded_tasks = [
+            {
+                'id': task.id,
+                'name': task.name,
+                'duration': task.duration,
+                'dependencies': task.dependencies or []
+            }
+            for task in self._expanded_project.tasks
+        ]
 
         return result
 
@@ -357,10 +396,18 @@ class CycleExpander:
         Args:
             output_path: Ausgabepfad
         """
-        result = self.expand()
+        # Verwende neue Implementation falls verfügbar
+        if self._expanded_project is None:
+            # Expandiere erst falls noch nicht geschehen
+            self.expand()
 
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, indent=2, ensure_ascii=False)
+        try:
+            from models import save_project
+        except ImportError:
+            from .models import save_project
+
+        # Nutze save_project für konsistente Ausgabe
+        save_project(self._expanded_project, output_path, indent=2)
 
 
 def main():

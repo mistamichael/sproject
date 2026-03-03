@@ -12,8 +12,11 @@ Projekt-Modelle für verschiedene JSON-Strukturen:
 from pydantic import BaseModel, Field
 from typing import Optional, List, Union
 
-# Import utils (relative import from parent package)
-from ..utils import detect_time_unit
+# Import utils - try relative import first, then absolute
+try:
+    from ..utils import detect_time_unit
+except (ImportError, ValueError):
+    from utils import detect_time_unit
 
 from .tasks import SimpleTask, InstanceTask, LoopTask
 from .resources import Resource, Person
@@ -58,6 +61,45 @@ class ProjectBase(BaseModel):
         """
         return [task.id for task in self.tasks]
 
+    def calculate_cpm(self, start_date: Optional[str] = None) -> 'CPMResult':
+        """
+        Berechnet Critical Path Method für dieses Projekt.
+
+        Args:
+            start_date: Projektstartdatum (optional, überschreibt project_start)
+
+        Returns:
+            CPMResult mit berechneten Werten
+
+        Examples:
+            >>> from models import load_project
+            >>> project = load_project("examples/tankdesign.json")
+            >>> result = project.calculate_cpm()
+            >>> result.project_duration
+            '50.0d'
+            >>> result.critical_path
+            [1, 3, 7, 8]
+        """
+        from .cpm import CPMCalculator
+        from datetime import datetime
+
+        # Verwende übergebenes Startdatum oder project_start
+        if start_date:
+            try:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S')
+        elif self.project_start:
+            try:
+                start_dt = datetime.strptime(self.project_start, '%Y-%m-%d')
+            except ValueError:
+                start_dt = datetime.strptime(self.project_start, '%Y-%m-%d %H:%M:%S')
+        else:
+            start_dt = None
+
+        calculator = CPMCalculator(self, start_dt)
+        return calculator.calculate()
+
     model_config = {
         'extra': 'allow',
     }
@@ -89,6 +131,39 @@ class CycleProject(ProjectBase):
     resources: List[Resource]
     tasks: List[Union[SimpleTask, InstanceTask]]
 
+    def expand_cycles(self) -> 'SimpleProject':
+        """
+        Expandiert InstanceTasks in einzelne Zyklen.
+
+        Returns:
+            Neues SimpleProject mit expandierten Tasks
+
+        Examples:
+            >>> project = load_project("examples/pizzas.json")
+            >>> expanded = project.expand_cycles()
+            >>> len(expanded.tasks)  # 1 + (3 * 12) = 37 tasks
+            37
+        """
+        from .expander import expand_instance_task
+
+        expanded_tasks = []
+
+        for task in self.tasks:
+            if isinstance(task, InstanceTask):
+                # Expandiere InstanceTask
+                expanded = expand_instance_task(task, self.order_volume, self.tasks)
+                expanded_tasks.extend(expanded)
+            else:
+                # SimpleTask bleibt unverändert
+                expanded_tasks.append(task)
+
+        # Erstelle neues SimpleProject
+        return SimpleProject(
+            project=self.project,
+            project_start=self.project_start,
+            tasks=expanded_tasks
+        )
+
 
 class LoopProject(ProjectBase):
     """
@@ -105,6 +180,38 @@ class LoopProject(ProjectBase):
     unit: str
     resources: List[Resource]
     tasks: List[Union[SimpleTask, LoopTask]]
+
+    def expand_loops(self) -> 'SimpleProject':
+        """
+        Expandiert LoopTasks basierend auf loop_until Bedingung.
+
+        Returns:
+            Neues SimpleProject mit expandierten Tasks
+
+        Examples:
+            >>> project = load_project("examples/erdaushub.json")
+            >>> expanded = project.expand_loops()
+            >>> # Tasks werden basierend auf total_volume expandiert
+        """
+        from .expander import expand_loop_task
+
+        expanded_tasks = []
+
+        for task in self.tasks:
+            if isinstance(task, LoopTask):
+                # Expandiere LoopTask
+                expanded = expand_loop_task(task, self.total_volume, self.resources)
+                expanded_tasks.extend(expanded)
+            else:
+                # SimpleTask bleibt unverändert
+                expanded_tasks.append(task)
+
+        # Erstelle neues SimpleProject
+        return SimpleProject(
+            project=self.project,
+            project_start=self.project_start,
+            tasks=expanded_tasks
+        )
 
 
 class PersonProject(ProjectBase):
