@@ -1,0 +1,157 @@
+{
+  "_schema": "tjp-project-config/1.0",
+  "_description": "Konsolidierte Projektkonfiguration für Tank-Design Beispielprojekt",
+  "_refs": {
+    "holidays": "${PV_CFG}/holidays_BY_2026.json"
+  },
+
+  "persons": {
+    "resource_groups": [
+      {
+        "id": "dev",
+        "name": "Entwickler",
+        "rate": 80.0,
+        "members": [
+          {
+            "id": "alice",
+            "name": "Alice",
+            "email": "alice@example.com",
+            "workinghours_override_ref": null
+          }
+        ]
+      },
+      {
+        "id": "design",
+        "name": "Designer",
+        "rate": 70.0,
+        "workinghours_override_ref": "wh_bob_parttime",
+        "members": [
+          {
+            "id": "bob",
+            "name": "Bob",
+            "email": "bob@example.com",
+            "workinghours_override_ref": "wh_bob_parttime"
+          }
+        ]
+      },
+      {
+        "id": "mgt",
+        "name": "Management",
+        "rate": 120.0,
+        "members": [
+          {
+            "id": "charlie",
+            "name": "Charlie",
+            "email": "charlie@example.com",
+            "workinghours_override_ref": null
+          }
+        ]
+      }
+    ]
+  },
+
+  "workinghours_absences": {
+    "global_workinghours": {
+      "id": "wh_global",
+      "description": "Standardarbeitszeit für alle Ressourcen",
+      "schedules": [
+        {
+          "days": ["mon", "tue", "wed", "thu", "fri"],
+          "hours": [
+            {"from": "09:00", "to": "12:00"},
+            {"from": "13:00", "to": "18:00"}
+          ]
+        },
+        {
+          "days": ["sat", "sun"],
+          "hours": "off"
+        }
+      ]
+    },
+
+    "workinghours_overrides": [
+      {
+        "id": "wh_bob_parttime",
+        "description": "Bob Teilzeit – nur Vormittags",
+        "resource_id": "bob",
+        "schedules": [
+          {
+            "days": ["mon", "tue", "wed", "thu", "fri"],
+            "hours": [
+              {"from": "08:00", "to": "12:00"}
+            ]
+          },
+          {
+            "days": ["sat", "sun"],
+            "hours": "off"
+          }
+        ]
+      }
+    ],
+
+    "global_leaves": [],
+    "_comment_global_leaves": "Feiertage werden aus ${PV_CFG}/holidays_BY_2026.json geladen (siehe _refs)",
+
+    "personal_absences": [
+      {
+        "resource_id": "alice",
+        "type": "vacation",
+        "name": "Urlaub Alice",
+        "from": "2024-04-01",
+        "to":   "2024-04-05"
+      },
+      {
+        "resource_id": "charlie",
+        "type": "special",
+        "name": "Fortbildung",
+        "date": "2024-03-15"
+      }
+    ]
+  },
+
+  "reports": [
+    {
+      "id":       "gantt_chart",
+      "type":     "taskreport",
+      "name":     "Gantt Chart",
+      "headline": "Projekt Zeitplan",
+      "columns":  ["hierarchindex", "name", "start", "end", "effort", "chart"],
+      "timeformat":   "%Y-%m-%d",
+      "loadunit":     "days",
+      "hideresource": 0,
+      "filters": []
+    },
+    {
+      "id":       "cost_overview",
+      "type":     "accountreport",
+      "name":     "Kostenübersicht",
+      "headline": "Finanzstatus des Projekts",
+      "columns":  ["no", "name", "total", "monthly"],
+      "filters":  []
+    },
+    {
+      "id":       "status_update",
+      "type":     "taskreport",
+      "name":     "StatusUpdate",
+      "headline": "Projektstatusbericht",
+      "columns":  ["hierarchindex", "name", "start", "end", "effort", "complete", "status", "note"],
+      "filters": [
+        {
+          "directive": "hidetask",
+          "expression": "complete == 100",
+          "_comment": "Nur unfertige Aufgaben anzeigen"
+        }
+      ]
+    },
+    {
+      "id":   "journal",
+      "type": "textreport",
+      "name": "Journal",
+      "header": "### Projekt Logbuch",
+      "directives": [
+        "journalmessages"
+      ],
+      "filters": []
+    }
+  ]
+}
