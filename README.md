@@ -1,5 +1,30 @@
 # sproject.py - Einfaches Projektmanagement
 
+> **Neu in v0.2.0**: Type-safe Pydantic Models & zentrale Utils!
+> Siehe [QUICK_START.md](docs/QUICK_START.md) für die neue API.
+
+## Neue Import-Struktur (v0.2.0)
+
+```python
+# Alles aus lib importieren
+from lib import (
+    load_project,              # Projekt laden
+    parse_duration_to_days,    # Utils
+    SimpleCPMCalculator,       # Legacy CPM
+    CycleExpander              # Legacy Expander
+)
+
+# Beispiel: Projekt laden
+project = load_project("examples/software_simple.json")
+print(f"Zeit einheit: {project.get_time_unit()}")  # 'hours'
+print(f"Task 1 Dauer: {project.tasks[0].to_days()} Tage")
+```
+
+**Dokumentation**:
+- 📘 [QUICK_START.md](docs/QUICK_START.md) - Schnelleinstieg mit neuer API
+- 📘 [REFACTORING.md](docs/REFACTORING.md) - Architektur-Details
+- 📘 [lib/models/README.md](lib/models/README.md) - Pydantic Models
+
 ## Zweck des Programms
 
 **sproject.py** ist ein Tool für einfaches Projektmanagement durch die Kombination von:
