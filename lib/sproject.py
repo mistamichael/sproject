@@ -21,7 +21,7 @@ try:
 except ImportError:
     HAS_GRAPH_SUPPORT = False
 
-from tjp_models import TJPRegistry
+from tjp_models import TJPRegistry, SimpleTaskFile
 from cpm_calculator import SimpleCPMCalculator
 
 
@@ -105,12 +105,18 @@ def load_registry(cfg_dir: Path, project_file: Path, logger: logging.Logger) -> 
     wh_path = cfg_dir / "workinghours_absences.json"
     reports_path = cfg_dir / "reports.json"
 
-    required_files = [persons_path, wh_path, reports_path, project_file]
+    # Prüfe nur Config-Dateien (nicht project_file, das wird später separat geprüft)
+    config_files = [persons_path, wh_path, reports_path]
 
-    for file_path in required_files:
-        if not file_path.exists():
-            logger.error(f"Erforderliche Datei fehlt: {file_path}")
-            return None
+    # Wenn Config-Dateien fehlen, gib Warning und None zurück
+    # (erlaubt CPM/Graph-Operationen auf einfachen Task-Dateien)
+    missing_files = [f for f in config_files if not f.exists()]
+    if missing_files:
+        logger.warning(f"Config-Dateien nicht gefunden in {cfg_dir}:")
+        for f in missing_files:
+            logger.warning(f"  - {f.name}")
+        logger.warning("Überspringe TJP-Registry Verarbeitung (nur CPM/Graph-Operationen verfügbar)")
+        return None
 
     try:
         logger.info(f"Lade Registry aus:")
@@ -163,10 +169,9 @@ def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = Non
                 logger.error(f"Keine 'tasks' in Projektdatei gefunden: {project_file}")
             return False
 
-        # Berechne CPM-Daten
-        calc = SimpleCPMCalculator(data)
-        calc.calculate()
-        cpm_data = calc.cpm_data
+        # Berechne CPM-Daten mit integrierter SimpleTaskFile
+        task_file = SimpleTaskFile.model_validate(data)
+        cpm_data = task_file.calculate_cpm_for_tasks()
 
         # Erstelle gerichteten Graphen
         G = nx.DiGraph()
@@ -517,10 +522,12 @@ Beispiele:
                 logger.error(f"Fehler bei CPM-Berechnung für {project_file.name}: {e}", exc_info=True)
             continue
 
-        # Normale Projektverarbeitung
+        # Normale Projektverarbeitung mit TJP-Registry
         registry = load_registry(args.cfg_dir, project_file, logger)
         if registry is None:
-            logger.error(f"Fehler beim Laden von {project_file.name}")
+            logger.warning(f"Keine Config-Dateien für {project_file.name} - überspringe normale Verarbeitung")
+            # Zähle trotzdem als Erfolg, da CPM/Graph bereits verarbeitet wurden
+            success_count += 1
             continue
 
         process_project(registry, logger)

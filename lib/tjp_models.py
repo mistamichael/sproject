@@ -17,6 +17,9 @@ from pathlib import Path
 from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+# Import CPM-Klassen aus separatem Modul
+from cpm_models import CPMCalculationMixin, SimpleTaskFile
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Basis-Hilfsmethoden
@@ -499,7 +502,10 @@ class Task(TJPBase):
 Task.model_rebuild()
 
 
-class ProjectFile(TJPBase):
+# CPMCalculationMixin und SimpleTaskFile werden aus cpm_models.py importiert
+
+
+class ProjectFile(TJPBase, CPMCalculationMixin):
     """Komplette project.json."""
     project:  ProjectMeta
     accounts: list[Account] = []
