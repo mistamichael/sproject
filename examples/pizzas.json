@@ -1,77 +1,63 @@
 {
-  "project": "Pizzas Project",
-  "project_start": "2026-03-03 18:00:00",
-  "comment": "zeigt das gleichzeitige ab-arbeiten vieler Aufgaben gleichzeitig durch Subtasks ",
+  "project": "Pizza Service Express",
+  "order_volume": 12,
+  "unit": "Pizzen",
+  "resources": [
+    {
+      "id": "R1",
+      "name": "Pizzabäcker",
+      "role": "Produktion",
+      "count": 1
+    },
+    {
+      "id": "R2",
+      "name": "Servicekraft",
+      "role": "Verkauf",
+      "count": 1
+    },
+    {
+      "id": "R3",
+      "name": "Steinofen",
+      "type": "machine",
+      "capacity": 4,
+      "unit": "Slots"
+    }
+  ],
   "tasks": [
     {
       "id": 1,
-      "name": "Zutaten abwiegen & bereitstellen",
-      "duration": "5m",
-      "dependencies": []
+      "name": "Teigvorbereitung (Batch)",
+      "duration": "60m",
+      "resources": ["R1"],
+      "description": "Einmaliger Vorgang für alle Pizzen"
     },
     {
       "id": 2,
-      "name": "Teig mischen & kneten",
-      "duration": "10m",
-      "dependencies": [1]
+      "name": "Pizza formen & belegen",
+      "duration": "3m",
+      "resources": ["R1"],
+      "dependencies": [1],
+      "instances": "order_volume",
+      "cycle_prefix": "P"
     },
     {
       "id": 3,
-      "name": "Teig gehen lassen (Gare)",
-      "duration": "60m",
-      "dependencies": [2]
+      "name": "Backvorgang",
+      "duration": "7m",
+      "resources": ["R3"],
+      "capacity_required": 1,
+      "dependencies": [2],
+      "instances": "order_volume",
+      "cycle_prefix": "P"
     },
     {
       "id": 4,
-      "name": "Soße zubereiten",
-      "duration": "10m",
-      "dependencies": [1]
-    },
-    {
-      "id": 5,
-      "name": "Belag schneiden (Käse, Gemüse, etc.)",
-      "duration": "10m",
-      "dependencies": [1]
-    },
-    {
-      "id": 6,
-      "name": "Ofen vorheizen",
-      "duration": "20m",
-      "dependencies": []
-    },
-    {
-      "id": 11,
-      "name": "Pizza erstellen",
-      "subtasks": [7,8,9,10]
-      "anzahl": 10,
-      "dependencies": [6]
-    }
-  ],
-  "subtasks": [
-    {
-      "id": 7,
-      "name": "Teig ausrollen / formen",
-      "duration": "1m",
-      "dependencies": [3]
-    },
-    {
-      "id": 8,
-      "name": "Pizza belegen (Soße + Belag)",
+      "name": "Pizza verkaufen",
       "duration": "2m",
-      "dependencies": [4, 5, 7]
-    },
-    {
-      "id": 9,
-      "name": "Pizza backen",
-      "duration": "3m",
-      "dependencies": [6, 8]
-    },
-    {
-      "id": 10,
-      "name": "Pizza servieren",
-      "duration": "1m",
-      "dependencies": [10]
+      "resources": ["R2"],
+      "dependencies": [3],
+      "instances": "order_volume",
+      "cycle_prefix": "P"
     }
- ]
+  ]
 }
-

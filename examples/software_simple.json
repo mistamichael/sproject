@@ -1,327 +1,142 @@
 {
-  "_schema": "tjp-project-config/1.0",
-  "_description": "Konsolidierte Projektkonfiguration für Tank-Design Beispielprojekt",
-  "_refs": {
-    "holidays": "${PV_CFG}/holidays_BY_2026.json"
-  },
-  "persons": {
-    "resource_groups": [
-      {
-        "id": "dev",
-        "name": "Entwickler",
-        "rate": 80.0,
-        "members": [
-          {
-            "id": "alice",
-            "name": "Alice",
-            "email": "alice@example.com",
-            "workinghours_override_ref": null
-          }
-        ]
-      },
-      {
-        "id": "design",
-        "name": "Designer",
-        "rate": 70.0,
-        "workinghours_override_ref": "wh_bob_parttime",
-        "members": [
-          {
-            "id": "bob",
-            "name": "Bob",
-            "email": "bob@example.com",
-            "workinghours_override_ref": "wh_bob_parttime"
-          }
-        ]
-      },
-      {
-        "id": "mgt",
-        "name": "Management",
-        "rate": 120.0,
-        "members": [
-          {
-            "id": "charlie",
-            "name": "Charlie",
-            "email": "charlie@example.com",
-            "workinghours_override_ref": null
-          }
-        ]
-      }
-    ]
-  },
-  "workinghours_absences": {
-    "global_workinghours": {
-      "id": "wh_global",
-      "description": "Standardarbeitszeit für alle Ressourcen",
-      "schedules": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri"
-          ],
-          "hours": [
-            {
-              "from": "09:00",
-              "to": "12:00"
-            },
-            {
-              "from": "13:00",
-              "to": "18:00"
-            }
-          ]
-        },
-        {
-          "days": [
-            "sat",
-            "sun"
-          ],
-          "hours": "off"
-        }
-      ]
-    },
-    "workinghours_overrides": [
-      {
-        "id": "wh_bob_parttime",
-        "description": "Bob Teilzeit – nur Vormittags",
-        "resource_id": "bob",
-        "schedules": [
-          {
-            "days": [
-              "mon",
-              "tue",
-              "wed",
-              "thu",
-              "fri"
-            ],
-            "hours": [
-              {
-                "from": "08:00",
-                "to": "12:00"
-              }
-            ]
-          },
-          {
-            "days": [
-              "sat",
-              "sun"
-            ],
-            "hours": "off"
-          }
-        ]
-      }
-    ],
-    "global_leaves": [],
-    "_comment_global_leaves": "Feiertage werden aus ${PV_CFG}/holidays_BY_2026.json geladen (siehe _refs)",
-    "personal_absences": [
-      {
-        "resource_id": "alice",
-        "type": "vacation",
-        "name": "Urlaub Alice",
-        "from": "2024-04-01",
-        "to": "2024-04-05"
-      },
-      {
-        "resource_id": "charlie",
-        "type": "special",
-        "name": "Fortbildung",
-        "date": "2024-03-15"
-      }
-    ]
-  },
-  "project": {
-    "id": "Beispiel_Projekt",
-    "name": "Beispiel_Projekt",
-    "version": "1.0",
-    "start": "2024-03-01",
-    "duration": "+6m",
-    "timezone": "Europe/Berlin",
-    "timeformat": "%Y-%m-%d",
-    "currency": "EUR",
-    "now": "2024-03-01",
-    "workinghours_ref": "wh_global"
-  },
-  "accounts": [
+  "project": "Software Entwicklung Projekt",
+  "total_hours": 160,
+  "unit": "hours",
+  "persons": [
     {
-      "id": "cost",
-      "name": "Projektkosten",
-      "accounts": [
+      "id": "DEV1",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "role": "Senior Developer",
+      "hourly_rate": 85.0,
+      "vacation": [
         {
-          "id": "dev_costs",
-          "name": "Entwicklung"
-        },
-        {
-          "id": "mgt_costs",
-          "name": "Management"
+          "from": "2026-04-01",
+          "to": "2026-04-05",
+          "description": "Urlaub Alice"
         }
       ]
     },
     {
-      "id": "rev",
-      "name": "Einnahmen",
-      "accounts": []
+      "id": "DEV2",
+      "name": "Bob",
+      "email": "bob@example.com",
+      "role": "Junior Developer",
+      "hourly_rate": 55.0,
+      "workinghours_override": {
+        "description": "Teilzeit - nur Vormittags",
+        "days": ["mon", "tue", "wed", "thu", "fri"],
+        "hours": [
+          {
+            "from": "08:00",
+            "to": "12:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": "DES1",
+      "name": "Charlie",
+      "email": "charlie@example.com",
+      "role": "UI/UX Designer",
+      "hourly_rate": 70.0,
+      "vacation": [
+        {
+          "date": "2026-03-15",
+          "description": "Fortbildung"
+        }
+      ]
+    },
+    {
+      "id": "PM1",
+      "name": "Diana",
+      "email": "diana@example.com",
+      "role": "Project Manager",
+      "hourly_rate": 95.0
     }
   ],
-  "balance": {
-    "cost_account": "cost",
-    "rev_account": "rev"
-  },
+  "resources": [
+    {
+      "id": "R_DEV1",
+      "name": "Senior Developer",
+      "type": "person",
+      "person_id": "DEV1"
+    },
+    {
+      "id": "R_DEV2",
+      "name": "Junior Developer",
+      "type": "person",
+      "person_id": "DEV2"
+    },
+    {
+      "id": "R_DES1",
+      "name": "UI/UX Designer",
+      "type": "person",
+      "person_id": "DES1"
+    },
+    {
+      "id": "R_PM1",
+      "name": "Project Manager",
+      "type": "person",
+      "person_id": "PM1"
+    }
+  ],
   "tasks": [
     {
-      "id": "alltasks",
-      "name": "Software Projekt",
-      "tasks": [
-        {
-          "id": 1,
-          "name": "Projektstart",
-          "milestone": true,
-          "start": "2024-03-01"
-        },
-        {
-          "id": 1,
-          "name": "Design Phase",
-          "depends": [
-            {
-              "task_id": 1,
-              "gapduration": null
-            }
-          ],
-          "effort": "10d",
-          "allocate": [
-            "bob"
-          ]
-        },
-        {
-          "id": 3,
-          "name": "Implementierung",
-          "depends": [
-            {
-              "task_id": 2,
-              "gapduration": "2d"
-            }
-          ],
-          "effort": "20d",
-          "allocate": [
-            "alice"
-          ]
-        },
-        {
-          "id": 4,
-          "name": "Qualitätssicherung",
-          "depends": [
-            {
-              "task_id": 3,
-              "gapduration": "-10d",
-              "_comment": "Negativ = LEAD/Überlappung"
-            }
-          ],
-          "effort": "10d",
-          "allocate": [
-            "charlie"
-          ]
-        },
-        {
-          "id": 5,
-          "name": "Beta-Version fertig",
-          "milestone": true,
-          "depends": [
-            {
-              "task_id": 3,
-              "gapduration": null
-            }
-          ]
-        },
-        {
-          "id": 6,
-          "name": "Abnahme",
-          "depends": [
-            {
-              "task_id": 5,
-              "gapduration": "1w"
-            }
-          ],
-          "duration": "5d",
-          "allocate": [
-            "charlie"
-          ],
-          "charge": [
-            {
-              "amount": 500.0,
-              "event": "onstart"
-            }
-          ],
-          "chargeset": [
-            "mgt_costs"
-          ]
-        }
-      ]
-    }
-  ],
-  "reports": [
-    {
-      "id": "gantt_chart",
-      "type": "taskreport",
-      "name": "Gantt Chart",
-      "headline": "Projekt Zeitplan",
-      "columns": [
-        "hierarchindex",
-        "name",
-        "start",
-        "end",
-        "effort",
-        "chart"
-      ],
-      "timeformat": "%Y-%m-%d",
-      "loadunit": "days",
-      "hideresource": 0,
-      "filters": []
+      "id": 1,
+      "name": "Projektinitialisierung",
+      "duration": "4h",
+      "resources": ["R_PM1"],
+      "dependencies": []
     },
     {
-      "id": "cost_overview",
-      "type": "accountreport",
-      "name": "Kostenübersicht",
-      "headline": "Finanzstatus des Projekts",
-      "columns": [
-        "no",
-        "name",
-        "total",
-        "monthly"
-      ],
-      "filters": []
+      "id": 2,
+      "name": "Requirements Analyse",
+      "duration": "16h",
+      "resources": ["R_PM1", "R_DEV1"],
+      "dependencies": [1]
     },
     {
-      "id": "status_update",
-      "type": "taskreport",
-      "name": "StatusUpdate",
-      "headline": "Projektstatusbericht",
-      "columns": [
-        "hierarchindex",
-        "name",
-        "start",
-        "end",
-        "effort",
-        "complete",
-        "status",
-        "note"
-      ],
-      "filters": [
-        {
-          "directive": "hidetask",
-          "expression": "complete == 100",
-          "_comment": "Nur unfertige Aufgaben anzeigen"
-        }
-      ]
+      "id": 3,
+      "name": "UI/UX Design",
+      "duration": "24h",
+      "resources": ["R_DES1"],
+      "dependencies": [2]
     },
     {
-      "id": "journal",
-      "type": "textreport",
-      "name": "Journal",
-      "header": "### Projekt Logbuch",
-      "directives": [
-        "journalmessages"
-      ],
-      "filters": []
+      "id": 4,
+      "name": "Backend Entwicklung",
+      "duration": "40h",
+      "resources": ["R_DEV1"],
+      "dependencies": [2]
+    },
+    {
+      "id": 5,
+      "name": "Frontend Entwicklung",
+      "duration": "32h",
+      "resources": ["R_DEV2"],
+      "dependencies": [3, 4]
+    },
+    {
+      "id": 6,
+      "name": "Testing & QA",
+      "duration": "20h",
+      "resources": ["R_DEV1", "R_DEV2"],
+      "dependencies": [5]
+    },
+    {
+      "id": 7,
+      "name": "Deployment",
+      "duration": "8h",
+      "resources": ["R_DEV1"],
+      "dependencies": [6]
+    },
+    {
+      "id": 8,
+      "name": "Projektabschluss",
+      "duration": "4h",
+      "resources": ["R_PM1"],
+      "dependencies": [7]
     }
   ]
 }

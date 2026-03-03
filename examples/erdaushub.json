@@ -1,0 +1,54 @@
+{
+  "project": "Erdaushub 1000m3",
+  "total_volume": 1000,
+  "unit": "m3",
+  "resources": [
+    {
+      "id": "B1",
+      "name": "Kettenbagger",
+      "type": "machine",
+      "loading_speed_per_min": 1.5 
+    },
+    {
+      "id": "L1",
+      "name": "LKW 1",
+      "type": "truck",
+      "capacity": 15,
+      "transport_cycle_fixed": "40m"
+    },
+    {
+      "id": "L2",
+      "name": "LKW 2",
+      "type": "truck",
+      "capacity": 15,
+      "transport_cycle_fixed": "40m"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Initialisierung",
+      "duration": "15m",
+      "dependencies": []
+    },
+    {
+      "id": 2,
+      "name": "Belade-Zyklus",
+      "is_loop": true,
+      "loop_until": "total_volume <= 0",
+      "cycle_prefix": "F",
+      "subtasks": [
+        {
+          "name": "Beladen",
+          "required_resources": ["B1", "any_truck"],
+          "duration_formula": "resource.truck.capacity / resource.B1.loading_speed_per_min"
+        },
+        {
+          "name": "Transport-Umlauf",
+          "required_resources": ["current_truck"],
+          "duration": "resource.truck.transport_cycle_fixed"
+        }
+      ]
+    }
+  ]
+}

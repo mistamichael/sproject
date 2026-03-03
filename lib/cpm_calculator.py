@@ -8,7 +8,7 @@ Unterstützt JSON-Dateien mit vereinfachter Struktur (wie tankdesign.json).
 
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from datetime import datetime, timedelta
 
 try:
@@ -44,6 +44,9 @@ class SimpleCPMCalculator:
 
         self.cpm_data = {}
 
+        # Erkenne die dominante Zeiteinheit in den Tasks
+        self.time_unit = self._detect_time_unit()
+
     @classmethod
     def from_file(cls, file_path: Path) -> 'SimpleCPMCalculator':
         """Lädt Projektdaten aus JSON-Datei."""
@@ -51,7 +54,7 @@ class SimpleCPMCalculator:
             data = json.load(f)
         return cls(data)
 
-    def calculate(self) -> dict[int, dict[str, Any]]:
+    def calculate(self) -> dict[Union[int, str], dict[str, Any]]:
         """
         Führt die vollständige CPM-Berechnung durch.
 
@@ -99,6 +102,8 @@ class SimpleCPMCalculator:
                 return float(duration_str[:-1]) * 5  # 5 Arbeitstage
             elif duration_str.endswith('h'):
                 return float(duration_str[:-1]) / 8  # 8h Arbeitstag
+            elif duration_str.endswith('m'):
+                return float(duration_str[:-1]) / 480  # 8h * 60min = 480 Minuten pro Tag
             else:
                 # Fallback: versuche als Zahl zu parsen (Tage)
                 try:
@@ -107,6 +112,87 @@ class SimpleCPMCalculator:
                     return 0.0
 
         return 0.0
+
+    def _detect_time_unit(self) -> str:
+        """
+        Erkennt die dominante Zeiteinheit in den Tasks.
+
+        Returns:
+            'minutes', 'hours' oder 'days'
+        """
+        unit_counts = {'m': 0, 'h': 0, 'd': 0}
+
+        for task in self.tasks:
+            duration_value = task.get('duration', 0)
+            if isinstance(duration_value, str):
+                duration_str = duration_value.strip()
+                if duration_str.endswith('m'):
+                    unit_counts['m'] += 1
+                elif duration_str.endswith('h'):
+                    unit_counts['h'] += 1
+                elif duration_str.endswith('d'):
+                    unit_counts['d'] += 1
+                elif duration_str.endswith('w'):
+                    unit_counts['d'] += 1
+
+        # Finde die häufigste Einheit
+        max_unit = max(unit_counts, key=unit_counts.get)
+        if max_unit == 'm':
+            return 'minutes'
+        elif max_unit == 'h':
+            return 'hours'
+        else:
+            return 'days'
+
+    def _format_time_value(self, days: float) -> str:
+        """
+        Formatiert einen Zeitwert basierend auf der erkannten Zeiteinheit.
+
+        Args:
+            days: Zeitwert in Tagen
+
+        Returns:
+            Formatierter String (z.B. "120m", "2.5h", "1d")
+        """
+        if self.time_unit == 'minutes':
+            minutes = days * 480  # 8h * 60min
+            return f"{minutes:.1f}m"
+        elif self.time_unit == 'hours':
+            hours = days * 8
+            return f"{hours:.1f}h"
+        else:
+            return f"{days:.1f}d"
+
+    def _format_datetime_value(self, days: float) -> str:
+        """
+        Formatiert einen Zeitwert als Zeitangabe oder Datum+Uhrzeit.
+
+        Args:
+            days: Zeitwert in Tagen
+
+        Returns:
+            Formatierter String basierend auf Zeiteinheit
+        """
+        if self.time_unit == 'minutes':
+            minutes = days * 480
+            if minutes < 1440:  # < 24h
+                hours = minutes / 60
+                return f"{hours:.2f}h"
+            else:
+                # Berechne Datum und Uhrzeit
+                dt = self._add_workdays(self.start_date, days)
+                return dt.strftime('%Y-%m-%d %H:%M')
+        elif self.time_unit == 'hours':
+            hours = days * 8
+            if hours < 24:
+                return f"{hours:.2f}h"
+            else:
+                dt = self._add_workdays(self.start_date, days)
+                return dt.strftime('%Y-%m-%d %H:%M')
+        else:
+            # Tage-Format: verwende Datum
+            dt = self._add_workdays(self.start_date, days)
+            return dt.strftime('%Y-%m-%d')
 
     def _initialize_cpm_data(self) -> None:
         """Initialisiert die CPM-Datenstruktur für alle Tasks."""
@@ -225,7 +311,7 @@ class SimpleCPMCalculator:
             # Kritische Tasks haben Gesamtpuffer ≈ 0
             data['is_critical'] = abs(data['puffer']) < 0.001
 
-    def _topological_sort(self) -> list[int]:
+    def _topological_sort(self) -> list[Union[int, str]]:
         """
         Führt topologische Sortierung durch.
 
@@ -235,7 +321,7 @@ class SimpleCPMCalculator:
         visited = set()
         result = []
 
-        def visit(task_id: int):
+        def visit(task_id: Union[int, str]):
             if task_id in visited or task_id not in self.cpm_data:
                 return
             visited.add(task_id)
@@ -252,7 +338,7 @@ class SimpleCPMCalculator:
 
         return result
 
-    def get_critical_path(self) -> list[int]:
+    def get_critical_path(self) -> list[Union[int, str]]:
         """
         Gibt die Task-IDs auf dem kritischen Pfad zurück.
 
@@ -402,14 +488,15 @@ class SimpleCPMCalculator:
                 cpm = self.cpm_data[task_id]
 
                 # Füge CPM-Daten hinzu mit deutschen Begriffen
+                # Verwende formatierte Werte basierend auf der Zeiteinheit
                 task_copy['cpm'] = {
-                    'D': cpm['duration'],                  # Dauer
-                    'FB': cpm['faz'],                      # Frühester Beginn
-                    'FE': cpm['fez'],                      # Frühestes Ende
-                    'SB': cpm['saz'],                      # Spätester Beginn
-                    'SE': cpm['sez'],                      # Spätestes Ende
-                    'GP': round(cpm['puffer'], 2),         # Gesamtpuffer
-                    'FP': round(cpm['free_puffer'], 2),    # Freier Puffer
+                    'D': self._format_time_value(cpm['duration']),                  # Dauer
+                    'FB': self._format_datetime_value(cpm['faz']),                  # Frühester Beginn
+                    'FE': self._format_datetime_value(cpm['fez']),                  # Frühestes Ende
+                    'SB': self._format_datetime_value(cpm['saz']),                  # Spätester Beginn
+                    'SE': self._format_datetime_value(cpm['sez']),                  # Spätestes Ende
+                    'GP': self._format_time_value(cpm['puffer']),                   # Gesamtpuffer
+                    'FP': self._format_time_value(cpm['free_puffer']),              # Freier Puffer
                     'is_critical': cpm['is_critical'],
                 }
 
@@ -443,15 +530,16 @@ class SimpleCPMCalculator:
         if self.config:
             default_resource = self.config.get_default_resource()
 
+        # Berechne Projektdauer
+        max_fez = max(data['fez'] for data in self.cpm_data.values())
+
         # Erstelle Ausgabe-JSON
         output_data = {
             'project': self.project_name,
             'calculation_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'project_start': self.start_date.strftime('%Y-%m-%d'),
             'critical_path': self.get_critical_path(),
-            'project_duration': max(
-                data['fez'] for data in self.cpm_data.values()
-            ),
+            'project_duration': self._format_time_value(max_fez),
             'tasks': original_tasks,
         }
 
