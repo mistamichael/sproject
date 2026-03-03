@@ -1,6 +1,7 @@
 {
-  "project": "Pizza Project",
+  "project": "Pizzas Project",
   "project_start": "2026-03-03 18:00:00",
+  "comment": "zeigt das gleichzeitige ab-arbeiten vieler Aufgaben gleichzeitig durch Subtasks ",
   "tasks": [
     {
       "id": 1,
@@ -39,6 +40,15 @@
       "dependencies": []
     },
     {
+      "id": 11,
+      "name": "Pizza erstellen",
+      "subtasks": [7,8,9,10]
+      "anzahl": 10,
+      "dependencies": [6]
+    }
+  ],
+  "subtasks": [
+    {
       "id": 7,
       "name": "Teig ausrollen / formen",
       "duration": "1m",
@@ -53,15 +63,15 @@
     {
       "id": 9,
       "name": "Pizza backen",
-      "duration": "5m",
+      "duration": "3m",
       "dependencies": [6, 8]
     },
     {
       "id": 10,
       "name": "Pizza servieren",
       "duration": "1m",
-      "dependencies": [9]
+      "dependencies": [10]
     }
-  ]
+ ]
 }
 
