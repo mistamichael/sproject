@@ -238,7 +238,7 @@ class ProjectMeta(TJPBase):
             tasks: Liste aller Tasks
 
         Returns:
-            Dictionary mit task_id als Key und CPM-Daten (FAZ, FEZ, SAZ, SEZ, Puffer)
+            Dictionary mit task_id als Key und CPM-Daten (FB, FE, SB, SE, GP)
         """
         from datetime import datetime, timedelta
 
@@ -251,22 +251,22 @@ class ProjectMeta(TJPBase):
             duration = self._parse_duration(task.duration or task.effort or "0d")
             cpm_data[task.id] = {
                 'duration': duration,
-                'faz': 0,  # Frühester Anfangszeitpunkt
-                'fez': 0,  # Frühester Endzeitpunkt
-                'saz': 0,  # Spätester Anfangszeitpunkt
-                'sez': 0,  # Spätester Endzeitpunkt
-                'puffer': 0,  # Pufferzeit
+                'FB': 0,  # Frühester Beginn
+                'FE': 0,  # Frühestes Ende
+                'SB': 0,  # Spätester Beginn
+                'SE': 0,  # Spätestes Ende
+                'GP': 0,  # Gesamtpuffer
             }
 
-        # Vorwärtsrechnung (FAZ, FEZ)
+        # Vorwärtsrechnung (FB, FE)
         self._forward_pass(tasks, task_dict, cpm_data)
 
-        # Rückwärtsrechnung (SAZ, SEZ)
+        # Rückwärtsrechnung (SB, SE)
         self._backward_pass(tasks, task_dict, cpm_data)
 
         # Pufferzeiten berechnen
         for task_id, data in cpm_data.items():
-            data['puffer'] = data['saz'] - data['faz']
+            data['GP'] = data['SB'] - data['FB']
 
         return cpm_data
 
@@ -312,30 +312,30 @@ class ProjectMeta(TJPBase):
         for task in tasks:
             visit(task.id)
 
-        # Berechne FAZ und FEZ
+        # Berechne FB und FE
         for task_id in sorted_tasks:
             task = task_dict[task_id]
             data = cpm_data[task_id]
 
-            # FAZ ist Maximum aller FEZ der Vorgänger
+            # FB ist Maximum aller FE der Vorgänger
             if task.depends:
-                max_fez = 0
+                max_fe = 0
                 for dep in task.depends:
                     pred_data = cpm_data.get(dep.task_id)
                     if pred_data:
                         gap = dep.gap_days() or 0
-                        max_fez = max(max_fez, pred_data['fez'] + gap)
-                data['faz'] = max_fez
+                        max_fe = max(max_fe, pred_data['FE'] + gap)
+                data['FB'] = max_fe
             else:
-                data['faz'] = 0
+                data['FB'] = 0
 
-            # FEZ = FAZ + Duration
-            data['fez'] = data['faz'] + data['duration']
+            # FE = FB + Duration
+            data['FE'] = data['FB'] + data['duration']
 
     def _backward_pass(self, tasks: list['Task'], task_dict: dict, cpm_data: dict) -> None:
-        """Rückwärtsrechnung: Berechnet SAZ und SEZ für alle Tasks."""
-        # Finde maximalen FEZ (Projektende)
-        max_fez = max(data['fez'] for data in cpm_data.values())
+        """Rückwärtsrechnung: Berechnet SB und SE für alle Tasks."""
+        # Finde maximales FE (Projektende)
+        max_fe = max(data['FE'] for data in cpm_data.values())
 
         # Topologische Sortierung rückwärts
         visited = set()
@@ -364,12 +364,12 @@ class ProjectMeta(TJPBase):
             if task.id not in tasks_with_successors:
                 visit(task.id)
 
-        # Initialisiere SEZ für Tasks ohne Nachfolger
+        # Initialisiere SE für Tasks ohne Nachfolger
         for task_id in cpm_data:
             if task_id not in tasks_with_successors:
-                cpm_data[task_id]['sez'] = cpm_data[task_id]['fez']
+                cpm_data[task_id]['SE'] = cpm_data[task_id]['FE']
 
-        # Berechne SEZ und SAZ rückwärts
+        # Berechne SE und SB rückwärts
         for task_id in sorted_tasks:
             task = task_dict[task_id]
             data = cpm_data[task_id]
@@ -381,20 +381,20 @@ class ProjectMeta(TJPBase):
                     if dep.task_id == task_id:
                         successors.append((other_task.id, dep))
 
-            # SEZ ist Minimum aller SAZ der Nachfolger
+            # SE ist Minimum aller SB der Nachfolger
             if successors:
-                min_saz = float('inf')
+                min_sb = float('inf')
                 for succ_id, dep in successors:
                     succ_data = cpm_data[succ_id]
                     gap = dep.gap_days() or 0
-                    min_saz = min(min_saz, succ_data['saz'] - gap)
-                data['sez'] = min_saz
-            elif 'sez' not in data or data['sez'] == 0:
-                # Endknoten: SEZ = FEZ
-                data['sez'] = data['fez']
+                    min_sb = min(min_sb, succ_data['SB'] - gap)
+                data['SE'] = min_sb
+            elif 'SE' not in data or data['SE'] == 0:
+                # Endknoten: SE = FE
+                data['SE'] = data['FE']
 
-            # SAZ = SEZ - Duration
-            data['saz'] = data['sez'] - data['duration']
+            # SB = SE - Duration
+            data['SB'] = data['SE'] - data['duration']
 
     def get_critical_path(self, tasks: list['Task']) -> list[str]:
         """
@@ -408,10 +408,10 @@ class ProjectMeta(TJPBase):
         """
         cpm_data = self.calculate_cpm(tasks)
 
-        # Kritische Tasks haben Puffer = 0
+        # Kritische Tasks haben Gesamtpuffer (GP) = 0
         critical_tasks = [
             task_id for task_id, data in cpm_data.items()
-            if abs(data['puffer']) < 0.001  # Floating-point Vergleich
+            if abs(data['GP']) < 0.001  # Floating-point Vergleich
         ]
 
         return critical_tasks
@@ -588,6 +588,37 @@ class ReportsFile(TJPBase):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Konsolidierte Konfigurationsdatei
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ConsolidatedConfigFile(TJPBase):
+    """
+    Konsolidierte Konfigurationsdatei, die persons, workinghours_absences
+    und reports in einer Datei vereint.
+    """
+    persons: dict                     # enthält resource_groups
+    workinghours_absences: dict       # enthält global_workinghours, etc.
+    reports: list[Report]
+
+    @classmethod
+    def from_json(cls, path: Union[str, Path]) -> ConsolidatedConfigFile:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        return cls.model_validate(data)
+
+    def to_persons_file(self) -> PersonsFile:
+        """Extrahiert PersonsFile aus der konsolidierten Struktur."""
+        return PersonsFile.model_validate(self.persons)
+
+    def to_workinghours_file(self) -> WorkingHoursFile:
+        """Extrahiert WorkingHoursFile aus der konsolidierten Struktur."""
+        return WorkingHoursFile.model_validate(self.workinghours_absences)
+
+    def to_reports_file(self) -> ReportsFile:
+        """Extrahiert ReportsFile aus der konsolidierten Struktur."""
+        return ReportsFile(reports=self.reports)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # 5. TJPRegistry – lädt alles und löst Querverweise auf
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -634,6 +665,31 @@ class TJPRegistry:
             wh      = WorkingHoursFile.from_json(wh_path),
             project = ProjectFile.from_json(project_path),
             reports = ReportsFile.from_json(reports_path),
+        )
+
+    @classmethod
+    def load_consolidated(
+        cls,
+        config_path: Union[str, Path],
+        project_path: Union[str, Path],
+    ) -> TJPRegistry:
+        """
+        Lädt eine konsolidierte Konfigurationsdatei (persons + workinghours + reports)
+        zusammen mit einer separaten project.json.
+
+        Args:
+            config_path: Pfad zur konsolidierten Config-Datei
+            project_path: Pfad zur project.json
+
+        Returns:
+            TJPRegistry-Instanz mit allen geladenen Daten
+        """
+        config = ConsolidatedConfigFile.from_json(config_path)
+        return cls(
+            persons = config.to_persons_file(),
+            wh      = config.to_workinghours_file(),
+            project = ProjectFile.from_json(project_path),
+            reports = config.to_reports_file(),
         )
 
     # ── Querverweise auflösen ────────────────────────────────────────────────

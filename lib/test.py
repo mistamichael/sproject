@@ -21,6 +21,7 @@ from tjp_models import (
     ProjectFile,
     Report,
     ReportsFile,
+    ConsolidatedConfigFile,
     Absence,
     TimeSlot,
     DaySchedule,

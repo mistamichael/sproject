@@ -136,7 +136,7 @@ def load_registry(cfg_dir: Path, project_file: Path, logger: logging.Logger) -> 
 
 def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = None, logger: Optional[logging.Logger] = None) -> bool:
     """
-    Erstellt ein Abhängigkeitsdiagramm aus einer Projektdatei.
+    Erstellt ein Abhängigkeitsdiagramm aus einer Projektdatei mit CPM-Daten.
 
     Args:
         project_file: Pfad zur Projektdatei (JSON)
@@ -163,6 +163,11 @@ def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = Non
                 logger.error(f"Keine 'tasks' in Projektdatei gefunden: {project_file}")
             return False
 
+        # Berechne CPM-Daten
+        calc = SimpleCPMCalculator(data)
+        calc.calculate()
+        cpm_data = calc.cpm_data
+
         # Erstelle gerichteten Graphen
         G = nx.DiGraph()
 
@@ -170,11 +175,26 @@ def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = Non
         for task in data['tasks']:
             task_id = task['id']
             task_name = task.get('name', f'Task {task_id}')
-            duration = task.get('duration', 0)
 
-            # Füge Knoten mit Label hinzu
-            label = f"{task_id}: {task_name}\n({duration}h)"
-            G.add_node(task_id, label=label)
+            # Hole CPM-Daten für diesen Task
+            cpm = cpm_data.get(task_id, {})
+            fb = cpm.get('faz', 0)
+            fe = cpm.get('fez', 0)
+            sb = cpm.get('saz', 0)
+            se = cpm.get('sez', 0)
+            gp = cpm.get('puffer', 0)
+            fp = cpm.get('free_puffer', 0)
+            is_critical = cpm.get('is_critical', False)
+
+            # Erstelle Label mit CPM-Informationen
+            # Format: FB am Anfang, FE am Ende der ersten Zeile
+            #         SB am Anfang, SE am Ende der zweiten Zeile
+            #         GP und FP in separatem Bereich
+            G.add_node(task_id,
+                      task_name=task_name,
+                      fb=fb, fe=fe, sb=sb, se=se,
+                      gp=gp, fp=fp,
+                      is_critical=is_critical)
 
             # Füge Kanten für Abhängigkeiten hinzu
             for dep in task.get('dependencies', []):
@@ -226,39 +246,82 @@ def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = Non
                                arrowstyle='->', width=2,
                                connectionstyle='arc3,rad=0.1')
 
-        # Zeichne Rechteck-Knoten mit matplotlib patches
-        from matplotlib.patches import FancyBboxPatch
+        # Zeichne Rechteck-Knoten mit matplotlib patches und CPM-Daten
+        from matplotlib.patches import FancyBboxPatch, Rectangle
         ax = plt.gca()
 
-        labels = nx.get_node_attributes(G, 'label')
         for node, (x, y) in pos.items():
-            # Zeichne Rechteck (Höhe für max 4 Textzeilen)
-            # Höhe: ca. 0.15 pro Zeile + Padding = 0.7 für 4 Zeilen
-            bbox = FancyBboxPatch(
-                (x - 0.9, y - 0.35), 1.8, 0.7,
+            # Hole Node-Attribute
+            node_attrs = G.nodes[node]
+            task_name = node_attrs.get('task_name', str(node))
+            fb = node_attrs.get('fb', 0)
+            fe = node_attrs.get('fe', 0)
+            sb = node_attrs.get('sb', 0)
+            se = node_attrs.get('se', 0)
+            gp = node_attrs.get('gp', 0)
+            fp = node_attrs.get('fp', 0)
+            is_critical = node_attrs.get('is_critical', False)
+
+            # Farben basierend auf kritischem Pfad
+            if is_critical:
+                box_color = '#ffcccc'  # Helles Rot für kritische Tasks
+                edge_color = '#cc0000'  # Dunkelrot
+                edge_width = 3
+            else:
+                box_color = 'lightblue'
+                edge_color = 'darkblue'
+                edge_width = 2
+
+            # Hauptbox (größer für CPM-Daten)
+            # Breite: 2.2, Höhe: 1.2
+            main_box = FancyBboxPatch(
+                (x - 1.1, y - 0.6), 2.2, 1.2,
                 boxstyle="round,pad=0.05",
-                edgecolor='darkblue',
-                facecolor='lightblue',
-                linewidth=2,
+                edgecolor=edge_color,
+                facecolor=box_color,
+                linewidth=edge_width,
                 alpha=0.9
             )
-            ax.add_patch(bbox)
+            ax.add_patch(main_box)
 
-            # Füge Text hinzu
-            label_text = labels.get(node, str(node))
-            plt.text(x, y, label_text,
-                    horizontalalignment='center',
-                    verticalalignment='center',
-                    fontsize=7,
-                    fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.2',
-                             facecolor='lightblue',
-                             edgecolor='none',
-                             alpha=0))
+            # Obere Zeile: FB links, Task-Name mitte, FE rechts
+            plt.text(x - 0.95, y + 0.35, f'{fb:.0f}',
+                    ha='left', va='center', fontsize=8, fontweight='bold')
+            plt.text(x, y + 0.35, task_name,
+                    ha='center', va='center', fontsize=9, fontweight='bold')
+            plt.text(x + 0.95, y + 0.35, f'{fe:.0f}',
+                    ha='right', va='center', fontsize=8, fontweight='bold')
+
+            # Mittlere Zeile: Task-ID
+            plt.text(x, y + 0.05, f'ID: {node}',
+                    ha='center', va='center', fontsize=7, style='italic')
+
+            # Untere Zeile: SB links, SE rechts
+            plt.text(x - 0.95, y - 0.25, f'{sb:.0f}',
+                    ha='left', va='center', fontsize=8, fontweight='bold')
+            plt.text(x + 0.95, y - 0.25, f'{se:.0f}',
+                    ha='right', va='center', fontsize=8, fontweight='bold')
+
+            # Puffer-Kasten unter dem Hauptkasten
+            puffer_box_y = y - 0.9
+            puffer_box = Rectangle(
+                (x - 1.1, puffer_box_y - 0.15), 2.2, 0.3,
+                edgecolor=edge_color,
+                facecolor='lightyellow' if is_critical else 'lightgreen',
+                linewidth=1.5,
+                alpha=0.8
+            )
+            ax.add_patch(puffer_box)
+
+            # Puffer-Text
+            plt.text(x - 0.55, puffer_box_y, f'GP: {gp:.1f}',
+                    ha='center', va='center', fontsize=7, fontweight='bold')
+            plt.text(x + 0.55, puffer_box_y, f'FP: {fp:.1f}',
+                    ha='center', va='center', fontsize=7, fontweight='bold')
 
         project_name = data.get('project', project_file.stem)
-        plt.title(f'{project_name} - Task Dependencies',
-                  fontsize=16, fontweight='bold')
+        plt.title(f'{project_name} - Netzplan mit CPM-Daten\n(FB=Frühester Beginn, FE=Frühestes Ende, SB=Spätester Beginn, SE=Spätestes Ende, GP=Gesamtpuffer, FP=Freier Puffer)',
+                  fontsize=14, fontweight='bold')
         plt.axis('off')
         plt.tight_layout()
 

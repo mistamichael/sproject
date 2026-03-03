@@ -19,6 +19,7 @@ set "PV_CFG=%PROJECT%\cfg"
 set "PV_LOG=%PROJECT%\log"
 set "PV_RESULTS=%PROJECT%\results"
 set "PV_EXAMPLES=%PROJECT%\examples"
+set "PV_EXAMPLE_RESULTS=%PV_EXAMPLES%\results"
 
 REM Python-Pfad erweitern (nur wenn noch nicht vorhanden)
 echo %PYTHONPATH% | find /i "%PV_LIB%" >nul

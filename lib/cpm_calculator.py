@@ -72,12 +72,49 @@ class SimpleCPMCalculator:
 
         return self.cpm_data
 
+    def _parse_duration(self, duration_value) -> float:
+        """
+        Parst Duration-Wert zu Tagen (float).
+        Unterstützt: Zahlen (10), Strings mit Einheit ("10d", "2w", "8h")
+
+        Args:
+            duration_value: Kann int, float oder str sein
+
+        Returns:
+            Dauer in Tagen als float
+        """
+        # Falls bereits eine Zahl, direkt zurückgeben
+        if isinstance(duration_value, (int, float)):
+            return float(duration_value)
+
+        # String-Verarbeitung
+        if isinstance(duration_value, str):
+            duration_str = duration_value.strip()
+            if not duration_str or duration_str == "0":
+                return 0.0
+
+            if duration_str.endswith('d'):
+                return float(duration_str[:-1])
+            elif duration_str.endswith('w'):
+                return float(duration_str[:-1]) * 5  # 5 Arbeitstage
+            elif duration_str.endswith('h'):
+                return float(duration_str[:-1]) / 8  # 8h Arbeitstag
+            else:
+                # Fallback: versuche als Zahl zu parsen (Tage)
+                try:
+                    return float(duration_str)
+                except ValueError:
+                    return 0.0
+
+        return 0.0
+
     def _initialize_cpm_data(self) -> None:
         """Initialisiert die CPM-Datenstruktur für alle Tasks."""
         # Erstmal alle Tasks erfassen
         for task in self.tasks:
             task_id = task['id']
-            duration = task.get('duration', 0)
+            duration_raw = task.get('duration', 0)
+            duration = self._parse_duration(duration_raw)
 
             self.cpm_data[task_id] = {
                 'id': task_id,
