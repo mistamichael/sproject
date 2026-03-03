@@ -5,61 +5,61 @@
     {
       "id": 1,
       "name": "Zutaten abwiegen & bereitstellen",
-      "duration": "0.1h",
+      "duration": "5m",
       "dependencies": []
     },
     {
       "id": 2,
       "name": "Teig mischen & kneten",
-      "duration": "0.2h",
+      "duration": "10m",
       "dependencies": [1]
     },
     {
       "id": 3,
       "name": "Teig gehen lassen (Gare)",
-      "duration": "1h",
+      "duration": "60m",
       "dependencies": [2]
     },
     {
       "id": 4,
       "name": "Soße zubereiten",
-      "duration": "0.2h",
+      "duration": "10m",
       "dependencies": [1]
     },
     {
       "id": 5,
       "name": "Belag schneiden (Käse, Gemüse, etc.)",
-      "duration": "0.2h",
+      "duration": "10m",
       "dependencies": [1]
     },
     {
       "id": 6,
       "name": "Ofen vorheizen",
-      "duration": "0.3h",
+      "duration": "20m",
       "dependencies": []
     },
     {
       "id": 7,
       "name": "Teig ausrollen / formen",
-      "duration": "0.1h",
+      "duration": "5m",
       "dependencies": [3]
     },
     {
       "id": 8,
       "name": "Pizza belegen (Soße + Belag)",
-      "duration": "0.1h",
+      "duration": "5m",
       "dependencies": [4, 5, 7]
     },
     {
       "id": 9,
       "name": "Pizza backen",
-      "duration": "0.25h",
+      "duration": "15m",
       "dependencies": [6, 8]
     },
     {
       "id": 10,
       "name": "Pizza servieren & genießen",
-      "duration": "0.05h",
+      "duration": "2m",
       "dependencies": [9]
     }
   ]

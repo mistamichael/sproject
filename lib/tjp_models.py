@@ -276,7 +276,7 @@ class ProjectMeta(TJPBase):
     def _parse_duration(self, duration_str: str) -> float:
         """
         Parst Duration-String zu Tagen (float).
-        Unterstützt: 10d, 2w, 8h, etc.
+        Unterstützt: 10d, 2w, 8h, 30m, etc.
         """
         duration_str = duration_str.strip()
         if not duration_str or duration_str == "0":
@@ -288,6 +288,9 @@ class ProjectMeta(TJPBase):
             return float(duration_str[:-1]) * 5  # 5 Arbeitstage
         elif duration_str.endswith('h'):
             return float(duration_str[:-1]) / 8  # 8h Arbeitstag
+        elif duration_str.endswith('m'):
+            # Minuten: 60m = 1h, 8h = 1 Arbeitstag
+            return float(duration_str[:-1]) / (8 * 60)
         else:
             # Fallback: versuche als Zahl zu parsen (Tage)
             try:

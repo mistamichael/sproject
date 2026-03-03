@@ -25,7 +25,7 @@ class CPMCalculationMixin:
     def _parse_duration(self, duration_value) -> float:
         """
         Parst Duration-Wert zu Tagen (float).
-        Unterstützt: Zahlen (10), Strings mit Einheit ("10d", "2w", "8h")
+        Unterstützt: Zahlen (10), Strings mit Einheit ("10d", "2w", "8h", "30m")
         """
         if isinstance(duration_value, (int, float)):
             return float(duration_value)
@@ -41,6 +41,9 @@ class CPMCalculationMixin:
                 return float(duration_str[:-1]) * 5  # 5 Arbeitstage
             elif duration_str.endswith('h'):
                 return float(duration_str[:-1]) / 8  # 8h Arbeitstag
+            elif duration_str.endswith('m'):
+                # Minuten: 60m = 1h, 8h = 1 Arbeitstag
+                return float(duration_str[:-1]) / (8 * 60)
             else:
                 try:
                     return float(duration_str)
