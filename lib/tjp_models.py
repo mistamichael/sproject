@@ -18,7 +18,7 @@ from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Import CPM-Klassen aus separatem Modul
-from cpm_models import CPMCalculationMixin, SimpleTaskFile
+from cpm_models import CPMCalculationMixin
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -436,7 +436,7 @@ class Balance(TJPBase):
 
 class Dependency(TJPBase):
     """Aufgaben-Abhängigkeit mit optionalem Gap/Lead."""
-    task_id:     str
+    task_id:     int | str
     gapduration: Optional[str] = None   # positiv = Gap, negativ = Lead
 
     def is_lead(self) -> bool:
@@ -462,7 +462,7 @@ class Charge(TJPBase):
 
 class Task(TJPBase):
     """Projektaufgabe oder Meilenstein, optional mit Unteraufgaben."""
-    id:        str
+    id:        int | str
     name:      str
     milestone: bool             = False
     start:     Optional[str]    = None
@@ -502,7 +502,7 @@ class Task(TJPBase):
 Task.model_rebuild()
 
 
-# CPMCalculationMixin und SimpleTaskFile werden aus cpm_models.py importiert
+# CPMCalculationMixin wird aus cpm_models.py importiert
 
 
 class ProjectFile(TJPBase, CPMCalculationMixin):
@@ -661,16 +661,70 @@ class TJPRegistry:
     @classmethod
     def load(
         cls,
-        persons_path: Union[str, Path],
-        wh_path:      Union[str, Path],
         project_path: Union[str, Path],
-        reports_path: Union[str, Path],
+        persons_path: Optional[Union[str, Path]] = None,
+        wh_path:      Optional[Union[str, Path]] = None,
+        reports_path: Optional[Union[str, Path]] = None,
     ) -> TJPRegistry:
+        """
+        Lädt TJPRegistry aus Projektdatei und optionalen Config-Dateien.
+
+        Fehlende Config-Dateien werden mit Defaults ergänzt.
+
+        Args:
+            project_path: Pfad zur Projektdatei (erforderlich)
+            persons_path: Pfad zu persons.json (optional, verwendet Default falls None)
+            wh_path: Pfad zu workinghours_absences.json (optional, verwendet Default falls None)
+            reports_path: Pfad zu reports.json (optional, verwendet Default falls None)
+
+        Returns:
+            TJPRegistry-Instanz
+        """
+        # JSON einmal laden – unterstützt sowohl "klassische" project.json
+        # als auch konsolidierte Dateien wie examples/software_simple.json
+        project_path = Path(project_path)
+        data = json.loads(project_path.read_text(encoding="utf-8"))
+
+        # Projektteil validieren (ignoriert fremde Top-Level-Keys wie persons, workinghours_absences, reports)
+        project = ProjectFile.model_validate(data)
+
+        # Persons: bevorzugt separate Datei, sonst aus konsolidierter Datei, sonst Defaults
+        if persons_path and Path(persons_path).exists():
+            persons = PersonsFile.from_json(persons_path)
+        elif "persons" in data:
+            persons = PersonsFile.model_validate(data["persons"])
+        else:
+            persons = PersonsFile(resource_groups=[], individual_resources=[])
+
+        # WorkingHours: bevorzugt separate Datei, sonst aus konsolidierter Datei, sonst Default Mo–Fr 8h
+        if wh_path and Path(wh_path).exists():
+            wh = WorkingHoursFile.from_json(wh_path)
+        elif "workinghours_absences" in data:
+            wh = WorkingHoursFile.model_validate(data["workinghours_absences"])
+        else:
+            wh = WorkingHoursFile(
+                global_workinghours=WorkingHours(
+                    id="default",
+                    hours_per_day=8.0,
+                    workdays=[1, 2, 3, 4, 5],  # Mo–Fr
+                    absences=[]
+                ),
+                workinghours_overrides=[]
+            )
+
+        # Reports: bevorzugt separate Datei, sonst aus konsolidierter Datei (Top-Level "reports"), sonst leer
+        if reports_path and Path(reports_path).exists():
+            reports = ReportsFile.from_json(reports_path)
+        elif "reports" in data:
+            reports = ReportsFile.model_validate({"reports": data["reports"]})
+        else:
+            reports = ReportsFile(reports=[])
+
         return cls(
-            persons = PersonsFile.from_json(persons_path),
-            wh      = WorkingHoursFile.from_json(wh_path),
-            project = ProjectFile.from_json(project_path),
-            reports = ReportsFile.from_json(reports_path),
+            persons = persons,
+            wh      = wh,
+            project = project,
+            reports = reports,
         )
 
     @classmethod

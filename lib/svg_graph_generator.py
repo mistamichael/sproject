@@ -19,7 +19,7 @@ try:
 except ImportError:
     HAS_GRAPH_SUPPORT = False
 
-from tjp_models import SimpleTaskFile
+from cpm_models import SimpleTaskFile
 
 
 class SVGGraphConfig:
@@ -65,6 +65,10 @@ class SVGGraphConfig:
         edge_cfg = self.config['edge']
         self.edge_stroke_width = edge_cfg['stroke_width']
         self.arrow_size = edge_cfg['arrow_size']
+        # Offset der Verbindungspunkte relativ zum Node-Ursprung
+        # Fallback: Mittelpunkt des konfigurierten Node-Rechtecks
+        self.edge_offset_x = edge_cfg.get('offset_x', self.node_width / 2)
+        self.edge_offset_y = edge_cfg.get('offset_y', self.node_height / 2)
 
         # Platzhalter
         self.placeholders = self.config['placeholders']
@@ -196,8 +200,8 @@ class SVGGraphGenerator:
             SVG-String mit allen Kanten
         """
         svg_edges = []
-        node_center_x = self.config.node_width / 2
-        node_center_y = self.config.node_height / 2
+        node_center_x = self.config.edge_offset_x
+        node_center_y = self.config.edge_offset_y
 
         for task in data['tasks']:
             task_id = task['id']

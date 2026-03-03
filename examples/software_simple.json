@@ -4,7 +4,6 @@
   "_refs": {
     "holidays": "${PV_CFG}/holidays_BY_2026.json"
   },
-
   "persons": {
     "resource_groups": [
       {
@@ -49,26 +48,39 @@
       }
     ]
   },
-
   "workinghours_absences": {
     "global_workinghours": {
       "id": "wh_global",
       "description": "Standardarbeitszeit für alle Ressourcen",
       "schedules": [
         {
-          "days": ["mon", "tue", "wed", "thu", "fri"],
+          "days": [
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri"
+          ],
           "hours": [
-            {"from": "09:00", "to": "12:00"},
-            {"from": "13:00", "to": "18:00"}
+            {
+              "from": "09:00",
+              "to": "12:00"
+            },
+            {
+              "from": "13:00",
+              "to": "18:00"
+            }
           ]
         },
         {
-          "days": ["sat", "sun"],
+          "days": [
+            "sat",
+            "sun"
+          ],
           "hours": "off"
         }
       ]
     },
-
     "workinghours_overrides": [
       {
         "id": "wh_bob_parttime",
@@ -76,29 +88,39 @@
         "resource_id": "bob",
         "schedules": [
           {
-            "days": ["mon", "tue", "wed", "thu", "fri"],
+            "days": [
+              "mon",
+              "tue",
+              "wed",
+              "thu",
+              "fri"
+            ],
             "hours": [
-              {"from": "08:00", "to": "12:00"}
+              {
+                "from": "08:00",
+                "to": "12:00"
+              }
             ]
           },
           {
-            "days": ["sat", "sun"],
+            "days": [
+              "sat",
+              "sun"
+            ],
             "hours": "off"
           }
         ]
       }
     ],
-
     "global_leaves": [],
     "_comment_global_leaves": "Feiertage werden aus ${PV_CFG}/holidays_BY_2026.json geladen (siehe _refs)",
-
     "personal_absences": [
       {
         "resource_id": "alice",
         "type": "vacation",
         "name": "Urlaub Alice",
         "from": "2024-04-01",
-        "to":   "2024-04-05"
+        "to": "2024-04-05"
       },
       {
         "resource_id": "charlie",
@@ -108,33 +130,181 @@
       }
     ]
   },
-
+  "project": {
+    "id": "Beispiel_Projekt",
+    "name": "Beispiel_Projekt",
+    "version": "1.0",
+    "start": "2024-03-01",
+    "duration": "+6m",
+    "timezone": "Europe/Berlin",
+    "timeformat": "%Y-%m-%d",
+    "currency": "EUR",
+    "now": "2024-03-01",
+    "workinghours_ref": "wh_global"
+  },
+  "accounts": [
+    {
+      "id": "cost",
+      "name": "Projektkosten",
+      "accounts": [
+        {
+          "id": "dev_costs",
+          "name": "Entwicklung"
+        },
+        {
+          "id": "mgt_costs",
+          "name": "Management"
+        }
+      ]
+    },
+    {
+      "id": "rev",
+      "name": "Einnahmen",
+      "accounts": []
+    }
+  ],
+  "balance": {
+    "cost_account": "cost",
+    "rev_account": "rev"
+  },
+  "tasks": [
+    {
+      "id": "alltasks",
+      "name": "Software Projekt",
+      "tasks": [
+        {
+          "id": 1,
+          "name": "Projektstart",
+          "milestone": true,
+          "start": "2024-03-01"
+        },
+        {
+          "id": 1,
+          "name": "Design Phase",
+          "depends": [
+            {
+              "task_id": 1,
+              "gapduration": null
+            }
+          ],
+          "effort": "10d",
+          "allocate": [
+            "bob"
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Implementierung",
+          "depends": [
+            {
+              "task_id": 2,
+              "gapduration": "2d"
+            }
+          ],
+          "effort": "20d",
+          "allocate": [
+            "alice"
+          ]
+        },
+        {
+          "id": 4,
+          "name": "Qualitätssicherung",
+          "depends": [
+            {
+              "task_id": 3,
+              "gapduration": "-10d",
+              "_comment": "Negativ = LEAD/Überlappung"
+            }
+          ],
+          "effort": "10d",
+          "allocate": [
+            "charlie"
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Beta-Version fertig",
+          "milestone": true,
+          "depends": [
+            {
+              "task_id": 3,
+              "gapduration": null
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Abnahme",
+          "depends": [
+            {
+              "task_id": 5,
+              "gapduration": "1w"
+            }
+          ],
+          "duration": "5d",
+          "allocate": [
+            "charlie"
+          ],
+          "charge": [
+            {
+              "amount": 500.0,
+              "event": "onstart"
+            }
+          ],
+          "chargeset": [
+            "mgt_costs"
+          ]
+        }
+      ]
+    }
+  ],
   "reports": [
     {
-      "id":       "gantt_chart",
-      "type":     "taskreport",
-      "name":     "Gantt Chart",
+      "id": "gantt_chart",
+      "type": "taskreport",
+      "name": "Gantt Chart",
       "headline": "Projekt Zeitplan",
-      "columns":  ["hierarchindex", "name", "start", "end", "effort", "chart"],
-      "timeformat":   "%Y-%m-%d",
-      "loadunit":     "days",
+      "columns": [
+        "hierarchindex",
+        "name",
+        "start",
+        "end",
+        "effort",
+        "chart"
+      ],
+      "timeformat": "%Y-%m-%d",
+      "loadunit": "days",
       "hideresource": 0,
       "filters": []
     },
     {
-      "id":       "cost_overview",
-      "type":     "accountreport",
-      "name":     "Kostenübersicht",
+      "id": "cost_overview",
+      "type": "accountreport",
+      "name": "Kostenübersicht",
       "headline": "Finanzstatus des Projekts",
-      "columns":  ["no", "name", "total", "monthly"],
-      "filters":  []
+      "columns": [
+        "no",
+        "name",
+        "total",
+        "monthly"
+      ],
+      "filters": []
     },
     {
-      "id":       "status_update",
-      "type":     "taskreport",
-      "name":     "StatusUpdate",
+      "id": "status_update",
+      "type": "taskreport",
+      "name": "StatusUpdate",
       "headline": "Projektstatusbericht",
-      "columns":  ["hierarchindex", "name", "start", "end", "effort", "complete", "status", "note"],
+      "columns": [
+        "hierarchindex",
+        "name",
+        "start",
+        "end",
+        "effort",
+        "complete",
+        "status",
+        "note"
+      ],
       "filters": [
         {
           "directive": "hidetask",
@@ -144,7 +314,7 @@
       ]
     },
     {
-      "id":   "journal",
+      "id": "journal",
       "type": "textreport",
       "name": "Journal",
       "header": "### Projekt Logbuch",

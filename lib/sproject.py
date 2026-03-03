@@ -14,15 +14,9 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 
-try:
-    import matplotlib.pyplot as plt
-    import networkx as nx
-    HAS_GRAPH_SUPPORT = True
-except ImportError:
-    HAS_GRAPH_SUPPORT = False
-
-from tjp_models import TJPRegistry, SimpleTaskFile
+from tjp_models import TJPRegistry
 from cpm_calculator import SimpleCPMCalculator
+from svg_graph_generator import SVGGraphGenerator
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
@@ -91,267 +85,64 @@ def find_project_files(data_dir: Path) -> List[Path]:
 
 def load_registry(cfg_dir: Path, project_file: Path, logger: logging.Logger) -> Optional[TJPRegistry]:
     """
-    Lädt TJPRegistry mit allen Konfigurationsdateien.
+    Lädt TJPRegistry aus der Projektdatei.
+
+    Alle Konfigurationen (Personen, Arbeitszeiten, Reports) werden zukünftig
+    in der Projekt-JSON mitgeliefert. Fehlende Angaben werden mit Defaults ergänzt.
 
     Args:
-        cfg_dir: Verzeichnis mit persons.json, reports.json, workinghours_absences.json
+        cfg_dir: Verzeichnis mit Konfigurationsdateien (für zukünftige Verwendung)
         project_file: Pfad zur Projektdatei
         logger: Logger-Instanz
 
     Returns:
         TJPRegistry-Instanz oder None bei Fehler
     """
-    persons_path = cfg_dir / "persons.json"
-    wh_path = cfg_dir / "workinghours_absences.json"
-    reports_path = cfg_dir / "reports.json"
-
-    # Prüfe nur Config-Dateien (nicht project_file, das wird später separat geprüft)
-    config_files = [persons_path, wh_path, reports_path]
-
-    # Wenn Config-Dateien fehlen, gib Warning und None zurück
-    # (erlaubt CPM/Graph-Operationen auf einfachen Task-Dateien)
-    missing_files = [f for f in config_files if not f.exists()]
-    if missing_files:
-        logger.warning(f"Config-Dateien nicht gefunden in {cfg_dir}:")
-        for f in missing_files:
-            logger.warning(f"  - {f.name}")
-        logger.warning("Überspringe TJP-Registry Verarbeitung (nur CPM/Graph-Operationen verfügbar)")
-        return None
-
     try:
         logger.info(f"Lade Registry aus:")
-        logger.info(f"  - Personen: {persons_path}")
-        logger.info(f"  - Arbeitszeiten: {wh_path}")
-        logger.info(f"  - Reports: {reports_path}")
         logger.info(f"  - Projekt: {project_file}")
 
         registry = TJPRegistry.load(
-            persons_path=persons_path,
-            wh_path=wh_path,
             project_path=project_file,
-            reports_path=reports_path,
         )
 
         logger.info("Registry erfolgreich geladen")
         return registry
 
     except Exception as e:
-        logger.error(f"Fehler beim Laden der Registry: {e}", exc_info=True)
+        logger.warning(f"Datei {project_file.name} ist kein vollständiges ProjectFile-Format")
+        logger.warning("Hinweis: Für CPM/Graph-Operationen verwenden Sie --calculate-cpm oder --create-svg-graph")
+        logger.debug(f"Fehlerdetails: {e}", exc_info=True)
         return None
 
 
-def create_dependency_graph(project_file: Path, output_dir: Optional[Path] = None, logger: Optional[logging.Logger] = None) -> bool:
+def create_svg_graph(project_file: Path, output_dir: Optional[Path] = None, cfg_dir: Optional[Path] = None, logger: Optional[logging.Logger] = None) -> bool:
     """
-    Erstellt ein Abhängigkeitsdiagramm aus einer Projektdatei mit CPM-Daten.
+    Erstellt ein SVG-Abhängigkeitsdiagramm aus einer Projektdatei mit CPM-Daten unter Verwendung des node.svg Templates.
 
     Args:
         project_file: Pfad zur Projektdatei (JSON)
-        output_dir: Ausgabeverzeichnis für das Bild (Standard: gleiches Verzeichnis wie Projektdatei)
+        output_dir: Ausgabeverzeichnis für das SVG (Standard: gleiches Verzeichnis wie Projektdatei)
+        cfg_dir: Verzeichnis mit Konfigurationsdateien (Standard: $PV_CFG oder 'cfg')
         logger: Logger-Instanz
 
     Returns:
         True bei Erfolg, False bei Fehler
     """
-    if not HAS_GRAPH_SUPPORT:
-        if logger:
-            logger.error("Graphenerstellung nicht verfügbar. Bitte installieren Sie: pip install matplotlib networkx")
-        else:
-            print("ERROR: Graphenerstellung nicht verfügbar. Bitte installieren Sie: pip install matplotlib networkx")
-        return False
-
     try:
-        # Lade Projektdaten
-        with open(project_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        # Bestimme cfg_dir aus Umgebungsvariable falls nicht angegeben
+        if cfg_dir is None:
+            cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
 
-        if 'tasks' not in data:
-            if logger:
-                logger.error(f"Keine 'tasks' in Projektdatei gefunden: {project_file}")
-            return False
-
-        # Berechne CPM-Daten mit integrierter SimpleTaskFile
-        task_file = SimpleTaskFile.model_validate(data)
-        cpm_data = task_file.calculate_cpm_for_tasks()
-
-        # Erstelle gerichteten Graphen
-        G = nx.DiGraph()
-
-        # Füge Knoten und Kanten hinzu
-        for task in data['tasks']:
-            task_id = task['id']
-            task_name = task.get('name', f'Task {task_id}')
-
-            # Hole CPM-Daten für diesen Task
-            cpm = cpm_data.get(task_id, {})
-            fb = cpm.get('faz', 0)
-            fe = cpm.get('fez', 0)
-            sb = cpm.get('saz', 0)
-            se = cpm.get('sez', 0)
-            gp = cpm.get('puffer', 0)
-            fp = cpm.get('free_puffer', 0)
-            is_critical = cpm.get('is_critical', False)
-
-            # Erstelle Label mit CPM-Informationen
-            # Format: FB am Anfang, FE am Ende der ersten Zeile
-            #         SB am Anfang, SE am Ende der zweiten Zeile
-            #         GP und FP in separatem Bereich
-            G.add_node(task_id,
-                      task_name=task_name,
-                      fb=fb, fe=fe, sb=sb, se=se,
-                      gp=gp, fp=fp,
-                      is_critical=is_critical)
-
-            # Füge Kanten für Abhängigkeiten hinzu
-            for dep in task.get('dependencies', []):
-                G.add_edge(task_id, dep)
-
-        # Erstelle Plot
-        plt.figure(figsize=(16, 10))
-
-        # Berechne hierarchisches Layout von links nach rechts
-        # Verwende topologische Sortierung für Layer-Zuweisung
-        try:
-            # Versuche topologische Sortierung (funktioniert nur bei DAGs)
-            layers = {}
-            for node in nx.topological_sort(G):
-                # Layer basiert auf der maximalen Distanz von Startknoten
-                predecessors = list(G.predecessors(node))
-                if not predecessors:
-                    layers[node] = 0
-                else:
-                    layers[node] = max(layers[p] for p in predecessors) + 1
-        except:
-            # Falls kein DAG, verwende einfaches Layout
-            layers = {node: 0 for node in G.nodes()}
-
-        # Erstelle Positionen basierend auf Layern (links nach rechts)
-        pos = {}
-        layer_counts = {}
-        for node, layer in layers.items():
-            if layer not in layer_counts:
-                layer_counts[layer] = 0
-            layer_counts[layer] += 1
-
-        layer_positions = {}
-        for node, layer in layers.items():
-            if layer not in layer_positions:
-                layer_positions[layer] = 0
-
-            x = layer * 3  # Horizontaler Abstand zwischen Layern
-            # Vertikale Position zentriert für jeden Layer
-            max_in_layer = sum(1 for n, l in layers.items() if l == layer)
-            y = layer_positions[layer] * 2 - (max_in_layer - 1)
-            layer_positions[layer] += 1
-
-            pos[node] = (x, y)
-
-        # Zeichne Kanten zuerst (im Hintergrund)
-        nx.draw_networkx_edges(G, pos, edge_color='gray',
-                               arrows=True, arrowsize=20,
-                               arrowstyle='->', width=2,
-                               connectionstyle='arc3,rad=0.1')
-
-        # Zeichne Rechteck-Knoten mit matplotlib patches und CPM-Daten
-        from matplotlib.patches import FancyBboxPatch, Rectangle
-        ax = plt.gca()
-
-        for node, (x, y) in pos.items():
-            # Hole Node-Attribute
-            node_attrs = G.nodes[node]
-            task_name = node_attrs.get('task_name', str(node))
-            fb = node_attrs.get('fb', 0)
-            fe = node_attrs.get('fe', 0)
-            sb = node_attrs.get('sb', 0)
-            se = node_attrs.get('se', 0)
-            gp = node_attrs.get('gp', 0)
-            fp = node_attrs.get('fp', 0)
-            is_critical = node_attrs.get('is_critical', False)
-
-            # Farben basierend auf kritischem Pfad
-            if is_critical:
-                box_color = '#ffcccc'  # Helles Rot für kritische Tasks
-                edge_color = '#cc0000'  # Dunkelrot
-                edge_width = 3
-            else:
-                box_color = 'lightblue'
-                edge_color = 'darkblue'
-                edge_width = 2
-
-            # Hauptbox (größer für CPM-Daten)
-            # Breite: 2.2, Höhe: 1.2
-            main_box = FancyBboxPatch(
-                (x - 1.1, y - 0.6), 2.2, 1.2,
-                boxstyle="round,pad=0.05",
-                edgecolor=edge_color,
-                facecolor=box_color,
-                linewidth=edge_width,
-                alpha=0.9
-            )
-            ax.add_patch(main_box)
-
-            # Obere Zeile: FB links, Task-Name mitte, FE rechts
-            plt.text(x - 0.95, y + 0.35, f'{fb:.0f}',
-                    ha='left', va='center', fontsize=8, fontweight='bold')
-            plt.text(x, y + 0.35, task_name,
-                    ha='center', va='center', fontsize=9, fontweight='bold')
-            plt.text(x + 0.95, y + 0.35, f'{fe:.0f}',
-                    ha='right', va='center', fontsize=8, fontweight='bold')
-
-            # Mittlere Zeile: Task-ID
-            plt.text(x, y + 0.05, f'ID: {node}',
-                    ha='center', va='center', fontsize=7, style='italic')
-
-            # Untere Zeile: SB links, SE rechts
-            plt.text(x - 0.95, y - 0.25, f'{sb:.0f}',
-                    ha='left', va='center', fontsize=8, fontweight='bold')
-            plt.text(x + 0.95, y - 0.25, f'{se:.0f}',
-                    ha='right', va='center', fontsize=8, fontweight='bold')
-
-            # Puffer-Kasten unter dem Hauptkasten
-            puffer_box_y = y - 0.9
-            puffer_box = Rectangle(
-                (x - 1.1, puffer_box_y - 0.15), 2.2, 0.3,
-                edgecolor=edge_color,
-                facecolor='lightyellow' if is_critical else 'lightgreen',
-                linewidth=1.5,
-                alpha=0.8
-            )
-            ax.add_patch(puffer_box)
-
-            # Puffer-Text
-            plt.text(x - 0.55, puffer_box_y, f'GP: {gp:.1f}',
-                    ha='center', va='center', fontsize=7, fontweight='bold')
-            plt.text(x + 0.55, puffer_box_y, f'FP: {fp:.1f}',
-                    ha='center', va='center', fontsize=7, fontweight='bold')
-
-        project_name = data.get('project', project_file.stem)
-        plt.title(f'{project_name} - Netzplan mit CPM-Daten\n(FB=Frühester Beginn, FE=Frühestes Ende, SB=Spätester Beginn, SE=Spätestes Ende, GP=Gesamtpuffer, FP=Freier Puffer)',
-                  fontsize=14, fontweight='bold')
-        plt.axis('off')
-        plt.tight_layout()
-
-        # Bestimme Ausgabepfad
-        if output_dir is None:
-            output_dir = project_file.parent
-
-        output_file = output_dir / f"{project_file.stem}_graph.svg"
-
-        # Speichere Graph als SVG
-        plt.savefig(output_file, format='svg', bbox_inches='tight')
-        plt.close()
-
-        if logger:
-            logger.info(f"Graph gespeichert als: {output_file}")
-        else:
-            print(f"Graph gespeichert als: {output_file}")
-
-        return True
+        # Erstelle Generator und generiere SVG
+        generator = SVGGraphGenerator(cfg_dir=cfg_dir, logger=logger)
+        return generator.generate_svg(project_file, output_dir)
 
     except Exception as e:
         if logger:
-            logger.error(f"Fehler beim Erstellen des Graphen: {e}", exc_info=True)
+            logger.error(f"Fehler beim Erstellen des SVG-Graphen: {e}", exc_info=True)
         else:
-            print(f"ERROR: Fehler beim Erstellen des Graphen: {e}")
+            print(f"ERROR: Fehler beim Erstellen des SVG-Graphen: {e}")
         return False
 
 
@@ -388,7 +179,7 @@ def main() -> int:
         epilog="""
 Beispiele:
   %(prog)s --project examples/tankdesign.json
-  %(prog)s --data-dir examples --create-graph
+  %(prog)s --data-dir examples --create-svg-graph
   %(prog)s  # Verarbeitet alle project*.json Dateien im data Ordner
         """
     )
@@ -420,9 +211,9 @@ Beispiele:
     )
 
     parser.add_argument(
-        "--create-graph",
+        "--create-svg-graph",
         action="store_true",
-        help="Erstellt Abhängigkeitsdiagramm(e) für die Projektdatei(en)"
+        help="Erstellt SVG-Abhängigkeitsdiagramm(e) für die Projektdatei(en) unter Verwendung des cfg/node.svg Templates"
     )
 
     parser.add_argument(
@@ -482,9 +273,9 @@ Beispiele:
         logger.info(f"Verarbeite: {project_file.name}")
         logger.info("-" * 60)
 
-        # Wenn nur Graph erstellen gewünscht ist
-        if args.create_graph:
-            if create_dependency_graph(project_file, args.output_dir, logger):
+        # Wenn SVG-Graph erstellen gewünscht ist
+        if args.create_svg_graph:
+            if create_svg_graph(project_file, args.output_dir, args.cfg_dir, logger):
                 success_count += 1
             continue
 
@@ -525,8 +316,7 @@ Beispiele:
         # Normale Projektverarbeitung mit TJP-Registry
         registry = load_registry(args.cfg_dir, project_file, logger)
         if registry is None:
-            logger.warning(f"Keine Config-Dateien für {project_file.name} - überspringe normale Verarbeitung")
-            # Zähle trotzdem als Erfolg, da CPM/Graph bereits verarbeitet wurden
+            # Zähle trotzdem als Erfolg, da CPM/Graph-Operationen möglich sind
             success_count += 1
             continue
 

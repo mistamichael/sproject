@@ -6,8 +6,8 @@ REM
 REM Usage:
 REM   run_test.bat                      - Verarbeitet alle .json Dateien im examples Ordner
 REM   run_test.bat <filename>           - Verarbeitet eine einzelne Projekt-Datei
-REM   run_test.bat --create-graph       - Erstellt Abhängigkeitsdiagramme für alle Projekte
-REM   run_test.bat <filename> --create-graph - Erstellt Graph für einzelne Datei
+REM   run_test.bat --create_svg_graph       - Erstellt Abhängigkeitsdiagramme für alle Projekte
+REM   run_test.bat <filename> --create_svg_graph - Erstellt Graph für einzelne Datei
 REM
 REM ============================================================================
 
@@ -22,10 +22,10 @@ if exist "%~dp0_setenv.bat" (
     call "%~dp0_setenv.bat"
 )
 
-REM Prüfe auf --create-graph Flag
+REM Prüfe auf --create_svg_graph Flag
 set "CREATE_GRAPH="
-if /i "%1"=="--create-graph" (
-    set "CREATE_GRAPH=--create-graph"
+if /i "%1"=="--create_svg_graph" (
+    set "CREATE_GRAPH=--create_svg_graph"
     goto process_all_examples
 )
 
@@ -52,8 +52,8 @@ REM Sammle zusätzliche Parameter
 set "PARAMS=--project "%PROJECT_FILE%""
 :parse_args
 if "%2"=="" goto run_test
-if /i "%2"=="--create-graph" (
-    set "PARAMS=%PARAMS% --create-graph"
+if /i "%2"=="--create_svg_graph" (
+    set "PARAMS=%PARAMS% --create_svg_graph"
 )
 shift
 goto parse_args
@@ -110,7 +110,7 @@ for %%F in ("%PV_EXAMPLES%\*.json") do (
     echo.
     echo --- Verarbeite: %%~nxF ---
     if defined CREATE_GRAPH (
-        python sproject.py --project "%%F" --create-graph
+        python sproject.py --project "%%F" --create_svg_graph
         set LAST_RESULT=!ERRORLEVEL!
     ) else (
         python sproject.py --project "%%F"
@@ -208,14 +208,14 @@ echo                     Die Datei wird im examples Ordner gesucht.
 echo                     Ohne Angabe werden alle .json Dateien im examples Ordner verarbeitet.
 echo.
 echo Optionen:
-echo   --create-graph    Erstellt Abhängigkeitsdiagramm(e) als PNG-Datei(en)
+echo   --create_svg_graph    Erstellt Abhängigkeitsdiagramm(e) als PNG-Datei(en)
 echo.
 echo Beispiele:
 echo   %~nx0                          Verarbeitet alle .json Dateien im examples Ordner
-echo   %~nx0 --create-graph           Erstellt Graphen für alle Projektdateien
+echo   %~nx0 --create_svg_graph           Erstellt Graphen für alle Projektdateien
 echo   %~nx0 tankdesign               Verarbeitet tankdesign.json
 echo   %~nx0 tankdesign.json          Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign --create-graph  Erstellt nur den Graphen für tankdesign.json
+echo   %~nx0 tankdesign --create_svg_graph  Erstellt nur den Graphen für tankdesign.json
 echo.
 echo Hinweis:
 echo   Ergebnisse werden in %PV_RESULTS% erzeugt und automatisch mit
