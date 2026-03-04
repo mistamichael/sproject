@@ -18,6 +18,7 @@ from .tasks import SimpleTask, InstanceTask, LoopTask, SubTask
 from .resources import Person, ResourceBase, MachineResource, PersonResource
 from .base import TaskBase
 from .cpm import CPMTaskResult, CPMResult, CPMCalculator
+from .reports import GanttReport, ResourceListReport, StatusUpdateReport, Report
 
 __all__ = [
     'load_project',
@@ -39,4 +40,8 @@ __all__ = [
     'CPMTaskResult',
     'CPMResult',
     'CPMCalculator',
+    'GanttReport',
+    'ResourceListReport',
+    'StatusUpdateReport',
+    'Report',
 ]

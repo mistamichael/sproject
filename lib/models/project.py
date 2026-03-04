@@ -20,6 +20,7 @@ except (ImportError, ValueError):
 
 from .tasks import SimpleTask, InstanceTask, LoopTask
 from .resources import Resource, Person
+from .reports import Report
 
 
 class ProjectBase(BaseModel):
@@ -224,6 +225,7 @@ class PersonProject(ProjectBase):
     - persons: Liste von Personen mit Details
     - resources: Liste von Ressourcen (verweisen auf persons via person_id)
     - tasks: Liste von SimpleTask
+    - reports: Liste von Reports (Gantt Chart, Resource List, etc.)
     """
 
     total_hours: Optional[int] = None
@@ -231,6 +233,7 @@ class PersonProject(ProjectBase):
     persons: List[Person]
     resources: List[Resource]
     tasks: List[SimpleTask]
+    reports: Optional[List[Report]] = None
 
 
 # Union-Type für alle Projekt-Varianten

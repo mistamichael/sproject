@@ -661,16 +661,22 @@ class SimpleCPMCalculator:
         print()
         print("=" * 70)
         print("Alle Tasks:")
-        print(f"{'ID':<4} {'Name':<30} {'Dauer':<6} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<6} {'Krit.'}")
+        print(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<8} {'Krit.'}")
         print("-" * 70)
 
         for task_id in self._topological_sort():
             data = self.cpm_data[task_id]
             critical_marker = "JA" if data['is_critical'] else ""
+            duration_str = format_time_value_auto(data['duration'])
+            puffer_str = format_time_value_auto(data['puffer'])
+
+            # Formatiere ID als String für korrekte Breite
+            id_str = str(task_id)
+
             print(
-                f"{task_id:<4} {data['name']:<30} {data['duration']:<6} "
+                f"{id_str:<7} {data['name']:<30} {duration_str:<8} "
                 f"{data['faz']:<6.1f} {data['fez']:<6.1f} {data['saz']:<6.1f} "
-                f"{data['sez']:<6.1f} {data['puffer']:<6.1f} {critical_marker}"
+                f"{data['sez']:<6.1f} {puffer_str:<8} {critical_marker}"
             )
         print("=" * 70)
 

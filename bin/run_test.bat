@@ -8,7 +8,7 @@ REM   run_test.bat                      - Verarbeitet alle .json Dateien im exam
 REM   run_test.bat <filename>           - Verarbeitet eine einzelne Projekt-Datei
 REM   run_test.bat --calculate-cpm          - Berechnet CPM für alle Projekte
 REM   run_test.bat --create_svg_graph       - Erstellt Abhängigkeitsdiagramme für alle Projekte
-REM   run_test.bat <filename> --calculate-cpm - Berechnet CPM für einzelne Datei
+REM   run_test.bat <filename> --calculate-cpm --export xlsx --gantt --resource - Excel mit Reports
 REM   run_test.bat <filename> --create_svg_graph - Erstellt Graph für einzelne Datei
 REM
 REM ============================================================================
@@ -226,13 +226,14 @@ echo   --calculate-cpm       Berechnet den kritischen Pfad (Critical Path Method
 echo   --create_svg_graph    Erstellt Abhängigkeitsdiagramm(e) als PNG-Datei(en)
 echo.
 echo Beispiele:
-echo   %~nx0                              Verarbeitet alle .json Dateien im examples Ordner
-echo   %~nx0 --calculate-cpm              Berechnet CPM für alle Projektdateien
-echo   %~nx0 --create_svg_graph           Erstellt Graphen für alle Projektdateien
-echo   %~nx0 tankdesign                   Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign.json              Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign --calculate-cpm   Berechnet CPM für tankdesign.json
-echo   %~nx0 tankdesign --create_svg_graph  Erstellt Graph für tankdesign.json
+echo   %~nx0                                              Verarbeitet alle .json Dateien im examples Ordner
+echo   %~nx0 --calculate-cpm                              Berechnet CPM für alle Projektdateien
+echo   %~nx0 --create_svg_graph                           Erstellt Graphen für alle Projektdateien
+echo   %~nx0 tankdesign                                   Verarbeitet tankdesign.json
+echo   %~nx0 tankdesign.json                              Verarbeitet tankdesign.json
+echo   %~nx0 tankdesign --calculate-cpm --export xlsx     Berechnet CPM, Excel-Export
+echo   %~nx0 erdaushub --calculate-cpm --export xlsx --gantt --resource  Excel mit Gantt und Resource List
+echo   %~nx0 tankdesign --create_svg_graph                Erstellt Graph für tankdesign.json
 echo.
 echo Hinweis:
 echo   Ergebnisse werden in %PV_RESULTS% erzeugt und automatisch mit

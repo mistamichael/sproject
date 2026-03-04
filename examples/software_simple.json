@@ -138,5 +138,25 @@
       "resources": ["R_PM1"],
       "dependencies": [7]
     }
+  ],
+  "reports": [
+    {
+      "id":       "gantt_chart",
+      "type":     "gantt",
+      "name":     "Gantt Chart",
+      "headline": "Projekt Zeitplan",
+      "columns":  ["Vorgang", "task_name", "name", "start", "end", "effort", "chart"],
+      "timeformat":   "%Y-%m-%d",
+      "loadunit":     "days"
+    },
+    {
+      "id":       "resource_view",
+      "type":     "resource_list",
+      "name":     "StatusUpdate",
+      "headline": "Resourcendiagramm",
+      "columns":  ["User", "Rolle", "start", "end", "chart"],
+      "timeformat":   "%Y-%m-%d",
+      "loadunit":     "days"
+    }
   ]
 }

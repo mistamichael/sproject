@@ -29,7 +29,7 @@
       "id": 1,
       "name": "Initialisierung",
       "duration": "15m",
-      "dependencies": []
+      "dependencies": [2]
     },
     {
       "id": 2,
@@ -37,6 +37,7 @@
       "is_loop": true,
       "loop_until": "total_volume <= 0",
       "cycle_prefix": "F",
+      "dependencies": [],
       "subtasks": [
         {
           "name": "Beladen",

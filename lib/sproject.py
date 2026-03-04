@@ -17,6 +17,10 @@ from typing import Optional, List
 from tjp_models import TJPRegistry
 from cpm_calculator import SimpleCPMCalculator
 from svg_graph_generator import SVGGraphGenerator
+from excel_reports import add_report_sheets
+from models.project import PersonProject
+from models.reports import GanttReport, ResourceListReport
+from models.resources import Person, PersonResource
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
@@ -81,6 +85,256 @@ def find_project_files(data_dir: Path) -> List[Path]:
         project_files = list(data_dir.glob("*.json"))
 
     return project_files
+
+
+def export_cpm_to_txt(calc: SimpleCPMCalculator, output_file: Path) -> None:
+    """
+    Exportiert CPM-Ergebnisse in Textformat (wie Konsolen-Ausgabe).
+
+    Args:
+        calc: SimpleCPMCalculator mit berechneten Ergebnissen
+        output_file: Ausgabedatei (.txt)
+    """
+    from utils import format_time_value_auto
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        critical_path = calc.get_critical_path()
+        project_duration = max(data['fez'] for data in calc.cpm_data.values())
+
+        f.write("=" * 70 + "\n")
+        f.write(f"Projekt: {calc.project_name}\n")
+        f.write(f"Projektdauer: {format_time_value_auto(project_duration)}\n")
+        f.write(f"Startdatum: {calc.start_date.strftime('%Y-%m-%d')}\n")
+        f.write(f"Enddatum (geschaetzt): {calc._add_workdays(calc.start_date, project_duration).strftime('%Y-%m-%d')}\n")
+        f.write("=" * 70 + "\n")
+        f.write("\n")
+        f.write("Kritischer Pfad:\n")
+        for task_id in critical_path:
+            data = calc.cpm_data[task_id]
+            duration_str = format_time_value_auto(data['duration'])
+            f.write(f"  [{task_id}] {data['name']:<30} (Dauer: {duration_str})\n")
+        f.write("\n")
+        f.write("=" * 70 + "\n")
+        f.write("Alle Tasks:\n")
+        f.write(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<8} {'Krit.'}\n")
+        f.write("-" * 70 + "\n")
+
+        for task_id in calc._topological_sort():
+            data = calc.cpm_data[task_id]
+            critical_marker = "JA" if data['is_critical'] else ""
+            duration_str = format_time_value_auto(data['duration'])
+            puffer_str = format_time_value_auto(data['puffer'])
+
+            id_str = str(task_id)
+
+            f.write(
+                f"{id_str:<7} {data['name']:<30} {duration_str:<8} "
+                f"{data['faz']:<6.1f} {data['fez']:<6.1f} {data['saz']:<6.1f} "
+                f"{data['sez']:<6.1f} {puffer_str:<8} {critical_marker}\n"
+            )
+        f.write("=" * 70 + "\n")
+
+
+def create_default_person_from_config(cfg_dir: Path) -> Person:
+    """
+    Erstellt eine Default-Person aus der defaults.cfg.
+
+    Args:
+        cfg_dir: Verzeichnis mit Konfigurationsdateien
+
+    Returns:
+        Person-Objekt mit Werten aus defaults.cfg
+    """
+    import configparser
+
+    config = configparser.ConfigParser()
+    config_file = cfg_dir / "defaults.cfg"
+
+    # Defaults
+    person_data = {
+        'id': 'default_resource',
+        'name': 'Max Mustermann',
+        'email': 'max@mustermann.com',
+        'role': 'Default Resource',
+        'hourly_rate': 100.0
+    }
+
+    if config_file.exists():
+        config.read(config_file, encoding='utf-8')
+        if 'Resource' in config:
+            if 'id' in config['Resource']:
+                person_data['id'] = config['Resource']['id']
+            if 'name' in config['Resource']:
+                person_data['name'] = config['Resource']['name']
+            if 'email' in config['Resource']:
+                person_data['email'] = config['Resource']['email']
+            if 'hourly_rate' in config['Resource']:
+                person_data['hourly_rate'] = float(config['Resource']['hourly_rate'])
+
+    return Person(**person_data)
+
+
+def add_dynamic_reports(project, gantt: bool, resource_list: bool, cfg_dir: Path):
+    """
+    Fügt dynamisch Reports zu einem Projekt hinzu.
+
+    Args:
+        project: Projekt-Objekt
+        gantt: Ob Gantt-Chart erstellt werden soll
+        resource_list: Ob Resource-List erstellt werden soll
+        cfg_dir: Verzeichnis mit Konfigurationsdateien
+
+    Returns:
+        Modifiziertes Projekt mit Reports und ggf. Default-Personen
+    """
+    from models.project import PersonProject, SimpleProject, LoopProject, CycleProject
+
+    # Wenn keine Reports gewünscht, nichts tun
+    if not gantt and not resource_list:
+        return project
+
+    # Erstelle Reports-Liste
+    reports = []
+
+    if gantt:
+        reports.append(GanttReport(
+            id="gantt_chart",
+            name="Gantt Chart",
+            headline="Projekt Zeitplan",
+            type="gantt",
+            columns=["Vorgang", "name", "start", "end", "effort", "chart"],
+            timeformat="%Y-%m-%d",
+            loadunit="days"
+        ))
+
+    if resource_list:
+        reports.append(ResourceListReport(
+            id="resource_view",
+            name="Resource List",
+            headline="Resourcendiagramm",
+            type="resource_list",
+            columns=["User", "Rolle", "start", "end", "chart"],
+            timeformat="%Y-%m-%d",
+            loadunit="days"
+        ))
+
+    # Wenn Projekt bereits PersonProject ist, füge Reports hinzu
+    if isinstance(project, PersonProject):
+        project.reports = reports
+        return project
+
+    # Ansonsten wandle in PersonProject um mit Default-Person
+    default_person = create_default_person_from_config(cfg_dir)
+
+    # Erstelle Default-Ressource
+    default_resource = PersonResource(
+        id=default_person.id,
+        name=default_person.name,
+        type="person",
+        person_id=default_person.id
+    )
+
+    # Konvertiere zu PersonProject
+    person_project = PersonProject(
+        project=project.project,
+        project_start=project.project_start if hasattr(project, 'project_start') else None,
+        total_hours=None,
+        unit="hours",
+        persons=[default_person],
+        resources=[default_resource],
+        tasks=project.tasks,
+        reports=reports
+    )
+
+    return person_project
+
+
+def export_cpm_to_xlsx(calc: SimpleCPMCalculator, output_file: Path, project=None, cfg_dir: Path = None) -> None:
+    """
+    Exportiert CPM-Ergebnisse in Excel-Format.
+
+    Args:
+        calc: SimpleCPMCalculator mit berechneten Ergebnissen
+        output_file: Ausgabedatei (.xlsx)
+        project: Optional - Projekt-Daten für Report-Sheets (PersonProject)
+        cfg_dir: Optional - Verzeichnis mit Konfigurationsdateien
+    """
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, Alignment, PatternFill
+        from utils import format_time_value_auto
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "CPM Analyse"
+
+        # Header-Stil
+        header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF")
+
+        # Projekt-Informationen
+        project_duration = max(data['fez'] for data in calc.cpm_data.values())
+        ws['A1'] = "Projekt:"
+        ws['B1'] = calc.project_name
+        ws['A2'] = "Projektdauer:"
+        ws['B2'] = format_time_value_auto(project_duration)
+        ws['A3'] = "Startdatum:"
+        ws['B3'] = calc.start_date.strftime('%Y-%m-%d')
+        ws['A4'] = "Enddatum:"
+        ws['B4'] = calc._add_workdays(calc.start_date, project_duration).strftime('%Y-%m-%d')
+
+        # Leere Zeile
+        row = 6
+
+        # Tabellen-Header
+        headers = ['ID', 'Name', 'Dauer', 'FAZ', 'FEZ', 'SAZ', 'SEZ', 'Puffer', 'Kritisch']
+        for col, header in enumerate(headers, start=1):
+            cell = ws.cell(row=row, column=col, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+
+        # Daten
+        row += 1
+        for task_id in calc._topological_sort():
+            data = calc.cpm_data[task_id]
+            ws.cell(row=row, column=1, value=str(task_id))
+            ws.cell(row=row, column=2, value=data['name'])
+            ws.cell(row=row, column=3, value=format_time_value_auto(data['duration']))
+            ws.cell(row=row, column=4, value=data['faz'])
+            ws.cell(row=row, column=5, value=data['fez'])
+            ws.cell(row=row, column=6, value=data['saz'])
+            ws.cell(row=row, column=7, value=data['sez'])
+            ws.cell(row=row, column=8, value=format_time_value_auto(data['puffer']))
+            ws.cell(row=row, column=9, value="JA" if data['is_critical'] else "")
+
+            # Kritische Tasks hervorheben
+            if data['is_critical']:
+                for col in range(1, 10):
+                    ws.cell(row=row, column=col).fill = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
+
+            row += 1
+
+        # Spaltenbreiten anpassen
+        ws.column_dimensions['A'].width = 10
+        ws.column_dimensions['B'].width = 35
+        ws.column_dimensions['C'].width = 10
+        ws.column_dimensions['D'].width = 8
+        ws.column_dimensions['E'].width = 8
+        ws.column_dimensions['F'].width = 8
+        ws.column_dimensions['G'].width = 8
+        ws.column_dimensions['H'].width = 10
+        ws.column_dimensions['I'].width = 10
+
+        # Füge Report-Sheets hinzu, falls vorhanden
+        if project and isinstance(project, PersonProject) and project.reports:
+            if cfg_dir is None:
+                cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
+            add_report_sheets(wb, project, calc, cfg_dir)
+
+        wb.save(output_file)
+    except ImportError:
+        raise ImportError("openpyxl ist nicht installiert. Installieren Sie es mit: pip install openpyxl")
 
 
 def load_registry(cfg_dir: Path, project_file: Path, logger: logging.Logger) -> Optional[TJPRegistry]:
@@ -234,7 +488,34 @@ Beispiele:
         help="Projektstartdatum für CPM-Berechnung (YYYY-MM-DD, default: heute)"
     )
 
+    parser.add_argument(
+        "--export",
+        type=str,
+        default="json",
+        help="Exportformate (kommagetrennt): txt, json, xlsx (Standard: json). Beispiel: --export txt,json,xlsx"
+    )
+
+    parser.add_argument(
+        "--gantt",
+        action="store_true",
+        help="Erstellt Gantt-Chart im Excel-Export (nur mit --export xlsx)"
+    )
+
+    parser.add_argument(
+        "--resource",
+        action="store_true",
+        help="Erstellt Resource-List im Excel-Export (nur mit --export xlsx)"
+    )
+
     args = parser.parse_args()
+
+    # Parse Export-Formate
+    export_formats = [fmt.strip().lower() for fmt in args.export.split(',')]
+    valid_formats = {'txt', 'json', 'xlsx'}
+    for fmt in export_formats:
+        if fmt not in valid_formats:
+            print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx")
+            return 1
 
     # Logging einrichten
     logger = setup_logging()
@@ -313,18 +594,42 @@ Beispiele:
                 # Ausgabe auf Konsole
                 calc.print_summary()
 
-                # Bestimme Ausgabedatei
+                # Bestimme Ausgabeverzeichnis
                 if args.output_dir:
-                    output_file = args.output_dir / f"{project_file.stem}_cpm.json"
+                    output_dir = args.output_dir
                 else:
                     # Standard: results Ordner
-                    results_dir = Path("results")
-                    results_dir.mkdir(exist_ok=True)
-                    output_file = results_dir / f"{project_file.stem}_cpm.json"
+                    output_dir = Path("results")
+                    output_dir.mkdir(exist_ok=True)
 
-                # Exportiere zu JSON
-                calc.export_to_json(output_file, include_dates=True)
-                logger.info(f"CPM-Ergebnisse gespeichert in: {output_file}")
+                # Exportiere in gewünschte Formate
+                for fmt in export_formats:
+                    if fmt == 'json':
+                        output_file = output_dir / f"{project_file.stem}_cpm.json"
+                        calc.export_to_json(output_file, include_dates=True)
+                        logger.info(f"CPM-Ergebnisse (JSON) gespeichert in: {output_file}")
+                    elif fmt == 'txt':
+                        output_file = output_dir / f"{project_file.stem}_cpm.txt"
+                        export_cpm_to_txt(calc, output_file)
+                        logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
+                    elif fmt == 'xlsx':
+                        output_file = output_dir / f"{project_file.stem}_cpm.xlsx"
+                        try:
+                            # Füge dynamisch Reports hinzu wenn gewünscht
+                            export_project = project
+                            if args.gantt or args.resource:
+                                export_project = add_dynamic_reports(
+                                    project,
+                                    args.gantt,
+                                    args.resource,
+                                    args.cfg_dir
+                                )
+
+                            export_cpm_to_xlsx(calc, output_file, export_project, args.cfg_dir)
+                            logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
+                        except ImportError as ie:
+                            logger.warning(f"XLSX-Export übersprungen: {ie}")
+
                 success_count += 1
             except Exception as e:
                 logger.error(f"Fehler bei CPM-Berechnung für {project_file.name}: {e}", exc_info=True)

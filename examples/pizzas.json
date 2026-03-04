@@ -29,6 +29,7 @@
       "name": "Teigvorbereitung (Batch)",
       "duration": "60m",
       "resources": ["R1"],
+      "dependencies": [2],
       "description": "Einmaliger Vorgang für alle Pizzen"
     },
     {
@@ -36,7 +37,7 @@
       "name": "Pizza formen & belegen",
       "duration": "3m",
       "resources": ["R1"],
-      "dependencies": [1],
+      "dependencies": [3],
       "instances": "order_volume",
       "cycle_prefix": "P"
     },
@@ -46,7 +47,7 @@
       "duration": "7m",
       "resources": ["R3"],
       "capacity_required": 1,
-      "dependencies": [2],
+      "dependencies": [4],
       "instances": "order_volume",
       "cycle_prefix": "P"
     },
@@ -55,7 +56,7 @@
       "name": "Pizza verkaufen",
       "duration": "2m",
       "resources": ["R2"],
-      "dependencies": [3],
+      "dependencies": [],
       "instances": "order_volume",
       "cycle_prefix": "P"
     }

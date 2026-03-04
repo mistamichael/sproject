@@ -193,6 +193,10 @@ def format_time_value_auto(days: float) -> str:
         >>> format_time_value_auto(5.5)  # 5.5 Tage
         '5.5d'
     """
+    # Behandle negative Null-Werte (durch Rundungsfehler)
+    if abs(days) < 0.0001:
+        days = 0.0
+
     minutes = days * 480  # 8h * 60min
     hours = days * 8
 
