@@ -257,7 +257,7 @@ class CPMCalculator:
                 id=task.id,
                 name=task.name,
                 duration=duration,
-                successors=dependencies,  # In unserem Format sind dependencies die Nachfolger
+                successors=dependencies,  # dependencies sind Nachfolger
                 predecessors=[],  # Wird unten berechnet
             )
 

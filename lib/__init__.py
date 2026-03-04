@@ -44,10 +44,6 @@ from .utils import (
     validate_duration_string,
 )
 
-# Import legacy classes (for backward compatibility)
-from .cpm_calculator import SimpleCPMCalculator
-from .cycle_expander import CycleExpander
-
 __version__ = "0.2.0"
 
 __all__ = [
@@ -87,8 +83,4 @@ __all__ = [
     # Utils - ID
     'generate_cycle_id',
     'parse_cycle_id',
-
-    # Legacy (backward compatibility)
-    'SimpleCPMCalculator',
-    'CycleExpander',
 ]

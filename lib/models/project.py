@@ -148,15 +148,33 @@ class CycleProject(ProjectBase):
         from .expander import expand_instance_task
 
         expanded_tasks = []
+        instance_task_mapping = {}  # Mapping: original_id -> [expanded_task_ids]
 
         for task in self.tasks:
             if isinstance(task, InstanceTask):
                 # Expandiere InstanceTask
                 expanded = expand_instance_task(task, self.order_volume, self.tasks)
                 expanded_tasks.extend(expanded)
+                # Speichere Mapping
+                instance_task_mapping[task.id] = [t.id for t in expanded]
             else:
                 # SimpleTask bleibt unverändert
                 expanded_tasks.append(task)
+
+        # Aktualisiere Dependencies: Ersetze Referenzen auf expandierte Tasks
+        for task in expanded_tasks:
+            if task.dependencies:
+                updated_deps = []
+                for dep_id in task.dependencies:
+                    if dep_id in instance_task_mapping:
+                        # Referenziert einen expandierten InstanceTask
+                        # Verweise auf den LETZTEN expandierten Task (letzte Instanz)
+                        updated_deps.append(instance_task_mapping[dep_id][-1])
+                    else:
+                        # Normale Dependency
+                        updated_deps.append(dep_id)
+                # Aktualisiere dependencies
+                task.dependencies = updated_deps
 
         # Erstelle neues SimpleProject
         return SimpleProject(
@@ -197,15 +215,33 @@ class LoopProject(ProjectBase):
         from .expander import expand_loop_task
 
         expanded_tasks = []
+        loop_task_mapping = {}  # Mapping: original_id -> [expanded_task_ids]
 
         for task in self.tasks:
             if isinstance(task, LoopTask):
                 # Expandiere LoopTask
                 expanded = expand_loop_task(task, self.total_volume, self.resources)
                 expanded_tasks.extend(expanded)
+                # Speichere Mapping
+                loop_task_mapping[task.id] = [t.id for t in expanded]
             else:
                 # SimpleTask bleibt unverändert
                 expanded_tasks.append(task)
+
+        # Aktualisiere Dependencies: Ersetze Referenzen auf expandierte Tasks
+        for task in expanded_tasks:
+            if task.dependencies:
+                updated_deps = []
+                for dep_id in task.dependencies:
+                    if dep_id in loop_task_mapping:
+                        # Referenziert einen expandierten LoopTask
+                        # Verweise auf den LETZTEN expandierten Task (letzte Iteration)
+                        updated_deps.append(loop_task_mapping[dep_id][-1])
+                    else:
+                        # Normale Dependency
+                        updated_deps.append(dep_id)
+                # Aktualisiere dependencies
+                task.dependencies = updated_deps
 
         # Erstelle neues SimpleProject
         return SimpleProject(

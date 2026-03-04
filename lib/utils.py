@@ -160,6 +160,11 @@ def format_time_value(days: float, unit: Literal['minutes', 'hours', 'days']) ->
         >>> format_time_value(1.0, 'days')
         '1.0d'
     """
+    # Handle infinity values
+    import math
+    if math.isinf(days):
+        return "inf"
+
     if unit == 'minutes':
         minutes = days * 480  # 8h * 60min
         return f"{minutes:.1f}m"
@@ -193,6 +198,11 @@ def format_time_value_auto(days: float) -> str:
         >>> format_time_value_auto(5.5)  # 5.5 Tage
         '5.5d'
     """
+    # Handle infinity values
+    import math
+    if math.isinf(days):
+        return "inf"
+
     # Behandle negative Null-Werte (durch Rundungsfehler)
     if abs(days) < 0.0001:
         days = 0.0
@@ -228,6 +238,11 @@ def format_datetime_value(days: float, unit: Literal['minutes', 'hours', 'days']
         >>> format_datetime_value(10.0, 'days', start)
         '2026-03-17'
     """
+    # Handle infinity values
+    import math
+    if math.isinf(days):
+        return "inf"
+
     if unit == 'minutes':
         minutes = days * 480
         if minutes < 1440:  # < 24h
@@ -271,6 +286,12 @@ def add_workdays(start_date: datetime, days: float) -> datetime:
         >>> result.day
         4  # Mittwoch
     """
+    # Handle infinity values
+    import math
+    if math.isinf(days):
+        # Return a far future date for infinity
+        return datetime(9999, 12, 31)
+
     current = start_date
     days_to_add = int(days)
     fraction = days - days_to_add

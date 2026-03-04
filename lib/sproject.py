@@ -15,12 +15,12 @@ from datetime import datetime
 from typing import Optional, List
 
 from tjp_models import TJPRegistry
-from cpm_calculator import SimpleCPMCalculator
 from svg_graph_generator import SVGGraphGenerator
 from excel_reports import add_report_sheets
 from models.project import PersonProject
 from models.reports import GanttReport, ResourceListReport
 from models.resources import Person, PersonResource
+from models.cpm import CPMResult
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
@@ -87,50 +87,104 @@ def find_project_files(data_dir: Path) -> List[Path]:
     return project_files
 
 
-def export_cpm_to_txt(calc: SimpleCPMCalculator, output_file: Path) -> None:
+def print_cpm_summary(result: CPMResult) -> None:
+    """
+    Druckt CPM-Zusammenfassung auf die Konsole.
+
+    Args:
+        result: CPM-Berechnungsergebnis
+    """
+    from utils import format_time_value_auto
+
+    critical_path = result.critical_path
+    project_duration = max(task.fez for task in result.tasks.values())
+
+    print("=" * 70)
+    print(f"Projekt: {result.project_name}")
+    print(f"Projektdauer: {format_time_value_auto(project_duration)}")
+    if result.project_start:
+        from utils import add_workdays
+        print(f"Startdatum: {result.project_start.strftime('%Y-%m-%d')}")
+        print(f"Enddatum (geschaetzt): {add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')}")
+    print("=" * 70)
+    print()
+    print("Kritischer Pfad:")
+    for task_id in critical_path:
+        task = result.tasks[task_id]
+        duration_str = format_time_value_auto(task.duration)
+        print(f"  [{task_id}] {task.name:<30} (Dauer: {duration_str})")
+    print()
+    print("=" * 70)
+    print("Alle Tasks:")
+    print(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<8} {'Krit.'}")
+    print("-" * 70)
+
+    # Sortiere Tasks topologisch (nach FAZ)
+    sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
+
+    for task_id in sorted_task_ids:
+        task = result.tasks[task_id]
+        critical_marker = "JA" if task.is_critical else ""
+        duration_str = format_time_value_auto(task.duration)
+        puffer_str = format_time_value_auto(task.puffer)
+
+        id_str = str(task_id)
+
+        print(
+            f"{id_str:<7} {task.name:<30} {duration_str:<8} "
+            f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
+            f"{task.sez:<6.1f} {puffer_str:<8} {critical_marker}"
+        )
+    print("=" * 70)
+
+
+def export_cpm_to_txt(result: CPMResult, output_file: Path) -> None:
     """
     Exportiert CPM-Ergebnisse in Textformat (wie Konsolen-Ausgabe).
 
     Args:
-        calc: SimpleCPMCalculator mit berechneten Ergebnissen
+        result: CPM-Berechnungsergebnis
         output_file: Ausgabedatei (.txt)
     """
-    from utils import format_time_value_auto
+    from utils import format_time_value_auto, add_workdays
 
     with open(output_file, 'w', encoding='utf-8') as f:
-        critical_path = calc.get_critical_path()
-        project_duration = max(data['fez'] for data in calc.cpm_data.values())
+        critical_path = result.critical_path
+        project_duration = max(task.fez for task in result.tasks.values())
 
         f.write("=" * 70 + "\n")
-        f.write(f"Projekt: {calc.project_name}\n")
+        f.write(f"Projekt: {result.project_name}\n")
         f.write(f"Projektdauer: {format_time_value_auto(project_duration)}\n")
-        f.write(f"Startdatum: {calc.start_date.strftime('%Y-%m-%d')}\n")
-        f.write(f"Enddatum (geschaetzt): {calc._add_workdays(calc.start_date, project_duration).strftime('%Y-%m-%d')}\n")
+        f.write(f"Startdatum: {result.project_start.strftime('%Y-%m-%d')}\n")
+        f.write(f"Enddatum (geschaetzt): {add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')}\n")
         f.write("=" * 70 + "\n")
         f.write("\n")
         f.write("Kritischer Pfad:\n")
         for task_id in critical_path:
-            data = calc.cpm_data[task_id]
-            duration_str = format_time_value_auto(data['duration'])
-            f.write(f"  [{task_id}] {data['name']:<30} (Dauer: {duration_str})\n")
+            task = result.tasks[task_id]
+            duration_str = format_time_value_auto(task.duration)
+            f.write(f"  [{task_id}] {task.name:<30} (Dauer: {duration_str})\n")
         f.write("\n")
         f.write("=" * 70 + "\n")
         f.write("Alle Tasks:\n")
         f.write(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<8} {'Krit.'}\n")
         f.write("-" * 70 + "\n")
 
-        for task_id in calc._topological_sort():
-            data = calc.cpm_data[task_id]
-            critical_marker = "JA" if data['is_critical'] else ""
-            duration_str = format_time_value_auto(data['duration'])
-            puffer_str = format_time_value_auto(data['puffer'])
+        # Sortiere Tasks topologisch (nach FAZ)
+        sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
+
+        for task_id in sorted_task_ids:
+            task = result.tasks[task_id]
+            critical_marker = "JA" if task.is_critical else ""
+            duration_str = format_time_value_auto(task.duration)
+            puffer_str = format_time_value_auto(task.puffer)
 
             id_str = str(task_id)
 
             f.write(
-                f"{id_str:<7} {data['name']:<30} {duration_str:<8} "
-                f"{data['faz']:<6.1f} {data['fez']:<6.1f} {data['saz']:<6.1f} "
-                f"{data['sez']:<6.1f} {puffer_str:<8} {critical_marker}\n"
+                f"{id_str:<7} {task.name:<30} {duration_str:<8} "
+                f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
+                f"{task.sez:<6.1f} {puffer_str:<8} {critical_marker}\n"
             )
         f.write("=" * 70 + "\n")
 
@@ -249,12 +303,12 @@ def add_dynamic_reports(project, gantt: bool, resource_list: bool, cfg_dir: Path
     return person_project
 
 
-def export_cpm_to_xlsx(calc: SimpleCPMCalculator, output_file: Path, project=None, cfg_dir: Path = None) -> None:
+def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_dir: Path = None) -> None:
     """
     Exportiert CPM-Ergebnisse in Excel-Format.
 
     Args:
-        calc: SimpleCPMCalculator mit berechneten Ergebnissen
+        result: CPM-Berechnungsergebnis
         output_file: Ausgabedatei (.xlsx)
         project: Optional - Projekt-Daten für Report-Sheets (PersonProject)
         cfg_dir: Optional - Verzeichnis mit Konfigurationsdateien
@@ -262,7 +316,7 @@ def export_cpm_to_xlsx(calc: SimpleCPMCalculator, output_file: Path, project=Non
     try:
         import openpyxl
         from openpyxl.styles import Font, Alignment, PatternFill
-        from utils import format_time_value_auto
+        from utils import format_time_value_auto, add_workdays
 
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -273,15 +327,15 @@ def export_cpm_to_xlsx(calc: SimpleCPMCalculator, output_file: Path, project=Non
         header_font = Font(bold=True, color="FFFFFF")
 
         # Projekt-Informationen
-        project_duration = max(data['fez'] for data in calc.cpm_data.values())
+        project_duration = max(task.fez for task in result.tasks.values())
         ws['A1'] = "Projekt:"
-        ws['B1'] = calc.project_name
+        ws['B1'] = result.project_name
         ws['A2'] = "Projektdauer:"
         ws['B2'] = format_time_value_auto(project_duration)
         ws['A3'] = "Startdatum:"
-        ws['B3'] = calc.start_date.strftime('%Y-%m-%d')
+        ws['B3'] = result.project_start.strftime('%Y-%m-%d')
         ws['A4'] = "Enddatum:"
-        ws['B4'] = calc._add_workdays(calc.start_date, project_duration).strftime('%Y-%m-%d')
+        ws['B4'] = add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')
 
         # Leere Zeile
         row = 6
@@ -294,22 +348,24 @@ def export_cpm_to_xlsx(calc: SimpleCPMCalculator, output_file: Path, project=Non
             cell.font = header_font
             cell.alignment = Alignment(horizontal='center')
 
-        # Daten
+        # Daten - sortiere Tasks topologisch (nach FAZ)
+        sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
+
         row += 1
-        for task_id in calc._topological_sort():
-            data = calc.cpm_data[task_id]
+        for task_id in sorted_task_ids:
+            task = result.tasks[task_id]
             ws.cell(row=row, column=1, value=str(task_id))
-            ws.cell(row=row, column=2, value=data['name'])
-            ws.cell(row=row, column=3, value=format_time_value_auto(data['duration']))
-            ws.cell(row=row, column=4, value=data['faz'])
-            ws.cell(row=row, column=5, value=data['fez'])
-            ws.cell(row=row, column=6, value=data['saz'])
-            ws.cell(row=row, column=7, value=data['sez'])
-            ws.cell(row=row, column=8, value=format_time_value_auto(data['puffer']))
-            ws.cell(row=row, column=9, value="JA" if data['is_critical'] else "")
+            ws.cell(row=row, column=2, value=task.name)
+            ws.cell(row=row, column=3, value=format_time_value_auto(task.duration))
+            ws.cell(row=row, column=4, value=task.faz)
+            ws.cell(row=row, column=5, value=task.fez)
+            ws.cell(row=row, column=6, value=task.saz)
+            ws.cell(row=row, column=7, value=task.sez)
+            ws.cell(row=row, column=8, value=format_time_value_auto(task.puffer))
+            ws.cell(row=row, column=9, value="JA" if task.is_critical else "")
 
             # Kritische Tasks hervorheben
-            if data['is_critical']:
+            if task.is_critical:
                 for col in range(1, 10):
                     ws.cell(row=row, column=col).fill = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
 
@@ -330,7 +386,7 @@ def export_cpm_to_xlsx(calc: SimpleCPMCalculator, output_file: Path, project=Non
         if project and isinstance(project, PersonProject) and project.reports:
             if cfg_dir is None:
                 cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
-            add_report_sheets(wb, project, calc, cfg_dir)
+            add_report_sheets(wb, project, result, cfg_dir)
 
         wb.save(output_file)
     except ImportError:
@@ -579,20 +635,17 @@ Beispiele:
                     project = project.expand_loops()
                     logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
 
-                # Erstelle CPM Calculator mit expandiertem Projekt
-                calc = SimpleCPMCalculator(project)
-
-                # Setze Startdatum falls angegeben
+                # Berechne CPM mit neuer API
+                start_date = None
                 if args.start_date:
                     from datetime import datetime
-                    calc.start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
+                    start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
                     logger.info(f"Verwende Startdatum: {args.start_date}")
 
-                # Berechne CPM
-                calc.calculate()
+                result = project.calculate_cpm(start_date=start_date)
 
                 # Ausgabe auf Konsole
-                calc.print_summary()
+                print_cpm_summary(result)
 
                 # Bestimme Ausgabeverzeichnis
                 if args.output_dir:
@@ -606,11 +659,13 @@ Beispiele:
                 for fmt in export_formats:
                     if fmt == 'json':
                         output_file = output_dir / f"{project_file.stem}_cpm.json"
-                        calc.export_to_json(output_file, include_dates=True)
+                        output_data = result.export_to_dict(include_dates=True)
+                        with open(output_file, 'w', encoding='utf-8') as f:
+                            json.dump(output_data, f, indent=2, ensure_ascii=False)
                         logger.info(f"CPM-Ergebnisse (JSON) gespeichert in: {output_file}")
                     elif fmt == 'txt':
                         output_file = output_dir / f"{project_file.stem}_cpm.txt"
-                        export_cpm_to_txt(calc, output_file)
+                        export_cpm_to_txt(result, output_file)
                         logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
                     elif fmt == 'xlsx':
                         output_file = output_dir / f"{project_file.stem}_cpm.xlsx"
@@ -625,7 +680,7 @@ Beispiele:
                                     args.cfg_dir
                                 )
 
-                            export_cpm_to_xlsx(calc, output_file, export_project, args.cfg_dir)
+                            export_cpm_to_xlsx(result, output_file, export_project, args.cfg_dir)
                             logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
                         except ImportError as ie:
                             logger.warning(f"XLSX-Export übersprungen: {ie}")

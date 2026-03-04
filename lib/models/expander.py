@@ -75,15 +75,10 @@ def expand_instance_task(
                 # Normale Dependency
                 new_dependencies.append(dep_id)
 
-        # Verkette Zyklen: Jeder Zyklus hängt vom vorherigen ab (außer der erste)
-        if cycle_num > 1:
-            prev_cycle_id = generate_cycle_id(task.id, cycle_num - 1, prefix)
-            if prev_cycle_id not in new_dependencies:
-                new_dependencies.append(prev_cycle_id)
-
         # Erstelle expandierten Task
+        current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
         expanded_task = SimpleTask(
-            id=generate_cycle_id(task.id, cycle_num, prefix),
+            id=current_cycle_id,
             name=task.name,
             duration=task.duration,
             resources=task.resources,
@@ -93,6 +88,14 @@ def expand_instance_task(
             cycle_number=cycle_num,
             cycle_prefix=prefix
         )
+
+        # Verkette Zyklen: Füge den aktuellen Zyklus als Nachfolger (dependency) des vorherigen hinzu.
+        # Da dependencies = Nachfolger (successors), muss der VORHERIGE Task den AKTUELLEN als Nachfolger haben.
+        # Falsch wäre: prev_cycle an current's dependencies anfügen (das kehrt die Reihenfolge um).
+        if cycle_num > 1 and expanded_tasks:
+            prev_task = expanded_tasks[-1]
+            if current_cycle_id not in prev_task.dependencies:
+                prev_task.dependencies.append(current_cycle_id)
 
         expanded_tasks.append(expanded_task)
 
@@ -133,16 +136,16 @@ def expand_loop_task(
 
     for cycle_num in range(1, num_loops + 1):
         # Erste Iteration hat die originalen Dependencies,
-        # weitere Iterationen hängen von vorheriger ab
+        # weitere Iterationen werden sequenziell verkettet.
         if cycle_num == 1:
             dependencies = task.dependencies.copy() if task.dependencies else []
         else:
-            prev_cycle_id = generate_cycle_id(task.id, cycle_num - 1, prefix)
-            dependencies = [prev_cycle_id]
+            dependencies = []
 
         # Erstelle expandierten Task
+        current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
         expanded_task = SimpleTask(
-            id=generate_cycle_id(task.id, cycle_num, prefix),
+            id=current_cycle_id,
             name=f"{task.name} #{cycle_num}",
             duration=loop_duration,
             resources=task.resources,
@@ -152,6 +155,13 @@ def expand_loop_task(
             cycle_number=cycle_num,
             cycle_prefix=prefix
         )
+
+        # Verkette Iterationen: Füge den aktuellen Zyklus als Nachfolger des vorherigen hinzu.
+        # Da dependencies = Nachfolger (successors), muss der VORHERIGE den AKTUELLEN als Nachfolger kennen.
+        if cycle_num > 1 and expanded_tasks:
+            prev_task = expanded_tasks[-1]
+            if current_cycle_id not in prev_task.dependencies:
+                prev_task.dependencies.append(current_cycle_id)
 
         expanded_tasks.append(expanded_task)
 

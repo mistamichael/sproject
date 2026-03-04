@@ -22,12 +22,12 @@ except ImportError:
 # Import models - try relative import first, then absolute
 try:
     from .models import PersonProject, Report, GanttReport, ResourceListReport
-    from .cpm_calculator import SimpleCPMCalculator
-    from .utils import format_time_value_auto
+    from .models.cpm import CPMResult
+    from .utils import format_time_value_auto, add_workdays
 except (ImportError, ValueError):
     from models import PersonProject, Report, GanttReport, ResourceListReport
-    from cpm_calculator import SimpleCPMCalculator
-    from utils import format_time_value_auto
+    from models.cpm import CPMResult
+    from utils import format_time_value_auto, add_workdays
 
 
 def load_gantt_config(cfg_dir: Path) -> Dict[str, Any]:
@@ -117,12 +117,12 @@ def interpolate_color(color_start: str, color_end: str, position: float) -> str:
     return rgb_to_hex((r, g, b))
 
 
-def get_timeline_range(calc: SimpleCPMCalculator, loadunit: str) -> Tuple[datetime, datetime, str]:
+def get_timeline_range(result: CPMResult, loadunit: str) -> Tuple[datetime, datetime, str]:
     """
     Berechnet Zeitbereich und Granularität für Timeline.
 
     Args:
-        calc: CPM Calculator mit berechneten Daten
+        result: CPM-Berechnungsergebnis
         loadunit: Zeiteinheit (hours, days, etc.)
 
     Returns:
@@ -130,9 +130,9 @@ def get_timeline_range(calc: SimpleCPMCalculator, loadunit: str) -> Tuple[dateti
         granularity kann sein: 'hours', 'days', 'weeks'
     """
     # Berechne Projektende
-    project_duration = max(data['fez'] for data in calc.cpm_data.values())
-    start_date = calc.start_date
-    end_date = calc._add_workdays(start_date, project_duration)
+    project_duration = max(task.fez for task in result.tasks.values())
+    start_date = result.project_start
+    end_date = add_workdays(start_date, project_duration)
 
     # Bestimme Granularität
     duration_days = (end_date - start_date).days
@@ -376,7 +376,7 @@ def draw_gantt_bar(ws, row: int, start_col: int, faz_offset: int, duration_cols:
                 cell.border = Border(top=border_side, bottom=border_side)
 
 
-def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalculator,
+def create_gantt_chart(wb: Workbook, project: PersonProject, result: CPMResult,
                       report: GanttReport, config: Dict[str, Any]) -> None:
     """
     Erstellt Gantt-Chart-Worksheet.
@@ -384,7 +384,7 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
     Args:
         wb: Workbook
         project: Projekt-Daten
-        calc: CPM Calculator mit berechneten Daten
+        result: CPM-Berechnungsergebnis
         report: Gantt Report-Konfiguration
         config: Gantt-Konfiguration aus defaults.cfg
     """
@@ -412,7 +412,7 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
     ws.column_dimensions['E'].width = 10  # effort
 
     # Timeline berechnen
-    start_date, end_date, granularity = get_timeline_range(calc, report.loadunit)
+    start_date, end_date, granularity = get_timeline_range(result, report.loadunit)
 
     # Timeline-Header (ab Spalte 6 = 'chart')
     chart_start_col = len(report.columns)
@@ -424,18 +424,18 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
 
     # Sortiere Tasks nach FAZ (Frühester Anfangszeitpunkt), dann nach ID
     sorted_task_ids = sorted(
-        calc.cpm_data.keys(),
-        key=lambda x: (calc.cpm_data[x]['faz'], str(x))
+        result.tasks.keys(),
+        key=lambda x: (result.tasks[x].faz, str(x))
     )
 
     # Kritischer Pfad
-    critical_path = calc.get_critical_path()
+    critical_path = result.critical_path
 
     # Farb-Interpolation
     num_tasks = len(sorted_task_ids)
 
     for task_idx, task_id in enumerate(sorted_task_ids):
-        data = calc.cpm_data[task_id]
+        task = result.tasks[task_id]
 
         # Interpoliere Farbe
         if num_tasks > 1:
@@ -449,7 +449,7 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
         ws.cell(row=current_row, column=1, value=str(task_id))
 
         # Spalte B: name (Task-Name, nicht Person!)
-        ws.cell(row=current_row, column=2, value=data['name'])
+        ws.cell(row=current_row, column=2, value=task.name)
 
         # Spalte C: start (leer, da nicht in Task-Daten)
         ws.cell(row=current_row, column=3, value='')
@@ -458,7 +458,7 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
         ws.cell(row=current_row, column=4, value='')
 
         # Spalte E: effort
-        ws.cell(row=current_row, column=5, value=format_time_value_auto(data['duration']))
+        ws.cell(row=current_row, column=5, value=format_time_value_auto(task.duration))
 
         # Spalte F+: chart (Balkendiagramm)
         # Berechne Positionen
@@ -467,9 +467,9 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
         else:
             time_unit_factor = 1  # 1 Tag = 1 Spalte
 
-        faz_offset = int(data['faz'] * time_unit_factor)
-        duration_cols = max(1, int(data['duration'] * time_unit_factor))
-        sez_offset = int(data['sez'] * time_unit_factor)
+        faz_offset = int(task.faz * time_unit_factor)
+        duration_cols = max(1, int(task.duration * time_unit_factor))
+        sez_offset = int(task.sez * time_unit_factor)
 
         is_critical = task_id in critical_path
 
@@ -481,7 +481,7 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, calc: SimpleCPMCalc
         current_row += 1
 
 
-def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCalculator,
+def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult,
                         report: ResourceListReport, config: Dict[str, Any]) -> None:
     """
     Erstellt Resource-List-Worksheet.
@@ -489,7 +489,7 @@ def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCa
     Args:
         wb: Workbook
         project: Projekt-Daten
-        calc: CPM Calculator mit berechneten Daten
+        result: CPM-Berechnungsergebnis
         report: Resource List Report-Konfiguration
         config: Gantt-Konfiguration aus defaults.cfg
     """
@@ -516,7 +516,7 @@ def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCa
     ws.column_dimensions['D'].width = 12  # end
 
     # Timeline berechnen
-    start_date, end_date, granularity = get_timeline_range(calc, report.loadunit)
+    start_date, end_date, granularity = get_timeline_range(result, report.loadunit)
 
     # Timeline-Header (ab Spalte 5 = 'chart')
     chart_start_col = len(report.columns)
@@ -532,7 +532,7 @@ def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCa
         person_tasks[person.id] = []
 
     # Sammle Tasks pro Person
-    for task_id in calc.cpm_data.keys():
+    for task_id in result.tasks.keys():
         task = next((t for t in project.tasks if t.id == task_id), None)
         if task and task.resources:
             for res_id in task.resources:
@@ -541,7 +541,7 @@ def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCa
                     person_tasks[res.person_id].append(task_id)
 
     # Farb-Interpolation für Tasks
-    all_task_ids = sorted(calc.cpm_data.keys(), key=lambda x: int(x) if isinstance(x, (int, str)) and str(x).isdigit() else 0)
+    all_task_ids = sorted(result.tasks.keys(), key=lambda x: int(x) if isinstance(x, (int, str)) and str(x).isdigit() else 0)
     num_tasks = len(all_task_ids)
     task_colors = {}
     for task_idx, task_id in enumerate(all_task_ids):
@@ -572,10 +572,10 @@ def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCa
             time_unit_factor = 1
 
         for task_id in person_tasks[person.id]:
-            data = calc.cpm_data[task_id]
+            task = result.tasks[task_id]
 
-            faz_offset = int(data['faz'] * time_unit_factor)
-            duration_cols = max(1, int(data['duration'] * time_unit_factor))
+            faz_offset = int(task.faz * time_unit_factor)
+            duration_cols = max(1, int(task.duration * time_unit_factor))
 
             bar_color = task_colors[task_id]
 
@@ -587,7 +587,7 @@ def create_resource_list(wb: Workbook, project: PersonProject, calc: SimpleCPMCa
         current_row += 1
 
 
-def add_report_sheets(wb: Workbook, project: PersonProject, calc: SimpleCPMCalculator,
+def add_report_sheets(wb: Workbook, project: PersonProject, result: CPMResult,
                      cfg_dir: Path) -> None:
     """
     Fügt Report-Worksheets zur Excel-Datei hinzu.
@@ -595,7 +595,7 @@ def add_report_sheets(wb: Workbook, project: PersonProject, calc: SimpleCPMCalcu
     Args:
         wb: Workbook
         project: Projekt-Daten (PersonProject mit reports)
-        calc: CPM Calculator mit berechneten Daten
+        result: CPM-Berechnungsergebnis
         cfg_dir: Verzeichnis mit Konfigurationsdateien
     """
     if not project.reports:
@@ -606,7 +606,7 @@ def add_report_sheets(wb: Workbook, project: PersonProject, calc: SimpleCPMCalcu
 
     for report in project.reports:
         if isinstance(report, GanttReport):
-            create_gantt_chart(wb, project, calc, report, config)
+            create_gantt_chart(wb, project, result, report, config)
         elif isinstance(report, ResourceListReport):
-            create_resource_list(wb, project, calc, report, config)
+            create_resource_list(wb, project, result, report, config)
         # Weitere Report-Typen können hier hinzugefügt werden
