@@ -621,7 +621,8 @@ Beispiele:
             try:
                 # Lade Projekt mit Pydantic-Modellen
                 from models import load_project
-                from models.project import CycleProject, LoopProject
+                from models.project import CycleProject, LoopProject, PersonProject
+                from models.tasks import LoopTask
 
                 project = load_project(project_file)
 
@@ -634,6 +635,13 @@ Beispiele:
                     logger.info(f"Expandiere Loop-Tasks fuer {project_file.name}...")
                     project = project.expand_loops()
                     logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
+                elif isinstance(project, PersonProject):
+                    # Prüfe ob PersonProject Loop-Tasks enthält
+                    has_loop_tasks = any(isinstance(task, LoopTask) for task in project.tasks)
+                    if has_loop_tasks:
+                        logger.info(f"Expandiere Loop-Tasks in PersonProject fuer {project_file.name}...")
+                        project = project.expand_loops()
+                        logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
 
                 # Berechne CPM mit neuer API
                 start_date = None

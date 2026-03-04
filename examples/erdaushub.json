@@ -2,7 +2,48 @@
   "project": "Erdaushub 1000m3",
   "total_volume": 1000,
   "unit": "m3",
+  "persons": [
+    {
+      "id": "PERS1",
+      "name": "Max Mustermann",
+      "email": "max@bauunternehmen.com",
+      "role": "LKW-Fahrer",
+      "hourly_rate": 45.0
+    },
+    {
+      "id": "PERS2",
+      "name": "Heinz Müller",
+      "email": "heinz@bauunternehmen.com",
+      "role": "LKW-Fahrer",
+      "hourly_rate": 45.0
+    },
+    {
+      "id": "PERS3",
+      "name": "Bodo Schmidt",
+      "email": "bodo@bauunternehmen.com",
+      "role": "Baggerführer",
+      "hourly_rate": 55.0
+    }
+  ],
   "resources": [
+    {
+      "id": "R_PERS1",
+      "name": "LKW-Fahrer Max",
+      "type": "person",
+      "person_id": "PERS1"
+    },
+    {
+      "id": "R_PERS2",
+      "name": "LKW-Fahrer Heinz",
+      "type": "person",
+      "person_id": "PERS2"
+    },
+    {
+      "id": "R_PERS3",
+      "name": "Baggerführer Bodo",
+      "type": "person",
+      "person_id": "PERS3"
+    },
     {
       "id": "B1",
       "name": "Kettenbagger",
@@ -29,6 +70,7 @@
       "id": 1,
       "name": "Initialisierung",
       "duration": "15m",
+      "resources": ["R_PERS1", "R_PERS2", "R_PERS3"],
       "dependencies": [2]
     },
     {
@@ -42,11 +84,13 @@
         {
           "name": "Beladen",
           "required_resources": ["B1", "any_truck"],
+          "resources": ["R_PERS3", "any_driver"],
           "duration_formula": "resource.truck.capacity / resource.B1.loading_speed_per_min"
         },
         {
           "name": "Transport-Umlauf",
           "required_resources": ["current_truck"],
+          "resources": ["current_driver"],
           "duration": "resource.truck.transport_cycle_fixed"
         }
       ]

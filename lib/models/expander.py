@@ -131,6 +131,9 @@ def expand_loop_task(
     # Berechne Dauer pro Loop
     loop_duration = _calculate_loop_duration(task, resources)
 
+    # Sammle Ressourcen aus Subtasks
+    task_resources = _collect_resources_from_subtasks(task)
+
     prefix = task.cycle_prefix or 'F'
     expanded_tasks = []
 
@@ -148,7 +151,7 @@ def expand_loop_task(
             id=current_cycle_id,
             name=f"{task.name} #{cycle_num}",
             duration=loop_duration,
-            resources=task.resources,
+            resources=task_resources,
             dependencies=dependencies,
             # Zusätzliche Metadaten
             original_id=task.id,
@@ -166,6 +169,33 @@ def expand_loop_task(
         expanded_tasks.append(expanded_task)
 
     return expanded_tasks
+
+
+def _collect_resources_from_subtasks(task: LoopTask) -> Optional[List[str]]:
+    """
+    Sammelt alle eindeutigen Ressourcen aus den Subtasks eines LoopTasks.
+
+    Args:
+        task: LoopTask mit Subtasks
+
+    Returns:
+        Liste von Ressourcen-IDs oder None
+    """
+    if not task.subtasks:
+        return None
+
+    all_resources = []
+    for subtask in task.subtasks:
+        if hasattr(subtask, 'resources') and subtask.resources:
+            all_resources.extend(subtask.resources)
+
+    # Entferne Duplikate und filtere spezielle Platzhalter (z.B. "any_driver", "current_driver")
+    unique_resources = []
+    for res_id in all_resources:
+        if res_id not in unique_resources and not res_id.startswith(('any_', 'current_')):
+            unique_resources.append(res_id)
+
+    return unique_resources if unique_resources else None
 
 
 def _calculate_loop_count(

@@ -253,23 +253,83 @@ class LoopProject(ProjectBase):
 
 class PersonProject(ProjectBase):
     """
-    Projekt mit Personen (software_simple.json)
+    Projekt mit Personen (software_simple.json, erdaushub.json mit Personen)
 
     Zusätzliche Felder:
     - total_hours: Geschätzte Gesamtstunden (optional)
-    - unit: Einheit (z.B. "hours")
+    - total_volume: Gesamtvolumen für Loop-Tasks (optional)
+    - unit: Einheit (z.B. "hours", "m3")
     - persons: Liste von Personen mit Details
     - resources: Liste von Ressourcen (verweisen auf persons via person_id)
-    - tasks: Liste von SimpleTask
+    - tasks: Liste von SimpleTask oder LoopTask
     - reports: Liste von Reports (Gantt Chart, Resource List, etc.)
     """
 
     total_hours: Optional[int] = None
+    total_volume: Optional[Union[int, float]] = None
     unit: str
     persons: List[Person]
     resources: List[Resource]
-    tasks: List[SimpleTask]
+    tasks: List[Union[SimpleTask, LoopTask]]
     reports: Optional[List[Report]] = None
+
+    def expand_loops(self) -> 'PersonProject':
+        """
+        Expandiert LoopTasks basierend auf loop_until Bedingung.
+
+        Returns:
+            Neues PersonProject mit expandierten Tasks
+
+        Examples:
+            >>> project = load_project("examples/erdaushub.json")
+            >>> expanded = project.expand_loops()
+            >>> # Tasks werden basierend auf total_volume expandiert
+        """
+        from .expander import expand_loop_task
+
+        expanded_tasks = []
+        loop_task_mapping = {}  # Mapping: original_id -> [expanded_task_ids]
+
+        for task in self.tasks:
+            if isinstance(task, LoopTask):
+                # Expandiere LoopTask
+                if self.total_volume is None:
+                    raise ValueError(f"total_volume muss für Loop-Task '{task.name}' gesetzt sein")
+                expanded = expand_loop_task(task, self.total_volume, self.resources)
+                expanded_tasks.extend(expanded)
+                # Speichere Mapping
+                loop_task_mapping[task.id] = [t.id for t in expanded]
+            else:
+                # SimpleTask bleibt unverändert
+                expanded_tasks.append(task)
+
+        # Aktualisiere Dependencies: Ersetze Referenzen auf expandierte Tasks
+        for task in expanded_tasks:
+            if task.dependencies:
+                updated_deps = []
+                for dep_id in task.dependencies:
+                    if dep_id in loop_task_mapping:
+                        # Referenziert einen expandierten LoopTask
+                        # Verweise auf den LETZTEN expandierten Task (letzte Iteration)
+                        updated_deps.append(loop_task_mapping[dep_id][-1])
+                    else:
+                        # Normale Dependency
+                        updated_deps.append(dep_id)
+                # Aktualisiere dependencies
+                task.dependencies = updated_deps
+
+        # Erstelle neues PersonProject mit expandierten Tasks
+        return PersonProject(
+            project=self.project,
+            project_start=self.project_start,
+            total_hours=self.total_hours,
+            total_volume=self.total_volume,
+            unit=self.unit,
+            persons=self.persons,
+            resources=self.resources,
+            tasks=expanded_tasks,
+            reports=self.reports
+        )
 
 
 # Union-Type für alle Projekt-Varianten
