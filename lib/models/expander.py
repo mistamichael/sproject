@@ -131,13 +131,13 @@ def expand_loop_task(
     # Berechne Dauer pro Loop
     loop_duration = _calculate_loop_duration(task, resources)
 
-    # Sammle Ressourcen aus Subtasks
-    task_resources = _collect_resources_from_subtasks(task)
-
     prefix = task.cycle_prefix or 'F'
     expanded_tasks = []
 
     for cycle_num in range(1, num_loops + 1):
+        # Sammle Ressourcen für diesen Zyklus (mit Rotation)
+        task_resources = _collect_resources_from_subtasks(task, cycle_num)
+
         # Erste Iteration hat die originalen Dependencies,
         # weitere Iterationen werden sequenziell verkettet.
         if cycle_num == 1:
@@ -171,12 +171,17 @@ def expand_loop_task(
     return expanded_tasks
 
 
-def _collect_resources_from_subtasks(task: LoopTask) -> Optional[List[str]]:
+def _collect_resources_from_subtasks(task: LoopTask, cycle_num: int = 1) -> Optional[List[str]]:
     """
     Sammelt alle eindeutigen Ressourcen aus den Subtasks eines LoopTasks.
 
+    Unterstützt Notation:
+    - "R_PERS1&L1" = R_PERS1 und L1 zusammen
+    - "R_PERS1&L1|R_PERS2&L2" = R_PERS1 mit L1 ODER R_PERS2 mit L2 (rotierend)
+
     Args:
         task: LoopTask mit Subtasks
+        cycle_num: Zyklus-Nummer für Rotation von alternativen Ressourcen
 
     Returns:
         Liste von Ressourcen-IDs oder None
@@ -187,15 +192,51 @@ def _collect_resources_from_subtasks(task: LoopTask) -> Optional[List[str]]:
     all_resources = []
     for subtask in task.subtasks:
         if hasattr(subtask, 'resources') and subtask.resources:
-            all_resources.extend(subtask.resources)
+            for res_spec in subtask.resources:
+                # Parse Ressourcen-Spezifikation
+                parsed = _parse_resource_spec(res_spec, cycle_num)
+                all_resources.extend(parsed)
 
-    # Entferne Duplikate und filtere spezielle Platzhalter (z.B. "any_driver", "current_driver")
+    # Entferne Duplikate
     unique_resources = []
     for res_id in all_resources:
-        if res_id not in unique_resources and not res_id.startswith(('any_', 'current_')):
+        if res_id not in unique_resources:
             unique_resources.append(res_id)
 
     return unique_resources if unique_resources else None
+
+
+def _parse_resource_spec(spec: str, cycle_num: int) -> List[str]:
+    """
+    Parst eine Ressourcen-Spezifikation mit & und | Notation.
+
+    Beispiele:
+    - "R_PERS3&B1" -> ["R_PERS3", "B1"]
+    - "R_PERS1&L1|R_PERS2&L2" -> ["R_PERS1", "L1"] (ungerade Zyklen) oder ["R_PERS2", "L2"] (gerade Zyklen)
+
+    Args:
+        spec: Ressourcen-Spezifikation
+        cycle_num: Zyklus-Nummer für Rotation
+
+    Returns:
+        Liste von Ressourcen-IDs
+    """
+    # Prüfe auf OR-Notation (|)
+    if '|' in spec:
+        alternatives = spec.split('|')
+        # Rotiere zwischen Alternativen basierend auf Zyklus-Nummer
+        selected_idx = (cycle_num - 1) % len(alternatives)
+        selected = alternatives[selected_idx].strip()
+        # Parse die ausgewählte Alternative
+        return _parse_resource_spec(selected, cycle_num)
+
+    # Prüfe auf AND-Notation (&)
+    if '&' in spec:
+        parts = spec.split('&')
+        return [part.strip() for part in parts]
+
+    # Einfache Ressource (keine spezielle Notation)
+    return [spec.strip()]
 
 
 def _calculate_loop_count(

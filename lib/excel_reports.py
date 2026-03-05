@@ -522,42 +522,72 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
     chart_start_col = len(report.columns)
     timeline_rows = create_timeline_header(ws, chart_start_col, row, start_date, end_date, granularity)
 
-    # Daten-Zeilen (Personen)
+    # Daten-Zeilen (Personen und Maschinen)
     data_start_row = row + timeline_rows
     current_row = data_start_row
 
-    # Erstelle Person -> Tasks Mapping
-    person_tasks = {}
-    for person in project.persons:
-        person_tasks[person.id] = []
+    # Erstelle Ressource -> Tasks Mapping
+    resource_tasks = {}
+    for res in project.resources:
+        resource_tasks[res.id] = []
 
-    # Sammle Tasks pro Person
+    # Sammle Tasks pro Ressource
     for task_id in result.tasks.keys():
         task = next((t for t in project.tasks if t.id == task_id), None)
         if task and task.resources:
             for res_id in task.resources:
-                res = next((r for r in project.resources if r.id == res_id), None)
-                if res and hasattr(res, 'person_id'):
-                    person_tasks[res.person_id].append(task_id)
+                if res_id in resource_tasks:
+                    resource_tasks[res_id].append(task_id)
 
-    # Farb-Interpolation für Tasks
-    all_task_ids = sorted(result.tasks.keys(), key=lambda x: int(x) if isinstance(x, (int, str)) and str(x).isdigit() else 0)
-    num_tasks = len(all_task_ids)
-    task_colors = {}
-    for task_idx, task_id in enumerate(all_task_ids):
-        if num_tasks > 1:
-            color_position = task_idx / (num_tasks - 1)
+    # Erstelle Liste aller anzuzeigenden Ressourcen (Personen + Maschinen)
+    display_resources = []
+
+    # Erst Personen
+    for person in project.persons:
+        person_res = next((r for r in project.resources if hasattr(r, 'person_id') and r.person_id == person.id), None)
+        if person_res:
+            display_resources.append({
+                'type': 'person',
+                'id': person_res.id,
+                'name': person.name,
+                'role': person.role if hasattr(person, 'role') else '',
+                'person_id': person.id
+            })
+
+    # Dann Maschinen (machine, truck)
+    for res in project.resources:
+        if res.type in ['machine', 'truck']:
+            display_resources.append({
+                'type': res.type,
+                'id': res.id,
+                'name': res.name,
+                'role': res.type.capitalize(),
+                'person_id': None
+            })
+
+    # Farb-Interpolation für alle Ressourcen
+    num_resources = len(display_resources)
+    resource_colors = {}
+    for res_idx, res_info in enumerate(display_resources):
+        if num_resources > 1:
+            color_position = res_idx / (num_resources - 1)
         else:
             color_position = 0.0
-        task_colors[task_id] = interpolate_color(config['color_start'], config['color_end'], color_position)
+        resource_colors[res_info['id']] = interpolate_color(config['color_start'], config['color_end'], color_position)
 
-    # Zeige Personen
-    for person in project.persons:
-        # Spalte A: User
-        ws.cell(row=current_row, column=1, value=person.name)
+    # Zeitfaktor
+    if granularity == 'hours':
+        time_unit_factor = 24
+    else:
+        time_unit_factor = 1
 
-        # Spalte B: Rolle
-        ws.cell(row=current_row, column=2, value=person.role if hasattr(person, 'role') else '')
+    # Zeige alle Ressourcen
+    for res_info in display_resources:
+        # Spalte A: Name
+        ws.cell(row=current_row, column=1, value=res_info['name'])
+
+        # Spalte B: Rolle/Typ
+        ws.cell(row=current_row, column=2, value=res_info['role'])
 
         # Spalte C: start (leer)
         ws.cell(row=current_row, column=3, value='')
@@ -566,23 +596,18 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
         ws.cell(row=current_row, column=4, value='')
 
         # Spalte E+: chart (Balken für Tasks)
-        if granularity == 'hours':
-            time_unit_factor = 24
-        else:
-            time_unit_factor = 1
+        res_color = resource_colors[res_info['id']]
 
-        for task_id in person_tasks[person.id]:
+        for task_id in resource_tasks[res_info['id']]:
             task = result.tasks[task_id]
 
             faz_offset = int(task.faz * time_unit_factor)
             duration_cols = max(1, int(task.duration * time_unit_factor))
 
-            bar_color = task_colors[task_id]
-
             # Zeichne Balken (ohne Puffer, nur Dauer)
             for col_offset in range(faz_offset, faz_offset + duration_cols):
                 cell = ws.cell(row=current_row, column=chart_start_col + col_offset)
-                cell.fill = PatternFill(start_color=bar_color, end_color=bar_color, fill_type="solid")
+                cell.fill = PatternFill(start_color=res_color, end_color=res_color, fill_type="solid")
 
         current_row += 1
 

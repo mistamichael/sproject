@@ -19,7 +19,7 @@ except (ImportError, ValueError):
     from utils import detect_time_unit
 
 from .tasks import SimpleTask, InstanceTask, LoopTask
-from .resources import Resource, Person
+from .resources import Resource, Person, RestInterval
 from .reports import Report
 
 
@@ -263,6 +263,7 @@ class PersonProject(ProjectBase):
     - resources: Liste von Ressourcen (verweisen auf persons via person_id)
     - tasks: Liste von SimpleTask oder LoopTask
     - reports: Liste von Reports (Gantt Chart, Resource List, etc.)
+    - resting_times: Gemeinsame Ruhepausen-Regeln (optional)
     """
 
     total_hours: Optional[int] = None
@@ -272,6 +273,7 @@ class PersonProject(ProjectBase):
     resources: List[Resource]
     tasks: List[Union[SimpleTask, LoopTask]]
     reports: Optional[List[Report]] = None
+    resting_times: Optional[List['RestInterval']] = None
 
     def expand_loops(self) -> 'PersonProject':
         """

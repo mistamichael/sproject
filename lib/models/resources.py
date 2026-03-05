@@ -123,9 +123,24 @@ class VacationEntry(BaseModel):
     }
 
 
+class RestInterval(BaseModel):
+    """
+    Ruhepausen-Regel
+
+    Felder:
+    - after_hours: Nach wie vielen Stunden Arbeit eine Pause erforderlich ist
+    - duration: Dauer der Pause (z.B. "45m", "30m")
+    - note: Beschreibung/Begründung (optional)
+    """
+
+    after_hours: float
+    duration: str
+    note: Optional[str] = None
+
+
 class Person(BaseModel):
     """
-    Person mit Arbeitszeiten und Urlaub (software_simple.json)
+    Person mit Arbeitszeiten und Urlaub (software_simple.json, erdaushub.json)
 
     Felder:
     - id: Personen-ID
@@ -135,6 +150,7 @@ class Person(BaseModel):
     - hourly_rate: Stundensatz
     - workinghours_override: Spezielle Arbeitszeiten (optional)
     - vacation: Urlaubseinträge (optional)
+    - rest_intervals: Verweis auf Ruhepausen-Regeln oder direkte Angabe (optional)
     """
 
     id: str
@@ -144,6 +160,7 @@ class Person(BaseModel):
     hourly_rate: float
     workinghours_override: Optional[WorkHoursOverride] = None
     vacation: Optional[List[VacationEntry]] = None
+    rest_intervals: Optional[Union[str, List[RestInterval]]] = None  # Kann Verweis ("resting_times") oder direkte Liste sein
 
 
 # Union-Type für alle Resource-Varianten

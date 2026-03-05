@@ -2,27 +2,42 @@
   "project": "Erdaushub 1000m3",
   "total_volume": 1000,
   "unit": "m3",
+  "resting_times": [
+    {
+      "after_hours": 4.5,
+      "duration": "45m",
+      "note": "Lenkzeitunterbrechung laut Fahrpersonalgesetz"
+    },
+    {
+      "after_hours": 6,
+      "duration": "30m",
+      "note": "Vorschrift laut Arbeitszeitgesetz"
+    }
+  ],
   "persons": [
     {
       "id": "PERS1",
       "name": "Max Mustermann",
       "email": "max@bauunternehmen.com",
       "role": "LKW-Fahrer",
-      "hourly_rate": 45.0
+      "hourly_rate": 45.0,
+      "rest_intervals": "resting_times"
     },
     {
       "id": "PERS2",
       "name": "Heinz Müller",
       "email": "heinz@bauunternehmen.com",
       "role": "LKW-Fahrer",
-      "hourly_rate": 45.0
+      "hourly_rate": 45.0,
+      "rest_intervals": "resting_times"
     },
     {
       "id": "PERS3",
       "name": "Bodo Schmidt",
       "email": "bodo@bauunternehmen.com",
       "role": "Baggerführer",
-      "hourly_rate": 55.0
+      "hourly_rate": 65.0,
+      "rest_intervals": "resting_times"
     }
   ],
   "resources": [
@@ -48,29 +63,35 @@
       "id": "B1",
       "name": "Kettenbagger",
       "type": "machine",
+      "hourly_rate": 140.0,
+      "provisioning_costs": 150.0,
       "loading_speed_per_min": 1.5 
     },
     {
       "id": "L1",
       "name": "LKW 1",
       "type": "truck",
-      "capacity": 15,
+      "hourly_rate": 120.0,
+      "provisioning_costs": 100.0,
+      "capacity": 12,
       "transport_cycle_fixed": "40m"
     },
     {
       "id": "L2",
       "name": "LKW 2",
       "type": "truck",
-      "capacity": 15,
+      "hourly_rate": 120.0,
+      "provisioning_costs": 100.0,
+      "capacity": 12,
       "transport_cycle_fixed": "40m"
     }
   ],
   "tasks": [
     {
       "id": 1,
-      "name": "Initialisierung",
+      "name": "Initialisierung und Bereitstellung",
       "duration": "15m",
-      "resources": ["R_PERS1", "R_PERS2", "R_PERS3"],
+      "resources": ["R_PERS1", "R_PERS2", "R_PERS3", "B1", "L1", "L2"],
       "dependencies": [2]
     },
     {
@@ -84,13 +105,13 @@
         {
           "name": "Beladen",
           "required_resources": ["B1", "any_truck"],
-          "resources": ["R_PERS3", "any_driver"],
+          "resources": ["R_PERS3&B1", "R_PERS1&L1 | R_PERS2&L2"],
           "duration_formula": "resource.truck.capacity / resource.B1.loading_speed_per_min"
         },
         {
           "name": "Transport-Umlauf",
           "required_resources": ["current_truck"],
-          "resources": ["current_driver"],
+          "resources": ["R_PERS1&L1 | R_PERS2&L2"],
           "duration": "resource.truck.transport_cycle_fixed"
         }
       ]
