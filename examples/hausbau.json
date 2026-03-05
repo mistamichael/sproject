@@ -1,0 +1,71 @@
+{
+  "project": "Einfamilienhaus-Bau",
+  "project_start": "2026-04-01",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Grube ausheben",
+      "duration": "3d",
+      "dependencies": [3]
+    },
+    {
+      "id": 2,
+      "name": "Erde abtransportieren",
+      "duration": "4d",
+      "dependencies_aa": [1],
+      "note": "AA: Abtransport beginnt sobald Aushub beginnt (parallel)"
+    },
+    {
+      "id": 3,
+      "name": "Fundament gießen",
+      "duration": "2d",
+      "dependencies": [4]
+    },
+    {
+      "id": 4,
+      "name": "Fundament trocknen",
+      "duration": "7d",
+      "dependencies": [5]
+    },
+    {
+      "id": 5,
+      "name": "Mauerwerk errichten",
+      "duration": "10d",
+      "dependencies": [6, 7]
+    },
+    {
+      "id": 6,
+      "name": "Elektroinstallation",
+      "duration": "5d",
+      "dependencies_aa": [5],
+      "note": "AA: Elektrik beginnt sobald Mauern beginnen"
+    },
+    {
+      "id": 7,
+      "name": "Sanitärinstallation",
+      "duration": "6d",
+      "dependencies_aa": [5],
+      "note": "AA: Sanitär beginnt sobald Mauern beginnen"
+    },
+    {
+      "id": 8,
+      "name": "Programmierung",
+      "duration": "8d",
+      "dependencies": [9]
+    },
+    {
+      "id": 9,
+      "name": "Dokumentation",
+      "duration": "8d",
+      "dependencies_ee": [8],
+      "dependencies": [],
+      "note": "EE: Doku endet wenn Programmierung endet"
+    },
+    {
+      "id": 10,
+      "name": "Abnahme",
+      "duration": "1d",
+      "dependencies": []
+    }
+  ]
+}

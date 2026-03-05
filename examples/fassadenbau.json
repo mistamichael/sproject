@@ -1,0 +1,111 @@
+{
+  "project": "Fassadensanierung & Kellerisolierung",
+  "scope": "Erdarbeiten, Perimeterdämmung, Holzständerbau, Zellulose-Einblasdämmung",
+  "resting_times": [
+    {
+      "after_hours": 4.5,
+      "duration": "45m",
+      "note": "Lenkzeitunterbrechung (falls Materialtransport anfällt)"
+    },
+    {
+      "after_hours": 6,
+      "duration": "30m",
+      "note": "Vorschrift laut Arbeitszeitgesetz für alle Gewerke"
+    }
+  ],
+  "persons": [
+    {
+      "id": "PERS_ERD",
+      "name": "Thomas Tiefbau",
+      "role": "Baggerführer / Erdbauer",
+      "hourly_rate": 60.0,
+      "rest_intervals": "resting_times"
+    },
+    {
+      "id": "PERS_ZIM",
+      "name": "Stefan Schnitt",
+      "role": "Zimmerer (Holzbau)",
+      "hourly_rate": 65.0,
+      "rest_intervals": "resting_times"
+    },
+    {
+      "id": "PERS_ISO",
+      "name": "Klaus Flocke",
+      "role": "Dämmtechnik-Fachkraft",
+      "hourly_rate": 55.0,
+      "rest_intervals": "resting_times"
+    }
+  ],
+  "resources": [
+    {
+      "id": "MB1",
+      "name": "Minibagger 3.5t",
+      "type": "machine",
+      "hourly_rate": 85.0,
+      "provisioning_costs": 120.0,
+      "note": "Für Aufgrabungen im Randbereich"
+    },
+    {
+      "id": "EB1",
+      "name": "Zellulose-Einblasmaschine",
+      "type": "machine",
+      "hourly_rate": 45.0,
+      "provisioning_costs": 50.0,
+      "performance_m3_per_h": 15
+    },
+    {
+      "id": "MAT_XPS",
+      "name": "Perimeterdämmung XPS",
+      "type": "material",
+      "unit": "m2"
+    },
+    {
+      "id": "MAT_WOOD",
+      "name": "Holzfaserplatten & Ständerwerk",
+      "type": "material",
+      "unit": "m2"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Erdarbeiten & Freilegung",
+      "duration": "8h",
+      "dependencies": [2],
+      "resources": ["PERS_ERD", "MB1"],
+      "note": "Aufgraben des Erdreichs bis Fundamentkante"
+    },
+    {
+      "id": 2,
+      "name": "Kellerisolierung (Perimeter)",
+      "duration": "6h",
+      "dependencies": [3],
+      "resources": ["PERS_ERD", "MAT_XPS"],
+      "note": "Reinigung, Abdichtung und Ankleben der XPS-Platten"
+    },
+    {
+      "id": 3,
+      "name": "Holzständerwerk & Holzfaserplatten",
+      "duration": "16h",
+      "dependencies": [4],
+      "resources": ["PERS_ZIM", "MAT_WOOD"],
+      "note": "Montage der Unterkonstruktion und äußeren Hülle"
+    },
+    {
+      "id": 4,
+      "name": "Zellulose Einblasdämmung",
+      "duration": "4h",
+      "dependencies": [5],
+      "resources": ["PERS_ISO", "EB1"],
+      "note": "Lückenloses Ausblasen der Gefache"
+    },
+    {
+      "id": 5,
+      "name": "Verfüllen & Abschluss",
+      "duration": "4h",
+      "dependencies": [],
+      "resources": ["PERS_ERD", "MB1"],
+      "note": "Kies/Erde verfüllen und Geländeanpassung"
+    }
+  ]
+}
