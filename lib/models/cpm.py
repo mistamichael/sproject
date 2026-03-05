@@ -273,10 +273,73 @@ class CPMCalculator:
                 if successor_id in self.cpm_tasks:
                     self.cpm_tasks[successor_id].predecessors.append(task_id)
 
+    def _insert_weekend_blocker(
+        self,
+        fez_of_predecessor: float,
+        predecessor_id: Union[int, str],
+        successor_id: Union[int, str]
+    ) -> Optional[str]:
+        """
+        Prüft ob zwischen Vorgänger-Ende und Nachfolger-Start ein Wochenende liegt.
+        Falls ja, wird ein Wochenend-Blocker-Task als CPMTaskResult eingefügt.
+
+        Der Blocker hat:
+        - Puffer = 0 (FAZ = SAZ, FEZ = SEZ)
+        - Keine Ressourcen
+        - is_blocker = True
+
+        Args:
+            fez_of_predecessor: FEZ des Vorgänger-Tasks (Tage seit Projektstart)
+            predecessor_id:     ID des Vorgänger-Tasks
+            successor_id:       ID des Task der nach dem Wochenende kommt
+
+        Returns:
+            ID des eingefügten Blocker-Tasks, oder None wenn kein Wochenende
+        """
+        start_dt = self.start_date + timedelta(days=fez_of_predecessor)
+        weekday = start_dt.weekday()  # 0=Mo, 5=Sa, 6=So
+
+        if weekday < 5:  # Kein Wochenende
+            return None
+
+        # Berechne Wochenend-Dauer zum nächsten Montag
+        if weekday == 5:  # Samstag -> 2 Tage bis Montag
+            weekend_days = 2
+        else:  # Sonntag -> 1 Tag bis Montag
+            weekend_days = 1
+
+        blocker_id = f"WE-{predecessor_id}-{successor_id}"
+
+        # Nicht doppelt einfügen
+        if blocker_id in self.cpm_tasks:
+            return blocker_id
+
+        blocker_faz = fez_of_predecessor
+        blocker_fez = blocker_faz + weekend_days  # Kalender-Tage, kein add_workdays
+
+        blocker = CPMTaskResult(
+            id=blocker_id,
+            name=f"Wochenende",
+            duration=float(weekend_days),
+            faz=blocker_faz,
+            fez=blocker_fez,
+            saz=blocker_faz,   # GP = 0: SAZ = FAZ
+            sez=blocker_fez,   # GP = 0: SEZ = FEZ
+            puffer=0.0,
+            free_puffer=0.0,
+            is_critical=True,
+            is_break=False,
+            successors=[successor_id],
+            predecessors=[predecessor_id]
+        )
+        self.cpm_tasks[blocker_id] = blocker
+        return blocker_id
+
     def _forward_pass(self) -> None:
         """
         Vorwärtsrechnung: Berechnet FAZ und FEZ.
         Verwendet topologische Sortierung für korrekte Reihenfolge.
+        Berücksichtigt Wochenenden durch Einfügen von Blocker-Tasks.
         """
         sorted_ids = self._topological_sort()
 
@@ -289,13 +352,35 @@ class CPMCalculator:
             else:
                 # FAZ = Maximum aller FEZ der Vorgänger
                 max_fez = 0.0
+                max_pred_id = None
                 for pred_id in task_result.predecessors:
                     if pred_id in self.cpm_tasks:
-                        max_fez = max(max_fez, self.cpm_tasks[pred_id].fez)
+                        pred_fez = self.cpm_tasks[pred_id].fez
+                        if pred_fez > max_fez:
+                            max_fez = pred_fez
+                            max_pred_id = pred_id
                 task_result.faz = max_fez
 
-            # FEZ = FAZ + Dauer
-            task_result.fez = task_result.faz + task_result.duration
+                # Prüfe ob FAZ auf ein Wochenende fällt -> Blocker-Task einfügen
+                if max_pred_id is not None and self.start_date:
+                    blocker_id = self._insert_weekend_blocker(max_fez, max_pred_id, task_id)
+                    if blocker_id:
+                        # FAZ des aktuellen Tasks = FEZ des Blockers
+                        task_result.faz = self.cpm_tasks[blocker_id].fez
+                        # Vorgänger des aktuellen Tasks: ersetze max_pred durch blocker
+                        if max_pred_id in task_result.predecessors:
+                            idx = task_result.predecessors.index(max_pred_id)
+                            task_result.predecessors[idx] = blocker_id
+                        # Nachfolger des Vorgänger-Tasks: ersetze task_id durch blocker
+                        pred_task = self.cpm_tasks[max_pred_id]
+                        if task_id in pred_task.successors:
+                            idx = pred_task.successors.index(task_id)
+                            pred_task.successors[idx] = blocker_id
+
+            # FEZ = FAZ + Dauer (mit Wochenenden für normale Tasks)
+            if hasattr(self.project.tasks[0] if self.project.tasks else None, 'is_blocker'):
+                pass  # Skip – wird weiter unten behandelt
+            task_result.fez = self._add_duration_with_weekends(task_result.faz, task_result.duration)
 
     def _backward_pass(self) -> None:
         """Rückwärtsrechnung: Berechnet SAZ und SEZ."""
@@ -331,12 +416,25 @@ class CPMCalculator:
                         min_saz = min(min_saz, self.cpm_tasks[succ_id].saz)
                 task_result.sez = min_saz
 
-            # SAZ = SEZ - Dauer
-            task_result.saz = task_result.sez - task_result.duration
+            # SAZ = SEZ - Dauer (mit Wochenenden rückwärts)
+            task_result.saz = self._subtract_duration_with_weekends(task_result.sez, task_result.duration)
 
     def _calculate_slack(self) -> None:
         """Berechnet die Pufferzeiten und markiert kritische Tasks."""
         for task_id, task_result in self.cpm_tasks.items():
+            # Pausen und Wochenend-Blocker: GP=0, FAZ=SAZ, FEZ=SEZ erzwingen
+            is_fixed = task_result.is_break or getattr(task_result, '_is_blocker', False)
+            # is_blocker erkennen anhand des ID-Präfix (WE-) für Blocker-Tasks
+            is_fixed = is_fixed or (isinstance(task_id, str) and task_id.startswith('WE-'))
+
+            if is_fixed:
+                task_result.saz = task_result.faz
+                task_result.sez = task_result.fez
+                task_result.puffer = 0.0
+                task_result.free_puffer = 0.0
+                task_result.is_critical = True
+                continue
+
             # Gesamtpuffer (GP) = SAZ - FAZ
             task_result.puffer = task_result.saz - task_result.faz
 
@@ -353,6 +451,56 @@ class CPMCalculator:
 
             # Kritische Tasks haben Gesamtpuffer ≈ 0
             task_result.is_critical = abs(task_result.puffer) < 0.001
+
+    def _add_duration_with_weekends(self, start_days: float, duration_days: float) -> float:
+        """
+        Addiert Dauer zu Startzeit unter Berücksichtigung von Wochenenden.
+
+        Args:
+            start_days: Start in Tagen seit Projektbeginn
+            duration_days: Dauer in Arbeitstagen
+
+        Returns:
+            Endzeit in Tagen seit Projektbeginn (inkl. Wochenenden)
+        """
+        # Handle infinity values
+        if start_days == float('inf') or duration_days == float('inf'):
+            return float('inf')
+
+        # Konvertiere Tage zu datetime
+        start_datetime = self.start_date + timedelta(days=start_days)
+
+        # Addiere Arbeitstage (überspringt Wochenenden)
+        end_datetime = add_workdays(start_datetime, duration_days)
+
+        # Konvertiere zurück zu Tagen
+        days_diff = (end_datetime - self.start_date).total_seconds() / 86400
+        return days_diff
+
+    def _subtract_duration_with_weekends(self, end_days: float, duration_days: float) -> float:
+        """
+        Subtrahiert Dauer von Endzeit unter Berücksichtigung von Wochenenden.
+
+        Args:
+            end_days: Ende in Tagen seit Projektbeginn
+            duration_days: Dauer in Arbeitstagen
+
+        Returns:
+            Startzeit in Tagen seit Projektbeginn (inkl. Wochenenden)
+        """
+        # Handle infinity values
+        if end_days == float('inf') or duration_days == float('inf'):
+            return float('inf')
+
+        # Konvertiere Tage zu datetime
+        end_datetime = self.start_date + timedelta(days=end_days)
+
+        # Subtrahiere Arbeitstage (negative Dauer = rückwärts)
+        start_datetime = add_workdays(end_datetime, -duration_days)
+
+        # Konvertiere zurück zu Tagen
+        days_diff = (start_datetime - self.start_date).total_seconds() / 86400
+        return days_diff
 
     def _topological_sort(self) -> List[Union[int, str]]:
         """

@@ -37,7 +37,13 @@
       "email": "bodo@bauunternehmen.com",
       "role": "Baggerführer",
       "hourly_rate": 65.0,
-      "rest_intervals": "resting_times"
+      "rest_intervals": [
+      {
+          "after_hours": 6,
+          "duration": "30m",
+          "note": "Vorschrift laut Arbeitszeitgesetz"
+        }
+      ]
     }
   ],
   "resources": [

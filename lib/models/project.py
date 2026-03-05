@@ -268,7 +268,7 @@ class PersonProject(ProjectBase):
 
     total_hours: Optional[int] = None
     total_volume: Optional[Union[int, float]] = None
-    unit: str
+    unit: Optional[str] = None
     persons: List[Person]
     resources: List[Resource]
     tasks: List[Union[SimpleTask, LoopTask]]
@@ -406,7 +406,7 @@ class PersonProject(ProjectBase):
                     person = next((p for p in self.persons if p.id == person_id), None)
                     person_res_id = next((rid for rid, pid in res_to_person.items() if pid == person_id), None)
 
-                    if person and person_res_id:
+                    if person:
                         # Kürze Person-ID für kompaktere Pause-IDs (PERS1 -> P1)
                         person_id_short = person_id.replace('PERS', 'P')
 
@@ -418,7 +418,8 @@ class PersonProject(ProjectBase):
                             id=break_id,
                             name=f"Pause: {person.name} ({rest_interval.note or rest_interval.duration})",
                             duration=rest_interval.duration,
-                            resources=[person_res_id],
+                            resources=None,   # Keine Ressourcen – Pause blockiert Zeit, nicht die Person
+                            cost=0.0,         # Keine Kosten
                             dependencies=[],  # Wird über den Vorgänger-Task verknüpft
                             is_break=True
                         )

@@ -18,9 +18,12 @@ class SimpleTask(TaskBase):
     Einfache Tasks für tankdesign.json, pizza.json
 
     Zusätzliche Felder:
-    - is_break: Markiert diesen Task als Ruhepause (optional, default False)
+    - is_break:    Markiert diesen Task als Ruhepause (optional, default False)
+    - is_blocker:  Markiert diesen Task als Kalender-Blocker (Wochenende/Feiertag),
+                   GP=0, keine Ressourcen, keine Kosten (optional, default False)
     """
     is_break: bool = False
+    is_blocker: bool = False
 
 
 class InstanceTask(TaskBase):

@@ -62,6 +62,17 @@ class TruckResource(ResourceBase):
     transport_cycle_fixed: Optional[str] = None
 
 
+class OvenResource(ResourceBase):
+    """
+    Ofen-Ressource für pizzas.json
+
+    Zusätzliche Felder:
+    - capacity: Ladekapazität
+    """
+
+    type: Literal["oven"]
+    capacity: Union[int, float]
+
 class PersonResource(ResourceBase):
     """
     Personen-Ressource
@@ -70,9 +81,12 @@ class PersonResource(ResourceBase):
     - person_id: Verweis auf Person in persons-Sektion (optional)
     - role: Rolle (optional, wenn kein person_id)
     - count: Anzahl (optional)
+    - name: Optional (wird aus Person abgeleitet wenn person_id vorhanden)
+    - type: Optional (default "person")
     """
 
-    type: Literal["person"]
+    name: Optional[str] = None  # type: ignore[assignment]
+    type: Literal["person"] = "person"  # type: ignore[assignment]
     person_id: Optional[str] = None
     role: Optional[str] = None
     count: Optional[int] = None
@@ -157,7 +171,7 @@ class Person(BaseModel):
 
     id: str
     name: str
-    email: str
+    email: Optional[str] = None
     role: str
     hourly_rate: float
     workinghours_override: Optional[WorkHoursOverride] = None
@@ -166,4 +180,6 @@ class Person(BaseModel):
 
 
 # Union-Type für alle Resource-Varianten
-Resource = Union[TruckResource, MachineResource, PersonResource, ResourceBase]
+# Union-Type für alle Resource-Varianten
+# WICHTIG: PersonResource zuerst, da es die flexibelsten Regeln hat (name optional)
+Resource = Union[PersonResource, TruckResource, OvenResource, MachineResource, ResourceBase]

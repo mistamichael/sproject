@@ -2,18 +2,30 @@
   "project": "Pizza Service Express",
   "order_volume": 12,
   "unit": "Pizzen",
+  "persons": [
+    {
+      "id": "PERS1",
+      "name": "Max Mustermann",
+      "email": "max@pizzabaecker.com",
+      "role": "Bäcker",
+      "hourly_rate": 45.0
+    },
+    {
+      "id": "PERS2",
+      "name": "Heinz Müller",
+      "email": "heinz@pizzabaecker.com",
+      "role": "Verkäufer",
+      "hourly_rate": 35.0
+    }
+  ],
   "resources": [
     {
       "id": "R1",
-      "name": "Pizzabäcker",
-      "role": "Produktion",
-      "count": 1
+      "person_id": "PERS1"
     },
     {
       "id": "R2",
-      "name": "Servicekraft",
-      "role": "Verkauf",
-      "count": 1
+      "person_id": "PERS2"
     },
     {
       "id": "R3",

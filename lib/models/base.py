@@ -24,17 +24,30 @@ class TaskBase(BaseModel):
     - id: Task-ID (int oder string für Zyklen wie "2-P1")
     - name: Task-Name
     - duration: Dauer als String (z.B. "10d", "5h", "30m")
-    - dependencies: Liste von Task-IDs, von denen dieser Task abhängt
+    - dependencies: Liste von Task-IDs (EA - Ende-Anfang / Normalfolge, Standard)
+    - dependencies_aa: Liste von Task-IDs (AA - Anfang-Anfang / Anfangsfolge)
+    - dependencies_ee: Liste von Task-IDs (EE - Ende-Ende / Endfolge)
+    - dependencies_ae: Liste von Task-IDs (AE - Anfang-Ende / Sprungfolge)
     - resources: Liste von Resource-IDs (optional)
     - description: Beschreibung (optional)
+
+    Abhängigkeitstypen:
+    - EA (Ende-Anfang): Nachfolger beginnt, wenn Vorgänger endet (Standard)
+    - AA (Anfang-Anfang): Nachfolger beginnt, wenn Vorgänger beginnt
+    - EE (Ende-Ende): Nachfolger endet, wenn Vorgänger endet
+    - AE (Anfang-Ende): Nachfolger endet, wenn Vorgänger beginnt
     """
 
     id: Union[int, str]
     name: str
     duration: Optional[str] = None
-    dependencies: List[Union[int, str]] = Field(default_factory=list)
+    dependencies: List[Union[int, str]] = Field(default_factory=list)  # EA (Standard)
+    dependencies_aa: Optional[List[Union[int, str]]] = Field(default_factory=list)  # Anfang-Anfang
+    dependencies_ee: Optional[List[Union[int, str]]] = Field(default_factory=list)  # Ende-Ende
+    dependencies_ae: Optional[List[Union[int, str]]] = Field(default_factory=list)  # Anfang-Ende
     resources: Optional[List[str]] = None
     description: Optional[str] = None
+    cost: Optional[float] = None  # Explizite Kosten (0.0 = kostenlos, None = normal berechnen)
 
     @field_validator('duration')
     @classmethod
