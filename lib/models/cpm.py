@@ -45,6 +45,7 @@ class CPMTaskResult(BaseModel):
         puffer: Gesamtpuffer
         free_puffer: Freier Puffer
         is_critical: Ob Task kritisch ist
+        is_break: Ob Task eine Ruhepause ist (optional)
         successors: Nachfolger-IDs
         predecessors: Vorgänger-IDs
     """
@@ -58,6 +59,7 @@ class CPMTaskResult(BaseModel):
     puffer: float = 0.0
     free_puffer: float = 0.0
     is_critical: bool = False
+    is_break: bool = False
     successors: List[Union[int, str]] = []
     predecessors: List[Union[int, str]] = []
 
@@ -253,12 +255,16 @@ class CPMCalculator:
             # Hole dependencies
             dependencies = task.dependencies if hasattr(task, 'dependencies') and task.dependencies else []
 
+            # Hole is_break Flag
+            is_break = task.is_break if hasattr(task, 'is_break') else False
+
             self.cpm_tasks[task.id] = CPMTaskResult(
                 id=task.id,
                 name=task.name,
                 duration=duration,
                 successors=dependencies,  # dependencies sind Nachfolger
                 predecessors=[],  # Wird unten berechnet
+                is_break=is_break
             )
 
         # Berechne Vorgänger aus Nachfolgern

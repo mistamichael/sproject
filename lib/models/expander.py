@@ -109,6 +109,7 @@ def expand_loop_task(
 ) -> List[SimpleTask]:
     """
     Expandiert einen LoopTask in mehrere SimpleTask-Iterationen.
+    Subtasks werden als separate Tasks expandiert.
 
     Args:
         task: Der zu expandierende LoopTask
@@ -116,7 +117,7 @@ def expand_loop_task(
         resources: Verfügbare Ressourcen (für Kapazitätsberechnung)
 
     Returns:
-        Liste von SimpleTask-Instanzen
+        Liste von SimpleTask-Instanzen (Subtasks * Anzahl Loops)
 
     Examples:
         >>> task = LoopTask(id=3, name="Fahrt", is_loop=True, loop_until="total_volume <= 0")
@@ -128,45 +129,87 @@ def expand_loop_task(
     # Berechne Anzahl der Loop-Iterationen
     num_loops = _calculate_loop_count(task, total_volume, resources)
 
-    # Berechne Dauer pro Loop
-    loop_duration = _calculate_loop_duration(task, resources)
-
     prefix = task.cycle_prefix or 'F'
     expanded_tasks = []
 
+    # Falls keine Subtasks definiert sind, erstelle einen zusammengefassten Task (Legacy)
+    if not task.subtasks:
+        loop_duration = _calculate_loop_duration(task, resources)
+
+        for cycle_num in range(1, num_loops + 1):
+            task_resources = _collect_resources_from_subtasks(task, cycle_num)
+
+            if cycle_num == 1:
+                dependencies = task.dependencies.copy() if task.dependencies else []
+            else:
+                dependencies = []
+
+            current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
+            expanded_task = SimpleTask(
+                id=current_cycle_id,
+                name=f"{task.name} #{cycle_num}",
+                duration=loop_duration,
+                resources=task_resources,
+                dependencies=dependencies,
+                original_id=task.id,
+                cycle_number=cycle_num,
+                cycle_prefix=prefix
+            )
+
+            if cycle_num > 1 and expanded_tasks:
+                prev_task = expanded_tasks[-1]
+                if current_cycle_id not in prev_task.dependencies:
+                    prev_task.dependencies.append(current_cycle_id)
+
+            expanded_tasks.append(expanded_task)
+
+        return expanded_tasks
+
+    # Neue Logik: Expandiere Subtasks als separate Tasks
     for cycle_num in range(1, num_loops + 1):
-        # Sammle Ressourcen für diesen Zyklus (mit Rotation)
-        task_resources = _collect_resources_from_subtasks(task, cycle_num)
+        cycle_subtasks = []
 
-        # Erste Iteration hat die originalen Dependencies,
-        # weitere Iterationen werden sequenziell verkettet.
-        if cycle_num == 1:
-            dependencies = task.dependencies.copy() if task.dependencies else []
-        else:
-            dependencies = []
+        for subtask_idx, subtask in enumerate(task.subtasks):
+            # Berechne Dauer für diesen Subtask
+            subtask_duration = _calculate_subtask_duration(subtask, resources)
 
-        # Erstelle expandierten Task
-        current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
-        expanded_task = SimpleTask(
-            id=current_cycle_id,
-            name=f"{task.name} #{cycle_num}",
-            duration=loop_duration,
-            resources=task_resources,
-            dependencies=dependencies,
-            # Zusätzliche Metadaten
-            original_id=task.id,
-            cycle_number=cycle_num,
-            cycle_prefix=prefix
-        )
+            # Sammle Ressourcen für diesen Subtask
+            subtask_resources = _parse_subtask_resources(subtask, cycle_num)
 
-        # Verkette Iterationen: Füge den aktuellen Zyklus als Nachfolger des vorherigen hinzu.
-        # Da dependencies = Nachfolger (successors), muss der VORHERIGE den AKTUELLEN als Nachfolger kennen.
-        if cycle_num > 1 and expanded_tasks:
-            prev_task = expanded_tasks[-1]
-            if current_cycle_id not in prev_task.dependencies:
-                prev_task.dependencies.append(current_cycle_id)
+            # Erstelle Task-ID: z.B. "2-F1-BEL" (Beladen), "2-F1-TRA" (Transport)
+            subtask_suffix = subtask.name[:3].upper()
+            subtask_id = f"{generate_cycle_id(task.id, cycle_num, prefix)}-{subtask_suffix}"
 
-        expanded_tasks.append(expanded_task)
+            # Erstelle den Task zunächst ohne Dependencies
+            expanded_task = SimpleTask(
+                id=subtask_id,
+                name=f"{subtask.name} #{cycle_num}",
+                duration=subtask_duration,
+                resources=subtask_resources,
+                dependencies=[],  # Wird unten gesetzt
+                original_id=task.id,
+                cycle_number=cycle_num,
+                cycle_prefix=prefix
+            )
+
+            # Setze Dependencies (Nachfolger!) korrekt:
+            # dependencies = Liste der Nachfolger (Tasks die NACH diesem kommen)
+            if cycle_num == 1 and subtask_idx == 0:
+                # Erster Subtask im ersten Zyklus hat originale Dependencies
+                expanded_task.dependencies = task.dependencies.copy() if task.dependencies else []
+
+            # Der vorherige Task soll auf den aktuellen Task zeigen (als Nachfolger)
+            if subtask_idx > 0:
+                # Vorheriger Subtask im gleichen Zyklus zeigt auf aktuellen
+                cycle_subtasks[subtask_idx - 1].dependencies.append(expanded_task.id)
+            elif cycle_num > 1 and expanded_tasks:
+                # Letzter Subtask des vorherigen Zyklus zeigt auf ersten Subtask des aktuellen
+                expanded_tasks[-1].dependencies.append(expanded_task.id)
+
+            cycle_subtasks.append(expanded_task)
+
+        # Füge alle Subtasks dieses Zyklus hinzu
+        expanded_tasks.extend(cycle_subtasks)
 
     return expanded_tasks
 
@@ -399,3 +442,62 @@ def _parse_duration_to_minutes(duration_value: Any) -> float:
             return float(duration_str)
         except:
             return 0.0
+
+
+def _calculate_subtask_duration(subtask, resources: List[Resource]) -> str:
+    """
+    Berechnet die Dauer eines einzelnen Subtasks.
+
+    Args:
+        subtask: Subtask mit duration oder duration_formula
+        resources: Verfügbare Ressourcen
+
+    Returns:
+        Dauer als String (z.B. "8.0m", "40m")
+    """
+    # Prüfe auf duration_formula
+    if hasattr(subtask, 'duration_formula') and subtask.duration_formula:
+        duration_minutes = _evaluate_duration_formula(subtask.duration_formula, resources)
+        return f"{duration_minutes:.1f}m"
+
+    # Prüfe auf duration
+    if hasattr(subtask, 'duration') and subtask.duration:
+        duration_str = subtask.duration
+        # Falls es auf resource verweist
+        if isinstance(duration_str, str) and 'resource.' in duration_str:
+            duration_minutes = _evaluate_duration_formula(duration_str, resources)
+            return f"{duration_minutes:.1f}m"
+        else:
+            # Direkte Dauer
+            return duration_str
+
+    return "0m"
+
+
+def _parse_subtask_resources(subtask, cycle_num: int) -> Optional[List[str]]:
+    """
+    Extrahiert die Ressourcen eines Subtasks mit Rotation.
+
+    Args:
+        subtask: Subtask mit resources Feld
+        cycle_num: Zyklus-Nummer für Rotation
+
+    Returns:
+        Liste von Ressourcen-IDs oder None
+    """
+    if not hasattr(subtask, 'resources') or not subtask.resources:
+        return None
+
+    all_resources = []
+    for res_spec in subtask.resources:
+        # Parse Ressourcen-Spezifikation (unterstützt & und |)
+        parsed = _parse_resource_spec(res_spec, cycle_num)
+        all_resources.extend(parsed)
+
+    # Entferne Duplikate
+    unique_resources = []
+    for res_id in all_resources:
+        if res_id not in unique_resources:
+            unique_resources.append(res_id)
+
+    return unique_resources if unique_resources else None

@@ -45,19 +45,22 @@
       "id": "R_PERS1",
       "name": "LKW-Fahrer Max",
       "type": "person",
-      "person_id": "PERS1"
+      "person_id": "PERS1",
+      "color": "5B9BD5"
     },
     {
       "id": "R_PERS2",
       "name": "LKW-Fahrer Heinz",
       "type": "person",
-      "person_id": "PERS2"
+      "person_id": "PERS2",
+      "color": "4472C4"
     },
     {
       "id": "R_PERS3",
       "name": "Baggerführer Bodo",
       "type": "person",
-      "person_id": "PERS3"
+      "person_id": "PERS3",
+      "color": "2F5597"
     },
     {
       "id": "B1",
@@ -65,7 +68,8 @@
       "type": "machine",
       "hourly_rate": 140.0,
       "provisioning_costs": 150.0,
-      "loading_speed_per_min": 1.5 
+      "loading_speed_per_min": 1.5,
+      "color": "C9A400"
     },
     {
       "id": "L1",
@@ -74,7 +78,8 @@
       "hourly_rate": 120.0,
       "provisioning_costs": 100.0,
       "capacity": 12,
-      "transport_cycle_fixed": "40m"
+      "transport_cycle_fixed": "40m",
+      "color": "C19A6B"
     },
     {
       "id": "L2",
@@ -83,7 +88,8 @@
       "hourly_rate": 120.0,
       "provisioning_costs": 100.0,
       "capacity": 12,
-      "transport_cycle_fixed": "40m"
+      "transport_cycle_fixed": "40m",
+      "color": "8B6F47"
     }
   ],
   "tasks": [

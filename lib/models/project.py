@@ -320,6 +320,10 @@ class PersonProject(ProjectBase):
                 # Aktualisiere dependencies
                 task.dependencies = updated_deps
 
+        # Füge Ruhepausen ein (falls resting_times definiert)
+        if self.resting_times:
+            expanded_tasks = self._insert_rest_breaks(expanded_tasks)
+
         # Erstelle neues PersonProject mit expandierten Tasks
         return PersonProject(
             project=self.project,
@@ -330,8 +334,107 @@ class PersonProject(ProjectBase):
             persons=self.persons,
             resources=self.resources,
             tasks=expanded_tasks,
-            reports=self.reports
+            reports=self.reports,
+            resting_times=self.resting_times
         )
+
+    def _insert_rest_breaks(self, tasks: List[SimpleTask]) -> List[SimpleTask]:
+        """
+        Fügt Ruhepausen-Tasks basierend auf Arbeitszeit-Regeln ein.
+
+        Args:
+            tasks: Liste der expandierten Tasks
+
+        Returns:
+            Liste mit Tasks inklusive eingefügten Pausen
+        """
+        try:
+            from .rest_breaks import resolve_rest_intervals, PersonWorkTracker
+        except ImportError:
+            from rest_breaks import resolve_rest_intervals, PersonWorkTracker
+
+        try:
+            from ..utils import parse_duration_to_minutes
+        except (ImportError, ValueError):
+            from utils import parse_duration_to_minutes
+
+        # Erstelle Tracker für jede Person
+        trackers = {}
+        for person in self.persons:
+            intervals = resolve_rest_intervals(person, self.resting_times)
+            if intervals:
+                trackers[person.id] = PersonWorkTracker(person.id, intervals)
+
+        if not trackers:
+            return tasks  # Keine Pausenregeln
+
+        # Erstelle Ressource -> Person Mapping
+        res_to_person = {}
+        for res in self.resources:
+            if hasattr(res, 'person_id') and res.person_id:
+                res_to_person[res.id] = res.person_id
+
+        tasks_with_breaks = []
+        break_counter = 1
+
+        for task in tasks:
+            # Berechne Arbeitszeit für diesen Task
+            if task.resources and not task.is_break:
+                task_minutes = parse_duration_to_minutes(task.duration)
+                task_hours = task_minutes / 60.0
+
+                # Sammle alle Personen die an diesem Task arbeiten
+                working_persons = set()
+                for res_id in task.resources:
+                    person_id = res_to_person.get(res_id)
+                    if person_id and person_id in trackers:
+                        working_persons.add(person_id)
+
+                # Prüfe ob Pausen erforderlich sind
+                required_breaks = {}  # person_id -> RestInterval
+                for person_id in working_persons:
+                    tracker = trackers[person_id]
+                    required_break = tracker.add_work_time(task_hours)
+                    if required_break:
+                        required_breaks[person_id] = required_break
+
+                # Füge Task hinzu
+                tasks_with_breaks.append(task)
+
+                # Füge Pausen-Tasks ein (eine pro Person die eine Pause braucht)
+                for person_id, rest_interval in required_breaks.items():
+                    person = next((p for p in self.persons if p.id == person_id), None)
+                    person_res_id = next((rid for rid, pid in res_to_person.items() if pid == person_id), None)
+
+                    if person and person_res_id:
+                        # Kürze Person-ID für kompaktere Pause-IDs (PERS1 -> P1)
+                        person_id_short = person_id.replace('PERS', 'P')
+
+                        # Pause-ID basiert auf vorheriger Task-ID für korrekte Sortierung
+                        # z.B. "2-F10-TRA" -> "2-F10-TRA-BRK-P1"
+                        break_id = f"{task.id}-BRK-{person_id_short}"
+
+                        break_task = SimpleTask(
+                            id=break_id,
+                            name=f"Pause: {person.name} ({rest_interval.note or rest_interval.duration})",
+                            duration=rest_interval.duration,
+                            resources=[person_res_id],
+                            dependencies=[],  # Wird über den Vorgänger-Task verknüpft
+                            is_break=True
+                        )
+
+                        # WICHTIG: Der vorherige Task muss die Pause als Nachfolger haben
+                        # (dependencies = Nachfolger im System!)
+                        task.dependencies.append(break_id)
+
+                        tasks_with_breaks.append(break_task)
+                        trackers[person_id].take_break(rest_interval)
+                        break_counter += 1
+            else:
+                # Task ohne Ressourcen oder ist bereits eine Pause
+                tasks_with_breaks.append(task)
+
+        return tasks_with_breaks
 
 
 # Union-Type für alle Projekt-Varianten

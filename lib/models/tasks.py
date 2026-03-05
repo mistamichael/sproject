@@ -17,9 +17,10 @@ class SimpleTask(TaskBase):
     """
     Einfache Tasks für tankdesign.json, pizza.json
 
-    Keine zusätzlichen Felder.
+    Zusätzliche Felder:
+    - is_break: Markiert diesen Task als Ruhepause (optional, default False)
     """
-    pass
+    is_break: bool = False
 
 
 class InstanceTask(TaskBase):

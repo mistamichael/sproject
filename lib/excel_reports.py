@@ -604,10 +604,18 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
             faz_offset = int(task.faz * time_unit_factor)
             duration_cols = max(1, int(task.duration * time_unit_factor))
 
+            # Prüfe ob Task eine Pause ist
+            is_break = hasattr(task, 'is_break') and task.is_break
+
             # Zeichne Balken (ohne Puffer, nur Dauer)
             for col_offset in range(faz_offset, faz_offset + duration_cols):
                 cell = ws.cell(row=current_row, column=chart_start_col + col_offset)
-                cell.fill = PatternFill(start_color=res_color, end_color=res_color, fill_type="solid")
+                if is_break:
+                    # Pausen werden in Grau dargestellt
+                    cell.fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+                else:
+                    # Normale Arbeitszeit in Ressourcenfarbe
+                    cell.fill = PatternFill(start_color=res_color, end_color=res_color, fill_type="solid")
 
         current_row += 1
 

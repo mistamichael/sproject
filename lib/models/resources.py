@@ -17,11 +17,13 @@ class ResourceBase(BaseModel):
     - id: Resource-ID
     - name: Name der Ressource
     - type: Typ (person, machine, truck, etc.) - optional für Legacy-Dateien
+    - color: Hex-Farbcode für Visualisierung (optional, z.B. "4472C4")
     """
 
     id: str
     name: str
     type: Optional[str] = None  # Optional für Legacy-JSON ohne type
+    color: Optional[str] = None  # Optional: Hex-Farbcode ohne #
 
     model_config = {
         'extra': 'allow',
