@@ -263,7 +263,7 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
         start_row: Start-Zeile für Header
         start_date: Projekt-Startdatum
         end_date: Projekt-Enddatum
-        granularity: 'hours', 'halfdays', 'days'
+        granularity: 'minutes', 'hours', 'halfdays', 'days'
         working_days: Kommaseparierte Liste von Arbeitstagen (z.B. 'mon,tue,wed,thu,fri')
 
     Returns:
@@ -285,7 +285,63 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
     current_col = start_col
     rows_used = 1
 
-    if granularity == 'hours':
+    if granularity == 'minutes':
+        # Minuten-basierte Timeline (für sehr kurze Projekte wie Pizza-Produktion)
+        # Zeige Stunden (0-7) pro Arbeitstag, jede Spalte = 1 Stunde = 60 Minuten
+        # time_unit_factor=480 sorgt dafür, dass Minuten korrekt auf Spalten gemappt werden
+        rows_used = 2  # Datum + Stunde
+
+        # Extrahiere working_days Konfiguration
+        weekday_names = {0: 'Mo', 1: 'Di', 2: 'Mi', 3: 'Do', 4: 'Fr', 5: 'Sa', 6: 'So'}
+        weekend_fill = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
+
+        # Zeile 1: Datum mit einer Spalte pro Arbeitsstunde
+        current_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        date_col_start = current_col
+
+        while current_date.date() <= end_date.date():
+            is_workday = is_working_day(current_date, working_days)
+            hours_for_day = 8 if is_workday else 1  # 8 Stunden für Arbeitstage, 1 Spalte für Nicht-Arbeitstage
+
+            # Merge Datum über alle Stunden des Tages
+            if hours_for_day > 1:
+                ws.merge_cells(
+                    start_row=start_row,
+                    start_column=current_col,
+                    end_row=start_row,
+                    end_column=current_col + hours_for_day - 1
+                )
+
+            cell = ws.cell(row=start_row, column=current_col,
+                         value=current_date.strftime('%d.%m') if is_workday else current_date.strftime('%d.%m'))
+            cell.fill = weekend_fill if not is_workday else header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+            cell.border = border
+
+            # Zeile 2: Stunden (0-7 für 8-Stunden-Tag) oder Wochentag-Kürzel
+            if is_workday:
+                for hour in range(8):
+                    cell = ws.cell(row=start_row + 1, column=current_col + hour, value=f'{hour}h')
+                    cell.fill = header_fill
+                    cell.font = header_font
+                    cell.alignment = header_alignment
+                    cell.border = border
+                    ws.column_dimensions[get_column_letter(current_col + hour)].width = 5
+            else:
+                # Nicht-Arbeitstag: Wochentag-Kürzel
+                weekday_label = weekday_names[current_date.weekday()]
+                cell = ws.cell(row=start_row + 1, column=current_col, value=weekday_label)
+                cell.fill = weekend_fill
+                cell.font = header_font
+                cell.alignment = header_alignment
+                cell.border = border
+                ws.column_dimensions[get_column_letter(current_col)].width = 5
+
+            current_col += hours_for_day
+            current_date += timedelta(days=1)
+
+    elif granularity == 'hours':
         # Stunden-basierte Timeline (nur Arbeitsstunden pro Tag)
         # Zeige 8 Stunden pro Arbeitstag (Standard aus defaults.cfg)
         rows_used = 2  # Datum + Stunde

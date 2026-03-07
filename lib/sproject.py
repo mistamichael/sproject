@@ -17,6 +17,8 @@ from typing import Optional, List
 from tjp_models import TJPRegistry
 from svg_graph_generator import SVGGraphGenerator
 from excel_reports import add_report_sheets
+from mermaid_export import export_cpm_to_svg
+from markdown_export import export_cpm_to_markdown
 from models.project import PersonProject
 from models.reports import GanttReport, ResourceListReport
 from models.resources import Person, PersonResource
@@ -552,7 +554,7 @@ Beispiele:
         "--export",
         type=str,
         default="json",
-        help="Exportformate (kommagetrennt): txt, json, xlsx (Standard: json). Beispiel: --export txt,json,xlsx"
+        help="Exportformate (kommagetrennt): txt, json, xlsx, svg, md (Standard: json). Beispiel: --export txt,json,xlsx,svg,md"
     )
 
     parser.add_argument(
@@ -571,10 +573,10 @@ Beispiele:
 
     # Parse Export-Formate
     export_formats = [fmt.strip().lower() for fmt in args.export.split(',')]
-    valid_formats = {'txt', 'json', 'xlsx'}
+    valid_formats = {'txt', 'json', 'xlsx', 'svg', 'md'}
     for fmt in export_formats:
         if fmt not in valid_formats:
-            print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx")
+            print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx, svg, md")
             return 1
 
     # Logging einrichten
@@ -696,6 +698,28 @@ Beispiele:
                             logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
                         except ImportError as ie:
                             logger.warning(f"XLSX-Export übersprungen: {ie}")
+                    elif fmt == 'svg':
+                        output_file = output_dir / f"{project_file.stem}_gantt.svg"
+                        try:
+                            # Exportiere Gantt-Chart als SVG über Mermaid/kroki
+                            project_name = project.project if hasattr(project, 'project') else project_file.stem
+                            success = export_cpm_to_svg(result, output_file, project_name)
+                            if success:
+                                logger.info(f"CPM-Ergebnisse (SVG) gespeichert in: {output_file}")
+                        except ImportError as ie:
+                            logger.warning(f"SVG-Export übersprungen: {ie}")
+                        except Exception as e:
+                            logger.error(f"SVG-Export fehlgeschlagen: {e}")
+                    elif fmt == 'md':
+                        output_file = output_dir / f"{project_file.stem}_cpm.md"
+                        try:
+                            # Exportiere CPM-Report als Markdown
+                            project_name = project.project if hasattr(project, 'project') else project_file.stem
+                            success = export_cpm_to_markdown(result, output_file, project_name, project)
+                            if success:
+                                logger.info(f"CPM-Ergebnisse (Markdown) gespeichert in: {output_file}")
+                        except Exception as e:
+                            logger.error(f"Markdown-Export fehlgeschlagen: {e}")
 
                 success_count += 1
             except Exception as e:
