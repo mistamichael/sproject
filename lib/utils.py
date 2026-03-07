@@ -175,6 +175,63 @@ def format_time_value(days: float, unit: Literal['minutes', 'hours', 'days']) ->
         return f"{days:.1f}d"
 
 
+def convert_days_to_time_unit(days: float, unit: Literal['minutes', 'hours', 'days']) -> float:
+    """
+    Konvertiert einen Zeitwert von Tagen in die gewünschte Zeiteinheit (nur numerischer Wert).
+
+    Args:
+        days: Zeitwert in Tagen
+        unit: Ziel-Einheit ('minutes', 'hours' oder 'days')
+
+    Returns:
+        Konvertierter numerischer Wert
+
+    Examples:
+        >>> convert_days_to_time_unit(1.0, 'minutes')
+        480.0
+        >>> convert_days_to_time_unit(1.0, 'hours')
+        8.0
+        >>> convert_days_to_time_unit(1.0, 'days')
+        1.0
+    """
+    import math
+    if math.isinf(days) or math.isnan(days):
+        return days
+
+    if unit == 'minutes':
+        return days * 480  # 1 Tag = 8h * 60min = 480min
+    elif unit == 'hours':
+        return days * 8  # 1 Tag = 8h
+    else:  # days
+        return days
+
+
+def get_time_unit_label(unit: Literal['minutes', 'hours', 'days']) -> str:
+    """
+    Gibt das Kürzel für eine Zeiteinheit zurück.
+
+    Args:
+        unit: Zeiteinheit ('minutes', 'hours' oder 'days')
+
+    Returns:
+        Kürzel (z.B. 'min', 'h', 'd')
+
+    Examples:
+        >>> get_time_unit_label('minutes')
+        'min'
+        >>> get_time_unit_label('hours')
+        'h'
+        >>> get_time_unit_label('days')
+        'd'
+    """
+    labels = {
+        'minutes': 'min',
+        'hours': 'h',
+        'days': 'd'
+    }
+    return labels.get(unit, 'd')
+
+
 def format_time_value_auto(days: float) -> str:
     """
     Formatiert einen Zeitwert (in Tagen) mit automatischer Einheiten-Wahl.

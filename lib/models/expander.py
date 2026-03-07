@@ -298,26 +298,36 @@ def _calculate_loop_count(
     Returns:
         Anzahl der Iterationen
     """
+    # 1. Expliziter loop_count hat höchste Priorität
+    if hasattr(task, 'loop_count') and task.loop_count is not None:
+        return task.loop_count
+
     loop_until = task.loop_until or ''
 
-    # Parse "total_volume <= 0" Bedingung
+    # 2. Parse "total_volume <= 0" Bedingung
     if 'total_volume' in loop_until:
-        # Hole LKW-Ressourcen
-        trucks = [r for r in resources if r.type == 'truck']
+        # 2a. Verwende volume_per_cycle falls angegeben
+        if hasattr(task, 'volume_per_cycle') and task.volume_per_cycle:
+            num_cycles = math.ceil(total_volume / task.volume_per_cycle)
+            return max(1, num_cycles)
 
-        if not trucks:
-            return task.loop_count or 1
+        # 2b. Hole LKW-Ressourcen (für Erdaushub-ähnliche Projekte)
+        trucks = [r for r in resources if hasattr(r, 'type') and r.type == 'truck']
 
-        # Nimm capacity des ersten LKWs
-        truck_capacity = trucks[0].capacity or 15
+        if trucks and hasattr(trucks[0], 'capacity'):
+            # Nimm capacity des ersten LKWs
+            truck_capacity = trucks[0].capacity or 15
 
-        # Anzahl Zyklen = total_volume / truck_capacity (aufgerundet)
-        num_cycles = math.ceil(total_volume / truck_capacity)
+            # Anzahl Zyklen = total_volume / truck_capacity (aufgerundet)
+            num_cycles = math.ceil(total_volume / truck_capacity)
 
-        return max(1, num_cycles)
+            return max(1, num_cycles)
 
-    # Fallback: verwende loop_count aus Task
-    return task.loop_count or 10
+        # 2c. Fallback wenn keine capacity gefunden
+        return max(1, int(total_volume))
+
+    # 3. Fallback: Default 10 Iterationen
+    return 10
 
 
 def _calculate_loop_duration(

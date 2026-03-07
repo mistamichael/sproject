@@ -34,7 +34,7 @@ class ConfigLoader:
         self.config_path = config_path
         self.config = configparser.ConfigParser()
         self.cfg_dir = config_path.parent if config_path else Path("cfg")
-        self._holidays_cache: Optional[Set[str]] = None
+        self._holidays_cache_dict: dict = {}  # Cache für Feiertage (Key: year_range)
 
         if config_path.exists():
             self.config.read(config_path, encoding='utf-8')
@@ -204,25 +204,30 @@ class ConfigLoader:
             'vat_percent': self.get_float('Costs', 'vat_percent', 19.0),
         }
 
-    def get_holidays(self, year: Optional[int] = None) -> Set[str]:
+    def get_holidays(self, year: Optional[int] = None, year_range: int = 1) -> Set[str]:
         """
-        Lädt Feiertage aus der referenzierten Feiertags-Datei.
+        Lädt Feiertage mithilfe der holidays-Bibliothek.
 
         Args:
             year: Jahr für die Feiertage (default: aktuelles Jahr)
+            year_range: Anzahl Jahre voraus/zurück (default: 1, also year-1 bis year+1)
 
         Returns:
             Set mit Feiertagsdaten im Format 'YYYY-MM-DD'
         """
-        if self._holidays_cache is not None:
-            return self._holidays_cache
+        # Cache-Key beinhaltet year und year_range
+        cache_key = f"{year}_{year_range}"
+        if hasattr(self, '_holidays_cache_dict') and cache_key in self._holidays_cache_dict:
+            return self._holidays_cache_dict[cache_key]
 
         holidays_set: Set[str] = set()
 
         # Prüfe ob Feiertage berücksichtigt werden sollen
         consider_holidays = self.get_bool('Holidays', 'consider_holidays', True)
         if not consider_holidays:
-            self._holidays_cache = holidays_set
+            if not hasattr(self, '_holidays_cache_dict'):
+                self._holidays_cache_dict = {}
+            self._holidays_cache_dict[cache_key] = holidays_set
             return holidays_set
 
         # Bestimme Jahr
@@ -232,19 +237,30 @@ class ConfigLoader:
         country = self.get('Holidays', 'country', 'DE')
         region = self.get('Holidays', 'region', 'BY')
 
-        # Versuche holidays-Datei zu laden
-        holidays_file = self.cfg_dir / f"holidays_{region}_{year}.json"
+        # Versuche holidays-Bibliothek zu verwenden
+        try:
+            import holidays as holidays_lib
 
-        if holidays_file.exists():
-            try:
-                with open(holidays_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    for holiday in data.get('holidays', []):
-                        holidays_set.add(holiday['date'])
-            except Exception as e:
-                print(f"WARNUNG: Fehler beim Laden der Feiertage aus {holidays_file}: {e}")
+            # Erstelle Feiertags-Objekt für das Land und die Region
+            # Für Deutschland: holidays.country_holidays('DE', subdiv='BY')
+            years_to_load = list(range(year - year_range, year + year_range + 1))
+            country_holidays = holidays_lib.country_holidays(country, subdiv=region, years=years_to_load)
 
-        self._holidays_cache = holidays_set
+            # Konvertiere zu Set von Strings im Format 'YYYY-MM-DD'
+            for holiday_date in country_holidays.keys():
+                holidays_set.add(holiday_date.strftime('%Y-%m-%d'))
+
+        except ImportError:
+            print(f"WARNUNG: holidays-Bibliothek nicht verfügbar. Installiere mit: pip install holidays")
+            print(f"Feiertage werden NICHT berücksichtigt.")
+        except Exception as e:
+            print(f"WARNUNG: Fehler beim Laden der Feiertage für {country}/{region}: {e}")
+            print(f"Feiertage werden NICHT berücksichtigt.")
+
+        # Cache speichern
+        if not hasattr(self, '_holidays_cache_dict'):
+            self._holidays_cache_dict = {}
+        self._holidays_cache_dict[cache_key] = holidays_set
         return holidays_set
 
     def print_summary(self) -> None:

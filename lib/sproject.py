@@ -340,8 +340,11 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
         # Leere Zeile
         row = 6
 
-        # Tabellen-Header
-        headers = ['ID', 'Name', 'Dauer', 'FAZ', 'FEZ', 'SAZ', 'SEZ', 'Puffer', 'Kritisch']
+        # Tabellen-Header mit Zeiteinheit
+        from utils import get_time_unit_label
+        unit_label = get_time_unit_label(result.time_unit)
+        headers = ['ID', 'Name', 'Dauer', f'FAZ ({unit_label})', f'FEZ ({unit_label})',
+                   f'SAZ ({unit_label})', f'SEZ ({unit_label})', 'Puffer', 'Kritisch']
         for col, header in enumerate(headers, start=1):
             cell = ws.cell(row=row, column=col, value=header)
             cell.fill = header_fill
@@ -352,15 +355,16 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
         sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
 
         row += 1
+        from utils import convert_days_to_time_unit
         for task_id in sorted_task_ids:
             task = result.tasks[task_id]
             ws.cell(row=row, column=1, value=str(task_id))
             ws.cell(row=row, column=2, value=task.name)
             ws.cell(row=row, column=3, value=format_time_value_auto(task.duration))
-            ws.cell(row=row, column=4, value=task.faz)
-            ws.cell(row=row, column=5, value=task.fez)
-            ws.cell(row=row, column=6, value=task.saz)
-            ws.cell(row=row, column=7, value=task.sez)
+            ws.cell(row=row, column=4, value=round(convert_days_to_time_unit(task.faz, result.time_unit), 1))
+            ws.cell(row=row, column=5, value=round(convert_days_to_time_unit(task.fez, result.time_unit), 1))
+            ws.cell(row=row, column=6, value=round(convert_days_to_time_unit(task.saz, result.time_unit), 1))
+            ws.cell(row=row, column=7, value=round(convert_days_to_time_unit(task.sez, result.time_unit), 1))
             ws.cell(row=row, column=8, value=format_time_value_auto(task.puffer))
             ws.cell(row=row, column=9, value="JA" if task.is_critical else "")
 
@@ -650,7 +654,7 @@ Beispiele:
                     start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
                     logger.info(f"Verwende Startdatum: {args.start_date}")
 
-                result = project.calculate_cpm(start_date=start_date)
+                result = project.calculate_cpm(start_date=start_date, cfg_dir=args.cfg_dir)
 
                 # Ausgabe auf Konsole
                 print_cpm_summary(result)

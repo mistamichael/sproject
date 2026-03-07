@@ -37,6 +37,8 @@ from .utils import (
     detect_time_unit,
     format_time_value,
     format_datetime_value,
+    convert_days_to_time_unit,
+    get_time_unit_label,
     add_workdays,
     count_weekend_days,
     generate_cycle_id,
@@ -74,6 +76,8 @@ __all__ = [
     'detect_time_unit',
     'format_time_value',
     'format_datetime_value',
+    'convert_days_to_time_unit',
+    'get_time_unit_label',
     'validate_duration_string',
 
     # Utils - Date

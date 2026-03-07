@@ -5,9 +5,10 @@ CPM (Critical Path Method) calculation with Pydantic models
 Provides CPM calculation functionality for Project models.
 """
 
-from typing import Dict, List, Union, Optional, Any
+from typing import Dict, List, Union, Optional, Any, Set
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+from pathlib import Path
 
 # Import utils - try relative import first, then absolute
 try:
@@ -19,6 +20,7 @@ try:
         add_workdays,
         count_weekend_days
     )
+    from ..config_loader import ConfigLoader
 except (ImportError, ValueError):
     from utils import (
         parse_duration_to_days,
@@ -28,6 +30,7 @@ except (ImportError, ValueError):
         add_workdays,
         count_weekend_days
     )
+    from config_loader import ConfigLoader
 
 
 class CPMTaskResult(BaseModel):
@@ -46,8 +49,16 @@ class CPMTaskResult(BaseModel):
         free_puffer: Freier Puffer
         is_critical: Ob Task kritisch ist
         is_break: Ob Task eine Ruhepause ist (optional)
-        successors: Nachfolger-IDs
-        predecessors: Vorgänger-IDs
+        successors: Nachfolger-IDs (alle Typen kombiniert)
+        predecessors: Vorgänger-IDs (alle Typen kombiniert)
+        predecessors_ea: Vorgänger mit Ende-Anfang Beziehung
+        predecessors_aa: Vorgänger mit Anfang-Anfang Beziehung
+        predecessors_ee: Vorgänger mit Ende-Ende Beziehung
+        predecessors_ae: Vorgänger mit Anfang-Ende Beziehung
+        successors_ea: Nachfolger mit Ende-Anfang Beziehung
+        successors_aa: Nachfolger mit Anfang-Anfang Beziehung
+        successors_ee: Nachfolger mit Ende-Ende Beziehung
+        successors_ae: Nachfolger mit Anfang-Ende Beziehung
     """
     id: Union[int, str]
     name: str
@@ -60,8 +71,18 @@ class CPMTaskResult(BaseModel):
     free_puffer: float = 0.0
     is_critical: bool = False
     is_break: bool = False
+    # Kombinierte Listen (für Rückwärtskompatibilität)
     successors: List[Union[int, str]] = []
     predecessors: List[Union[int, str]] = []
+    # Typisierte Beziehungen
+    predecessors_ea: List[Union[int, str]] = []  # Ende-Anfang (Standard)
+    predecessors_aa: List[Union[int, str]] = []  # Anfang-Anfang
+    predecessors_ee: List[Union[int, str]] = []  # Ende-Ende
+    predecessors_ae: List[Union[int, str]] = []  # Anfang-Ende
+    successors_ea: List[Union[int, str]] = []    # Ende-Anfang (Standard)
+    successors_aa: List[Union[int, str]] = []    # Anfang-Anfang
+    successors_ee: List[Union[int, str]] = []    # Ende-Ende
+    successors_ae: List[Union[int, str]] = []    # Anfang-Ende
 
 
 class CPMResult(BaseModel):
@@ -76,6 +97,9 @@ class CPMResult(BaseModel):
         time_unit: Verwendete Zeiteinheit ('minutes', 'hours', 'days')
         project_start: Projektstartdatum
         calculation_date: Zeitpunkt der Berechnung
+        holidays: Set von Feiertagsdaten im Format 'YYYY-MM-DD' (optional)
+        skip_weekends: Ob Wochenenden übersprungen werden (optional)
+        skip_holidays: Ob Feiertage übersprungen werden (optional)
     """
     project_name: str
     project_duration: str
@@ -84,6 +108,9 @@ class CPMResult(BaseModel):
     time_unit: str = 'days'
     project_start: Optional[datetime] = None
     calculation_date: Optional[datetime] = None
+    holidays: Optional[Set[str]] = None
+    skip_weekends: bool = True
+    skip_holidays: bool = False
 
     def export_to_dict(self, include_dates: bool = True) -> dict:
         """
@@ -99,7 +126,11 @@ class CPMResult(BaseModel):
             'project': self.project_name,
             'project_duration': self.project_duration,
             'critical_path': self.critical_path,
-            'tasks': []
+            'tasks': [],
+            'settings': {
+                'skip_weekends': self.skip_weekends,
+                'skip_holidays': self.skip_holidays,
+            }
         }
 
         if self.calculation_date:
@@ -107,6 +138,10 @@ class CPMResult(BaseModel):
 
         if self.project_start:
             output_data['project_start'] = self.project_start.strftime('%Y-%m-%d')
+
+        # Füge Feiertags-Liste hinzu (falls aktiviert)
+        if self.skip_holidays and self.holidays:
+            output_data['holidays'] = sorted(list(self.holidays))
 
         # Formatiere Tasks für Export
         for task_id, task_result in self.tasks.items():
@@ -161,9 +196,40 @@ class CPMResult(BaseModel):
                 if num_weekend_days > 0:
                     task_dict['cpm']['dates']['num_weekend_days'] = num_weekend_days
 
+                # Zähle Feiertage während der Task-Dauer
+                if self.skip_holidays and self.holidays:
+                    num_holidays = self._count_holidays_in_range(faz_date, fez_date)
+                    if num_holidays > 0:
+                        task_dict['cpm']['dates']['num_holidays'] = num_holidays
+
             output_data['tasks'].append(task_dict)
 
         return output_data
+
+    def _count_holidays_in_range(self, start_date: datetime, end_date: datetime) -> int:
+        """
+        Zählt die Anzahl der Feiertage in einem Datumsbereich.
+
+        Args:
+            start_date: Startdatum (inklusiv)
+            end_date: Enddatum (inklusiv)
+
+        Returns:
+            Anzahl der Feiertage im Bereich
+        """
+        if not self.holidays:
+            return 0
+
+        count = 0
+        current_date = start_date
+
+        while current_date <= end_date:
+            date_str = current_date.strftime('%Y-%m-%d')
+            if date_str in self.holidays:
+                count += 1
+            current_date += timedelta(days=1)
+
+        return count
 
 
 class CPMCalculator:
@@ -173,13 +239,14 @@ class CPMCalculator:
     Arbeitet mit ProjectBase und seinen Unterklassen, anstatt mit Dictionaries.
     """
 
-    def __init__(self, project: 'ProjectBase', start_date: Optional[datetime] = None):
+    def __init__(self, project: 'ProjectBase', start_date: Optional[datetime] = None, cfg_dir: Optional[Path] = None):
         """
         Initialisiert den CPM-Calculator.
 
         Args:
             project: ProjectBase oder Unterklasse
             start_date: Projektstartdatum (optional)
+            cfg_dir: Verzeichnis mit Konfigurationsdateien (optional)
         """
         self.project = project
         self.start_date = start_date
@@ -196,6 +263,24 @@ class CPMCalculator:
 
         # Erkenne Zeiteinheit
         self.time_unit = project.get_time_unit()
+
+        # Lade Konfiguration
+        if cfg_dir:
+            config_path = cfg_dir / "defaults.cfg"
+            self.config = ConfigLoader(config_path if config_path.exists() else None)
+        else:
+            self.config = ConfigLoader()
+
+        # Lade CPM-Einstellungen
+        cpm_settings = self.config.get_cpm_settings()
+        self.skip_weekends = cpm_settings.get('skip_weekends', True)
+        self.skip_holidays = cpm_settings.get('skip_holidays', False)
+
+        # Lade Feiertage falls aktiviert
+        self.holidays: Set[str] = set()
+        if self.skip_holidays and self.start_date:
+            # Lade Feiertage für das Projektjahr ± 1 Jahr
+            self.holidays = self.config.get_holidays(year=self.start_date.year, year_range=1)
 
         # CPM-Ergebnisse
         self.cpm_tasks: Dict[Union[int, str], CPMTaskResult] = {}
@@ -242,36 +327,86 @@ class CPMCalculator:
             tasks=self.cpm_tasks,
             time_unit=self.time_unit,
             project_start=self.start_date,
-            calculation_date=datetime.now()
+            calculation_date=datetime.now(),
+            holidays=self.holidays if self.skip_holidays else None,
+            skip_weekends=self.skip_weekends,
+            skip_holidays=self.skip_holidays
         )
 
     def _initialize_cpm_data(self) -> None:
-        """Initialisiert die CPM-Datenstruktur für alle Tasks."""
+        """
+        Initialisiert die CPM-Datenstruktur für alle Tasks.
+        Unterstützt verschiedene Abhängigkeitstypen: EA, AA, EE, AE.
+        """
         # Erstelle CPMTaskResult für jeden Task
         for task in self.project.tasks:
             # Parse duration using utils
             duration = parse_duration_to_days(task.duration) if task.duration else 0.0
 
-            # Hole dependencies
-            dependencies = task.dependencies if hasattr(task, 'dependencies') and task.dependencies else []
+            # Hole dependencies (EA - Ende-Anfang, Standard)
+            deps_ea = task.dependencies if hasattr(task, 'dependencies') and task.dependencies else []
+
+            # Hole dependencies_aa (Anfang-Anfang)
+            deps_aa = task.dependencies_aa if hasattr(task, 'dependencies_aa') and task.dependencies_aa else []
+
+            # Hole dependencies_ee (Ende-Ende)
+            deps_ee = task.dependencies_ee if hasattr(task, 'dependencies_ee') and task.dependencies_ee else []
+
+            # Hole dependencies_ae (Anfang-Ende)
+            deps_ae = task.dependencies_ae if hasattr(task, 'dependencies_ae') and task.dependencies_ae else []
 
             # Hole is_break Flag
             is_break = task.is_break if hasattr(task, 'is_break') else False
+
+            # Kombiniere alle dependencies für Rückwärtskompatibilität
+            all_deps = list(set(deps_ea + deps_aa + deps_ee + deps_ae))
 
             self.cpm_tasks[task.id] = CPMTaskResult(
                 id=task.id,
                 name=task.name,
                 duration=duration,
-                successors=dependencies,  # dependencies sind Nachfolger
-                predecessors=[],  # Wird unten berechnet
+                successors=all_deps,  # Alle dependencies kombiniert
+                predecessors=[],      # Wird unten berechnet
+                successors_ea=deps_ea,
+                successors_aa=deps_aa,
+                successors_ee=deps_ee,
+                successors_ae=deps_ae,
+                predecessors_ea=[],   # Wird unten berechnet
+                predecessors_aa=[],   # Wird unten berechnet
+                predecessors_ee=[],   # Wird unten berechnet
+                predecessors_ae=[],   # Wird unten berechnet
                 is_break=is_break
             )
 
-        # Berechne Vorgänger aus Nachfolgern
+        # Berechne Vorgänger aus Nachfolgern (umgekehrte Beziehungen)
         for task_id, task_result in self.cpm_tasks.items():
-            for successor_id in task_result.successors:
+            # EA-Beziehungen
+            for successor_id in task_result.successors_ea:
                 if successor_id in self.cpm_tasks:
-                    self.cpm_tasks[successor_id].predecessors.append(task_id)
+                    self.cpm_tasks[successor_id].predecessors_ea.append(task_id)
+                    if task_id not in self.cpm_tasks[successor_id].predecessors:
+                        self.cpm_tasks[successor_id].predecessors.append(task_id)
+
+            # AA-Beziehungen
+            for successor_id in task_result.successors_aa:
+                if successor_id in self.cpm_tasks:
+                    self.cpm_tasks[successor_id].predecessors_aa.append(task_id)
+                    if task_id not in self.cpm_tasks[successor_id].predecessors:
+                        self.cpm_tasks[successor_id].predecessors.append(task_id)
+
+            # EE-Beziehungen
+            for successor_id in task_result.successors_ee:
+                if successor_id in self.cpm_tasks:
+                    self.cpm_tasks[successor_id].predecessors_ee.append(task_id)
+                    if task_id not in self.cpm_tasks[successor_id].predecessors:
+                        self.cpm_tasks[successor_id].predecessors.append(task_id)
+
+            # AE-Beziehungen
+            for successor_id in task_result.successors_ae:
+                if successor_id in self.cpm_tasks:
+                    self.cpm_tasks[successor_id].predecessors_ae.append(task_id)
+                    if task_id not in self.cpm_tasks[successor_id].predecessors:
+                        self.cpm_tasks[successor_id].predecessors.append(task_id)
 
     def _insert_weekend_blocker(
         self,
@@ -335,6 +470,73 @@ class CPMCalculator:
         self.cpm_tasks[blocker_id] = blocker
         return blocker_id
 
+    def _skip_weekend_if_needed(self, days: float) -> float:
+        """
+        Verschiebt einen Zeitpunkt zum nächsten Arbeitstag, wenn er auf ein Wochenende oder Feiertag fällt.
+
+        HINWEIS: Diese Methode ist deprecated. Verwende stattdessen _skip_non_working_day().
+
+        Args:
+            days: Zeitpunkt in Tagen seit Projektbeginn
+
+        Returns:
+            Angepasster Zeitpunkt (unverändert wenn kein Wochenende/Feiertag, sonst nächster Arbeitstag)
+        """
+        return self._skip_non_working_day(days)
+
+    def _skip_non_working_day(self, days: float) -> float:
+        """
+        Verschiebt einen Zeitpunkt zum nächsten Arbeitstag, wenn er auf ein Wochenende oder Feiertag fällt.
+
+        Args:
+            days: Zeitpunkt in Tagen seit Projektbeginn
+
+        Returns:
+            Angepasster Zeitpunkt (unverändert wenn Arbeitstag, sonst nächster Arbeitstag)
+        """
+        # Handle infinity
+        if days == float('inf') or days == float('-inf'):
+            return days
+
+        # Wenn kein start_date vorhanden, keine Prüfung
+        if not self.start_date:
+            return days
+
+        # Konvertiere zu Datum
+        current_date = self.start_date + timedelta(days=days)
+        original_date = current_date
+
+        # Verschiebe bis zum nächsten Arbeitstag
+        max_iterations = 365  # Schutz vor Endlosschleife
+        iterations = 0
+
+        while iterations < max_iterations:
+            weekday = current_date.weekday()  # 0=Monday, 6=Sunday
+            date_str = current_date.strftime('%Y-%m-%d')
+
+            # Prüfe Wochenende
+            is_weekend = (weekday == 5 or weekday == 6) if self.skip_weekends else False
+
+            # Prüfe Feiertag
+            is_holiday = (date_str in self.holidays) if self.skip_holidays else False
+
+            if not is_weekend and not is_holiday:
+                # Arbeitstag gefunden
+                break
+
+            # Verschiebe um einen Tag
+            current_date += timedelta(days=1)
+            iterations += 1
+
+        if iterations >= max_iterations:
+            # Fallback: Gebe ursprüngliches Datum zurück
+            print(f"WARNUNG: Konnte keinen Arbeitstag nach {original_date.strftime('%Y-%m-%d')} finden!")
+            return days
+
+        # Konvertiere zurück zu Tagen
+        adjusted_days = (current_date - self.start_date).total_seconds() / 86400
+        return adjusted_days
+
     def _forward_pass(self) -> None:
         """
         Vorwärtsrechnung: Berechnet FAZ und FEZ.
@@ -346,41 +548,63 @@ class CPMCalculator:
         for task_id in sorted_ids:
             task_result = self.cpm_tasks[task_id]
 
-            if not task_result.predecessors:
-                # Startknoten: FAZ = 0
-                task_result.faz = 0.0
-            else:
-                # FAZ = Maximum aller FEZ der Vorgänger
-                max_fez = 0.0
-                max_pred_id = None
-                for pred_id in task_result.predecessors:
-                    if pred_id in self.cpm_tasks:
-                        pred_fez = self.cpm_tasks[pred_id].fez
-                        if pred_fez > max_fez:
-                            max_fez = pred_fez
-                            max_pred_id = pred_id
-                task_result.faz = max_fez
+            # Berechne FAZ basierend auf verschiedenen Abhängigkeitstypen
+            faz_constraints = [0.0]  # Mindestens 0
+            max_pred_id = None
+            max_constraint = 0.0
 
-                # Prüfe ob FAZ auf ein Wochenende fällt -> Blocker-Task einfügen
-                if max_pred_id is not None and self.start_date:
-                    blocker_id = self._insert_weekend_blocker(max_fez, max_pred_id, task_id)
-                    if blocker_id:
-                        # FAZ des aktuellen Tasks = FEZ des Blockers
-                        task_result.faz = self.cpm_tasks[blocker_id].fez
-                        # Vorgänger des aktuellen Tasks: ersetze max_pred durch blocker
-                        if max_pred_id in task_result.predecessors:
-                            idx = task_result.predecessors.index(max_pred_id)
-                            task_result.predecessors[idx] = blocker_id
-                        # Nachfolger des Vorgänger-Tasks: ersetze task_id durch blocker
-                        pred_task = self.cpm_tasks[max_pred_id]
-                        if task_id in pred_task.successors:
-                            idx = pred_task.successors.index(task_id)
-                            pred_task.successors[idx] = blocker_id
+            # EA (Ende-Anfang): Nachfolger beginnt wenn Vorgänger endet
+            # FAZ(Nachfolger) >= FEZ(Vorgänger)
+            for pred_id in task_result.predecessors_ea:
+                if pred_id in self.cpm_tasks:
+                    pred_fez = self.cpm_tasks[pred_id].fez
+                    faz_constraints.append(pred_fez)
+                    if pred_fez > max_constraint:
+                        max_constraint = pred_fez
+                        max_pred_id = pred_id
 
-            # FEZ = FAZ + Dauer (mit Wochenenden für normale Tasks)
-            if hasattr(self.project.tasks[0] if self.project.tasks else None, 'is_blocker'):
-                pass  # Skip – wird weiter unten behandelt
+            # AA (Anfang-Anfang): Nachfolger beginnt wenn Vorgänger beginnt
+            # FAZ(Nachfolger) >= FAZ(Vorgänger)
+            for pred_id in task_result.predecessors_aa:
+                if pred_id in self.cpm_tasks:
+                    pred_faz = self.cpm_tasks[pred_id].faz
+                    faz_constraints.append(pred_faz)
+                    if pred_faz > max_constraint:
+                        max_constraint = pred_faz
+                        max_pred_id = pred_id
+
+            # AE (Anfang-Ende): Nachfolger kann erst enden wenn Vorgänger beginnt
+            # FEZ(Nachfolger) >= FAZ(Vorgänger)
+            # => FAZ(Nachfolger) >= FAZ(Vorgänger) - Dauer(Nachfolger)
+            for pred_id in task_result.predecessors_ae:
+                if pred_id in self.cpm_tasks:
+                    pred_faz = self.cpm_tasks[pred_id].faz
+                    # Nachfolger muss so starten, dass er frühestens endet wenn Vorgänger startet
+                    required_faz = pred_faz - task_result.duration
+                    faz_constraints.append(required_faz)
+                    if required_faz > max_constraint:
+                        max_constraint = required_faz
+                        max_pred_id = pred_id
+
+            # Setze FAZ auf Maximum aller Constraints
+            task_result.faz = max(faz_constraints)
+
+            # Prüfe ob FAZ auf Wochenende fällt und verschiebe ggf. zu Montag
+            task_result.faz = self._skip_weekend_if_needed(task_result.faz)
+
+            # Berechne FEZ initial: FEZ = FAZ + Dauer
             task_result.fez = self._add_duration_with_weekends(task_result.faz, task_result.duration)
+
+            # EE (Ende-Ende): Nachfolger endet wenn Vorgänger endet
+            # FEZ(Nachfolger) >= FEZ(Vorgänger)
+            # Falls FEZ zu früh ist, verschiebe FAZ nach hinten
+            for pred_id in task_result.predecessors_ee:
+                if pred_id in self.cpm_tasks:
+                    pred_fez = self.cpm_tasks[pred_id].fez
+                    if task_result.fez < pred_fez:
+                        # Nachfolger muss später enden - verschiebe FAZ
+                        task_result.faz = pred_fez - task_result.duration
+                        task_result.fez = self._add_duration_with_weekends(task_result.faz, task_result.duration)
 
     def _backward_pass(self) -> None:
         """Rückwärtsrechnung: Berechnet SAZ und SEZ."""
@@ -404,17 +628,53 @@ class CPMCalculator:
         for task_id in reverse_sorted:
             task_result = self.cpm_tasks[task_id]
 
+            # Berechne SEZ basierend auf verschiedenen Abhängigkeitstypen
+            sez_constraints = []
+
             if not task_result.successors:
-                # Endknoten: SEZ bereits gesetzt (= FEZ)
-                if task_result.sez == 0:
-                    task_result.sez = task_result.fez
+                # Endknoten: SEZ = FEZ
+                sez_constraints.append(task_result.fez)
             else:
-                # SEZ = Minimum aller SAZ der Nachfolger
-                min_saz = float('inf')
-                for succ_id in task_result.successors:
+                # EA (Ende-Anfang): Vorgänger endet bevor Nachfolger startet
+                # SEZ(Vorgänger) <= SAZ(Nachfolger)
+                for succ_id in task_result.successors_ea:
                     if succ_id in self.cpm_tasks:
-                        min_saz = min(min_saz, self.cpm_tasks[succ_id].saz)
-                task_result.sez = min_saz
+                        succ_saz = self.cpm_tasks[succ_id].saz
+                        sez_constraints.append(succ_saz)
+
+                # AA (Anfang-Anfang): Vorgänger startet bevor Nachfolger startet
+                # SAZ(Vorgänger) <= SAZ(Nachfolger)
+                # => SEZ(Vorgänger) = SAZ(Nachfolger) + Dauer(Vorgänger)
+                for succ_id in task_result.successors_aa:
+                    if succ_id in self.cpm_tasks:
+                        succ_saz = self.cpm_tasks[succ_id].saz
+                        # Vorgänger muss so enden, dass er spätestens startet wenn Nachfolger startet
+                        required_sez = succ_saz + task_result.duration
+                        sez_constraints.append(required_sez)
+
+                # EE (Ende-Ende): Vorgänger endet bevor Nachfolger endet
+                # SEZ(Vorgänger) <= SEZ(Nachfolger)
+                for succ_id in task_result.successors_ee:
+                    if succ_id in self.cpm_tasks:
+                        succ_sez = self.cpm_tasks[succ_id].sez
+                        sez_constraints.append(succ_sez)
+
+                # AE (Anfang-Ende): Vorgänger startet bevor Nachfolger endet
+                # SAZ(Vorgänger) <= SEZ(Nachfolger)
+                # => SEZ(Vorgänger) = SEZ(Nachfolger) + Dauer(Vorgänger)
+                for succ_id in task_result.successors_ae:
+                    if succ_id in self.cpm_tasks:
+                        succ_sez = self.cpm_tasks[succ_id].sez
+                        # Vorgänger muss so enden, dass er spätestens startet wenn Nachfolger endet
+                        required_sez = succ_sez + task_result.duration
+                        sez_constraints.append(required_sez)
+
+            # Setze SEZ auf Minimum aller Constraints
+            if sez_constraints:
+                task_result.sez = min(sez_constraints)
+            else:
+                # Fallback: SEZ = FEZ (für Tasks ohne Nachfolger)
+                task_result.sez = task_result.fez
 
             # SAZ = SEZ - Dauer (mit Wochenenden rückwärts)
             task_result.saz = self._subtract_duration_with_weekends(task_result.sez, task_result.duration)

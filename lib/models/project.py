@@ -62,12 +62,13 @@ class ProjectBase(BaseModel):
         """
         return [task.id for task in self.tasks]
 
-    def calculate_cpm(self, start_date: Optional[str] = None) -> 'CPMResult':
+    def calculate_cpm(self, start_date: Optional[str] = None, cfg_dir: Optional['Path'] = None) -> 'CPMResult':
         """
         Berechnet Critical Path Method für dieses Projekt.
 
         Args:
             start_date: Projektstartdatum (optional, überschreibt project_start)
+            cfg_dir: Verzeichnis mit Konfigurationsdateien (optional, für Feiertage)
 
         Returns:
             CPMResult mit berechneten Werten
@@ -83,6 +84,7 @@ class ProjectBase(BaseModel):
         """
         from .cpm import CPMCalculator
         from datetime import datetime
+        from pathlib import Path
 
         # Verwende übergebenes Startdatum oder project_start
         if start_date:
@@ -98,7 +100,7 @@ class ProjectBase(BaseModel):
         else:
             start_dt = None
 
-        calculator = CPMCalculator(self, start_dt)
+        calculator = CPMCalculator(self, start_dt, cfg_dir=cfg_dir)
         return calculator.calculate()
 
     model_config = {

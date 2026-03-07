@@ -26,17 +26,29 @@ class SimpleTask(TaskBase):
     is_blocker: bool = False
 
 
-class InstanceTask(TaskBase):
+class ExpandableTask(TaskBase):
+    """
+    Basis-Klasse für Tasks die expandiert werden können (InstanceTask, LoopTask).
+
+    Diese Klasse sammelt gemeinsame Felder für alle expandierbaren Task-Typen.
+
+    Gemeinsame Felder:
+    - cycle_prefix: Präfix für Zyklusnummern (z.B. "P" für "2-P1", "F" für "2-F1")
+    """
+    cycle_prefix: str = "C"  # Default "C" für Cycle
+
+
+class InstanceTask(ExpandableTask):
     """
     Tasks mit Instanzen für pizzas.json
 
     Zusätzliche Felder:
     - instances: Anzahl der Instanzen (int) oder Referenz (str wie "order_volume")
-    - cycle_prefix: Präfix für Zyklusnummern (z.B. "P" für "2-P1", "2-P2")
+    - cycle_prefix: Präfix für Zyklusnummern (Standard: "P" für "2-P1", "2-P2")
     """
 
     instances: Union[int, str]  # z.B. "order_volume" oder 12
-    cycle_prefix: str = "P"
+    cycle_prefix: str = "P"  # Override default
 
 
 class SubTask(BaseModel):
@@ -60,21 +72,25 @@ class SubTask(BaseModel):
     }
 
 
-class LoopTask(TaskBase):
+class LoopTask(ExpandableTask):
     """
     Loop-Tasks für erdaushub.json
 
     Zusätzliche Felder:
     - is_loop: Muss True sein (Marker)
     - loop_until: Bedingung für Loop-Ende (z.B. "total_volume <= 0")
-    - cycle_prefix: Präfix für Zyklusnummern (z.B. "F" für "2-F1", "2-F2")
+    - cycle_prefix: Präfix für Zyklusnummern (Standard: "F" für "2-F1", "2-F2")
     - subtasks: Liste von Subtasks
+    - loop_count: Anzahl der Loop-Iterationen (optional, alternativ zu automatischer Berechnung)
+    - volume_per_cycle: Volumen pro Zyklus (optional, für Berechnung von loop_count)
     """
 
     is_loop: Literal[True] = True
     loop_until: str
-    cycle_prefix: str = "F"
+    cycle_prefix: str = "F"  # Override default
     subtasks: List[SubTask] = Field(default_factory=list)
+    loop_count: Optional[int] = None  # Explizite Anzahl Iterationen
+    volume_per_cycle: Optional[Union[int, float]] = None  # Volumen pro Zyklus
 
 
 # Union-Type für alle Task-Varianten

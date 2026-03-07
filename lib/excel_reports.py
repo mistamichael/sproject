@@ -217,10 +217,22 @@ def get_timeline_range(result: CPMResult, loadunit: str, resolution_config: Dict
     if min_task_duration_days == float('inf'):
         min_task_duration_days = 1.0
 
+    # Prüfe zuerst result.time_unit für direkte Zuordnung
+    if hasattr(result, 'time_unit'):
+        if result.time_unit == 'minutes':
+            # Minuten-Projekt → Minuten-Granularität
+            granularity = 'minutes'
+            return (start_date, end_date, granularity)
+        elif result.time_unit == 'hours':
+            # Stunden-Projekt → Stunden-Granularität
+            granularity = 'hours'
+            return (start_date, end_date, granularity)
+        # Für 'days' verwenden wir die normale Logik unten
+
     # Konvertiere minimale Dauer in Minuten (8h Arbeitstag = 1 Tag)
     min_task_duration_min = min_task_duration_days * 8 * 60
 
-    # Bestimme Granularität basierend auf Config-Schwellenwerten
+    # Bestimme Granularität basierend auf Config-Schwellenwerten (Fallback)
     threshold_hours = resolution_config['threshold_hours_min']
     threshold_halfday = resolution_config['threshold_halfday_min']
 
@@ -692,7 +704,10 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, result: CPMResult,
         # Spalte F+: chart (Balkendiagramm)
         # Berechne Positionen basierend auf Granularität
         # Hinweis: task.faz, task.duration sind in "Tagen" (1 Tag = 8 Arbeitsstunden aus defaults.cfg)
-        if granularity == 'hours':
+        if granularity == 'minutes':
+            # Bei Minutenauflösung: 1 Arbeitstag = 480 Minuten
+            time_unit_factor = 480  # 1 Arbeitstag = 480 Minuten
+        elif granularity == 'hours':
             # Bei Stundenauflösung: 1 Arbeitstag = 8 Stunden (Standard aus defaults.cfg)
             # Die Timeline zeigt Stunden an, daher time_unit_factor = 8
             time_unit_factor = 8  # 1 Arbeitstag = 8 Arbeitsstunden
@@ -827,7 +842,9 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
 
     # Zeitfaktor (analog zu Gantt-Chart)
     # task.faz, task.duration sind in "Tagen" (1 Tag = 8 Arbeitsstunden)
-    if granularity == 'hours':
+    if granularity == 'minutes':
+        time_unit_factor = 480  # 1 Arbeitstag = 480 Minuten
+    elif granularity == 'hours':
         time_unit_factor = 8  # 1 Arbeitstag = 8 Arbeitsstunden
     elif granularity == 'halfdays':
         time_unit_factor = 2  # 1 Arbeitstag = 2 halbe Tage
