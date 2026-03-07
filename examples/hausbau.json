@@ -6,14 +6,16 @@
       "id": 1,
       "name": "Grube ausheben",
       "duration": "3d",
-      "dependencies": [3]
+      "dependencies": [3],
+      "dependencies_aa": [2],
+      "note": "EA: Fundament gießen nach Grube, AA: Abtransport parallel"
     },
     {
       "id": 2,
       "name": "Erde abtransportieren",
       "duration": "4d",
-      "dependencies_aa": [1],
-      "note": "AA: Abtransport beginnt sobald Aushub beginnt (parallel)"
+      "dependencies": [],
+      "note": "AA zu Task 1: Beginnt sobald Aushub beginnt"
     },
     {
       "id": 3,
@@ -31,35 +33,38 @@
       "id": 5,
       "name": "Mauerwerk errichten",
       "duration": "10d",
-      "dependencies": [6, 7]
+      "dependencies": [10],
+      "dependencies_aa": [6, 7],
+      "note": "AA: Elektrik und Sanitär beginnen sobald Mauern beginnen"
     },
     {
       "id": 6,
       "name": "Elektroinstallation",
       "duration": "5d",
-      "dependencies_aa": [5],
-      "note": "AA: Elektrik beginnt sobald Mauern beginnen"
+      "dependencies": [10],
+      "note": "AA zu Task 5: Beginnt sobald Mauern beginnen"
     },
     {
       "id": 7,
       "name": "Sanitärinstallation",
       "duration": "6d",
-      "dependencies_aa": [5],
-      "note": "AA: Sanitär beginnt sobald Mauern beginnen"
+      "dependencies": [10],
+      "note": "AA zu Task 5: Beginnt sobald Mauern beginnen"
     },
     {
       "id": 8,
       "name": "Programmierung",
       "duration": "8d",
-      "dependencies": [9]
+      "dependencies": [10],
+      "dependencies_ee": [9],
+      "note": "EE: Dokumentation endet wenn Programmierung endet"
     },
     {
       "id": 9,
       "name": "Dokumentation",
       "duration": "8d",
-      "dependencies_ee": [8],
-      "dependencies": [],
-      "note": "EE: Doku endet wenn Programmierung endet"
+      "dependencies": [10],
+      "note": "EE zu Task 8: Endet gleichzeitig mit Programmierung"
     },
     {
       "id": 10,

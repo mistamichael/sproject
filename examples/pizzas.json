@@ -1,6 +1,6 @@
 {
   "project": "Pizza Service Express",
-  "order_volume": 12,
+  "total_volume": 12,
   "unit": "Pizzen",
   "persons": [
     {
@@ -20,57 +20,67 @@
   ],
   "resources": [
     {
-      "id": "R1",
-      "person_id": "PERS1"
+      "id": "R_BAECKER",
+      "person_id": "PERS1",
+      "name": "Bäcker Max"
     },
     {
-      "id": "R2",
-      "person_id": "PERS2"
+      "id": "R_VERKAEUFER",
+      "person_id": "PERS2",
+      "name": "Verkäufer Heinz"
     },
     {
-      "id": "R3",
+      "id": "R_OFEN",
       "name": "Steinofen",
       "type": "machine",
       "capacity": 4,
-      "unit": "Slots"
+      "unit": "Pizzen"
     }
   ],
   "tasks": [
     {
       "id": 1,
-      "name": "Teigvorbereitung (Batch)",
+      "name": "Teigvorbereitung (Batch für alle Pizzen)",
       "duration": "60m",
-      "resources": ["R1"],
+      "resources": ["R_BAECKER"],
       "dependencies": [2],
-      "description": "Einmaliger Vorgang für alle Pizzen"
+      "description": "Einmaliger Vorgang: Teig für 12 Pizzen vorbereiten"
     },
     {
       "id": 2,
-      "name": "Pizza formen & belegen",
-      "duration": "3m",
-      "resources": ["R1"],
-      "dependencies": [3],
-      "instances": "order_volume",
-      "cycle_prefix": "P"
-    },
-    {
-      "id": 3,
-      "name": "Backvorgang",
-      "duration": "7m",
-      "resources": ["R3"],
-      "capacity_required": 1,
-      "dependencies": [4],
-      "instances": "order_volume",
-      "cycle_prefix": "P"
-    },
-    {
-      "id": 4,
-      "name": "Pizza verkaufen",
-      "duration": "2m",
-      "resources": ["R2"],
+      "name": "Pizza-Produktionszyklus",
+      "is_loop": true,
+      "loop_until": "total_volume <= 0",
+      "cycle_prefix": "P",
       "dependencies": [],
-      "instances": "order_volume",
-      "cycle_prefix": "P"
+      "subtasks": [
+        {
+          "name": "Pizza formen & belegen",
+          "duration": "3m",
+          "resources": ["R_BAECKER"]
+        },
+        {
+          "name": "Pizza in den Ofen",
+          "duration": "0.5m",
+          "resources": ["R_BAECKER"]
+        },
+        {
+          "name": "Pizza backen",
+          "duration": "7m",
+          "resources": ["R_OFEN"]
+        },
+        {
+          "name": "Pizza aus dem Ofen holen",
+          "duration": "0.5m",
+          "resources": ["R_BAECKER"]
+        },
+        {
+          "name": "Pizza verkaufen",
+          "duration": "2m",
+          "resources": ["R_VERKAEUFER"]
+        }
+      ],
+      "volume_per_cycle": 1
     }
   ]
 }
