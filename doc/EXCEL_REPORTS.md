@@ -15,7 +15,7 @@ Das sproject-System kann Excel-Dateien mit folgenden Reports generieren:
 ### Basis-Export (nur CPM)
 
 ```batch
-python lib\sproject.py --project examples\software_simple.json --calculate-cpm --export xlsx
+python lib\sproject.py --project examples\software_simple.json --export xlsx
 ```
 
 Erstellt: `results\software_simple_cpm.xlsx` mit einem Sheet "CPM Analyse"
@@ -23,7 +23,7 @@ Erstellt: `results\software_simple_cpm.xlsx` mit einem Sheet "CPM Analyse"
 ### Mit Gantt Chart
 
 ```batch
-python lib\sproject.py --project examples\erdaushub.json --calculate-cpm --export xlsx --gantt
+python lib\sproject.py --project examples\erdaushub.json --export xlsx --gantt
 ```
 
 Erstellt Excel mit:
@@ -33,7 +33,7 @@ Erstellt Excel mit:
 ### Mit Resource List
 
 ```batch
-python lib\sproject.py --project examples\software_simple.json --calculate-cpm --export xlsx --resource
+python lib\sproject.py --project examples\software_simple.json --export xlsx --resource
 ```
 
 Erstellt Excel mit:
@@ -43,7 +43,7 @@ Erstellt Excel mit:
 ### Mit beiden Reports
 
 ```batch
-python lib\sproject.py --project examples\erdaushub.json --calculate-cpm --export xlsx --gantt --resource
+python lib\sproject.py --project examples\erdaushub.json --export xlsx --gantt --resource
 ```
 
 Erstellt Excel mit:
@@ -156,7 +156,7 @@ hourly_rate = 100.00
 ### Beispiel: erdaushub.json
 
 ```batch
-python lib\sproject.py --project examples\erdaushub.json --calculate-cpm --export xlsx --gantt --resource
+python lib\sproject.py --project examples\erdaushub.json --export xlsx --gantt --resource
 ```
 
 **Ergebnis:**
@@ -218,27 +218,27 @@ timeline_header_height = 25    # Zeitstrahl-Header-Höhe
 
 ### SimpleProject (tankdesign.json)
 ```batch
-python lib\sproject.py --project examples\tankdesign.json --calculate-cpm --export xlsx --gantt --resource
+python lib\sproject.py --project examples\tankdesign.json --export xlsx --gantt --resource
 ```
 - ✅ Funktioniert mit Default-Person
 
 ### LoopProject (erdaushub.json)
 ```batch
-python lib\sproject.py --project examples\erdaushub.json --calculate-cpm --export xlsx --gantt --resource
+python lib\sproject.py --project examples\erdaushub.json --export xlsx --gantt --resource
 ```
 - ✅ Loop wird expandiert (68 Tasks)
 - ✅ Default-Person wird verwendet
 
 ### CycleProject (pizzas.json)
 ```batch
-python lib\sproject.py --project examples\pizzas.json --calculate-cpm --export xlsx --gantt --resource
+python lib\sproject.py --project examples\pizzas.json --export xlsx --gantt --resource
 ```
 - ✅ Cycles werden expandiert
 - ✅ Default-Person wird verwendet
 
 ### PersonProject (software_simple.json)
 ```batch
-python lib\sproject.py --project examples\software_simple.json --calculate-cpm --export xlsx --gantt --resource
+python lib\sproject.py --project examples\software_simple.json --export xlsx --gantt --resource
 ```
 - ✅ Verwendet echte Personen (Alice, Bob, Charlie, Diana)
 - ✅ Reports aus JSON werden überschrieben

@@ -5,12 +5,9 @@ REM run_test.bat - Verarbeitet Projekt-Dateien mit sproject.py
 REM
 REM Usage:
 REM   run_test.bat                      - Verarbeitet alle .json Dateien im examples Ordner
-REM                                       (mit CPM, Excel-Export, Gantt und Resource List)
+REM                                       (mit CPM-Berechnung, Excel-Export, Gantt und Resource List)
 REM   run_test.bat <filename>           - Verarbeitet eine einzelne Projekt-Datei
-REM   run_test.bat --calculate-cpm      - Berechnet CPM für alle Projekte (Standard)
-REM   run_test.bat --create_svg_graph   - Erstellt Abhängigkeitsdiagramme für alle Projekte
-REM   run_test.bat <filename> --calculate-cpm --export xlsx --gantt --resource - Excel mit Reports
-REM   run_test.bat <filename> --create_svg_graph - Erstellt Graph für einzelne Datei
+REM   run_test.bat <filename> --export xlsx --gantt --resource - Excel mit Reports
 REM
 REM ============================================================================
 
@@ -23,20 +20,6 @@ call "%~dp0setenv.bat"
 if exist "%~dp0_setenv.bat" (
     echo Lade lokale Umgebungseinstellungen aus _setenv.bat...
     call "%~dp0_setenv.bat"
-)
-
-REM Prüfe auf --calculate-cpm Flag
-set "CALCULATE_CPM="
-if /i "%1"=="--calculate-cpm" (
-    set "CALCULATE_CPM=--calculate-cpm"
-    goto process_all_examples
-)
-
-REM Prüfe auf --create_svg_graph Flag
-set "CREATE_GRAPH="
-if /i "%1"=="--create_svg_graph" (
-    set "CREATE_GRAPH=--create_svg_graph"
-    goto process_all_examples
 )
 
 REM Einzelne Datei verarbeiten
@@ -62,12 +45,8 @@ REM Sammle zusätzliche Parameter mit absolutem output-dir und cfg-dir
 set "PARAMS=--project "%PROJECT_FILE%" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%""
 :parse_args
 if "%2"=="" goto run_test
-if /i "%2"=="--calculate-cpm" (
-    set "PARAMS=%PARAMS% --calculate-cpm"
-)
-if /i "%2"=="--create_svg_graph" (
-    set "PARAMS=%PARAMS% --create_svg_graph"
-)
+REM Sammle alle weiteren Parameter (z.B. --export, --gantt, --resource)
+set "PARAMS=%PARAMS% %2"
 shift
 goto parse_args
 
@@ -104,14 +83,10 @@ exit /B %TEST_RESULT%
 REM Umgebungsvariablen laden falls noch nicht geschehen
 call "%~dp0setenv.bat"
 
-REM Setze Standardoptionen wenn keine angegeben wurden
-if not defined CALCULATE_CPM set "CALCULATE_CPM=--calculate-cpm"
-
 echo.
 echo ============================================================================
 echo Verarbeite alle JSON-Dateien im examples Ordner
-if defined CALCULATE_CPM echo Berechne CPM und erstelle Excel-Reports mit Gantt und Resource List
-if defined CREATE_GRAPH echo Erstelle Abhängigkeitsdiagramme
+echo Berechne CPM und erstelle Excel-Reports mit Gantt und Resource List
 echo ============================================================================
 echo.
 
@@ -121,9 +96,8 @@ for %%F in ("%PV_EXAMPLES%\*.json") do (
     echo --- Verarbeite: %%~nxF ---
 
     REM Baue Parameterliste auf mit absolutem output-dir und cfg-dir Pfad
-    set "FILE_PARAMS=--project "%%F" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%""
-    if defined CALCULATE_CPM set "FILE_PARAMS=!FILE_PARAMS! --calculate-cpm --export xlsx --gantt --resource"
-    if defined CREATE_GRAPH set "FILE_PARAMS=!FILE_PARAMS! --create_svg_graph"
+    REM CPM wird automatisch berechnet, daher Export-Formate und Reports direkt angeben
+    set "FILE_PARAMS=--project "%%F" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%" --export xlsx --gantt --resource"
 
     REM Führe sproject.py aus dem lib Verzeichnis aus, aber mit absolutem output-dir
     python "%PV_LIB%\sproject.py" !FILE_PARAMS!
@@ -216,18 +190,19 @@ echo                     Die Datei wird im examples Ordner gesucht.
 echo                     Ohne Angabe werden alle .json Dateien im examples Ordner verarbeitet.
 echo.
 echo Optionen:
-echo   --calculate-cpm       Berechnet den kritischen Pfad (Critical Path Method)
-echo   --create_svg_graph    Erstellt Abhängigkeitsdiagramm(e) als PNG-Datei(en)
+echo   --export FORMAT   Exportformate (kommagetrennt): txt, json, xlsx, svg, md
+echo   --gantt           Erstellt Gantt-Chart im Excel-Export
+echo   --resource        Erstellt Resource-List im Excel-Export
+echo.
+echo Hinweis:
+echo   CPM (Critical Path Method) wird automatisch für alle Projekte berechnet.
 echo.
 echo Beispiele:
 echo   %~nx0                                              Verarbeitet alle .json Dateien (mit CPM, Excel, Gantt)
-echo   %~nx0 --calculate-cpm                              Berechnet CPM für alle Projektdateien (Standard)
-echo   %~nx0 --create_svg_graph                           Erstellt Graphen für alle Projektdateien
 echo   %~nx0 tankdesign                                   Verarbeitet tankdesign.json
 echo   %~nx0 tankdesign.json                              Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign --calculate-cpm --export xlsx     Berechnet CPM, Excel-Export
-echo   %~nx0 erdaushub --calculate-cpm --export xlsx --gantt --resource  Excel mit Gantt und Resource List
-echo   %~nx0 tankdesign --create_svg_graph                Erstellt Graph für tankdesign.json
+echo   %~nx0 tankdesign --export xlsx                     CPM-Berechnung mit Excel-Export
+echo   %~nx0 erdaushub --export xlsx --gantt --resource   Excel mit Gantt und Resource List
 echo.
 echo Hinweis:
 echo   Ergebnisse werden in %PV_RESULTS% erzeugt und automatisch mit

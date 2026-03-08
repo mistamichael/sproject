@@ -81,7 +81,7 @@ Die Konfiguration wird automatisch geladen, wenn Sie das sproject-Tool verwenden
 
 ```bash
 # CPM-Berechnung mit Defaults aus Config
-python lib/sproject.py --project examples/tankdesign.json --calculate-cpm
+python lib/sproject.py --project examples/tankdesign.json
 
 # Config-Werte ansehen
 python lib/config_loader.py

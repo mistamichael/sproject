@@ -14,8 +14,6 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 
-from tjp_models import TJPRegistry
-from svg_graph_generator import SVGGraphGenerator
 from excel_reports import add_report_sheets
 from mermaid_export import export_cpm_to_svg
 from markdown_export import export_cpm_to_markdown
@@ -399,89 +397,6 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
         raise ImportError("openpyxl ist nicht installiert. Installieren Sie es mit: pip install openpyxl")
 
 
-def load_registry(cfg_dir: Path, project_file: Path, logger: logging.Logger) -> Optional[TJPRegistry]:
-    """
-    Lädt TJPRegistry aus der Projektdatei.
-
-    Alle Konfigurationen (Personen, Arbeitszeiten, Reports) werden zukünftig
-    in der Projekt-JSON mitgeliefert. Fehlende Angaben werden mit Defaults ergänzt.
-
-    Args:
-        cfg_dir: Verzeichnis mit Konfigurationsdateien (für zukünftige Verwendung)
-        project_file: Pfad zur Projektdatei
-        logger: Logger-Instanz
-
-    Returns:
-        TJPRegistry-Instanz oder None bei Fehler
-    """
-    try:
-        logger.info(f"Lade Registry aus:")
-        logger.info(f"  - Projekt: {project_file}")
-
-        registry = TJPRegistry.load(
-            project_path=project_file,
-        )
-
-        logger.info("Registry erfolgreich geladen")
-        return registry
-
-    except Exception as e:
-        logger.warning(f"Datei {project_file.name} ist kein vollständiges ProjectFile-Format")
-        logger.warning("Hinweis: Für CPM/Graph-Operationen verwenden Sie --calculate-cpm oder --create-svg-graph")
-        logger.debug(f"Fehlerdetails: {e}", exc_info=True)
-        return None
-
-
-def create_svg_graph(project_file: Path, output_dir: Optional[Path] = None, cfg_dir: Optional[Path] = None, logger: Optional[logging.Logger] = None) -> bool:
-    """
-    Erstellt ein SVG-Abhängigkeitsdiagramm aus einer Projektdatei mit CPM-Daten unter Verwendung des node.svg Templates.
-
-    Args:
-        project_file: Pfad zur Projektdatei (JSON)
-        output_dir: Ausgabeverzeichnis für das SVG (Standard: gleiches Verzeichnis wie Projektdatei)
-        cfg_dir: Verzeichnis mit Konfigurationsdateien (Standard: $PV_CFG oder 'cfg')
-        logger: Logger-Instanz
-
-    Returns:
-        True bei Erfolg, False bei Fehler
-    """
-    try:
-        # Bestimme cfg_dir aus Umgebungsvariable falls nicht angegeben
-        if cfg_dir is None:
-            cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
-
-        # Erstelle Generator und generiere SVG
-        generator = SVGGraphGenerator(cfg_dir=cfg_dir, logger=logger)
-        return generator.generate_svg(project_file, output_dir)
-
-    except Exception as e:
-        if logger:
-            logger.error(f"Fehler beim Erstellen des SVG-Graphen: {e}", exc_info=True)
-        else:
-            print(f"ERROR: Fehler beim Erstellen des SVG-Graphen: {e}")
-        return False
-
-
-def process_project(registry: TJPRegistry, logger: logging.Logger) -> None:
-    """
-    Verarbeitet ein Projekt und erstellt Reports.
-
-    Args:
-        registry: Geladene TJPRegistry
-        logger: Logger-Instanz
-    """
-    logger.info("Verarbeite Projekt...")
-    print("\n" + registry.summary() + "\n")
-
-    # Hier können weitere Verarbeitungsschritte hinzugefügt werden:
-    # - Report-Generierung
-    # - Gantt-Diagramm-Erstellung
-    # - Ressourcenplanung
-    # - Kostenberechnung
-
-    logger.info("Projektverarbeitung abgeschlossen")
-
-
 def main() -> int:
     """
     Hauptfunktion mit Argumentparsing.
@@ -495,7 +410,6 @@ def main() -> int:
         epilog="""
 Beispiele:
   %(prog)s --project examples/tankdesign.json
-  %(prog)s --data-dir examples --create-svg-graph
   %(prog)s  # Verarbeitet alle project*.json Dateien im data Ordner
         """
     )
@@ -527,21 +441,9 @@ Beispiele:
     )
 
     parser.add_argument(
-        "--create-svg-graph",
-        action="store_true",
-        help="Erstellt SVG-Abhängigkeitsdiagramm(e) für die Projektdatei(en) unter Verwendung des cfg/node.svg Templates"
-    )
-
-    parser.add_argument(
         "--output-dir",
         type=Path,
         help="Ausgabeverzeichnis für generierte Graphen (Standard: gleiches Verzeichnis wie Projektdatei)"
-    )
-
-    parser.add_argument(
-        "--calculate-cpm",
-        action="store_true",
-        help="Berechnet den kritischen Pfad (Critical Path Method) für die Projektdatei(en)"
     )
 
     parser.add_argument(
@@ -616,125 +518,106 @@ Beispiele:
         logger.info(f"Verarbeite: {project_file.name}")
         logger.info("-" * 60)
 
-        # Wenn SVG-Graph erstellen gewünscht ist
-        if args.create_svg_graph:
-            if create_svg_graph(project_file, args.output_dir, args.cfg_dir, logger):
-                success_count += 1
-            continue
+        try:
+            # Lade Projekt mit Pydantic-Modellen
+            from models import load_project
+            from models.project import CycleProject, LoopProject, PersonProject
+            from models.tasks import LoopTask
 
-        # Wenn CPM-Berechnung gewünscht ist
-        if args.calculate_cpm:
-            try:
-                # Lade Projekt mit Pydantic-Modellen
-                from models import load_project
-                from models.project import CycleProject, LoopProject, PersonProject
-                from models.tasks import LoopTask
+            project = load_project(project_file)
 
-                project = load_project(project_file)
-
-                # Expandiere Cycle/Loop-Tasks falls nötig
-                if isinstance(project, CycleProject):
-                    logger.info(f"Expandiere Cycle-Tasks fuer {project_file.name}...")
-                    project = project.expand_cycles()
-                    logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
-                elif isinstance(project, LoopProject):
-                    logger.info(f"Expandiere Loop-Tasks fuer {project_file.name}...")
+            # Expandiere Cycle/Loop-Tasks falls nötig
+            if isinstance(project, CycleProject):
+                logger.info(f"Expandiere Cycle-Tasks fuer {project_file.name}...")
+                project = project.expand_cycles()
+                logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
+            elif isinstance(project, LoopProject):
+                logger.info(f"Expandiere Loop-Tasks fuer {project_file.name}...")
+                project = project.expand_loops()
+                logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
+            elif isinstance(project, PersonProject):
+                # Prüfe ob PersonProject Loop-Tasks enthält
+                has_loop_tasks = any(isinstance(task, LoopTask) for task in project.tasks)
+                if has_loop_tasks:
+                    logger.info(f"Expandiere Loop-Tasks in PersonProject fuer {project_file.name}...")
                     project = project.expand_loops()
                     logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
-                elif isinstance(project, PersonProject):
-                    # Prüfe ob PersonProject Loop-Tasks enthält
-                    has_loop_tasks = any(isinstance(task, LoopTask) for task in project.tasks)
-                    if has_loop_tasks:
-                        logger.info(f"Expandiere Loop-Tasks in PersonProject fuer {project_file.name}...")
-                        project = project.expand_loops()
-                        logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
 
-                # Berechne CPM mit neuer API
-                start_date = None
-                if args.start_date:
-                    from datetime import datetime
-                    start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
-                    logger.info(f"Verwende Startdatum: {args.start_date}")
+            # Berechne CPM
+            start_date = None
+            if args.start_date:
+                from datetime import datetime
+                start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
+                logger.info(f"Verwende Startdatum: {args.start_date}")
 
-                result = project.calculate_cpm(start_date=start_date, cfg_dir=args.cfg_dir)
+            result = project.calculate_cpm(start_date=start_date, cfg_dir=args.cfg_dir)
 
-                # Ausgabe auf Konsole
-                print_cpm_summary(result)
+            # Ausgabe auf Konsole
+            print_cpm_summary(result)
 
-                # Bestimme Ausgabeverzeichnis
-                if args.output_dir:
-                    output_dir = args.output_dir
-                else:
-                    # Standard: results Ordner
-                    output_dir = Path("results")
-                    output_dir.mkdir(exist_ok=True)
+            # Bestimme Ausgabeverzeichnis
+            if args.output_dir:
+                output_dir = args.output_dir
+            else:
+                # Standard: results Ordner
+                output_dir = Path("results")
+                output_dir.mkdir(exist_ok=True)
 
-                # Exportiere in gewünschte Formate
-                for fmt in export_formats:
-                    if fmt == 'json':
-                        output_file = output_dir / f"{project_file.stem}_cpm.json"
-                        output_data = result.export_to_dict(include_dates=True)
-                        with open(output_file, 'w', encoding='utf-8') as f:
-                            json.dump(output_data, f, indent=2, ensure_ascii=False)
-                        logger.info(f"CPM-Ergebnisse (JSON) gespeichert in: {output_file}")
-                    elif fmt == 'txt':
-                        output_file = output_dir / f"{project_file.stem}_cpm.txt"
-                        export_cpm_to_txt(result, output_file)
-                        logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
-                    elif fmt == 'xlsx':
-                        output_file = output_dir / f"{project_file.stem}_cpm.xlsx"
-                        try:
-                            # Füge dynamisch Reports hinzu wenn gewünscht
-                            export_project = project
-                            if args.gantt or args.resource:
-                                export_project = add_dynamic_reports(
-                                    project,
-                                    args.gantt,
-                                    args.resource,
-                                    args.cfg_dir
-                                )
+            # Exportiere in gewünschte Formate
+            for fmt in export_formats:
+                if fmt == 'json':
+                    output_file = output_dir / f"{project_file.stem}_cpm.json"
+                    output_data = result.export_to_dict(include_dates=True)
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        json.dump(output_data, f, indent=2, ensure_ascii=False)
+                    logger.info(f"CPM-Ergebnisse (JSON) gespeichert in: {output_file}")
+                elif fmt == 'txt':
+                    output_file = output_dir / f"{project_file.stem}_cpm.txt"
+                    export_cpm_to_txt(result, output_file)
+                    logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
+                elif fmt == 'xlsx':
+                    output_file = output_dir / f"{project_file.stem}_cpm.xlsx"
+                    try:
+                        # Füge dynamisch Reports hinzu wenn gewünscht
+                        export_project = project
+                        if args.gantt or args.resource:
+                            export_project = add_dynamic_reports(
+                                project,
+                                args.gantt,
+                                args.resource,
+                                args.cfg_dir
+                            )
 
-                            export_cpm_to_xlsx(result, output_file, export_project, args.cfg_dir)
-                            logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
-                        except ImportError as ie:
-                            logger.warning(f"XLSX-Export übersprungen: {ie}")
-                    elif fmt == 'svg':
-                        output_file = output_dir / f"{project_file.stem}_gantt.svg"
-                        try:
-                            # Exportiere Gantt-Chart als SVG über Mermaid/kroki
-                            project_name = project.project if hasattr(project, 'project') else project_file.stem
-                            success = export_cpm_to_svg(result, output_file, project_name)
-                            if success:
-                                logger.info(f"CPM-Ergebnisse (SVG) gespeichert in: {output_file}")
-                        except ImportError as ie:
-                            logger.warning(f"SVG-Export übersprungen: {ie}")
-                        except Exception as e:
-                            logger.error(f"SVG-Export fehlgeschlagen: {e}")
-                    elif fmt == 'md':
-                        output_file = output_dir / f"{project_file.stem}_cpm.md"
-                        try:
-                            # Exportiere CPM-Report als Markdown
-                            project_name = project.project if hasattr(project, 'project') else project_file.stem
-                            success = export_cpm_to_markdown(result, output_file, project_name, project)
-                            if success:
-                                logger.info(f"CPM-Ergebnisse (Markdown) gespeichert in: {output_file}")
-                        except Exception as e:
-                            logger.error(f"Markdown-Export fehlgeschlagen: {e}")
+                        export_cpm_to_xlsx(result, output_file, export_project, args.cfg_dir)
+                        logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
+                    except ImportError as ie:
+                        logger.warning(f"XLSX-Export übersprungen: {ie}")
+                elif fmt == 'svg':
+                    output_file = output_dir / f"{project_file.stem}_gantt.svg"
+                    try:
+                        # Exportiere Gantt-Chart als SVG über Mermaid/kroki
+                        project_name = project.project if hasattr(project, 'project') else project_file.stem
+                        success = export_cpm_to_svg(result, output_file, project_name)
+                        if success:
+                            logger.info(f"CPM-Ergebnisse (SVG) gespeichert in: {output_file}")
+                    except ImportError as ie:
+                        logger.warning(f"SVG-Export übersprungen: {ie}")
+                    except Exception as e:
+                        logger.error(f"SVG-Export fehlgeschlagen: {e}")
+                elif fmt == 'md':
+                    output_file = output_dir / f"{project_file.stem}_cpm.md"
+                    try:
+                        # Exportiere CPM-Report als Markdown
+                        project_name = project.project if hasattr(project, 'project') else project_file.stem
+                        success = export_cpm_to_markdown(result, output_file, project_name, project)
+                        if success:
+                            logger.info(f"CPM-Ergebnisse (Markdown) gespeichert in: {output_file}")
+                    except Exception as e:
+                        logger.error(f"Markdown-Export fehlgeschlagen: {e}")
 
-                success_count += 1
-            except Exception as e:
-                logger.error(f"Fehler bei CPM-Berechnung für {project_file.name}: {e}", exc_info=True)
-            continue
-
-        # Normale Projektverarbeitung mit TJP-Registry
-        registry = load_registry(args.cfg_dir, project_file, logger)
-        if registry is None:
-            # Zähle trotzdem als Erfolg, da CPM/Graph-Operationen möglich sind
             success_count += 1
-            continue
-
-        process_project(registry, logger)
-        success_count += 1
+        except Exception as e:
+            logger.error(f"Fehler bei CPM-Berechnung für {project_file.name}: {e}", exc_info=True)
 
     logger.info("=" * 60)
     logger.info(f"Fertig: {success_count}/{len(project_files)} Projekte erfolgreich verarbeitet")
