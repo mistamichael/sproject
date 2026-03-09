@@ -53,16 +53,20 @@ class InstanceTask(ExpandableTask):
 
 class SubTask(BaseModel):
     """
-    Subtask für Loop-Tasks (erdaushub.json)
+    Subtask für Loop-Tasks (erdaushub.json, pizzas.json)
 
     Felder:
+    - id: Eindeutige ID für diesen Subtask (optional, wird sonst auto-generiert)
     - name: Name des Subtasks
-    - required_resources: Liste von Resource-IDs (optional)
+    - resources: Liste von Resource-IDs (optional)
+    - required_resources: Liste von Resource-IDs (optional, legacy)
     - duration: Feste Dauer oder Resource-Referenz (optional)
     - duration_formula: Formel zur Berechnung (optional)
     """
 
+    id: Optional[str] = None
     name: str
+    resources: Optional[List[str]] = None
     required_resources: Optional[List[str]] = None
     duration: Optional[str] = None
     duration_formula: Optional[str] = None

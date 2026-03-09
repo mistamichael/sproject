@@ -1,7 +1,9 @@
 {
   "project": "Pizza Service Express",
-  "total_volume": 12,
+  "total_volume": 10,
   "unit": "Pizzen",
+  "project_start": "2026-03-03 09:00:00",
+
   "persons": [
     {
       "id": "PERS1",

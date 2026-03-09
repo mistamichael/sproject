@@ -19,12 +19,14 @@ try:
     from .models.resources import Resource, Person
     from .utils import format_time_value
     from .mermaid_export import generate_mermaid_gantt
+    from .network_diagram import generate_network_text, generate_mermaid_network
 except (ImportError, ValueError):
     from models.cpm import CPMResult, CPMTaskResult
     from models.project import PersonProject, SimpleProject, CycleProject, LoopProject
     from models.resources import Resource, Person
     from utils import format_time_value
     from mermaid_export import generate_mermaid_gantt
+    from network_diagram import generate_network_text, generate_mermaid_network
 
 
 def _format_node_box(task: CPMTaskResult, time_unit: str = 'days') -> str:
@@ -127,20 +129,23 @@ def _generate_cpm_analyse_section(result: CPMResult, project_name: str = "Projec
 
     lines.append("")
 
-    # CPM Knoten (nur kritische Tasks)
-    if critical_tasks:
-        lines.append("### CPM Knoten (Kritische Tasks)")
+    # Netzplan (Dependency Graph)
+    if result.tasks:
+        lines.append("### Netzplan")
         lines.append("")
 
-        for task in critical_tasks:
-            lines.append(_format_node_box(task, result.time_unit))
-            lines.append("")
+        # Text-basierter Netzplan mit Dauer und Zeiten
+        network_text = generate_network_text(result, include_duration=True, include_times=True)
+        # Entferne die erste Zeile "### Netzplan" da wir sie schon hinzugefügt haben
+        network_lines = network_text.split('\n')[2:]
+        lines.extend(network_lines)
+        lines.append("")
 
     # Alle Tasks Tabelle
     lines.append("### Alle Tasks")
     lines.append("")
-    lines.append("| ID | Name | Dauer | FAZ | FEZ | SAZ | SEZ | Puffer | Krit. |")
-    lines.append("|---|---|---|---|---|---|---|---|---|")
+    lines.append("| ID | Name | Dauer | FAZ | FEZ | SAZ | SEZ | GP | FP | Krit. |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
 
     for task_id, task in result.tasks.items():
         duration = format_time_value(task.duration, result.time_unit)
@@ -148,13 +153,14 @@ def _generate_cpm_analyse_section(result: CPMResult, project_name: str = "Projec
         fez = format_time_value(task.fez, result.time_unit)
         saz = format_time_value(task.saz, result.time_unit)
         sez = format_time_value(task.sez, result.time_unit)
-        puffer = format_time_value(task.puffer, result.time_unit)
+        gp = format_time_value(task.puffer, result.time_unit)  # Gesamtpuffer
+        fp = format_time_value(task.free_puffer, result.time_unit)  # Freier Puffer
         krit = "JA" if task.is_critical else ""
 
         # Kürze Name für Tabelle
         name = task.name if len(task.name) <= 35 else task.name[:32] + "..."
 
-        lines.append(f"| {task_id} | {name} | {duration} | {faz} | {fez} | {saz} | {sez} | {puffer} | {krit} |")
+        lines.append(f"| {task_id} | {name} | {duration} | {faz} | {fez} | {saz} | {sez} | {gp} | {fp} | {krit} |")
 
     lines.append("")
 
@@ -163,7 +169,7 @@ def _generate_cpm_analyse_section(result: CPMResult, project_name: str = "Projec
 
 def _generate_gantt_chart_section(result: CPMResult, project_name: str = "Project") -> str:
     """
-    Generiert die Gantt Chart Sektion mit Mermaid-Diagramm.
+    Generiert die Gantt Chart Sektion mit Mermaid-Diagramm (mit Wochenenden).
 
     Args:
         result: CPM Berechnungsergebnis
@@ -173,7 +179,7 @@ def _generate_gantt_chart_section(result: CPMResult, project_name: str = "Projec
         Markdown-formatierter Gantt Chart Text
     """
     lines = []
-    lines.append("## Gantt Chart")
+    lines.append("## Gantt Chart (mit Wochenenden)")
     lines.append("")
 
     # Generiere Mermaid Gantt
@@ -183,6 +189,130 @@ def _generate_gantt_chart_section(result: CPMResult, project_name: str = "Projec
     lines.append(mermaid_diagram)
     lines.append("```")
     lines.append("")
+
+    return "\n".join(lines)
+
+
+def _generate_resource_gantt_chart(
+    resource_id: str,
+    resource_name: str,
+    task_ids: List[str],
+    result: CPMResult,
+    start_date: Optional[datetime] = None
+) -> str:
+    """
+    Generiert ein Mermaid Gantt-Diagramm für eine einzelne Ressource mit adäquater Zeitauflösung.
+
+    Args:
+        resource_id: ID der Ressource
+        resource_name: Name der Ressource
+        task_ids: Liste der Task-IDs für diese Ressource
+        result: CPM Berechnungsergebnis
+        start_date: Startdatum des Projekts (optional)
+
+    Returns:
+        Mermaid Gantt-Diagramm als String
+    """
+    from datetime import timedelta
+
+    lines = []
+    lines.append("gantt")
+    lines.append(f"    title Ressourcen-Auslastung: {resource_name}")
+
+    # Bestimme Zeit-Einheit (wie in generate_mermaid_gantt)
+    time_unit = getattr(result, 'time_unit', 'days')
+
+    # Setze dateFormat und axisFormat basierend auf time_unit
+    if time_unit == 'minutes':
+        lines.append("    dateFormat  YYYY-MM-DD HH:mm")
+        lines.append("    axisFormat  %H:%M")
+    elif time_unit == 'hours':
+        lines.append("    dateFormat  YYYY-MM-DD HH:mm")
+        lines.append("    axisFormat  %H:%M")
+    else:  # 'days'
+        lines.append("    dateFormat  YYYY-MM-DD")
+        lines.append("    axisFormat  %d.%m")
+
+    lines.append("")
+
+    # Sammle und sortiere Tasks für diese Ressource nach FAZ
+    resource_tasks = []
+    for task_id in task_ids:
+        if str(task_id) in result.tasks:
+            task = result.tasks[str(task_id)]
+            resource_tasks.append((str(task_id), task.name, task.faz, task.fez))
+
+    # Sortiere nach FAZ (Anfangszeit)
+    resource_tasks.sort(key=lambda x: x[2])
+
+    lines.append(f"    section {resource_name}")
+    lines.append("")
+
+    # Generiere Task-Einträge
+    for idx, (task_id, task_name, faz, fez) in enumerate(resource_tasks):
+        # Kürze Namen falls zu lang
+        short_name = task_name if len(task_name) <= 25 else task_name[:22] + "..."
+
+        if start_date:
+            # Berechne absolute Daten basierend auf time_unit
+            if time_unit == 'minutes':
+                # FAZ/FEZ sind in Tagen, aber Auflösung ist Minuten
+                # Berechne die Minuten-Offset innerhalb des Tages
+                total_minutes_start = faz * 480  # 1 Tag = 480 Minuten (8h * 60)
+                total_minutes_end = fez * 480
+
+                # Extrahiere Tage und Minuten
+                days_start = int(total_minutes_start // 480)
+                minutes_start = int(total_minutes_start % 480)
+                days_end = int(total_minutes_end // 480)
+                minutes_end = int(total_minutes_end % 480)
+
+                # Berechne DateTime
+                task_start = start_date + timedelta(days=days_start, minutes=minutes_start)
+                task_end = start_date + timedelta(days=days_end, minutes=minutes_end)
+
+                # Formatiere mit Uhrzeit
+                start_str = task_start.strftime('%Y-%m-%d %H:%M')
+                end_str = task_end.strftime('%Y-%m-%d %H:%M')
+
+            elif time_unit == 'hours':
+                # FAZ/FEZ sind in Tagen, aber Auflösung ist Stunden
+                # 1 Tag = 8 Stunden
+                total_hours_start = faz * 8
+                total_hours_end = fez * 8
+
+                # Extrahiere Tage und Stunden
+                days_start = int(total_hours_start // 8)
+                hours_start = int(total_hours_start % 8)
+                days_end = int(total_hours_end // 8)
+                hours_end = int(total_hours_end % 8)
+
+                # Berechne DateTime
+                task_start = start_date + timedelta(days=days_start, hours=hours_start)
+                task_end = start_date + timedelta(days=days_end, hours=hours_end)
+
+                # Formatiere mit Uhrzeit
+                start_str = task_start.strftime('%Y-%m-%d %H:%M')
+                end_str = task_end.strftime('%Y-%m-%d %H:%M')
+
+            else:  # 'days'
+                task_start = start_date + timedelta(days=faz)
+                task_end = start_date + timedelta(days=fez)
+
+                start_str = task_start.strftime("%Y-%m-%d")
+                end_str = task_end.strftime("%Y-%m-%d")
+
+            # Generiere eindeutige ID
+            task_ref = f"t{idx}"
+            lines.append(f"    {short_name:<27} :{task_ref}, {start_str}, {end_str}")
+        else:
+            # Verwende relative Zeiten (Tage)
+            duration = int(fez - faz)
+
+            if idx == 0:
+                lines.append(f"    {short_name:<27} :t{idx}, {duration}d")
+            else:
+                lines.append(f"    {short_name:<27} :after t{idx - 1}, {duration}d")
 
     return "\n".join(lines)
 
@@ -230,7 +360,7 @@ def _generate_resource_list_section(
         return "\n".join(lines)
 
     # Erstelle Ressourcen-Tabelle
-    lines.append("### Ressourcenauslastung")
+    lines.append("### Ressourcenauslastung (Textform)")
     lines.append("")
     lines.append("| Ressource | Anzahl Tasks | Tasks |")
     lines.append("|---|---|---|")
@@ -245,6 +375,35 @@ def _generate_resource_list_section(
         lines.append(f"| {res_id} | {task_count} | {task_list} |")
 
     lines.append("")
+
+    # Generiere Gantt-Diagramme für jede Ressource
+    lines.append("### Ressourcenauslastung (Gantt-Diagramm)")
+    lines.append("")
+
+    # Hole Ressourcen-Namen aus Project falls verfügbar
+    resource_names: Dict[str, str] = {}
+    if project and hasattr(project, 'resources'):
+        for res in project.resources:
+            resource_names[res.id] = getattr(res, 'name', res.id)
+
+    # Generiere Gantt für jede Ressource
+    for res_id in sorted(resource_usage.keys()):
+        task_ids = resource_usage[res_id]
+        resource_name = resource_names.get(res_id, res_id)
+
+        # Generiere Gantt-Diagramm
+        gantt_chart = _generate_resource_gantt_chart(
+            res_id,
+            resource_name,
+            task_ids,
+            result,
+            result.project_start
+        )
+
+        lines.append("```mermaid")
+        lines.append(gantt_chart)
+        lines.append("```")
+        lines.append("")
 
     # Falls PersonProject: Zeige Personen-Details
     if project and isinstance(project, PersonProject):

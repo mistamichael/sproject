@@ -329,10 +329,11 @@ def format_datetime_value(days: float, unit: Literal['minutes', 'hours', 'days']
 def add_workdays(start_date: datetime, days: float) -> datetime:
     """
     Addiert Arbeitstage zu einem Datum (ohne Wochenenden).
+    Unterstützt positive und negative Werte.
 
     Args:
         start_date: Startdatum
-        days: Anzahl der Arbeitstage
+        days: Anzahl der Arbeitstage (kann negativ sein für Rückwärtsrechnung)
 
     Returns:
         Neues Datum
@@ -342,25 +343,39 @@ def add_workdays(start_date: datetime, days: float) -> datetime:
         >>> result = add_workdays(start, 1.0)
         >>> result.day
         4  # Mittwoch
+        >>> result = add_workdays(start, -1.0)
+        >>> result.day
+        2  # Montag
     """
     # Handle infinity values
     import math
     if math.isinf(days):
-        # Return a far future date for infinity
-        return datetime(9999, 12, 31)
+        if days > 0:
+            return datetime(9999, 12, 31)  # Far future
+        else:
+            return datetime(1900, 1, 1)     # Far past
 
     current = start_date
     days_to_add = int(days)
     fraction = days - days_to_add
 
-    while days_to_add > 0:
-        current += timedelta(days=1)
-        # Überspringe Wochenenden (5=Samstag, 6=Sonntag)
-        if current.weekday() < 5:
-            days_to_add -= 1
+    # Vorwärts (positive Tage)
+    if days_to_add > 0:
+        while days_to_add > 0:
+            current += timedelta(days=1)
+            # Überspringe Wochenenden (5=Samstag, 6=Sonntag)
+            if current.weekday() < 5:
+                days_to_add -= 1
+    # Rückwärts (negative Tage)
+    elif days_to_add < 0:
+        while days_to_add < 0:
+            current -= timedelta(days=1)
+            # Überspringe Wochenenden (5=Samstag, 6=Sonntag)
+            if current.weekday() < 5:
+                days_to_add += 1
 
     # Füge Bruchteil hinzu (ohne Wochenend-Check)
-    if fraction > 0:
+    if fraction != 0:
         current += timedelta(days=fraction)
 
     return current

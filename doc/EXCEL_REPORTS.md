@@ -18,7 +18,7 @@ Das sproject-System kann Excel-Dateien mit folgenden Reports generieren:
 python lib\sproject.py --project examples\software_simple.json --export xlsx
 ```
 
-Erstellt: `results\software_simple_cpm.xlsx` mit einem Sheet "CPM Analyse"
+Erstellt: `results\software_simple.xlsx` mit einem Sheet "CPM Analyse"
 
 ### Mit Gantt Chart
 
@@ -277,12 +277,12 @@ Bei `--export json` oder `--export txt` werden sie ignoriert.
 
 ## Beispiel-Ausgaben
 
-### erdaushub_cpm.xlsx
+### erdaushub.xlsx
 - **CPM Analyse**: 68 Tasks mit FAZ, FEZ, SAZ, SEZ, Puffer
 - **Gantt Chart**: Zeitstrahl + 68 Balken (Violet → Blau)
 - **Resource List**: "Max Mustermann" mit allen 68 Tasks
 
-### software_simple_cpm.xlsx
+### software_simple.xlsx
 - **CPM Analyse**: 8 Tasks
 - **Gantt Chart**: Zeitstrahl + 8 Balken, kritischer Pfad rot umrandet
 - **Resource List**: 4 Personen (Alice, Bob, Charlie, Diana) mit zugewiesenen Tasks

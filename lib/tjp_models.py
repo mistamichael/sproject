@@ -7,7 +7,7 @@ Pydantic-Modelle für die TaskJuggler JSON-Dateien:
   - project.json
   - reports.json
 
-Lädt alle Dateien über TJPRegistry und löst ID-Querverweise auf.
+Legacy-Modelle für alte TJP-basierte Konfigurationsdateien.
 """
 
 from __future__ import annotations
@@ -169,7 +169,7 @@ class Person(TJPBase):
     email:                    Optional[str] = None
     workinghours_override_ref:Optional[str] = None
 
-    # Wird durch TJPRegistry befüllt (aufgelöste Querverweise)
+    # Aufgelöste Querverweise
     _resolved_workinghours: Optional[WorkingHours] = None
 
     @property
@@ -477,7 +477,7 @@ class Task(TJPBase):
     chargeset: list[str]        = []    # Account-IDs
     tasks:     list[Task]       = []    # Unteraufgaben
 
-    # Wird durch TJPRegistry befüllt
+    # Aufgelöste Querverweise
     _resolved_persons: list[Person] = []
 
     @model_validator(mode="after")
@@ -625,213 +625,3 @@ class ConsolidatedConfigFile(TJPBase):
     def to_reports_file(self) -> ReportsFile:
         """Extrahiert ReportsFile aus der konsolidierten Struktur."""
         return ReportsFile(reports=self.reports)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 5. TJPRegistry – lädt alles und löst Querverweise auf
-# ─────────────────────────────────────────────────────────────────────────────
-
-class TJPRegistry:
-    """
-    Zentrales Lade- und Verknüpfungs-Objekt.
-
-    Verwendung:
-        registry = TJPRegistry.load(
-            persons_path    = "persons.json",
-            wh_path         = "workinghours_absences.json",
-            project_path    = "project.json",
-            reports_path    = "reports.json",
-        )
-        alice  = registry.get_person("alice")
-        coding = registry.get_task("coding_phase")
-        print(coding.persons)        # → aufgelöste Person-Objekte
-        print(alice.workinghours)    # → aufgelöstes WorkingHours-Objekt
-    """
-
-    def __init__(
-        self,
-        persons:  PersonsFile,
-        wh:       WorkingHoursFile,
-        project:  ProjectFile,
-        reports:  ReportsFile,
-    ) -> None:
-        self.persons  = persons
-        self.wh       = wh
-        self.project  = project
-        self.reports  = reports
-        self._resolve_all()
-
-    @classmethod
-    def load(
-        cls,
-        project_path: Union[str, Path],
-        persons_path: Optional[Union[str, Path]] = None,
-        wh_path:      Optional[Union[str, Path]] = None,
-        reports_path: Optional[Union[str, Path]] = None,
-    ) -> TJPRegistry:
-        """
-        Lädt TJPRegistry aus Projektdatei und optionalen Config-Dateien.
-
-        Fehlende Config-Dateien werden mit Defaults ergänzt.
-
-        Args:
-            project_path: Pfad zur Projektdatei (erforderlich)
-            persons_path: Pfad zu persons.json (optional, verwendet Default falls None)
-            wh_path: Pfad zu workinghours_absences.json (optional, verwendet Default falls None)
-            reports_path: Pfad zu reports.json (optional, verwendet Default falls None)
-
-        Returns:
-            TJPRegistry-Instanz
-        """
-        # JSON einmal laden – unterstützt sowohl "klassische" project.json
-        # als auch konsolidierte Dateien wie examples/software_simple.json
-        project_path = Path(project_path)
-        data = json.loads(project_path.read_text(encoding="utf-8"))
-
-        # Projektteil validieren (ignoriert fremde Top-Level-Keys wie persons, workinghours_absences, reports)
-        project = ProjectFile.model_validate(data)
-
-        # Persons: bevorzugt separate Datei, sonst aus konsolidierter Datei, sonst Defaults
-        if persons_path and Path(persons_path).exists():
-            persons = PersonsFile.from_json(persons_path)
-        elif "persons" in data:
-            persons = PersonsFile.model_validate(data["persons"])
-        else:
-            persons = PersonsFile(resource_groups=[], individual_resources=[])
-
-        # WorkingHours: bevorzugt separate Datei, sonst aus konsolidierter Datei, sonst Default Mo–Fr 8h
-        if wh_path and Path(wh_path).exists():
-            wh = WorkingHoursFile.from_json(wh_path)
-        elif "workinghours_absences" in data:
-            wh = WorkingHoursFile.model_validate(data["workinghours_absences"])
-        else:
-            wh = WorkingHoursFile(
-                global_workinghours=WorkingHours(
-                    id="default",
-                    hours_per_day=8.0,
-                    workdays=[1, 2, 3, 4, 5],  # Mo–Fr
-                    absences=[]
-                ),
-                workinghours_overrides=[]
-            )
-
-        # Reports: bevorzugt separate Datei, sonst aus konsolidierter Datei (Top-Level "reports"), sonst leer
-        if reports_path and Path(reports_path).exists():
-            reports = ReportsFile.from_json(reports_path)
-        elif "reports" in data:
-            reports = ReportsFile.model_validate({"reports": data["reports"]})
-        else:
-            reports = ReportsFile(reports=[])
-
-        return cls(
-            persons = persons,
-            wh      = wh,
-            project = project,
-            reports = reports,
-        )
-
-    @classmethod
-    def load_consolidated(
-        cls,
-        config_path: Union[str, Path],
-        project_path: Union[str, Path],
-    ) -> TJPRegistry:
-        """
-        Lädt eine konsolidierte Konfigurationsdatei (persons + workinghours + reports)
-        zusammen mit einer separaten project.json.
-
-        Args:
-            config_path: Pfad zur konsolidierten Config-Datei
-            project_path: Pfad zur project.json
-
-        Returns:
-            TJPRegistry-Instanz mit allen geladenen Daten
-        """
-        config = ConsolidatedConfigFile.from_json(config_path)
-        return cls(
-            persons = config.to_persons_file(),
-            wh      = config.to_workinghours_file(),
-            project = ProjectFile.from_json(project_path),
-            reports = config.to_reports_file(),
-        )
-
-    # ── Querverweise auflösen ────────────────────────────────────────────────
-
-    def _resolve_all(self) -> None:
-        self._resolve_person_workinghours()
-        self._resolve_task_persons()
-
-    def _resolve_person_workinghours(self) -> None:
-        """Weist jeder Person ihr WorkingHours-Objekt zu."""
-        global_wh = self.wh.global_workinghours
-        for person in self.persons.all_persons():
-            ref = person.workinghours_override_ref
-            if ref:
-                override = self.wh.get_override(ref)
-                person.resolve_workinghours(override or global_wh)
-            else:
-                # Gruppen-Override prüfen
-                group = next(
-                    (g for g in self.persons.resource_groups if person in g.members),
-                    None
-                )
-                if group and group.workinghours_override_ref:
-                    override = self.wh.get_override(group.workinghours_override_ref)
-                    person.resolve_workinghours(override or global_wh)
-                else:
-                    person.resolve_workinghours(global_wh)
-
-    def _resolve_task_persons(self) -> None:
-        """Weist jedem Task seine Person-Objekte aus allocate[] zu."""
-        for task in self.project.all_tasks():
-            resolved = [
-                p for pid in task.allocate
-                if (p := self.persons.get_person(pid)) is not None
-            ]
-            task.resolve_persons(resolved)
-
-    # ── Convenience-Zugriff ─────────────────────────────────────────────────
-
-    def get_person(self, person_id: str) -> Optional[Person]:
-        return self.persons.get_person(person_id)
-
-    def get_task(self, task_id: str) -> Optional[Task]:
-        return self.project.get_task(task_id)
-
-    def get_report(self, report_id: str) -> Optional[Report]:
-        return self.reports.get_report(report_id)
-
-    def get_account(self, account_id: str) -> Optional[Account]:
-        return self.project.get_account(account_id)
-
-    def absences_for(self, person_id: str) -> list[Absence]:
-        return self.wh.absences_for(person_id)
-
-    def summary(self) -> str:
-        """Gibt eine lesbare Übersicht der geladenen Daten aus."""
-        p = self.project.project
-        persons = self.persons.all_persons()
-        tasks   = self.project.all_tasks()
-        lines = [
-            f"{'='*55}",
-            f"  TJP-Projekt: {p.name} v{p.version}",
-            f"  Zeitraum:    {p.start} ({p.duration})",
-            f"  Währung:     {p.currency}  |  Zeitzone: {p.timezone}",
-            f"{'='*55}",
-            f"  Ressourcen:  {len(persons)} Personen in "
-            f"{len(self.persons.resource_groups)} Gruppen",
-            f"  Aufgaben:    {len(tasks)} (inkl. Unteraufgaben)",
-            f"  Reports:     {len(self.reports.reports)}",
-            f"  Feiertage:   {len(self.wh.global_leaves)} global",
-            f"{'='*55}",
-        ]
-        for person in persons:
-            wh   = person.workinghours
-            absc = self.absences_for(person.id)
-            wday = wh.hours_per_day("mon") if wh else 0
-            lines.append(
-                f"  👤 {person.name:<12} ({person.id})"
-                f"  {wday:.1f}h/Tag"
-                f"  Abwesenheiten: {len(absc)}"
-            )
-        return "\n".join(lines)

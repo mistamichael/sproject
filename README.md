@@ -252,7 +252,6 @@ Oder einzelne Testklassen:
 
 ```bash
 python -m unittest test.TestWorkingHours
-python -m unittest test.TestTJPRegistry
 ```
 
 ## Logging

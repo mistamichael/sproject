@@ -314,6 +314,9 @@ class CPMCalculator:
         # Pufferzeiten berechnen
         self._calculate_slack()
 
+        # Resource Leveling durchführen (neue Phase mit Ressourcen-Verfügbarkeitsprüfung)
+        self._resource_leveling()
+
         # Erstelle Ergebnis
         project_duration_days = max(task.fez for task in self.cpm_tasks.values())
         project_duration_str = format_time_value(project_duration_days, self.time_unit)
@@ -539,9 +542,12 @@ class CPMCalculator:
 
     def _forward_pass(self) -> None:
         """
-        Vorwärtsrechnung: Berechnet FAZ und FEZ.
-        Verwendet topologische Sortierung für korrekte Reihenfolge.
-        Berücksichtigt Wochenenden durch Einfügen von Blocker-Tasks.
+        Vorwärtsrechnung: Berechnet FAZ und FEZ (ohne Wochenenden/Feiertage).
+
+        Dies ist Phase 1: Reine Netzplan-Berechnung mit einfacher Zeitarithmetik.
+        Wochenenden und Feiertage werden später in Phase 2 (GanttCalculator) berücksichtigt.
+
+        FAZ/FEZ sind reine Arbeitstage seit Projektbeginn (Daten ohne Kalender-Unterbrechungen).
         """
         sorted_ids = self._topological_sort()
 
@@ -550,8 +556,6 @@ class CPMCalculator:
 
             # Berechne FAZ basierend auf verschiedenen Abhängigkeitstypen
             faz_constraints = [0.0]  # Mindestens 0
-            max_pred_id = None
-            max_constraint = 0.0
 
             # EA (Ende-Anfang): Nachfolger beginnt wenn Vorgänger endet
             # FAZ(Nachfolger) >= FEZ(Vorgänger)
@@ -559,9 +563,6 @@ class CPMCalculator:
                 if pred_id in self.cpm_tasks:
                     pred_fez = self.cpm_tasks[pred_id].fez
                     faz_constraints.append(pred_fez)
-                    if pred_fez > max_constraint:
-                        max_constraint = pred_fez
-                        max_pred_id = pred_id
 
             # AA (Anfang-Anfang): Nachfolger beginnt wenn Vorgänger beginnt
             # FAZ(Nachfolger) >= FAZ(Vorgänger)
@@ -569,9 +570,6 @@ class CPMCalculator:
                 if pred_id in self.cpm_tasks:
                     pred_faz = self.cpm_tasks[pred_id].faz
                     faz_constraints.append(pred_faz)
-                    if pred_faz > max_constraint:
-                        max_constraint = pred_faz
-                        max_pred_id = pred_id
 
             # AE (Anfang-Ende): Nachfolger kann erst enden wenn Vorgänger beginnt
             # FEZ(Nachfolger) >= FAZ(Vorgänger)
@@ -582,18 +580,12 @@ class CPMCalculator:
                     # Nachfolger muss so starten, dass er frühestens endet wenn Vorgänger startet
                     required_faz = pred_faz - task_result.duration
                     faz_constraints.append(required_faz)
-                    if required_faz > max_constraint:
-                        max_constraint = required_faz
-                        max_pred_id = pred_id
 
-            # Setze FAZ auf Maximum aller Constraints
+            # Setze FAZ auf Maximum aller Constraints (OHNE Wochenenden-Verschiebung)
             task_result.faz = max(faz_constraints)
 
-            # Prüfe ob FAZ auf Wochenende fällt und verschiebe ggf. zu Montag
-            task_result.faz = self._skip_weekend_if_needed(task_result.faz)
-
-            # Berechne FEZ initial: FEZ = FAZ + Dauer
-            task_result.fez = self._add_duration_with_weekends(task_result.faz, task_result.duration)
+            # Berechne FEZ: FEZ = FAZ + Dauer (einfache Arithmetik, KEINE Wochenenden)
+            task_result.fez = task_result.faz + task_result.duration
 
             # EE (Ende-Ende): Nachfolger endet wenn Vorgänger endet
             # FEZ(Nachfolger) >= FEZ(Vorgänger)
@@ -604,10 +596,17 @@ class CPMCalculator:
                     if task_result.fez < pred_fez:
                         # Nachfolger muss später enden - verschiebe FAZ
                         task_result.faz = pred_fez - task_result.duration
-                        task_result.fez = self._add_duration_with_weekends(task_result.faz, task_result.duration)
+                        task_result.fez = task_result.faz + task_result.duration
 
     def _backward_pass(self) -> None:
-        """Rückwärtsrechnung: Berechnet SAZ und SEZ."""
+        """
+        Rückwärtsrechnung: Berechnet SAZ und SEZ (ohne Wochenenden/Feiertage).
+
+        Dies ist Phase 1: Reine Netzplan-Berechnung mit einfacher Zeitarithmetik.
+        Wochenenden und Feiertage werden später in Phase 2 (GanttCalculator) berücksichtigt.
+
+        SAZ/SEZ sind reine Arbeitstage seit Projektbeginn (Daten ohne Kalender-Unterbrechungen).
+        """
         # Finde Endknoten (Tasks ohne Nachfolger)
         end_nodes = [
             task_id for task_id, task_result in self.cpm_tasks.items()
@@ -676,8 +675,8 @@ class CPMCalculator:
                 # Fallback: SEZ = FEZ (für Tasks ohne Nachfolger)
                 task_result.sez = task_result.fez
 
-            # SAZ = SEZ - Dauer (mit Wochenenden rückwärts)
-            task_result.saz = self._subtract_duration_with_weekends(task_result.sez, task_result.duration)
+            # SAZ = SEZ - Dauer (einfache Arithmetik, KEINE Wochenenden)
+            task_result.saz = task_result.sez - task_result.duration
 
     def _calculate_slack(self) -> None:
         """Berechnet die Pufferzeiten und markiert kritische Tasks."""
@@ -711,6 +710,153 @@ class CPMCalculator:
 
             # Kritische Tasks haben Gesamtpuffer ≈ 0
             task_result.is_critical = abs(task_result.puffer) < 0.001
+
+    def _resource_leveling(self) -> None:
+        """
+        Resource Leveling: Vergrößert Pufferzeiten wenn Ressourcen-Kapazität überschritten ist.
+
+        Diese Methode prüft für jede Maschinen-/Ofen-Ressource mit Kapazitätslimit:
+        - In jedem Zeitintervall: Summe der parallelen Tasks für diese Ressource
+        - Falls Kapazität überschritten: Verschiebe Tasks mit Puffer nach vorne/hinten
+        - Update FAZ/FEZ/SAZ/SEZ iterativ bis alle Konflikte gelöst sind
+
+        Hinweis: In dieser Phase arbeiten wir mit reinen Arbeitstagen ohne Kalender-Unterbrechungen.
+        """
+        # Hole Ressourcen aus dem Projekt
+        resources = getattr(self.project, 'resources', []) if hasattr(self.project, 'resources') else []
+
+        # Finde Maschinen-Ressourcen mit Kapazitätslimit
+        machine_resources = {}
+        for resource in resources:
+            # Prüfe auf 'capacity' und 'type'
+            capacity = getattr(resource, 'capacity', None)
+            resource_type = getattr(resource, 'type', None)
+
+            # Berücksichtige Maschinen, Öfen, Lastkraftwagen usw.
+            if capacity is not None and resource_type in ['machine', 'oven', 'truck']:
+                resource_id = resource.id
+                machine_resources[resource_id] = {
+                    'capacity': capacity,
+                    'name': getattr(resource, 'name', resource_id),
+                    'type': resource_type
+                }
+
+        # Wenn keine Ressourcen mit Kapazität: Keine Resource-Leveling nötig
+        if not machine_resources:
+            return
+
+        # Iterative Resource Leveling: Wiederhole bis keine Konflikte mehr
+        max_iterations = 10
+        for iteration in range(max_iterations):
+            conflicts_found = False
+
+            for resource_id, resource_info in machine_resources.items():
+                capacity = resource_info['capacity']
+
+                # Prüfe für jeden Task ob diese Ressource benutzt wird
+                # Sammle alle Tasks die diese Ressource nutzen
+                tasks_using_resource = []
+                for task_id, task_result in self.cpm_tasks.items():
+                    # Hole Ressourcen aus original Task
+                    if hasattr(self.project, 'tasks'):
+                        # Finde original Task
+                        original_task = None
+                        for t in self.project.tasks:
+                            if t.id == task_id:
+                                original_task = t
+                                break
+
+                        if original_task:
+                            task_resources = getattr(original_task, 'resources', []) if hasattr(original_task, 'resources') else []
+                            if resource_id in task_resources:
+                                tasks_using_resource.append((task_id, task_result))
+
+                # Sortiere Tasks nach FAZ (Startzeit)
+                tasks_using_resource.sort(key=lambda x: x[1].faz)
+
+                # Prüfe Kapazitätsverletzungen
+                # Teile Zeitstrahl in kleine Segmente auf und prüfe Kapazität
+                time_segments = set()
+                for task_id, task_result in tasks_using_resource:
+                    # Sammle alle Zeit-Grenzen
+                    time_segments.add(task_result.faz)
+                    time_segments.add(task_result.fez)
+
+                time_segments = sorted(time_segments)
+
+                # Für jedes Zeitsegment: Zähle überlappende Tasks
+                for i in range(len(time_segments) - 1):
+                    segment_start = time_segments[i]
+                    segment_end = time_segments[i + 1]
+                    segment_mid = (segment_start + segment_end) / 2
+
+                    # Zähle Tasks die zu dieser Zeit laufen
+                    active_tasks = [
+                        (tid, tr) for tid, tr in tasks_using_resource
+                        if tr.faz <= segment_mid < tr.fez
+                    ]
+
+                    if len(active_tasks) > capacity:
+                        conflicts_found = True
+
+                        # Verschiebe einen Task mit größtem Puffer
+                        # Das reduziert die Chance auf Abhängigkeits-Konflikte
+                        task_to_move = max(active_tasks, key=lambda x: x[1].puffer)
+                        task_id_to_move, task_result_to_move = task_to_move
+
+                        # Verschiebe diesen Task um die Dauer eines anderen Tasks
+                        # Suche Lücke nach diesem Zeitsegment
+                        new_faz = segment_end
+
+                        # Prüfe Abhängigkeits-Constraints
+                        for pred_id in task_result_to_move.predecessors_ea:
+                            if pred_id in self.cpm_tasks:
+                                pred_fez = self.cpm_tasks[pred_id].fez
+                                new_faz = max(new_faz, pred_fez)
+
+                        # Aktualisiere FAZ und FEZ
+                        if new_faz > task_result_to_move.faz:
+                            old_faz = task_result_to_move.faz
+                            old_fez = task_result_to_move.fez
+                            shift = new_faz - old_faz
+
+                            task_result_to_move.faz = new_faz
+                            task_result_to_move.fez = new_faz + task_result_to_move.duration
+
+                            # Verschiebe auch nachfolgende Tasks bei Bedarf
+                            self._update_successor_times(task_id_to_move, shift)
+
+                            # Puffer neu berechnen
+                            task_result_to_move.puffer = task_result_to_move.saz - task_result_to_move.faz
+                            task_result_to_move.is_critical = abs(task_result_to_move.puffer) < 0.001
+
+            # Wenn keine Konflikte mehr: Fertig
+            if not conflicts_found:
+                break
+
+    def _update_successor_times(self, task_id: Union[int, str], shift: float) -> None:
+        """
+        Aktualisiert die Zeiten von nachfolgenden Tasks wenn ein Task verschoben wird.
+
+        Args:
+            task_id: ID des verschobenen Tasks
+            shift: Zeitverschiebung (positive Wert = nach vorne schieben)
+        """
+        task_result = self.cpm_tasks[task_id]
+
+        # Iteriere über alle Nachfolger (EA-Abhängigkeiten)
+        for succ_id in task_result.successors_ea:
+            if succ_id in self.cpm_tasks:
+                succ_result = self.cpm_tasks[succ_id]
+                # Nur verschieben wenn der Nachfolger nicht schon später startet
+                if succ_result.faz < task_result.fez:
+                    new_faz = task_result.fez
+                    succ_shift = new_faz - succ_result.faz
+                    if succ_shift > 0:
+                        succ_result.faz = new_faz
+                        succ_result.fez = new_faz + succ_result.duration
+                        # Rekursiv Nachfolger aktualisieren
+                        self._update_successor_times(succ_id, succ_shift)
 
     def _add_duration_with_weekends(self, start_days: float, duration_days: float) -> float:
         """

@@ -42,7 +42,7 @@ def encode_kroki_url(diagram: str) -> str:
 
 def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> str:
     """
-    Generiert ein Mermaid Gantt-Chart aus CPM-Ergebnissen.
+    Generiert ein Mermaid Gantt-Chart aus CPM-Ergebnissen mit Berücksichtigung der Zeit-Auflösung.
 
     Args:
         result: CPMResult mit berechneten Task-Daten
@@ -51,20 +51,26 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
     Returns:
         Mermaid-Gantt-Diagramm als String
     """
+    from datetime import timedelta
+
     lines = []
     lines.append("gantt")
     lines.append(f"    title {project_name}")
-    lines.append(f"    dateFormat  YYYY-MM-DD")
 
-    # Bestimme Achsformat basierend auf time_unit
-    if hasattr(result, 'time_unit'):
-        if result.time_unit == 'minutes':
-            lines.append("    axisFormat  %H:%M")
-        elif result.time_unit == 'hours':
-            lines.append("    axisFormat  %H:%M")
-        else:
-            lines.append("    axisFormat  %d.%m")
+    # Bestimme Zeit-Einheit und entsprechende Formate
+    time_unit = getattr(result, 'time_unit', 'days')
+
+    if time_unit == 'minutes':
+        # Für Minuten: zeige Datum + Uhrzeit
+        lines.append("    dateFormat  YYYY-MM-DD HH:mm")
+        lines.append("    axisFormat  %H:%M")
+    elif time_unit == 'hours':
+        # Für Stunden: zeige Datum + Uhrzeit
+        lines.append("    dateFormat  YYYY-MM-DD HH:mm")
+        lines.append("    axisFormat  %H:%M")
     else:
+        # Für Tage: zeige nur Datum
+        lines.append("    dateFormat  YYYY-MM-DD")
         lines.append("    axisFormat  %d.%m")
 
     lines.append("")
@@ -79,10 +85,10 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
 
         # Kritische Tasks markieren
         if task.is_critical:
-            task_label = f"{task_name} (KRIT)"
+            task_label = f"[{task_id}] {task_name} (KRIT)"
             task_status = "crit"
         else:
-            task_label = task_name
+            task_label = f"[{task_id}] {task_name}"
             task_status = ""
 
         # Startdatum aus FAZ berechnen
@@ -91,15 +97,54 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
         else:
             start_date = datetime.now()
 
-        # Berechne Start- und Enddatum für den Task
-        # FAZ ist in Tagen (kann Dezimalwerte haben)
-        from datetime import timedelta
-        task_start = start_date + timedelta(days=task.faz)
-        task_end = start_date + timedelta(days=task.fez)
+        # Berechne Start- und Enddatum für den Task basierend auf Zeit-Einheit
+        if time_unit == 'minutes':
+            # FAZ/FEZ sind in Tagen, aber die Auflösung ist Minuten
+            # Berechne die Minuten-Offset innerhalb des Tages
+            total_minutes_start = task.faz * 480  # 1 Tag = 480 Minuten (8h * 60)
+            total_minutes_end = task.fez * 480
 
-        # Formatiere Datum
-        start_str = task_start.strftime('%Y-%m-%d')
-        end_str = task_end.strftime('%Y-%m-%d')
+            # Extrahiere Tage und Minuten
+            days_start = int(total_minutes_start // 480)
+            minutes_start = int(total_minutes_start % 480)
+            days_end = int(total_minutes_end // 480)
+            minutes_end = int(total_minutes_end % 480)
+
+            # Berechne DateTime
+            task_start = start_date + timedelta(days=days_start, minutes=minutes_start)
+            task_end = start_date + timedelta(days=days_end, minutes=minutes_end)
+
+            # Formatiere mit Uhrzeit
+            start_str = task_start.strftime('%Y-%m-%d %H:%M')
+            end_str = task_end.strftime('%Y-%m-%d %H:%M')
+
+        elif time_unit == 'hours':
+            # FAZ/FEZ sind in Tagen, aber die Auflösung ist Stunden
+            # 1 Tag = 8 Stunden
+            total_hours_start = task.faz * 8
+            total_hours_end = task.fez * 8
+
+            # Extrahiere Tage und Stunden
+            days_start = int(total_hours_start // 8)
+            hours_start = int(total_hours_start % 8)
+            days_end = int(total_hours_end // 8)
+            hours_end = int(total_hours_end % 8)
+
+            # Berechne DateTime
+            task_start = start_date + timedelta(days=days_start, hours=hours_start)
+            task_end = start_date + timedelta(days=days_end, hours=hours_end)
+
+            # Formatiere mit Uhrzeit
+            start_str = task_start.strftime('%Y-%m-%d %H:%M')
+            end_str = task_end.strftime('%Y-%m-%d %H:%M')
+        else:
+            # Für Tage: verwende nur Datum
+            task_start = start_date + timedelta(days=task.faz)
+            task_end = start_date + timedelta(days=task.fez)
+
+            # Formatiere Datum
+            start_str = task_start.strftime('%Y-%m-%d')
+            end_str = task_end.strftime('%Y-%m-%d')
 
         # Mermaid-Syntax: task_id, task_status, start, duration/end
         if task_status:

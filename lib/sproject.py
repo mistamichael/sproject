@@ -21,6 +21,7 @@ from models.project import PersonProject
 from models.reports import GanttReport, ResourceListReport
 from models.resources import Person, PersonResource
 from models.cpm import CPMResult
+from models.gantt import GanttCalculator
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
@@ -116,7 +117,7 @@ def print_cpm_summary(result: CPMResult) -> None:
     print()
     print("=" * 70)
     print("Alle Tasks:")
-    print(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<8} {'Krit.'}")
+    print(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'GP':<6} {'FP':<6} {'Krit.'}")
     print("-" * 70)
 
     # Sortiere Tasks topologisch (nach FAZ)
@@ -126,14 +127,15 @@ def print_cpm_summary(result: CPMResult) -> None:
         task = result.tasks[task_id]
         critical_marker = "JA" if task.is_critical else ""
         duration_str = format_time_value_auto(task.duration)
-        puffer_str = format_time_value_auto(task.puffer)
+        gp_str = format_time_value_auto(task.puffer)  # Gesamtpuffer
+        fp_str = format_time_value_auto(task.free_puffer)  # Freier Puffer
 
         id_str = str(task_id)
 
         print(
             f"{id_str:<7} {task.name:<30} {duration_str:<8} "
             f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
-            f"{task.sez:<6.1f} {puffer_str:<8} {critical_marker}"
+            f"{task.sez:<6.1f} {gp_str:<6} {fp_str:<6} {critical_marker}"
         )
     print("=" * 70)
 
@@ -167,7 +169,7 @@ def export_cpm_to_txt(result: CPMResult, output_file: Path) -> None:
         f.write("\n")
         f.write("=" * 70 + "\n")
         f.write("Alle Tasks:\n")
-        f.write(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'Puffer':<8} {'Krit.'}\n")
+        f.write(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'GP':<6} {'FP':<6} {'Krit.'}\n")
         f.write("-" * 70 + "\n")
 
         # Sortiere Tasks topologisch (nach FAZ)
@@ -177,14 +179,15 @@ def export_cpm_to_txt(result: CPMResult, output_file: Path) -> None:
             task = result.tasks[task_id]
             critical_marker = "JA" if task.is_critical else ""
             duration_str = format_time_value_auto(task.duration)
-            puffer_str = format_time_value_auto(task.puffer)
+            gp_str = format_time_value_auto(task.puffer)  # Gesamtpuffer
+            fp_str = format_time_value_auto(task.free_puffer)  # Freier Puffer
 
             id_str = str(task_id)
 
             f.write(
                 f"{id_str:<7} {task.name:<30} {duration_str:<8} "
                 f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
-                f"{task.sez:<6.1f} {puffer_str:<8} {critical_marker}\n"
+                f"{task.sez:<6.1f} {gp_str:<6} {fp_str:<6} {critical_marker}\n"
             )
         f.write("=" * 70 + "\n")
 
@@ -566,17 +569,37 @@ Beispiele:
             # Exportiere in gewünschte Formate
             for fmt in export_formats:
                 if fmt == 'json':
-                    output_file = output_dir / f"{project_file.stem}_cpm.json"
-                    output_data = result.export_to_dict(include_dates=True)
-                    with open(output_file, 'w', encoding='utf-8') as f:
+                    # Phase 1: Netzplan (reine CPM ohne Kalender)
+                    output_file_network = output_dir / f"{project_file.stem}_network_plan.json"
+                    output_data = result.export_to_dict(include_dates=False)  # Nur CPM-Zeiten, keine Kalender-Daten
+                    with open(output_file_network, 'w', encoding='utf-8') as f:
                         json.dump(output_data, f, indent=2, ensure_ascii=False)
-                    logger.info(f"CPM-Ergebnisse (JSON) gespeichert in: {output_file}")
+                    logger.info(f"Netzplan (Phase 1, JSON) gespeichert in: {output_file_network}")
+
+                    # Phase 2: Gantt-Schedule (mit Kalender-Daten und Unterbrechungen)
+                    try:
+                        gantt_calc = GanttCalculator(
+                            result,
+                            skip_weekends=result.skip_weekends,
+                            skip_holidays=result.skip_holidays,
+                            holidays=result.holidays if result.skip_holidays else None,
+                            cfg_dir=args.cfg_dir if hasattr(args, 'cfg_dir') else None
+                        )
+                        gantt_result = gantt_calc.calculate()
+
+                        output_file_gantt = output_dir / f"{project_file.stem}_gantt.json"
+                        gantt_data = gantt_calc.export_to_dict()
+                        with open(output_file_gantt, 'w', encoding='utf-8') as f:
+                            json.dump(gantt_data, f, indent=2, ensure_ascii=False, default=str)
+                        logger.info(f"Gantt-Schedule (Phase 2, JSON) gespeichert in: {output_file_gantt}")
+                    except Exception as e:
+                        logger.error(f"Gantt-Export fehlgeschlagen: {e}", exc_info=True)
                 elif fmt == 'txt':
-                    output_file = output_dir / f"{project_file.stem}_cpm.txt"
+                    output_file = output_dir / f"{project_file.stem}.txt"
                     export_cpm_to_txt(result, output_file)
                     logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
                 elif fmt == 'xlsx':
-                    output_file = output_dir / f"{project_file.stem}_cpm.xlsx"
+                    output_file = output_dir / f"{project_file.stem}.xlsx"
                     try:
                         # Füge dynamisch Reports hinzu wenn gewünscht
                         export_project = project
@@ -605,7 +628,7 @@ Beispiele:
                     except Exception as e:
                         logger.error(f"SVG-Export fehlgeschlagen: {e}")
                 elif fmt == 'md':
-                    output_file = output_dir / f"{project_file.stem}_cpm.md"
+                    output_file = output_dir / f"{project_file.stem}.md"
                     try:
                         # Exportiere CPM-Report als Markdown
                         project_name = project.project if hasattr(project, 'project') else project_file.stem

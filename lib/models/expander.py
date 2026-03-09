@@ -176,9 +176,13 @@ def expand_loop_task(
             # Sammle Ressourcen für diesen Subtask
             subtask_resources = _parse_subtask_resources(subtask, cycle_num)
 
-            # Erstelle Task-ID: z.B. "2-F1-BEL" (Beladen), "2-F1-TRA" (Transport)
-            subtask_suffix = subtask.name[:3].upper()
-            subtask_id = f"{generate_cycle_id(task.id, cycle_num, prefix)}-{subtask_suffix}"
+            # Erstelle Task-ID mit Nummerierung: z.B. "2-P1.1" (Pizza formen & belegen)
+            # Falls ID schon im Subtask definiert, verwende diese; sonst generiere Nummer
+            if hasattr(subtask, 'id') and subtask.id:
+                subtask_id = subtask.id
+            else:
+                # Nummeriere Subtasks: P1.1, P1.2, P1.3, etc.
+                subtask_id = f"{generate_cycle_id(task.id, cycle_num, prefix)}.{subtask_idx + 1}"
 
             # Erstelle den Task zunächst ohne Dependencies
             expanded_task = SimpleTask(
@@ -203,8 +207,24 @@ def expand_loop_task(
                 # Vorheriger Subtask im gleichen Zyklus zeigt auf aktuellen
                 cycle_subtasks[subtask_idx - 1].dependencies.append(expanded_task.id)
             elif cycle_num > 1 and expanded_tasks:
-                # Letzter Subtask des vorherigen Zyklus zeigt auf ersten Subtask des aktuellen
-                expanded_tasks[-1].dependencies.append(expanded_task.id)
+                # Inter-Cycle Dependency: nur wenn dieselbe Ressource verwendet wird
+                # Das ermöglicht Parallelisierung: während Pizza #1 backt, kann Pizza #2 geformt werden
+                prev_subtask = task.subtasks[subtask_idx] if subtask_idx < len(task.subtasks) else None
+                if prev_subtask:
+                    prev_resources = _parse_subtask_resources(prev_subtask, cycle_num - 1)
+                    curr_resources = _parse_subtask_resources(subtask, cycle_num)
+
+                    # Vergleiche Ressourcen: erstelle Dependency nur wenn mindestens eine Ressource gleich ist
+                    if prev_resources and curr_resources:
+                        shared_resources = set(prev_resources) & set(curr_resources)
+                        if shared_resources:
+                            # Finde den Task des gleichen Subtask-Index aus dem vorherigen Zyklus
+                            prev_cycle_id = f"{generate_cycle_id(task.id, cycle_num - 1, prefix)}.{subtask_idx + 1}"
+                            # Suche diesen Task in expanded_tasks
+                            for earlier_task in reversed(expanded_tasks):
+                                if earlier_task.id == prev_cycle_id:
+                                    earlier_task.dependencies.append(expanded_task.id)
+                                    break
 
             cycle_subtasks.append(expanded_task)
 
