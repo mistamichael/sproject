@@ -5,7 +5,7 @@ pydantic>=2.0.0
 openpyxl>=3.0.0
 
 # Holiday calculations
-holidays>=0.35
+holidays>=0.93
 
 # HTTP requests for kroki-API (SVG export)
 requests>=2.31.0

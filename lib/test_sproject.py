@@ -513,50 +513,91 @@ class TestEdgeCasesInvalidDurations(unittest.TestCase):
 
 
 class TestEdgeCasesCircularDependencies(unittest.TestCase):
-    """Tests für Edge Cases: Zirkuläre Abhängigkeiten."""
+    """Tests für zyklische Abhängigkeiten – CPM muss mit ValueError abbrechen."""
 
-    def test_self_dependency(self):
-        """Test: Task der von sich selbst abhängt (sollte erkannt werden)"""
+    def _make_project(self, tasks):
         from lib.models.tasks import SimpleTask
-
-        project = SimpleProject(
-            project="Self Dependency",
+        return SimpleProject(
+            project="Test",
             project_start="2026-04-01",
-            tasks=[
-                SimpleTask(id=1, name="Self Loop", duration="5d", dependencies=[1])
-            ]
+            tasks=[SimpleTask(**t) for t in tasks]
         )
 
-        # CPM sollte mit Zirkularität umgehen können oder Fehler werfen
-        try:
-            result = project.calculate_cpm()
-            # Wenn es durchläuft, sollte es eine Warnung oder spezielle Behandlung geben
-            self.assertIsNotNone(result)
-        except Exception as e:
-            # Erwarteter Fall: Zirkuläre Abhängigkeit wird erkannt
-            self.assertTrue("circular" in str(e).lower() or "cycle" in str(e).lower())
+    def test_self_dependency_raises(self):
+        """Selbstreferenz (Task 1 -> 1) muss ValueError auslösen."""
+        project = self._make_project([
+            {"id": 1, "name": "Self Loop", "duration": "5d", "dependencies": [1]}
+        ])
+        with self.assertRaises(ValueError) as ctx:
+            project.calculate_cpm()
+        self.assertIn("Selbstreferenz", str(ctx.exception))
+        self.assertIn("1", str(ctx.exception))
 
-    def test_circular_dependency_chain(self):
-        """Test: Zirkuläre Abhängigkeitskette (A->B->C->A)"""
-        from lib.models.tasks import SimpleTask
+    def test_two_task_cycle_raises(self):
+        """Direkter Zyklus (1 -> 2 -> 1) muss ValueError auslösen."""
+        project = self._make_project([
+            {"id": 1, "name": "Task A", "duration": "5d", "dependencies": [2]},
+            {"id": 2, "name": "Task B", "duration": "5d", "dependencies": [1]},
+        ])
+        with self.assertRaises(ValueError) as ctx:
+            project.calculate_cpm()
+        msg = str(ctx.exception)
+        self.assertIn("Zyklische Abhängigkeit", msg)
+        # Beide Tasks müssen im Fehlerpfad auftauchen
+        self.assertIn("Task A", msg)
+        self.assertIn("Task B", msg)
 
-        project = SimpleProject(
-            project="Circular Chain",
-            project_start="2026-04-01",
-            tasks=[
-                SimpleTask(id=1, name="Task A", duration="5d", dependencies=[3]),
-                SimpleTask(id=2, name="Task B", duration="5d", dependencies=[1]),
-                SimpleTask(id=3, name="Task C", duration="5d", dependencies=[2])
-            ]
-        )
+    def test_three_task_cycle_raises(self):
+        """Indirekter Zyklus (1 -> 2 -> 3 -> 1) muss ValueError auslösen."""
+        project = self._make_project([
+            {"id": 1, "name": "Task A", "duration": "5d", "dependencies": [2]},
+            {"id": 2, "name": "Task B", "duration": "5d", "dependencies": [3]},
+            {"id": 3, "name": "Task C", "duration": "5d", "dependencies": [1]},
+        ])
+        with self.assertRaises(ValueError) as ctx:
+            project.calculate_cpm()
+        self.assertIn("Zyklische Abhängigkeit", str(ctx.exception))
 
-        try:
-            result = project.calculate_cpm()
-            # Falls es durchläuft, dokumentieren wir das Verhalten
-            self.assertIsNotNone(result)
-        except Exception as e:
-            # Erwarteter Fall: Zirkuläre Abhängigkeit wird erkannt
-            self.assertTrue("circular" in str(e).lower() or "cycle" in str(e).lower())
+    def test_cycle_in_subgraph_raises(self):
+        """Zyklus in Teilgraph (Tasks 3->4->3), Rest azyklisch (1->2->3)."""
+        project = self._make_project([
+            {"id": 1, "name": "Start",  "duration": "2d", "dependencies": [2]},
+            {"id": 2, "name": "Middle", "duration": "3d", "dependencies": [3]},
+            {"id": 3, "name": "CycleA", "duration": "4d", "dependencies": [4]},
+            {"id": 4, "name": "CycleB", "duration": "4d", "dependencies": [3]},
+        ])
+        with self.assertRaises(ValueError) as ctx:
+            project.calculate_cpm()
+        self.assertIn("Zyklische Abhängigkeit", str(ctx.exception))
+
+    def test_valid_project_no_error(self):
+        """Fehlerfreier Graph (1->2->3) darf keinen ValueError auslösen."""
+        project = self._make_project([
+            {"id": 1, "name": "Task A", "duration": "5d", "dependencies": [2]},
+            {"id": 2, "name": "Task B", "duration": "3d", "dependencies": [3]},
+            {"id": 3, "name": "Task C", "duration": "2d", "dependencies": []},
+        ])
+        result = project.calculate_cpm()
+        self.assertIsNotNone(result)
+        self.assertEqual(result.project_duration, "10.0d")
+
+    def test_software_simple_regression(self):
+        """Regression: software_simple.json darf nach Korrektur keine Zyklen haben."""
+        examples_dir = Path(__file__).parent.parent / 'examples'
+        software_file = examples_dir / 'software_simple.json'
+        if not software_file.exists():
+            self.skipTest(f"Datei nicht gefunden: {software_file}")
+
+        project = load_project(software_file)
+        # Muss fehlerfrei durchlaufen (kein ValueError)
+        result = project.calculate_cpm()
+        self.assertIsNotNone(result)
+        # Alle Pufferwerte müssen >= 0 sein
+        for task_id, task in result.tasks.items():
+            self.assertGreaterEqual(
+                task.puffer, 0.0,
+                f"Task {task_id} ('{task.name}') hat negativen Puffer: {task.puffer}"
+            )
 
 
 class TestEdgeCasesInvalidReferences(unittest.TestCase):

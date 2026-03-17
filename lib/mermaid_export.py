@@ -43,6 +43,7 @@ def encode_kroki_url(diagram: str) -> str:
 def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> str:
     """
     Generiert ein Mermaid Gantt-Chart aus CPM-Ergebnissen mit Berücksichtigung der Zeit-Auflösung.
+    Zeigt auch Wochenenden und Feiertage als Sektionen an.
 
     Args:
         result: CPMResult mit berechneten Task-Daten
@@ -75,11 +76,63 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
 
     lines.append("")
 
-    # Gruppiere Tasks (optional, hier einfache Variante)
+    # Bestimme Zeitspanne für Wochenenden/Feiertage
+    start_date = result.project_start if hasattr(result, 'project_start') and result.project_start else datetime.now()
+    min_faz = min(task.faz for task in result.tasks.values()) if result.tasks else 0
+    max_fez = max(task.fez for task in result.tasks.values()) if result.tasks else 1
+
+    # Zeige Wochenenden als Sektion
+    if result.skip_weekends and time_unit == 'days':
+        lines.append("    section Wochenenden")
+
+        # Iteriere über alle Tage und markiere Wochenenden
+        current_date = start_date + timedelta(days=int(min_faz))
+        end_check_date = start_date + timedelta(days=int(max_fez) + 1)
+        weekend_start = None
+
+        while current_date <= end_check_date:
+            is_weekend = current_date.weekday() >= 5  # 5=Sa, 6=So
+
+            if is_weekend and weekend_start is None:
+                weekend_start = current_date
+            elif not is_weekend and weekend_start is not None:
+                # Wochenende endet
+                weekend_end = current_date - timedelta(days=1)
+                we_label = weekend_start.strftime('%d.%m')
+                lines.append(f"    WE {we_label} :crit, {weekend_start.strftime('%Y-%m-%d')}, {weekend_end.strftime('%Y-%m-%d')}")
+                weekend_start = None
+
+            current_date += timedelta(days=1)
+
+        # Letztes Wochenende falls noch offen
+        if weekend_start is not None:
+            weekend_end = end_check_date - timedelta(days=1)
+            we_label = weekend_start.strftime('%d.%m')
+            lines.append(f"    WE {we_label} :crit, {weekend_start.strftime('%Y-%m-%d')}, {weekend_end.strftime('%Y-%m-%d')}")
+
+    # Zeige Feiertage als Sektion
+    if result.skip_holidays and result.holidays:
+        lines.append("    section Feiertage")
+
+        for holiday_str in sorted(result.holidays):
+            try:
+                holiday_date = datetime.strptime(holiday_str, '%Y-%m-%d')
+                # Prüfe ob Feiertag im Projektbereich liegt
+                if start_date + timedelta(days=int(min_faz)) <= holiday_date <= start_date + timedelta(days=int(max_fez) + 1):
+                    holiday_label = holiday_date.strftime('%d.%m')
+                    lines.append(f"    {holiday_label} :crit, {holiday_str}, {holiday_str}")
+            except ValueError:
+                pass
+
+    # Gruppiere Tasks
     lines.append("    section Tasks")
 
     # tasks ist ein Dictionary: {task_id: CPMTaskResult}
     for task_id, task in result.tasks.items():
+        # Skip Weekend-Blocker Tasks
+        if isinstance(task_id, str) and task_id.startswith('WE-'):
+            continue
+
         # Task-Name
         task_name = task.name.replace(":", "").replace(",", "")  # Bereinige Sonderzeichen
 
@@ -90,12 +143,6 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
         else:
             task_label = f"[{task_id}] {task_name}"
             task_status = ""
-
-        # Startdatum aus FAZ berechnen
-        if hasattr(result, 'project_start') and result.project_start:
-            start_date = result.project_start
-        else:
-            start_date = datetime.now()
 
         # Berechne Start- und Enddatum für den Task basierend auf Zeit-Einheit
         if time_unit == 'minutes':

@@ -115,7 +115,7 @@
       "name": "Frontend Entwicklung",
       "duration": "32h",
       "resources": ["R_DEV2"],
-      "dependencies": [5]
+      "dependencies": [6]
     },
     {
       "id": 6,
@@ -136,7 +136,7 @@
       "name": "Projektabschluss",
       "duration": "4h",
       "resources": ["R_PM1"],
-      "dependencies": [7]
+      "dependencies": []
     }
   ],
   "reports": [

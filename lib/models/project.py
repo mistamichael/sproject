@@ -237,8 +237,9 @@ class LoopProject(ProjectBase):
                 for dep_id in task.dependencies:
                     if dep_id in loop_task_mapping:
                         # Referenziert einen expandierten LoopTask
-                        # Verweise auf den LETZTEN expandierten Task (letzte Iteration)
-                        updated_deps.append(loop_task_mapping[dep_id][-1])
+                        # Verweise auf den ERSTEN expandierten Task (erste Iteration)
+                        # weil die Task-Abhängigkeit auf den Anfang der Loop zeigen soll
+                        updated_deps.append(loop_task_mapping[dep_id][0])
                     else:
                         # Normale Dependency
                         updated_deps.append(dep_id)
@@ -314,8 +315,9 @@ class PersonProject(ProjectBase):
                 for dep_id in task.dependencies:
                     if dep_id in loop_task_mapping:
                         # Referenziert einen expandierten LoopTask
-                        # Verweise auf den LETZTEN expandierten Task (letzte Iteration)
-                        updated_deps.append(loop_task_mapping[dep_id][-1])
+                        # Verweise auf den ERSTEN expandierten Task (erste Iteration)
+                        # weil die Task-Abhängigkeit auf den Anfang der Loop zeigen soll
+                        updated_deps.append(loop_task_mapping[dep_id][0])
                     else:
                         # Normale Dependency
                         updated_deps.append(dep_id)

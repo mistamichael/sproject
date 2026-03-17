@@ -478,6 +478,9 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
 
     elif granularity == 'days':
         # Wenn mehr als 7 Tage: Zeige Kalenderwochen
+        # Wochenenden-Hintergrund
+        weekend_fill = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
+
         if duration_days > 7:
             rows_used = 3  # Monat, Tag, KW
 
@@ -529,12 +532,13 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
                 cell.alignment = header_alignment
                 cell.border = border
 
-            # Zeile 2: Tage
+            # Zeile 2: Tage (mit Wochenendmarkierung)
             current_date = start_date
             current_col = start_col
             while current_date <= end_date:
+                is_workday = is_working_day(current_date, working_days)
                 cell = ws.cell(row=start_row + 1, column=current_col, value=current_date.day)
-                cell.fill = header_fill
+                cell.fill = header_fill if is_workday else weekend_fill
                 cell.font = header_font
                 cell.alignment = header_alignment
                 cell.border = border
@@ -543,7 +547,7 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
                 current_date += timedelta(days=1)
                 current_col += 1
 
-            # Zeile 3: Kalenderwochen
+            # Zeile 3: Kalenderwochen (mit Wochenendmarkierung)
             current_date = start_date
             current_col = start_col
             cw_start_col = current_col
@@ -592,12 +596,13 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
                 cell.border = border
 
         else:
-            # Nur Tage (ohne KW)
+            # Nur Tage (ohne KW) - mit Wochenendmarkierung
             current_date = start_date
             while current_date <= end_date:
+                is_workday = is_working_day(current_date, working_days)
                 cell = ws.cell(row=start_row, column=current_col,
                              value=current_date.strftime('%d.%m'))
-                cell.fill = header_fill
+                cell.fill = header_fill if is_workday else weekend_fill
                 cell.font = header_font
                 cell.alignment = header_alignment
                 cell.border = border
@@ -909,11 +914,17 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
 
     # Zeige alle Ressourcen
     for res_info in display_resources:
-        # Spalte A: Name
-        ws.cell(row=current_row, column=1, value=res_info['name'])
+        res_color = resource_colors[res_info['id']]
+
+        # Spalte A: Name mit ID (mit Ressourcenfarbe als Hintergrund)
+        cell_name = ws.cell(row=current_row, column=1, value=f"{res_info['name']} ({res_info['id']})")
+        # Füge leichte Hintergrundfarbe hinzu
+        color_with_transparency = res_color if len(res_color) >= 6 else f"00{res_color}"
+        cell_name.fill = PatternFill(start_color=color_with_transparency + "40", end_color=color_with_transparency + "40", fill_type="solid")
 
         # Spalte B: Rolle/Typ
-        ws.cell(row=current_row, column=2, value=res_info['role'])
+        cell_role = ws.cell(row=current_row, column=2, value=res_info['role'])
+        cell_role.fill = PatternFill(start_color=color_with_transparency + "40", end_color=color_with_transparency + "40", fill_type="solid")
 
         # Spalte C: start (leer)
         ws.cell(row=current_row, column=3, value='')
@@ -922,8 +933,6 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
         ws.cell(row=current_row, column=4, value='')
 
         # Spalte E+: chart (Balken für Tasks)
-        res_color = resource_colors[res_info['id']]
-
         for task_id in resource_tasks[res_info['id']]:
             task = result.tasks[task_id]
 

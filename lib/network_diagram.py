@@ -68,7 +68,7 @@ def generate_network_text(
 
         # Abhängigkeiten (Nachfolger)
         if task.successors:
-            for succ_id in sorted(task.successors):
+            for succ_id in sorted(task.successors, key=str):
                 if succ_id in result.tasks:
                     succ_task = result.tasks[succ_id]
                     lines.append(f"  → [{succ_id}] {succ_task.name}")

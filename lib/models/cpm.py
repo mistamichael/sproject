@@ -292,6 +292,9 @@ class CPMCalculator:
         Returns:
             CPMResult mit berechneten Werten
 
+        Raises:
+            ValueError: Bei Selbstreferenz oder zyklischer Abhängigkeit in den Eingabedaten
+
         Examples:
             >>> from models import load_project
             >>> project = load_project("examples/tankdesign.json")
@@ -304,6 +307,9 @@ class CPMCalculator:
         """
         # Initialisiere CPM-Daten
         self._initialize_cpm_data()
+
+        # Prüfe auf Zyklen und Selbstreferenzen – bricht mit ValueError ab
+        self._validate_no_cycles()
 
         # Vorwärtsrechnung
         self._forward_pass()
@@ -540,6 +546,62 @@ class CPMCalculator:
         adjusted_days = (current_date - self.start_date).total_seconds() / 86400
         return adjusted_days
 
+    def _validate_no_cycles(self) -> None:
+        """
+        Prüft den Abhängigkeitsgraph auf Selbstreferenzen und Zyklen.
+
+        Verwendet Tiefensuche (DFS) mit Drei-Farben-Markierung:
+        - WHITE: noch nicht besucht
+        - GRAY:  aktuell auf dem Rekursions-Stack (offener Pfad)
+        - BLACK: vollständig abgearbeitet
+
+        Raises:
+            ValueError: Bei Selbstreferenz oder zyklischer Abhängigkeit,
+                        mit Angabe der betroffenen Tasks und des Zykluspfads.
+        """
+        WHITE, GRAY, BLACK = 0, 1, 2
+        color = {task_id: WHITE for task_id in self.cpm_tasks}
+        path: List[Union[int, str]] = []
+
+        def dfs(task_id: Union[int, str]) -> None:
+            color[task_id] = GRAY
+            path.append(task_id)
+
+            for succ_id in self.cpm_tasks[task_id].successors:
+                if succ_id not in self.cpm_tasks:
+                    continue
+
+                # Selbstreferenz
+                if succ_id == task_id:
+                    name = self.cpm_tasks[task_id].name
+                    raise ValueError(
+                        f"Fehler in Eingabedaten: Task {task_id} ('{name}') "
+                        f"referenziert sich selbst als Abhängigkeit (Selbstreferenz)."
+                    )
+
+                # Zyklus gefunden: succ_id ist bereits auf dem aktiven Pfad
+                if color[succ_id] == GRAY:
+                    cycle_start = path.index(succ_id)
+                    cycle_ids = path[cycle_start:] + [succ_id]
+                    cycle_str = " -> ".join(
+                        f"{tid} ('{self.cpm_tasks[tid].name}')"
+                        for tid in cycle_ids
+                    )
+                    raise ValueError(
+                        f"Fehler in Eingabedaten: Zyklische Abhängigkeit gefunden:\n"
+                        f"  {cycle_str}"
+                    )
+
+                if color[succ_id] == WHITE:
+                    dfs(succ_id)
+
+            path.pop()
+            color[task_id] = BLACK
+
+        for task_id in list(self.cpm_tasks.keys()):
+            if color[task_id] == WHITE:
+                dfs(task_id)
+
     def _forward_pass(self) -> None:
         """
         Vorwärtsrechnung: Berechnet FAZ und FEZ (ohne Wochenenden/Feiertage).
@@ -767,7 +829,7 @@ class CPMCalculator:
                                 break
 
                         if original_task:
-                            task_resources = getattr(original_task, 'resources', []) if hasattr(original_task, 'resources') else []
+                            task_resources = getattr(original_task, 'resources', None) or []
                             if resource_id in task_resources:
                                 tasks_using_resource.append((task_id, task_result))
 

@@ -198,6 +198,8 @@ def expand_loop_task(
 
             # Setze Dependencies (Nachfolger!) korrekt:
             # dependencies = Liste der Nachfolger (Tasks die NACH diesem kommen)
+            # NUR der erste Subtask des ersten Zyklus erhält die Loop-Task's Dependencies
+            # (z.B. wenn Task 1 -> Task 2 (Loop), dann 2-P1.1 -> erbt dependencies von Task 2)
             if cycle_num == 1 and subtask_idx == 0:
                 # Erster Subtask im ersten Zyklus hat originale Dependencies
                 expanded_task.dependencies = task.dependencies.copy() if task.dependencies else []

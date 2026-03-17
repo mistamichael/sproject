@@ -41,30 +41,30 @@
       "id": 6,
       "name": "Elektroinstallation",
       "duration": "5d",
-      "dependencies": [10],
-      "note": "AA zu Task 5: Beginnt sobald Mauern beginnen"
+      "dependencies": [8],
+      "note": "Wird für den Innenausbau benötigt"
     },
     {
       "id": 7,
       "name": "Sanitärinstallation",
       "duration": "6d",
-      "dependencies": [10],
-      "note": "AA zu Task 5: Beginnt sobald Mauern beginnen"
+      "dependencies": [8],
+      "note": "Wird für den Innenausbau benötigt"
     },
     {
       "id": 8,
-      "name": "Programmierung",
-      "duration": "8d",
+      "name": "Innenausbau (Trockenbau/Böden)",
+      "duration": "12d",
       "dependencies": [10],
       "dependencies_ee": [9],
-      "note": "EE: Dokumentation endet wenn Programmierung endet"
+      "note": "EE: Reinigung endet erst, wenn der Ausbau fertig ist"
     },
     {
       "id": 9,
-      "name": "Dokumentation",
-      "duration": "8d",
+      "name": "Laufende Bauschuttreinigung",
+      "duration": "14d",
       "dependencies": [10],
-      "note": "EE zu Task 8: Endet gleichzeitig mit Programmierung"
+      "note": "EE zu Task 8: Die finale Reinigung erfolgt zeitgleich mit Abschluss des Ausbaus"
     },
     {
       "id": 10,
