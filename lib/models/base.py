@@ -50,7 +50,7 @@ class TaskBase(BaseModel):
 
     @field_validator('duration')
     @classmethod
-    def validate_duration(cls, v: Optional[str]) -> Optional[str]:
+    def validate_duration(cls, v: Optional[str]) -> Optional[str]:  # noqa
         """Validiert Dauer-Strings wie '10d', '5h', '30m', '2w'"""
         if v is None:
             return v

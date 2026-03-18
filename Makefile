@@ -1,5 +1,5 @@
 # ============================================================
-# Makefile – Code Quality Targets
+# Makefile Code Quality Targets
 # Quellcode liegt in: lib/
 # Tools: vulture, skylos, pyright, mypy
 # ============================================================
@@ -19,12 +19,12 @@ lint: lint-dead lint-types
 lint-dead: vulture skylos
 
 vulture:
-	@echo ">>> vulture – Dead Code Detection..."
+	@echo ">>> vulture Dead Code Detection..."
 	vulture $(SRC_DIR) --min-confidence 80
 
 skylos:
-	@echo ">>> skylos – Dead Code Detection..."
-	skylos $(SRC_DIR)
+	@echo ">>> skylos Dead Code Detection..."
+	skylos $(SRC_DIR) --json -c 80 --secrets --danger --quality
 
 # ------------------------------------------------------------
 # Type Checking
@@ -32,11 +32,11 @@ skylos:
 lint-types: pyright mypy
 
 pyright:
-	@echo ">>> pyright – Type Checking..."
+	@echo ">>> pyright Type Checking..."
 	-python -m pyright $(SRC_DIR)
 
 mypy:
-	@echo ">>> mypy – Type Checking..."
+	@echo ">>> mypy Type Checking..."
 	-python -m mypy $(SRC_DIR) --ignore-missing-imports
 
 # ------------------------------------------------------------
@@ -44,12 +44,12 @@ mypy:
 # ------------------------------------------------------------
 help:
 	@echo ""
-	@echo "Verfügbare Targets:"
-	@echo "  make lint        – Alle Tools (dead code + types)"
-	@echo "  make lint-dead   – Nur Dead Code (vulture + skylos)"
-	@echo "  make lint-types  – Nur Type Checking (pyright + mypy)"
-	@echo "  make vulture     – Nur vulture"
-	@echo "  make skylos      – Nur skylos"
-	@echo "  make pyright     – Nur pyright"
-	@echo "  make mypy        – Nur mypy"
+	@echo "Verf�gbare Targets:"
+	@echo "  make lint          Alle Tools (dead code + types)"
+	@echo "  make lint-dead     Nur Dead Code (vulture + skylos)"
+	@echo "  make lint-types    Nur Type Checking (pyright + mypy)"
+	@echo "  make vulture       Nur vulture"
+	@echo "  make skylos        Nur skylos"
+	@echo "  make pyright       Nur pyright"
+	@echo "  make mypy          Nur mypy"
 	@echo ""

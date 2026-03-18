@@ -5,7 +5,6 @@ CPM (Critical Path Method) Berechnungen für Projekt-Tasks.
 
 Enthält:
 - CPMCalculationMixin: Mixin für CPM-Berechnungen
-- SimpleTaskFile: Einfache Task-Datei für CPM-Berechnungen
 """
 
 from __future__ import annotations
@@ -196,14 +195,4 @@ class CPMCalculationMixin:
         critical_tasks.sort(key=lambda tid: cpm_data[tid]['faz'])
         return critical_tasks
 
-
-class SimpleTaskFile(BaseModel, CPMCalculationMixin):
-    """
-    Einfache Task-Datei ohne vollständige ProjectFile-Struktur.
-    Wird für reine CPM-Berechnungen verwendet (z.B. tankdesign.json).
-    """
-    model_config = {"extra": "ignore"}
-
-    project: Optional[str] = None
-    tasks: list[dict] = []
 

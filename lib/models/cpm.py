@@ -792,7 +792,7 @@ class CPMCalculator:
             if not conflicts_found:
                 break
 
-    def _update_successor_times(self, task_id: Union[int, str], shift: float) -> None:
+    def _update_successor_times(self, task_id: Union[int, str], _shift: float) -> None:
         """
         Aktualisiert die Zeiten von nachfolgenden Tasks wenn ein Task verschoben wird.
 

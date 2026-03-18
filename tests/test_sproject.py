@@ -1114,6 +1114,438 @@ class TestEdgeCasesComplexDependencies(unittest.TestCase):
         self.assertIn(4, result.critical_path)
 
 
+def _print_cpm_csv(result, title=""):
+    """Hilfsfunktion: CPM-Ergebnis als CSV-Tabelle ausgeben."""
+    if title:
+        print(f"\n{'='*60}")
+        print(f"  {title}")
+        print(f"{'='*60}")
+    print(result.to_network_csv())
+    print(f"Projektdauer: {result.project_duration}  "
+          f"Kritischer Pfad: {result.critical_path}")
+
+
+class TestCPMDependencyTypes(unittest.TestCase):
+    """
+    Tests für alle vier Abhängigkeitstypen – je 3 Tasks pro Typ.
+
+    Konvention in diesem Projekt:
+      dependencies     = [Nachfolger-IDs]  (EA: Ende→Anfang, Standard)
+      dependencies_aa  = [Nachfolger-IDs]  (AA: Anfang→Anfang, paralleler Start)
+      dependencies_ee  = [Nachfolger-IDs]  (EE: Ende→Ende, gleichzeitiges Ende)
+      dependencies_ae  = [Nachfolger-IDs]  (AE: Anfang→Ende, Nachfolger endet
+                                                  wenn dieser startet)
+    """
+
+    @staticmethod
+    def _build(name, tasks):
+        return SimpleProject(project=name, project_start="2026-04-01", tasks=tasks)
+
+
+
+    # EA	Sequenz: T2 startet wenn T1 endet	T1(0→5) → T2(5→8) → T3(8→10)
+    def test_ea_simple_chain(self):
+        """EA (Ende-Anfang): klassische Sequenz T1→T2→T3."""
+        from lib.models.tasks import SimpleTask
+        #
+        #  T1(5d) ──EA──> T2(3d) ──EA──> T3(2d)
+        #  FAZ=0  FEZ=5   FAZ=5  FEZ=8   FAZ=8  FEZ=10
+        #  GP=0            GP=0            GP=0
+        #  Kritischer Pfad: alle drei
+        #
+        project = self._build("EA-Test", [
+            SimpleTask(id=1, name="Vorbereitung", duration="5d", dependencies=[2]),
+            SimpleTask(id=2, name="Durchführung", duration="3d", dependencies=[3]),
+            SimpleTask(id=3, name="Abschluss",    duration="2d", dependencies=[]),
+        ])
+        result = project.calculate_cpm()
+        _print_cpm_csv(result, "EA (Ende-Anfang) – 3 Tasks")
+
+        t1, t2, t3 = result.tasks[1], result.tasks[2], result.tasks[3]
+
+        # Sequenz: jeder startet nach dem Ende des Vorgängers
+        self.assertAlmostEqual(t1.faz, 0.0, places=3)
+        self.assertAlmostEqual(t1.fez, 5.0, places=3)
+        self.assertAlmostEqual(t2.faz, 5.0, places=3)
+        self.assertAlmostEqual(t2.fez, 8.0, places=3)
+        self.assertAlmostEqual(t3.faz, 8.0, places=3)
+        self.assertAlmostEqual(t3.fez, 10.0, places=3)
+
+        # Alle drei auf kritischem Pfad (GP=0)
+        for tid in (1, 2, 3):
+            self.assertAlmostEqual(result.tasks[tid].puffer, 0.0, places=3)
+        self.assertEqual(sorted(result.critical_path), [1, 2, 3])
+
+    # AA	Paralleler Start: T2 beginnt mit T1	T1(0→8) ∥ T2(0→3), beide enden vor T3(8→10). T2 hat GP=5
+    def test_aa_parallel_start(self):
+        """AA (Anfang-Anfang): T2 startet gleichzeitig mit T1."""
+        from lib.models.tasks import SimpleTask
+        #
+        #  T1(8d) ──AA──> T2(3d)     beide starten bei FAZ=0
+        #  T1     ──EA──> T3(2d)     T3 startet nach T1 (FAZ=8)
+        #
+        #  T1: FAZ=0, FEZ=8, GP=0  (kritisch: erzwingt T3-Start)
+        #  T2: FAZ=0, FEZ=3, GP=5  (Puffer: 5d vor T3 abgeschlossen)
+        #  T3: FAZ=8, FEZ=10, GP=0 (kritisch)
+        #
+        project = self._build("AA-Test", [
+            SimpleTask(id=1, name="Aushub",       duration="8d",
+                       dependencies=[3], dependencies_aa=[2]),
+            SimpleTask(id=2, name="Abtransport",  duration="3d", dependencies=[3]),
+            SimpleTask(id=3, name="Fundament",    duration="2d", dependencies=[]),
+        ])
+        result = project.calculate_cpm()
+        _print_cpm_csv(result, "AA (Anfang-Anfang) – 3 Tasks")
+
+        t1, t2, t3 = result.tasks[1], result.tasks[2], result.tasks[3]
+
+        # T1 und T2 starten gleichzeitig (AA)
+        self.assertAlmostEqual(t1.faz, t2.faz, places=3,
+                               msg="AA: T1 und T2 starten zum gleichen Zeitpunkt")
+        # T2 hat Puffer (kürzer als T1)
+        self.assertGreater(t2.puffer, 0.0,
+                           msg="AA: T2 (kürzer) hat positiven Puffer")
+        # T3 folgt T1 (EA): T3.FAZ = T1.FEZ
+        self.assertAlmostEqual(t3.faz, t1.fez, places=3,
+                               msg="EA: T3 startet wenn T1 endet")
+        # Kritischer Pfad: T1 und T3
+        self.assertIn(1, result.critical_path)
+        self.assertIn(3, result.critical_path)
+        self.assertNotIn(2, result.critical_path)
+
+    # EE	Gleichzeitiges Ende: T2.FEZ=T1.FEZ	T1(0→8) ∥ T2(5→8, verschoben), dann T3(8→10)
+    def test_ee_simultaneous_end(self):
+        """EE (Ende-Ende): T2 wird so verschoben, dass es gleichzeitig mit T1 endet."""
+        from lib.models.tasks import SimpleTask
+        #
+        #  T1(8d) ──EE──> T2(3d)     T2.FEZ wird auf T1.FEZ=8 hochgezogen
+        #  T1     ──EA──> T3(2d)     T3 startet nach T1 (FAZ=8)
+        #
+        #  T1: FAZ=0, FEZ=8, GP=0
+        #  T2: FAZ=5, FEZ=8, GP=0  (von 0→3 auf 5→8 verschoben)
+        #  T3: FAZ=8, FEZ=10, GP=0
+        #
+        project = self._build("EE-Test", [
+            SimpleTask(id=1, name="Innenausbau",  duration="8d",
+                       dependencies=[3], dependencies_ee=[2]),
+            SimpleTask(id=2, name="Reinigung",    duration="3d", dependencies=[3]),
+            SimpleTask(id=3, name="Abnahme",      duration="2d", dependencies=[]),
+        ])
+        result = project.calculate_cpm()
+        _print_cpm_csv(result, "EE (Ende-Ende) – 3 Tasks")
+
+        t1, t2, t3 = result.tasks[1], result.tasks[2], result.tasks[3]
+
+        # T2.FEZ == T1.FEZ (EE-Constraint)
+        self.assertAlmostEqual(t2.fez, t1.fez, places=3,
+                               msg="EE: T2.FEZ muss gleich T1.FEZ sein")
+        # T2 wurde nach hinten verschoben (FAZ > 0)
+        self.assertGreater(t2.faz, 0.0,
+                           msg="EE: T2.FAZ wurde von 0 nach hinten verschoben")
+        # T3 folgt T1 (EA)
+        self.assertAlmostEqual(t3.faz, t1.fez, places=3)
+        # T2 ebenfalls auf kritischem Pfad (GP=0)
+        self.assertAlmostEqual(t2.puffer, 0.0, places=3,
+                               msg="EE: T2 ist kritisch (GP=0)")
+
+    # AE	T2 endet wenn T1 startet	T3(0→5) → T1(5→10); T2(2→5) läuft parallel, endet bei T1.FAZ=5
+    def test_ae_target_forced_to_end_before_predecessor_starts(self):
+        """AE (Anfang-Ende): T2 muss enden bevor/wenn T1 startet."""
+        from lib.models.tasks import SimpleTask
+        #
+        #  T1(5d) ──AE──> T2(3d)
+        #  T0(5d) ──EA──> T1          T1 startet erst nach T0 (FAZ=5)
+        #  T2 muss FEZ >= T1.FAZ=5  → T2.FAZ = 5-3 = 2, T2.FEZ = 5
+        #
+        #  T0: FAZ=0,     FEZ=5,         GP=0
+        #  T1:            FAZ=5, FEZ=10, GP=0
+        #  T2:     FAZ=2, FEZ=5,         GP=0  (parallel: läuft von 2→5 gleichzeitig mit Ende von T0)
+        #
+        project = self._build("AE-Test", [
+            SimpleTask(id=1, name="Lieferung",   duration="5d",
+                       dependencies=[], dependencies_ae=[2]),
+            SimpleTask(id=2, name="Vorbereitung", duration="3d", dependencies=[]),
+            SimpleTask(id=3, name="Vorgänger",    duration="5d", dependencies=[1]),
+        ])
+        result = project.calculate_cpm()
+        _print_cpm_csv(result, "AE (Anfang-Ende) – 3 Tasks")
+
+        t1, t2, t3 = result.tasks[1], result.tasks[2], result.tasks[3]
+
+        # AE-Constraint: T2.FEZ >= T1.FAZ
+        self.assertGreaterEqual(
+            t2.fez, t1.faz - 0.001,
+            msg="AE: T2.FEZ muss >= T1.FAZ sein (T2 endet wenn T1 startet)")
+
+        # T2 wurde nach hinten verschoben (required_faz = T1.FAZ - dur(T2) > 0)
+        expected_t2_faz = max(0.0, t1.faz - 3.0)
+        self.assertAlmostEqual(t2.faz, expected_t2_faz, places=3,
+                               msg="AE: T2.FAZ = max(0, T1.FAZ - dur(T2))")
+
+
+class TestCPMResultExportToDict(unittest.TestCase):
+    """Tests für CPMResult.export_to_dict() – Struktur und Inhalte."""
+
+    def _make_result(self):
+        from lib.models.tasks import SimpleTask
+        # Einfaches 3-Task Projekt: T1→T2, T1→T3 (T1 ist Vorgänger beider)
+        project = SimpleProject(
+            project="Export Test",
+            project_start="2026-06-01",
+            tasks=[
+                SimpleTask(id=1, name="Start",  duration="3d", dependencies=[2, 3]),
+                SimpleTask(id=2, name="Zweig A", duration="2d", dependencies=[]),
+                SimpleTask(id=3, name="Zweig B", duration="4d", dependencies=[]),
+            ]
+        )
+        return project.calculate_cpm()
+
+    def test_export_to_dict_top_level_keys(self):
+        """export_to_dict enthält alle Pflicht-Schlüssel"""
+        result = self._make_result()
+        d = result.export_to_dict(include_dates=False)
+
+        for key in ('project', 'project_duration', 'critical_path', 'tasks', 'settings'):
+            self.assertIn(key, d, msg=f"Schlüssel '{key}' fehlt in export_to_dict")
+
+    def test_export_to_dict_task_cpm_fields(self):
+        """Jeder Task enthält alle CPM-Felder (D, FB, FE, SB, SE, GP, FP, is_critical)"""
+        result = self._make_result()
+        d = result.export_to_dict(include_dates=False)
+
+        self.assertGreater(len(d['tasks']), 0)
+        for task_dict in d['tasks']:
+            self.assertIn('cpm', task_dict)
+            for field in ('D', 'FB', 'FE', 'SB', 'SE', 'GP', 'FP', 'is_critical'):
+                self.assertIn(field, task_dict['cpm'],
+                              msg=f"CPM-Feld '{field}' fehlt in Task {task_dict.get('id')}")
+
+    def test_export_to_dict_include_dates_false_no_date_block(self):
+        """include_dates=False: kein 'dates'-Block in Task-CPM"""
+        result = self._make_result()
+        d = result.export_to_dict(include_dates=False)
+
+        for task_dict in d['tasks']:
+            self.assertNotIn('dates', task_dict.get('cpm', {}),
+                             msg="'dates' darf nicht enthalten sein wenn include_dates=False")
+
+    def test_export_to_dict_include_dates_true_has_date_block(self):
+        """include_dates=True mit project_start: 'dates'-Block mit fb_date etc."""
+        result = self._make_result()
+        d = result.export_to_dict(include_dates=True)
+
+        for task_dict in d['tasks']:
+            self.assertIn('dates', task_dict['cpm'],
+                          msg="'dates'-Block fehlt wenn include_dates=True")
+            for key in ('fb_date', 'fe_date', 'sb_date', 'se_date'):
+                self.assertIn(key, task_dict['cpm']['dates'],
+                              msg=f"Datumsfeld '{key}' fehlt")
+
+    def test_export_to_dict_task_count_matches(self):
+        """Anzahl Tasks im Dict == Anzahl Tasks im CPMResult"""
+        result = self._make_result()
+        d = result.export_to_dict(include_dates=False)
+        self.assertEqual(len(d['tasks']), len(result.tasks))
+
+    def test_export_to_dict_critical_path_ids_valid(self):
+        """critical_path enthält nur IDs die auch in tasks vorkommen"""
+        result = self._make_result()
+        d = result.export_to_dict(include_dates=False)
+
+        self.assertGreater(len(d['critical_path']), 0,
+                           msg="critical_path darf nicht leer sein")
+        valid_ids = {t['id'] for t in d['tasks']}
+        for cp_id in d['critical_path']:
+            self.assertIn(cp_id, valid_ids,
+                          msg=f"critical_path-ID {cp_id!r} nicht in tasks")
+
+
+class TestNetworkCSVDetails(unittest.TestCase):
+    """Tests für to_network_csv() – Successor-Spalte und Zahlenwerte."""
+
+    def _make_result(self):
+        from lib.models.tasks import SimpleTask
+        #
+        #  T1 ──EA──> T2 ──EA──> T4(end)
+        #  T1 ──EA──> T3 ──EA──> T4(end)
+        #
+        #  dependencies zeigen auf Nachfolger:
+        #  T1.deps=[2,3], T2.deps=[4], T3.deps=[4], T4.deps=[]
+        #
+        project = SimpleProject(
+            project="CSV Detail Test",
+            project_start="2026-04-01",
+            tasks=[
+                SimpleTask(id=1, name="Start",    duration="2d", dependencies=[2, 3]),
+                SimpleTask(id=2, name="Branch A", duration="3d", dependencies=[4]),
+                SimpleTask(id=3, name="Branch B", duration="5d", dependencies=[4]),
+                SimpleTask(id=4, name="End",       duration="1d", dependencies=[]),
+            ]
+        )
+        return project.calculate_cpm()
+
+    def _parse_csv(self, csv_text):
+        import csv, io
+        return list(csv.DictReader(io.StringIO(csv_text), quotechar='"'))
+
+    def test_multi_successor_semicolon_separated(self):
+        """Task mit 2 Nachfolgern: Successors-Feld ist semikolongetrennt"""
+        result = self._make_result()
+        _print_cpm_csv(result, "CSV – Successor-Format")
+        rows = self._parse_csv(result.to_network_csv())
+
+        row1 = next(r for r in rows if r['TaskID'] == '1')
+        succ = row1['Successors']
+        self.assertIn(';', succ,
+                      msg="Task 1 hat zwei Nachfolger, Trenner muss ';' sein")
+        parts = set(succ.split(';'))
+        self.assertEqual(parts, {'2', '3'})
+
+    def test_end_task_successors_empty(self):
+        """Task ohne Nachfolger (End): Successors-Feld ist leer"""
+        result = self._make_result()
+        rows = self._parse_csv(result.to_network_csv())
+
+        row4 = next(r for r in rows if r['TaskID'] == '4')
+        self.assertEqual(row4['Successors'].strip(), '',
+                         msg="End-Task (deps=[]) muss leeres Successors-Feld haben")
+
+    def test_single_successor_no_trailing_semicolon(self):
+        """Task mit einem Nachfolger: kein abschließendes Semikolon"""
+        result = self._make_result()
+        rows = self._parse_csv(result.to_network_csv())
+
+        for task_id in ('2', '3'):
+            row = next(r for r in rows if r['TaskID'] == task_id)
+            succ = row['Successors']
+            self.assertFalse(succ.endswith(';'),
+                             msg=f"Task {task_id}: kein trailing ';'")
+            self.assertNotEqual(succ.strip(), '',
+                                msg=f"Task {task_id}: muss Nachfolger haben")
+
+    def test_no_inf_or_nan_in_numeric_columns(self):
+        """Keine inf/nan in FAZ/FEZ/SAZ/SEZ/GP/FP"""
+        import math
+        result = self._make_result()
+        rows = self._parse_csv(result.to_network_csv())
+
+        for row in rows:
+            for col in ('FAZ', 'FEZ', 'SAZ', 'SEZ', 'GP', 'FP'):
+                val = float(row[col])
+                self.assertFalse(math.isinf(val),
+                                 msg=f"{col}=inf in Task {row['TaskID']}")
+                self.assertFalse(math.isnan(val),
+                                 msg=f"{col}=nan in Task {row['TaskID']}")
+
+
+class TestExcelExportContent(unittest.TestCase):
+    """Tests für Excel-Export: Sheet-Inhalte, nicht nur Namen."""
+
+    def _make_project_and_result(self):
+        from lib.models.tasks import SimpleTask
+        project = SimpleProject(
+            project="Excel Content Test",
+            project_start="2026-04-01",
+            tasks=[
+                SimpleTask(id=1, name="Alpha", duration="3d", dependencies=[2, 3]),
+                SimpleTask(id=2, name="Beta",  duration="2d", dependencies=[4]),
+                SimpleTask(id=3, name="Gamma", duration="5d", dependencies=[4]),
+                SimpleTask(id=4, name="Delta", duration="1d", dependencies=[]),
+            ]
+        )
+        return project, project.calculate_cpm()
+
+    def test_alle_tasks_sheet_has_enough_rows(self):
+        """'Alle Tasks'-Sheet hat mindestens eine Zeile pro Task"""
+        try:
+            import openpyxl
+        except ImportError:
+            self.skipTest("openpyxl nicht installiert")
+        from lib.sproject import export_cpm_to_xlsx
+
+        project, result = self._make_project_and_result()
+        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+        try:
+            export_cpm_to_xlsx(result, tmp_path, project, _CFG_DIR)
+            wb = openpyxl.load_workbook(tmp_path)
+
+            task_sheet = next(
+                (ws for ws in wb.worksheets
+                 if any(kw in ws.title for kw in ("Alle", "Tasks", "Taskliste"))),
+                wb.worksheets[0]
+            )
+            data_rows = [r for r in task_sheet.iter_rows(min_row=2, values_only=True)
+                         if any(c is not None for c in r)]
+            self.assertGreaterEqual(
+                len(data_rows), len(project.tasks),
+                msg=f"'Alle Tasks'-Sheet: erwartet >={len(project.tasks)} Zeilen, "
+                    f"gefunden {len(data_rows)}")
+            wb.close()
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+    def test_kritischer_pfad_sheet_not_more_rows_than_critical_tasks(self):
+        """'Kritischer Pfad'-Sheet: nicht mehr Datenzeilen als kritische Tasks"""
+        try:
+            import openpyxl
+        except ImportError:
+            self.skipTest("openpyxl nicht installiert")
+        from lib.sproject import export_cpm_to_xlsx
+
+        project, result = self._make_project_and_result()
+        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+        try:
+            export_cpm_to_xlsx(result, tmp_path, project, _CFG_DIR)
+            wb = openpyxl.load_workbook(tmp_path)
+
+            cp_sheet = next(
+                (ws for ws in wb.worksheets
+                 if any(kw in ws.title for kw in ("Kritisch", "Critical", "Pfad"))),
+                None
+            )
+            if cp_sheet is None:
+                self.skipTest("Kein Kritischer-Pfad-Sheet vorhanden")
+
+            data_rows = [r for r in cp_sheet.iter_rows(min_row=2, values_only=True)
+                         if any(c is not None for c in r)]
+            # Toleranz +2 für mögliche Summen-/Trennzeilen
+            self.assertLessEqual(
+                len(data_rows), len(result.critical_path) + 2,
+                msg="Kritischer-Pfad-Sheet enthält mehr Zeilen als kritische Tasks")
+            wb.close()
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+    def test_excel_export_single_task_no_crash(self):
+        """Excel-Export mit Minimal-Projekt (1 Task): kein Absturz, Datei vorhanden"""
+        try:
+            import openpyxl
+        except ImportError:
+            self.skipTest("openpyxl nicht installiert")
+        from lib.sproject import export_cpm_to_xlsx
+        from lib.models.tasks import SimpleTask
+
+        project = SimpleProject(
+            project="Minimal", project_start="2026-04-01",
+            tasks=[SimpleTask(id=1, name="Einziger Task", duration="1d")]
+        )
+        result = project.calculate_cpm()
+
+        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+        try:
+            export_cpm_to_xlsx(result, tmp_path, project, _CFG_DIR)
+            self.assertTrue(tmp_path.exists())
+            self.assertGreater(tmp_path.stat().st_size, 0)
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+
 def run_tests():
     """Führt alle Tests aus."""
     loader = unittest.TestLoader()
