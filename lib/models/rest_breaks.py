@@ -82,14 +82,3 @@ class PersonWorkTracker:
             self.taken_breaks.append(interval.after_hours)
             self.last_break_at = self.worked_hours
 
-    def get_next_required_break(self) -> Optional[RestInterval]:
-        """
-        Gibt die nächste erforderliche Pause zurück.
-
-        Returns:
-            RestInterval oder None wenn keine Pause aktuell erforderlich
-        """
-        for interval in self.rest_intervals:
-            if interval.after_hours not in self.taken_breaks and self.worked_hours >= interval.after_hours:
-                return interval
-        return None

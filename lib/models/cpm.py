@@ -229,6 +229,33 @@ class CPMResult(BaseModel):
 
         return count
 
+    def to_network_csv(self) -> str:
+        """
+        Generiert Netzplan-Daten im CSV-Format.
+
+        Returns:
+            CSV-Daten als String
+        """
+        lines = []
+        lines.append("TaskID,Task Name,Duration,FAZ,FEZ,SAZ,SEZ,GP,FP,Successors,IsCritical")
+
+        sorted_tasks = sorted(
+            self.tasks.items(),
+            key=lambda x: x[1].faz
+        )
+
+        for task_id, task in sorted_tasks:
+            if isinstance(task_id, str) and task_id.startswith('WE-'):
+                continue
+
+            successors = ";".join(str(s) for s in task.successors if not (isinstance(s, str) and s.startswith('WE-')))
+            is_critical = "JA" if task.is_critical else "NEIN"
+
+            line = f'"{task_id}","{task.name}",{task.duration:.1f},{task.faz:.1f},{task.fez:.1f},{task.saz:.1f},{task.sez:.1f},{task.puffer:.1f},{task.free_puffer:.1f},"{successors}",{is_critical}'
+            lines.append(line)
+
+        return "\n".join(lines)
+
 
 class CPMCalculator:
     """
@@ -415,134 +442,6 @@ class CPMCalculator:
                     if task_id not in self.cpm_tasks[successor_id].predecessors:
                         self.cpm_tasks[successor_id].predecessors.append(task_id)
 
-    def _insert_weekend_blocker(
-        self,
-        fez_of_predecessor: float,
-        predecessor_id: Union[int, str],
-        successor_id: Union[int, str]
-    ) -> Optional[str]:
-        """
-        Prüft ob zwischen Vorgänger-Ende und Nachfolger-Start ein Wochenende liegt.
-        Falls ja, wird ein Wochenend-Blocker-Task als CPMTaskResult eingefügt.
-
-        Der Blocker hat:
-        - Puffer = 0 (FAZ = SAZ, FEZ = SEZ)
-        - Keine Ressourcen
-        - is_blocker = True
-
-        Args:
-            fez_of_predecessor: FEZ des Vorgänger-Tasks (Tage seit Projektstart)
-            predecessor_id:     ID des Vorgänger-Tasks
-            successor_id:       ID des Task der nach dem Wochenende kommt
-
-        Returns:
-            ID des eingefügten Blocker-Tasks, oder None wenn kein Wochenende
-        """
-        start_dt = self.start_date + timedelta(days=fez_of_predecessor)
-        weekday = start_dt.weekday()  # 0=Mo, 5=Sa, 6=So
-
-        if weekday < 5:  # Kein Wochenende
-            return None
-
-        # Berechne Wochenend-Dauer zum nächsten Montag
-        if weekday == 5:  # Samstag -> 2 Tage bis Montag
-            weekend_days = 2
-        else:  # Sonntag -> 1 Tag bis Montag
-            weekend_days = 1
-
-        blocker_id = f"WE-{predecessor_id}-{successor_id}"
-
-        # Nicht doppelt einfügen
-        if blocker_id in self.cpm_tasks:
-            return blocker_id
-
-        blocker_faz = fez_of_predecessor
-        blocker_fez = blocker_faz + weekend_days  # Kalender-Tage, kein add_workdays
-
-        blocker = CPMTaskResult(
-            id=blocker_id,
-            name=f"Wochenende",
-            duration=float(weekend_days),
-            faz=blocker_faz,
-            fez=blocker_fez,
-            saz=blocker_faz,   # GP = 0: SAZ = FAZ
-            sez=blocker_fez,   # GP = 0: SEZ = FEZ
-            puffer=0.0,
-            free_puffer=0.0,
-            is_critical=True,
-            is_break=False,
-            successors=[successor_id],
-            predecessors=[predecessor_id]
-        )
-        self.cpm_tasks[blocker_id] = blocker
-        return blocker_id
-
-    def _skip_weekend_if_needed(self, days: float) -> float:
-        """
-        Verschiebt einen Zeitpunkt zum nächsten Arbeitstag, wenn er auf ein Wochenende oder Feiertag fällt.
-
-        HINWEIS: Diese Methode ist deprecated. Verwende stattdessen _skip_non_working_day().
-
-        Args:
-            days: Zeitpunkt in Tagen seit Projektbeginn
-
-        Returns:
-            Angepasster Zeitpunkt (unverändert wenn kein Wochenende/Feiertag, sonst nächster Arbeitstag)
-        """
-        return self._skip_non_working_day(days)
-
-    def _skip_non_working_day(self, days: float) -> float:
-        """
-        Verschiebt einen Zeitpunkt zum nächsten Arbeitstag, wenn er auf ein Wochenende oder Feiertag fällt.
-
-        Args:
-            days: Zeitpunkt in Tagen seit Projektbeginn
-
-        Returns:
-            Angepasster Zeitpunkt (unverändert wenn Arbeitstag, sonst nächster Arbeitstag)
-        """
-        # Handle infinity
-        if days == float('inf') or days == float('-inf'):
-            return days
-
-        # Wenn kein start_date vorhanden, keine Prüfung
-        if not self.start_date:
-            return days
-
-        # Konvertiere zu Datum
-        current_date = self.start_date + timedelta(days=days)
-        original_date = current_date
-
-        # Verschiebe bis zum nächsten Arbeitstag
-        max_iterations = 365  # Schutz vor Endlosschleife
-        iterations = 0
-
-        while iterations < max_iterations:
-            weekday = current_date.weekday()  # 0=Monday, 6=Sunday
-            date_str = current_date.strftime('%Y-%m-%d')
-
-            # Prüfe Wochenende
-            is_weekend = (weekday == 5 or weekday == 6) if self.skip_weekends else False
-
-            # Prüfe Feiertag
-            is_holiday = (date_str in self.holidays) if self.skip_holidays else False
-
-            if not is_weekend and not is_holiday:
-                # Arbeitstag gefunden
-                break
-
-            # Verschiebe um einen Tag
-            current_date += timedelta(days=1)
-            iterations += 1
-
-        if iterations >= max_iterations:
-            # Fallback: Gebe ursprüngliches Datum zurück
-            print(f"WARNUNG: Konnte keinen Arbeitstag nach {original_date.strftime('%Y-%m-%d')} finden!")
-            return days
-
-        # Konvertiere zurück zu Tagen
-        adjusted_days = (current_date - self.start_date).total_seconds() / 86400
-        return adjusted_days
 
     def _validate_no_cycles(self) -> None:
         """
@@ -877,7 +776,6 @@ class CPMCalculator:
                         # Aktualisiere FAZ und FEZ
                         if new_faz > task_result_to_move.faz:
                             old_faz = task_result_to_move.faz
-                            old_fez = task_result_to_move.fez
                             shift = new_faz - old_faz
 
                             task_result_to_move.faz = new_faz
@@ -918,55 +816,6 @@ class CPMCalculator:
                         # Rekursiv Nachfolger aktualisieren
                         self._update_successor_times(succ_id, succ_shift)
 
-    def _add_duration_with_weekends(self, start_days: float, duration_days: float) -> float:
-        """
-        Addiert Dauer zu Startzeit unter Berücksichtigung von Wochenenden.
-
-        Args:
-            start_days: Start in Tagen seit Projektbeginn
-            duration_days: Dauer in Arbeitstagen
-
-        Returns:
-            Endzeit in Tagen seit Projektbeginn (inkl. Wochenenden)
-        """
-        # Handle infinity values
-        if start_days == float('inf') or duration_days == float('inf'):
-            return float('inf')
-
-        # Konvertiere Tage zu datetime
-        start_datetime = self.start_date + timedelta(days=start_days)
-
-        # Addiere Arbeitstage (überspringt Wochenenden)
-        end_datetime = add_workdays(start_datetime, duration_days)
-
-        # Konvertiere zurück zu Tagen
-        days_diff = (end_datetime - self.start_date).total_seconds() / 86400
-        return days_diff
-
-    def _subtract_duration_with_weekends(self, end_days: float, duration_days: float) -> float:
-        """
-        Subtrahiert Dauer von Endzeit unter Berücksichtigung von Wochenenden.
-
-        Args:
-            end_days: Ende in Tagen seit Projektbeginn
-            duration_days: Dauer in Arbeitstagen
-
-        Returns:
-            Startzeit in Tagen seit Projektbeginn (inkl. Wochenenden)
-        """
-        # Handle infinity values
-        if end_days == float('inf') or duration_days == float('inf'):
-            return float('inf')
-
-        # Konvertiere Tage zu datetime
-        end_datetime = self.start_date + timedelta(days=end_days)
-
-        # Subtrahiere Arbeitstage (negative Dauer = rückwärts)
-        start_datetime = add_workdays(end_datetime, -duration_days)
-
-        # Konvertiere zurück zu Tagen
-        days_diff = (start_datetime - self.start_date).total_seconds() / 86400
-        return days_diff
 
     def _topological_sort(self) -> List[Union[int, str]]:
         """

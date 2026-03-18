@@ -53,22 +53,6 @@ def load_project_from_dict(data: dict) -> Project:
     return Project(**data)
 
 
-def load_project_raw(file_path: Union[str, Path]) -> dict:
-    """
-    Lädt eine Projekt-JSON-Datei als rohes Dictionary.
-
-    Nützlich für Debugging oder wenn man die Struktur vor der Validierung sehen möchte.
-
-    Args:
-        file_path: Pfad zur JSON-Datei
-
-    Returns:
-        Dictionary mit JSON-Daten
-    """
-    file_path = Path(file_path)
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
 
 def save_project(project: Project, file_path: Union[str, Path], indent: int = 2) -> None:
     """

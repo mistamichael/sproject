@@ -135,29 +135,6 @@ class Absence(TJPBase):
         return self.applies_to == "all" or self.resource_id is None
 
 
-class WorkingHoursFile(TJPBase):
-    """Komplette workinghours_absences.json."""
-    global_workinghours:    WorkingHours
-    workinghours_overrides: list[WorkingHours]     = []
-    global_leaves:          list[Absence]          = []
-    personal_absences:      list[Absence]          = []
-
-    @classmethod
-    def from_json(cls, path: Union[str, Path]) -> WorkingHoursFile:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls.model_validate(data)
-
-    def get_override(self, override_id: str) -> Optional[WorkingHours]:
-        return next((o for o in self.workinghours_overrides if o.id == override_id), None)
-
-    def absences_for(self, resource_id: str) -> list[Absence]:
-        """Gibt alle Abwesenheiten zurück, die für eine Person gelten."""
-        return [
-            a for a in self.global_leaves + self.personal_absences
-            if a.is_global() or a.resource_id == resource_id
-        ]
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. Personen / Ressourcen
 # ─────────────────────────────────────────────────────────────────────────────
@@ -196,26 +173,6 @@ class ResourceGroup(TJPBase):
         return v
 
 
-class PersonsFile(TJPBase):
-    """Komplette persons.json."""
-    resource_groups: list[ResourceGroup]
-
-    @classmethod
-    def from_json(cls, path: Union[str, Path]) -> PersonsFile:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls.model_validate(data)
-
-    def all_persons(self) -> list[Person]:
-        """Gibt alle Personen über alle Gruppen zurück."""
-        return [m for g in self.resource_groups for m in g.members]
-
-    def get_person(self, person_id: str) -> Optional[Person]:
-        return next((p for p in self.all_persons() if p.id == person_id), None)
-
-    def get_group(self, group_id: str) -> Optional[ResourceGroup]:
-        return next((g for g in self.resource_groups if g.id == group_id), None)
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. Projekt
 # ─────────────────────────────────────────────────────────────────────────────
@@ -224,14 +181,10 @@ class ProjectMeta(TJPBase):
     """Projektmetadaten."""
     id:                  str
     name:                str
-    version:             str
     start:               str
     duration:            str
-    timezone:            str
     timeformat:          str
-    currency:            str
     now:                 str
-    workinghours_ref:    str  # → WorkingHours.id
 
     def calculate_cpm(self, tasks: list['Task']) -> dict[str, dict[str, Any]]:
         """
@@ -402,25 +355,6 @@ class ProjectMeta(TJPBase):
             # SB = SE - Duration
             data['SB'] = data['SE'] - data['duration']
 
-    def get_critical_path(self, tasks: list['Task']) -> list[str]:
-        """
-        Ermittelt den kritischen Pfad.
-
-        Args:
-            tasks: Liste aller Tasks
-
-        Returns:
-            Liste der Task-IDs auf dem kritischen Pfad
-        """
-        cpm_data = self.calculate_cpm(tasks)
-
-        # Kritische Tasks haben Gesamtpuffer (GP) = 0
-        critical_tasks = [
-            task_id for task_id, data in cpm_data.items()
-            if abs(data['GP']) < 0.001  # Floating-point Vergleich
-        ]
-
-        return critical_tasks
 
 
 class Account(TJPBase):
@@ -430,11 +364,6 @@ class Account(TJPBase):
     accounts: list[Account] = []
 
 Account.model_rebuild()  # Rekursives Modell
-
-
-class Balance(TJPBase):
-    cost_account: str
-    rev_account:  str
 
 
 class Dependency(TJPBase):
@@ -458,11 +387,6 @@ class Dependency(TJPBase):
         return None
 
 
-class Charge(TJPBase):
-    amount: float
-    event:  Literal["onstart", "onend"]
-
-
 class Task(TJPBase):
     """Projektaufgabe oder Meilenstein, optional mit Unteraufgaben."""
     id:        int | str
@@ -472,13 +396,7 @@ class Task(TJPBase):
     depends:   list[Dependency] = []
     effort:    Optional[str]    = None
     duration:  Optional[str]    = None
-    allocate:  list[str]        = []    # Person-IDs
-    charge:    list[Charge]     = []
-    chargeset: list[str]        = []    # Account-IDs
     tasks:     list[Task]       = []    # Unteraufgaben
-
-    # Aufgelöste Querverweise
-    _resolved_persons: list[Person] = []
 
     @model_validator(mode="after")
     def milestone_has_no_effort(self) -> Task:
@@ -486,13 +404,6 @@ class Task(TJPBase):
             assert not self.effort, \
                 f"Meilenstein '{self.id}' darf kein 'effort' haben"
         return self
-
-    @property
-    def persons(self) -> list[Person]:
-        return self._resolved_persons
-
-    def resolve_persons(self, person_list: list[Person]) -> None:
-        self._resolved_persons = person_list
 
     def all_subtasks(self) -> list[Task]:
         """Gibt rekursiv alle Unteraufgaben zurück."""
@@ -512,24 +423,7 @@ class ProjectFile(TJPBase, CPMCalculationMixin):
     """Komplette project.json."""
     project:  ProjectMeta
     accounts: list[Account] = []
-    balance:  Optional[Balance] = None
     tasks:    list[Task]    = []
-
-    @classmethod
-    def from_json(cls, path: Union[str, Path]) -> ProjectFile:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls.model_validate(data)
-
-    def get_account(self, account_id: str) -> Optional[Account]:
-        def search(accounts: list[Account]) -> Optional[Account]:
-            for a in accounts:
-                if a.id == account_id:
-                    return a
-                found = search(a.accounts)
-                if found:
-                    return found
-            return None
-        return search(self.accounts)
 
     def all_tasks(self) -> list[Task]:
         """Gibt alle Tasks rekursiv zurück."""
@@ -539,8 +433,6 @@ class ProjectFile(TJPBase, CPMCalculationMixin):
             result.extend(t.all_subtasks())
         return result
 
-    def get_task(self, task_id: str) -> Optional[Task]:
-        return next((t for t in self.all_tasks() if t.id == task_id), None)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -566,8 +458,6 @@ class Report(TJPBase):
     columns:    list[str]           = []
     timeformat: Optional[str]       = None
     loadunit:   Optional[str]       = None
-    hideresource:Optional[int]      = None
-    directives: list[str]           = []
     filters:    list[ReportFilter]  = []
 
     @model_validator(mode="after")
@@ -576,52 +466,4 @@ class Report(TJPBase):
             raise ValueError(f"textreport '{self.id}' sollte keine columns haben")
         return self
 
-    def active_filters(self) -> list[str]:
-        return [f.description() for f in self.filters]
 
-
-class ReportsFile(TJPBase):
-    """Komplette reports.json."""
-    reports: list[Report]
-
-    @classmethod
-    def from_json(cls, path: Union[str, Path]) -> ReportsFile:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls.model_validate(data)
-
-    def get_report(self, report_id: str) -> Optional[Report]:
-        return next((r for r in self.reports if r.id == report_id), None)
-
-    def by_type(self, report_type: str) -> list[Report]:
-        return [r for r in self.reports if r.type == report_type]
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Konsolidierte Konfigurationsdatei
-# ─────────────────────────────────────────────────────────────────────────────
-
-class ConsolidatedConfigFile(TJPBase):
-    """
-    Konsolidierte Konfigurationsdatei, die persons, workinghours_absences
-    und reports in einer Datei vereint.
-    """
-    persons: dict                     # enthält resource_groups
-    workinghours_absences: dict       # enthält global_workinghours, etc.
-    reports: list[Report]
-
-    @classmethod
-    def from_json(cls, path: Union[str, Path]) -> ConsolidatedConfigFile:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls.model_validate(data)
-
-    def to_persons_file(self) -> PersonsFile:
-        """Extrahiert PersonsFile aus der konsolidierten Struktur."""
-        return PersonsFile.model_validate(self.persons)
-
-    def to_workinghours_file(self) -> WorkingHoursFile:
-        """Extrahiert WorkingHoursFile aus der konsolidierten Struktur."""
-        return WorkingHoursFile.model_validate(self.workinghours_absences)
-
-    def to_reports_file(self) -> ReportsFile:
-        """Extrahiert ReportsFile aus der konsolidierten Struktur."""
-        return ReportsFile(reports=self.reports)

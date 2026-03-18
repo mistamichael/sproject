@@ -296,7 +296,6 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
       AE (Anfang→Ende):           -.-> (gestrichelt)
     """
     show_critical = mermaid_cfg['show_critical_path']
-    show_slack    = mermaid_cfg['show_slack']
     crit_color    = mermaid_cfg['critical_color']
     crit_border   = mermaid_cfg['critical_border']
     norm_color    = mermaid_cfg['normal_color']

@@ -207,17 +207,3 @@ class SimpleTaskFile(BaseModel, CPMCalculationMixin):
     project: Optional[str] = None
     tasks: list[dict] = []
 
-    @classmethod
-    def from_json(cls, path: Union[str, Path]) -> 'SimpleTaskFile':
-        """Lädt eine einfache Task-Datei."""
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls.model_validate(data)
-
-    def calculate_cpm_for_tasks(self) -> dict:
-        """
-        Führt CPM-Berechnung für die Tasks durch.
-
-        Returns:
-            Dictionary mit CPM-Daten für jeden Task
-        """
-        return self.calculate_cpm(self.tasks)

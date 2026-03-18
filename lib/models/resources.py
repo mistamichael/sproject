@@ -43,7 +43,6 @@ class MachineResource(ResourceBase):
 
     type: Literal["machine"]
     capacity: Optional[Union[int, float]] = None
-    loading_speed_per_min: Optional[float] = None
     count: Optional[int] = None
     unit: Optional[str] = None
 
@@ -59,7 +58,6 @@ class TruckResource(ResourceBase):
 
     type: Literal["truck"]
     capacity: Union[int, float]
-    transport_cycle_fixed: Optional[str] = None
 
 
 class OvenResource(ResourceBase):

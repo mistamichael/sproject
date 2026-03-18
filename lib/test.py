@@ -12,15 +12,11 @@ from pydantic import ValidationError
 
 from tjp_models import (
     WorkingHours,
-    WorkingHoursFile,
     Person,
-    PersonsFile,
     ResourceGroup,
     Task,
     ProjectFile,
     Report,
-    ReportsFile,
-    ConsolidatedConfigFile,
     Absence,
     TimeSlot,
     DaySchedule,

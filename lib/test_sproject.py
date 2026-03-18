@@ -426,11 +426,9 @@ class TestNetworkDiagram(unittest.TestCase):
         return project.calculate_cpm()
 
     def test_generate_network_csv_structure(self):
-        """Test: generate_network_csv erzeugt valides CSV"""
-        from lib.network_diagram import generate_network_csv
-
+        """Test: to_network_csv erzeugt valides CSV"""
         result = self._make_result()
-        csv_text = generate_network_csv(result)
+        csv_text = result.to_network_csv()
 
         lines = csv_text.splitlines()
         self.assertGreater(len(lines), 1)
@@ -446,10 +444,8 @@ class TestNetworkDiagram(unittest.TestCase):
 
     def test_generate_network_csv_task_count(self):
         """Test: CSV enthält alle Tasks (ohne WE-Blocker)"""
-        from lib.network_diagram import generate_network_csv
-
         result = self._make_result()
-        csv_text = generate_network_csv(result)
+        csv_text = result.to_network_csv()
 
         data_lines = [l for l in csv_text.splitlines()[1:] if l.strip()]
         non_we_tasks = [tid for tid in result.tasks
@@ -458,20 +454,16 @@ class TestNetworkDiagram(unittest.TestCase):
 
     def test_generate_network_csv_critical_marker(self):
         """Test: Kritische Tasks werden als JA markiert"""
-        from lib.network_diagram import generate_network_csv
-
         result = self._make_result()
-        csv_text = generate_network_csv(result)
+        csv_text = result.to_network_csv()
 
         # Mindestens eine JA-Markierung muss vorhanden sein
         self.assertIn("JA", csv_text)
 
     def test_generate_network_csv_no_we_blockers(self):
         """Test: WE-Blocker-Tasks werden nicht im CSV ausgegeben"""
-        from lib.network_diagram import generate_network_csv
-
         result = self._make_result()
-        csv_text = generate_network_csv(result)
+        csv_text = result.to_network_csv()
 
         # WE-Blocker dürfen nicht im CSV erscheinen
         self.assertNotIn('"WE-', csv_text)

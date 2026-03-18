@@ -14,7 +14,7 @@ from pydantic import ValidationError
 # Add parent to path for lib import
 sys.path.insert(0, str(Path(os.environ.get("PROJECT", str(Path(__file__).parent.parent)))))
 
-from lib import load_project, PersonProject, CycleProject, LoopProject, SimpleProject
+from lib import load_project, PersonProject, CycleProject, LoopProject
 
 
 def test_project_file(file_path: Path) -> bool:

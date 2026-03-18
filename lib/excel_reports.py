@@ -24,12 +24,12 @@ try:
     from .models import Project
     from .models.reports import GanttReport, ResourceListReport
     from .models.cpm import CPMResult
-    from .utils import format_time_value_auto, add_workdays, hex_to_rgb, rgb_to_hex, interpolate_color
+    from .utils import format_time_value_auto, add_workdays, interpolate_color
 except (ImportError, ValueError):
     from models import Project
     from models.reports import GanttReport, ResourceListReport
     from models.cpm import CPMResult
-    from utils import format_time_value_auto, add_workdays, hex_to_rgb, rgb_to_hex, interpolate_color
+    from utils import format_time_value_auto, add_workdays, interpolate_color
 
 
 def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
@@ -1179,12 +1179,7 @@ def create_netplan_table_sheet(wb: Workbook, result: CPMResult, tab_name: str = 
         result:   CPM-Berechnungsergebnis
         tab_name: Reiter-Bezeichnung
     """
-    try:
-        from network_diagram import generate_network_csv
-    except ImportError:
-        from .network_diagram import generate_network_csv
-
-    csv_text = generate_network_csv(result)
+    csv_text = result.to_network_csv()
     reader = csv.reader(io.StringIO(csv_text))
     rows = list(reader)
 

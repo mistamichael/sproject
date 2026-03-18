@@ -96,6 +96,3 @@ class LoopTask(ExpandableTask):
     loop_count: Optional[int] = None  # Explizite Anzahl Iterationen
     volume_per_cycle: Optional[Union[int, float]] = None  # Volumen pro Zyklus
 
-
-# Union-Type für alle Task-Varianten
-Task = Union[LoopTask, InstanceTask, SimpleTask]

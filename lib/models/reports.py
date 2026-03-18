@@ -92,6 +92,3 @@ class ResourceListReport(ReportBase):
 
     type: Literal["resource_list"] = "resource_list"
 
-
-# Union-Type für alle Report-Varianten
-Report = GanttReport | ResourceListReport

@@ -168,44 +168,6 @@ def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None, cfg_di
     )
 
 
-def create_default_person_from_config(cfg_dir: Path) -> Person:
-    """
-    Erstellt eine Default-Person aus der defaults.cfg.
-
-    Args:
-        cfg_dir: Verzeichnis mit Konfigurationsdateien
-
-    Returns:
-        Person-Objekt mit Werten aus defaults.cfg
-    """
-    import configparser
-
-    config = configparser.ConfigParser()
-    config_file = cfg_dir / "defaults.cfg"
-
-    # Defaults
-    person_data = {
-        'id': 'default_resource',
-        'name': 'Max Mustermann',
-        'email': 'max@mustermann.com',
-        'role': 'Default Resource',
-        'hourly_rate': 100.0
-    }
-
-    if config_file.exists():
-        config.read(config_file, encoding='utf-8')
-        if 'Resource' in config:
-            if 'id' in config['Resource']:
-                person_data['id'] = config['Resource']['id']
-            if 'name' in config['Resource']:
-                person_data['name'] = config['Resource']['name']
-            if 'email' in config['Resource']:
-                person_data['email'] = config['Resource']['email']
-            if 'hourly_rate' in config['Resource']:
-                person_data['hourly_rate'] = float(config['Resource']['hourly_rate'])
-
-    return Person(**person_data)
-
 
 
 def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_dir: Path = None) -> None:
@@ -471,7 +433,6 @@ Beispiele:
                     logger.info(f"Netzplan (JSON) gespeichert in: {output_file_network}")
                 elif fmt == 'txt':
                     output_file = output_dir / f"{project_file.stem}.txt"
-                    project_name_txt = project.project if hasattr(project, 'project') else project_file.stem
                     export_cpm_to_txt(result, output_file, project=project, cfg_dir=args.cfg_dir)
                     logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
                 elif fmt == 'xlsx':

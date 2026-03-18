@@ -15,11 +15,9 @@ from datetime import datetime
 try:
     from .models.cpm import CPMResult
     from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config
-    from .network_diagram import generate_network_csv
 except (ImportError, ValueError):
     from models.cpm import CPMResult  # type: ignore[no-redef]
     from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config  # type: ignore[no-redef]
-    from network_diagram import generate_network_csv  # type: ignore[no-redef]
 
 
 # ---------------------------------------------------------------------------
@@ -127,7 +125,7 @@ def _generate_netplan(result: CPMResult, heading: str) -> List[str]:
     lines.append(header)
     lines.append(_SEP_THIN)
 
-    csv_text = generate_network_csv(result)
+    csv_text = result.to_network_csv()
     reader = csv.reader(io.StringIO(csv_text))
     next(reader)  # CSV-Header überspringen
 

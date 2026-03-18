@@ -12,17 +12,6 @@ from typing import Union, Literal, List, Tuple, Dict, Optional
 from datetime import datetime, timedelta
 
 
-def get_project_root() -> Path:
-    """Gibt das Projektstammverzeichnis zurück.
-
-    Liest zuerst die Umgebungsvariable PROJECT (aus setenv.bat);
-    fällt auf das Verzeichnis oberhalb von lib/ zurück wenn nicht gesetzt.
-    """
-    env_root = os.environ.get('PROJECT')
-    if env_root:
-        return Path(env_root)
-    return Path(__file__).parent.parent
-
 
 def get_cfg_dir() -> Path:
     """Gibt das cfg-Verzeichnis zurück.

@@ -1,71 +1,63 @@
-# sproject.py - Einfaches Projektmanagement
+# sproject.py – CPM Projektplanung
 
-> **Neu in v0.2.0**: Type-safe Pydantic Models & zentrale Utils!
-> Siehe [QUICK_START.md](docs/QUICK_START.md) für die neue API.
+**sproject.py** berechnet den kritischen Pfad (CPM – Critical Path Method) aus einfachen JSON-Projektdateien und exportiert die Ergebnisse in verschiedene Formate.
 
-## Neue Import-Struktur (v0.2.0)
+## Zweck
 
-```python
-# Alles aus lib importieren
-from lib import (
-    load_project,              # Projekt laden
-    parse_duration_to_days,    # Utils
-    SimpleCPMCalculator,       # Legacy CPM
-    CycleExpander              # Legacy Expander
-)
-
-# Beispiel: Projekt laden
-project = load_project("examples/software_simple.json")
-print(f"Zeit einheit: {project.get_time_unit()}")  # 'hours'
-print(f"Task 1 Dauer: {project.tasks[0].to_days()} Tage")
-```
-
-**Dokumentation**:
-- 📘 [QUICK_START.md](docs/QUICK_START.md) - Schnelleinstieg mit neuer API
-- 📘 [REFACTORING.md](docs/REFACTORING.md) - Architektur-Details
-- 📘 [lib/models/README.md](lib/models/README.md) - Pydantic Models
-
-## Zweck des Programms
-
-**sproject.py** ist ein Tool für einfaches Projektmanagement durch die Kombination von:
-
-- **Ressourcenverwaltung**: Verwaltung von Personen, Teams und deren Verfügbarkeit
-- **Kalender**: Arbeitszeiten, Feiertage und Abwesenheiten
-- **Projektangaben**: Tasks, Meilensteine, Abhängigkeiten und Aufwände
-- **Reportbeschreibung**: Konfigurierbare Reports für verschiedene Projektansichten
-
-Das Programm basiert auf [Pydantic](https://docs.pydantic.dev/)-Modellen und lädt Projektdaten aus JSON-Dateien, um Reports, Ressourcenpläne, Gantt-Diagramme und Kostenpläne zu erstellen.
-
-## Features
-
-- **JSON-basierte Konfiguration**: Alle Projektdaten werden in strukturierten JSON-Dateien gespeichert
-- **Validierung**: Automatische Validierung der Eingabedaten durch Pydantic
-- **Querverweise**: Automatisches Auflösen von Referenzen zwischen Personen, Tasks und Arbeitszeiten
-- **Flexibles Logging**: Detailliertes Logging in Dateien und Konsole
-- **Batch-Verarbeitung**: Verarbeitung mehrerer Projekte in einem Durchlauf
+- **CPM-Berechnung**: Frühester/spätester Start und Ende, Gesamtpuffer, freier Puffer, kritischer Pfad
+- **Kalender-Integration**: Wochenenden und Feiertage werden bei Datumsberechnung übersprungen
+- **Ressourcenverwaltung**: Optional Personen, Stundensätze und Kostenübersicht
+- **Gantt-Diagramm**: Terminplanung mit Arbeitstagen
+- **Mehrere Exportformate**: JSON, TXT, XLSX, Mermaid-SVG, Markdown
 
 ## Projektstruktur
 
-```
+```text
 sproject/
-├── bin/                      # Batch-Skripte für Windows
-│   ├── setenv.bat           # Umgebungsvariablen Setup
-│   ├── activate_venv.bat    # Virtuelle Umgebung aktivieren
-│   ├── create_reports.bat   # Reports erstellen
-│   └── ...
-├── cfg/                      # Konfigurationsdateien (global)
-│   ├── persons.json         # Personen/Ressourcen-Definitionen
-│   ├── workinghours_absences.json  # Arbeitszeiten & Abwesenheiten
-│   └── reports.json         # Report-Definitionen
-├── data/                     # Projektdateien
-│   └── project_example.json # Projekt-Definitionen
-├── lib/                      # Python-Module
-│   ├── sproject.py          # Hauptprogramm
-│   ├── tjp_models.py        # Pydantic-Modelle
-│   └── test.py              # Unit-Tests
-├── log/                      # Logdateien (automatisch erstellt)
-├── results/                  # Generierte Reports (automatisch erstellt)
-└── README.md                 # Diese Datei
+├── bin/                        # Windows Batch-Skripte
+│   ├── setenv.bat              # Umgebungsvariablen setzen
+│   ├── activate_venv.bat       # Virtuelle Umgebung aktivieren
+│   ├── create_reports.bat      # Reports erzeugen
+│   └── run_unittests.bat       # Unit-Tests starten
+├── cfg/                        # Konfigurationsdateien
+│   ├── defaults.cfg            # Haupt-Konfiguration (Kalender, CPM, Kosten)
+│   ├── excel_export.cfg        # XLSX Tab-Reihenfolge und Namen
+│   ├── txt_export.cfg          # TXT Ausgabestruktur
+│   ├── json_export.cfg         # JSON Export-Einstellungen
+│   ├── markdown_export.cfg     # Markdown/Mermaid-Optionen
+│   └── holidays_BY_2026.json   # Bayern-Feiertage 2026
+├── examples/                   # Beispiel-Projektdateien
+│   ├── pizza.json              # Einfaches Beispiel (Minuten)
+│   ├── pizzas.json             # Loop-Task Beispiel
+│   ├── hausbau.json            # AA/EE-Abhängigkeiten
+│   ├── simpleproject.json      # Maschinenmontage (Tage)
+│   ├── software_simple.json    # Software-Projekt mit Ressourcen
+│   ├── tankdesign.json         # Ingenieurprojekt
+│   └── results/                # Vorberechnete Beispiel-Ergebnisse
+├── lib/                        # Python-Quellcode
+│   ├── sproject.py             # Hauptprogramm (Einstiegspunkt)
+│   ├── models/                 # Pydantic-Modelle
+│   │   ├── cpm.py              # CPM-Berechnung
+│   │   ├── gantt.py            # Gantt-Terminplanung
+│   │   ├── tasks.py            # Task-Modelle (inkl. Loop/Cycle)
+│   │   ├── resources.py        # Ressourcen und Personen
+│   │   ├── project.py          # Projekt-Wurzelmodell
+│   │   └── loader.py           # JSON-Loader
+│   ├── excel_reports.py        # XLSX-Export
+│   ├── json_export.py          # JSON-Export
+│   ├── txt_export.py           # TXT-Export
+│   ├── markdown_export.py      # Markdown-Export
+│   ├── mermaid_export.py       # SVG via Mermaid/kroki
+│   ├── cpm_models.py           # CPM-Mixin (Legacy)
+│   ├── tjp_models.py           # TJP-Modelle (Legacy)
+│   ├── utils.py                # Hilfsfunktionen
+│   ├── config_loader.py        # Konfiguration lesen
+│   ├── test.py                 # Unit-Tests
+│   ├── test_models.py          # Modell-Tests
+│   └── test_sproject.py        # Integrations-Tests
+├── log/                        # Logdateien (automatisch erstellt)
+├── results/                    # Generierte Reports (automatisch erstellt)
+└── README.md
 ```
 
 ## Installation
@@ -73,171 +65,263 @@ sproject/
 ### Voraussetzungen
 
 - Python 3.10 oder höher
-- pip für Paketinstallation
 
-### Abhängigkeiten installieren
+### Abhängigkeiten
 
 ```bash
-pip install pydantic
+pip install pydantic          # Pflicht
+pip install openpyxl          # Für XLSX-Export
+pip install requests          # Für SVG-Export (via kroki.io)
 ```
 
-Oder mit einer virtuellen Umgebung:
+Oder mit virtueller Umgebung:
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# oder
-venv\Scripts\activate.bat  # Windows
-
-pip install pydantic
+venv\Scripts\activate.bat     # Windows
+pip install pydantic openpyxl requests
 ```
 
 ## Verwendung
 
-### Umgebungsvariablen setzen
-
-Vor der ersten Verwendung die Umgebungsvariablen mit `setenv.bat` setzen:
-
-```cmd
-cd bin
-setenv.bat
-```
-
-Dies setzt folgende Variablen:
-- `PROJECT`: Projekt-Wurzelverzeichnis
-- `PV_BIN`: bin-Verzeichnis
-- `PV_LIB`: lib-Verzeichnis
-- `PV_DATA`: data-Verzeichnis
-- `PV_CFG`: cfg-Verzeichnis
-- `PV_LOG`: log-Verzeichnis
-- `PV_RESULTS`: results-Verzeichnis
-
-### Projekt verarbeiten
-
-#### Einzelnes Projekt
+### Einzelnes Projekt verarbeiten
 
 ```bash
-python lib/sproject.py --project data/project_example.json
+python lib/sproject.py --project examples/pizza.json
 ```
 
-#### Alle Projekte im data-Ordner
+### Exportformat wählen
 
 ```bash
-python lib/sproject.py
+# Nur JSON (Standard)
+python lib/sproject.py --project examples/tankdesign.json
+
+# Mehrere Formate gleichzeitig
+python lib/sproject.py --project examples/hausbau.json --export txt,json,xlsx,svg,md
+
+# Alle verfügbaren Formate
+python lib/sproject.py --project examples/software_simple.json --export txt,json,xlsx,svg,md
 ```
 
-#### Mit ausführlicher Ausgabe
+### Alle Projekte im Verzeichnis verarbeiten
 
 ```bash
-python lib/sproject.py --project data/project_example.json --verbose
+python lib/sproject.py --data-dir examples --export json
 ```
 
-#### Benutzerdefiniertes Log-Verzeichnis
+### Weitere Optionen
 
 ```bash
-python lib/sproject.py --log-dir ./custom_logs
-```
+# Ausgabeverzeichnis angeben
+python lib/sproject.py --project examples/pizza.json --output-dir ./meine_ergebnisse
 
-### Hilfe anzeigen
+# Startdatum überschreiben
+python lib/sproject.py --project examples/simpleproject.json --start-date 2026-06-01
 
-```bash
+# Konfigurationsverzeichnis
+python lib/sproject.py --project examples/pizza.json --cfg-dir ./cfg
+
+# Ausführliche Ausgabe
+python lib/sproject.py --project examples/pizza.json --verbose
+
+# Hilfe
 python lib/sproject.py --help
 ```
 
-## Konfigurationsdateien
+### Exportformate
 
-### 1. persons.json
+| Format | Beschreibung                               |
+| ------ | ------------------------------------------ |
+| `json` | Netzplan + Gantt als JSON (Standard)       |
+| `txt`  | Strukturierte ASCII-Textdatei              |
+| `xlsx` | Excel mit konfigurierbaren Tabs            |
+| `svg`  | Gantt-Diagramm als SVG (via Mermaid/kroki) |
+| `md`   | Markdown-Report mit Mermaid-Diagramm       |
 
-Definiert Ressourcen-Gruppen und Personen:
+## Projektdatei-Format (JSON)
 
-```json
-{
-  "resource_groups": [
-    {
-      "id": "dev",
-      "name": "Developers",
-      "rate": 100.0,
-      "members": [
-        {
-          "id": "alice",
-          "name": "Alice Smith",
-          "email": "alice@example.com"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### 2. workinghours_absences.json
-
-Definiert Arbeitszeiten und Abwesenheiten:
+### Minimales Beispiel
 
 ```json
 {
-  "global_workinghours": {
-    "id": "standard",
-    "description": "Standard 40h/week",
-    "schedules": [
-      {
-        "days": ["mon", "tue", "wed", "thu", "fri"],
-        "hours": [{"from": "09:00", "to": "17:00"}]
-      }
-    ]
-  },
-  "global_leaves": [
-    {
-      "type": "holiday",
-      "name": "Neujahr",
-      "date": "2025-01-01",
-      "applies_to": "all"
-    }
-  ]
-}
-```
-
-### 3. project.json
-
-Definiert Projektdetails und Tasks:
-
-```json
-{
-  "project": {
-    "id": "my_project",
-    "name": "My Project",
-    "version": "1.0",
-    "start": "2025-01-01",
-    "duration": "90d",
-    "timezone": "Europe/Berlin",
-    "currency": "EUR"
-  },
+  "project": "Mein Projekt",
+  "project_start": "2026-04-01 08:00:00",
   "tasks": [
     {
-      "id": "coding",
-      "name": "Coding Phase",
-      "effort": "20d",
-      "allocate": ["alice"]
+      "id": 1,
+      "name": "Planung",
+      "duration": "3d",
+      "dependencies": [2]
+    },
+    {
+      "id": 2,
+      "name": "Umsetzung",
+      "duration": "10d",
+      "dependencies": [3]
+    },
+    {
+      "id": 3,
+      "name": "Abnahme",
+      "duration": "2d",
+      "dependencies": []
     }
   ]
 }
 ```
 
-### 4. reports.json
+### Dauerformate
 
-Definiert Report-Konfigurationen:
+| Angabe  | Bedeutung                 |
+| ------- | ------------------------- |
+| `"10d"` | 10 Arbeitstage            |
+| `"2w"`  | 2 Wochen = 10 Arbeitstage |
+| `"8h"`  | 8 Stunden = 1 Arbeitstag  |
+| `"30m"` | 30 Minuten                |
+| `10`    | 10 Tage (Zahl)            |
+
+### Abhängigkeitstypen
+
+| Feld              | Typ | Bedeutung                                                            |
+| ----------------- | --- | -------------------------------------------------------------------- |
+| `dependencies`    | EA  | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard)  |
+| `dependencies_aa` | AA  | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger         |
+| `dependencies_ee` | EE  | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger               |
+
+Beispiel (aus `hausbau.json`):
 
 ```json
 {
-  "reports": [
+  "id": 5,
+  "name": "Mauerwerk errichten",
+  "duration": "10d",
+  "dependencies": [10],
+  "dependencies_aa": [6, 7],
+  "note": "AA: Elektrik und Sanitär beginnen sobald Mauern beginnen"
+}
+```
+
+### Projekt mit Ressourcen und Kosten
+
+```json
+{
+  "project": "Software Projekt",
+  "project_start": "2026-04-01 09:00:00",
+  "persons": [
     {
-      "id": "overview",
-      "type": "taskreport",
-      "name": "Project Overview",
-      "columns": ["name", "start", "end", "effort"]
+      "id": "DEV1",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "role": "Senior Developer",
+      "hourly_rate": 85.0,
+      "vacation": [
+        {"from": "2026-04-14", "to": "2026-04-18", "description": "Urlaub"}
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "R_DEV1",
+      "name": "Senior Developer",
+      "type": "person",
+      "person_id": "DEV1"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Backend Entwicklung",
+      "duration": "40h",
+      "resources": ["R_DEV1"],
+      "dependencies": [2]
+    },
+    {
+      "id": 2,
+      "name": "Deployment",
+      "duration": "8h",
+      "resources": ["R_DEV1"],
+      "dependencies": []
     }
   ]
 }
 ```
+
+### Loop-Tasks (wiederkehrende Vorgänge)
+
+Für sich wiederholende Zyklen (z. B. Produktionsschleifen) können `is_loop`-Tasks verwendet werden:
+
+```json
+{
+  "id": 2,
+  "name": "Produktionszyklus",
+  "is_loop": true,
+  "loop_until": "total_volume <= 0",
+  "cycle_prefix": "P",
+  "volume_per_cycle": 1,
+  "subtasks": [
+    {"name": "Bearbeitung", "duration": "5m", "resources": ["R_WORKER"]},
+    {"name": "Qualitätsprüfung", "duration": "2m", "resources": ["R_QA"]}
+  ]
+}
+```
+
+Das Programm expandiert Loop-Tasks automatisch vor der CPM-Berechnung.
+
+## Konfiguration
+
+Alle Standardwerte werden aus `cfg/defaults.cfg` gelesen:
+
+```ini
+[CPM]
+skip_weekends  = true     # Wochenenden überspringen
+skip_holidays  = true     # Feiertage überspringen (Bayern 2026)
+
+[WorkingHours]
+hours_per_day  = 8        # Arbeitsstunden pro Tag
+days_per_week  = 5        # Arbeitstage pro Woche
+
+[Resource]
+hourly_rate    = 100.00   # Standard-Stundensatz (EUR)
+
+[Costs]
+overhead_factor = 1.5     # Overhead-Multiplikator
+
+[Output]
+results_dir    = results  # Ausgabeverzeichnis
+```
+
+Der XLSX-Export konfiguriert die Tabellenblätter über `cfg/excel_export.cfg`.
+
+## Ausgabestruktur (CPM-Tabelle)
+
+```text
+ID      Name                           Dauer    FAZ    FEZ    SAZ    SEZ    GP     FP     Krit.
+─────────────────────────────────────────────────────────────────────────────────────────────
+1       Planung                        3d       0.0    3.0    0.0    3.0    0.0    0.0    JA
+2       Umsetzung                      10d      3.0    13.0   3.0    13.0   0.0    0.0    JA
+3       Abnahme                        2d       13.0   15.0   13.0   15.0   0.0    0.0    JA
+```
+
+| Kürzel | Bedeutung                  |
+| ------ | -------------------------- |
+| FAZ    | Frühester Anfangszeitpunkt |
+| FEZ    | Frühester Endzeitpunkt     |
+| SAZ    | Spätester Anfangszeitpunkt |
+| SEZ    | Spätester Endzeitpunkt     |
+| GP     | Gesamtpuffer               |
+| FP     | Freier Puffer              |
+
+## Beispielprojekte
+
+| Datei                  | Beschreibung               | Besonderheiten                    |
+| ---------------------- | -------------------------- | --------------------------------- |
+| `pizza.json`           | Pizza zubereiten (Minuten) | Kurze Dauern in `m`               |
+| `pizzas.json`          | Pizza-Service mit Volumen  | Loop-Tasks, Ressourcen, Maschinen |
+| `simpleproject.json`   | Maschinenmontage           | Klassisches CPM-Beispiel          |
+| `tankdesign.json`      | Tank-Design Projekt        | Einfaches Ingenieurprojekt        |
+| `hausbau.json`         | Einfamilienhaus-Bau        | AA/EE-Abhängigkeiten              |
+| `erdaushub.json`       | Erdaushub                  | Parallel laufende Tätigkeiten     |
+| `fassadenbau.json`     | Fassadenbau                | Abschnittweise Montage            |
+| `software_simple.json` | Software-Entwicklung       | Personen, Ressourcen, Kosten      |
 
 ## Tests
 
@@ -246,43 +330,57 @@ Unit-Tests ausführen:
 ```bash
 cd lib
 python -m unittest test.py
+python -m unittest test_models.py
+python -m unittest test_sproject.py
 ```
 
-Oder einzelne Testklassen:
+Oder über das Batch-Skript (Windows):
 
-```bash
-python -m unittest test.TestWorkingHours
+```cmd
+bin\run_unittests.bat
 ```
-
-## Logging
-
-Logdateien werden automatisch im `log/`-Verzeichnis erstellt:
-
-- Format: `sproject_YYYYMMDD_HHMMSS.log`
-- Enthält Debug-Informationen, Fehler und Warnungen
-- Konsolenausgabe zeigt nur wichtige Informationen (INFO-Level)
 
 ## Entwicklung
 
-### Neue Features hinzufügen
+### Code-Qualität prüfen
 
-1. Modelle in [tjp_models.py](lib/tjp_models.py) erweitern
-2. Logik in [sproject.py](lib/sproject.py) implementieren
-3. Tests in [test.py](lib/test.py) hinzufügen
+```bash
+make lint           # Alle Tools
+make lint-dead      # Nur Dead Code (vulture + skylos)
+make lint-types     # Nur Type Checks (pyright + mypy)
+```
 
-### Code-Qualität
+Einzelne Tools:
 
-- Alle Modelle basieren auf Pydantic für automatische Validierung
-- Type Hints für bessere IDE-Unterstützung
-- Docstrings für alle wichtigen Funktionen
+```bash
+make vulture        # Dead Code (80% Konfidenz)
+make skylos         # Dead Code (ML-gestützt)
+make pyright        # Typprüfung (schnell)
+make mypy           # Typprüfung (streng)
+```
+
+### Neue Projekte hinzufügen
+
+1. JSON-Datei in `examples/` anlegen (Struktur wie oben)
+2. Verarbeiten: `python lib/sproject.py --project examples/meinprojekt.json`
+3. Ergebnisse im `results/`-Verzeichnis prüfen
+
+### Modelle erweitern
+
+- Task-Modelle: [lib/models/tasks.py](lib/models/tasks.py)
+- Ressourcen: [lib/models/resources.py](lib/models/resources.py)
+- CPM-Berechnung: [lib/models/cpm.py](lib/models/cpm.py)
+- Gantt: [lib/models/gantt.py](lib/models/gantt.py)
+- Export-Module: `lib/*_export.py`
+
+## Logging
+
+Logdateien werden automatisch unter `log/` erstellt:
+
+- Format: `sproject_YYYYMMDD_HHMMSS.log`
+- Konsole: INFO-Level (wichtige Meldungen)
+- Datei: DEBUG-Level (vollständige Details)
 
 ## Lizenz
 
 Dieses Projekt ist für den internen Gebrauch bestimmt.
-
-## Support
-
-Bei Fragen oder Problemen:
-1. Überprüfen Sie die Logdateien in `log/`
-2. Validieren Sie Ihre JSON-Dateien mit `--verbose`
-3. Führen Sie die Tests aus, um die Grundfunktionalität zu prüfen
