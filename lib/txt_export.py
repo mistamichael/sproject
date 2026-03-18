@@ -7,6 +7,8 @@ Sektionsreihenfolge und Überschriften werden aus cfg/txt_export.cfg gelesen.
 """
 
 import configparser
+import csv
+import io
 from pathlib import Path
 from typing import Optional, Dict, List, Any
 from datetime import datetime
@@ -14,14 +16,10 @@ from datetime import datetime
 try:
     from .models.cpm import CPMResult
     from .utils import format_time_value, format_time_value_auto, add_workdays
-    from .markdown_export import _generate_netplan_ascii_section as _md_netplan_ascii
-    from .markdown_export import _DEFAULT_NODE_ROWS as _MD_DEFAULT_NODE_ROWS
     from .network_diagram import generate_network_csv
 except (ImportError, ValueError):
     from models.cpm import CPMResult  # type: ignore[no-redef]
     from utils import format_time_value, format_time_value_auto, add_workdays  # type: ignore[no-redef]
-    from markdown_export import _generate_netplan_ascii_section as _md_netplan_ascii  # type: ignore[no-redef]
-    from markdown_export import _DEFAULT_NODE_ROWS as _MD_DEFAULT_NODE_ROWS  # type: ignore[no-redef]
     from network_diagram import generate_network_csv  # type: ignore[no-redef]
 
 
@@ -32,18 +30,15 @@ except (ImportError, ValueError):
 _SEP_WIDE  = "=" * 70
 _SEP_THIN  = "-" * 70
 
-_DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan_ascii', 'tasklist', 'resource_list']
+_DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan_table', 'tasklist', 'resource_list']
 
 _DEFAULT_HEADINGS = {
     'summary':       'PROJEKTZUSAMMENFASSUNG',
     'critical_path': 'KRITISCHER PFAD',
-    'netplan_ascii': 'NETZPLAN ASCII',
     'netplan_table': 'NETZPLAN TABELLE',
     'tasklist':      'ALLE TASKS',
     'resource_list': 'VERANTWORTLICHE',
 }
-
-_DEFAULT_NODE_ROWS = _MD_DEFAULT_NODE_ROWS
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +50,7 @@ def _load_txt_config(cfg_dir: Optional[Path] = None) -> tuple:
     Lädt txt_export.cfg.
 
     Returns:
-        (section_order, headings, node_rows)
+        (section_order, headings)
     """
     if cfg_dir is None:
         cfg_dir = Path(__file__).parent.parent / "cfg"
@@ -77,23 +72,7 @@ def _load_txt_config(cfg_dir: Optional[Path] = None) -> tuple:
             if val:
                 headings[key] = val.upper()
 
-    node_rows = [list(r) for r in _DEFAULT_NODE_ROWS]
-    if config.has_section('netplan_content'):
-        sec = config['netplan_content']
-        parsed = []
-        i = 1
-        while True:
-            val: Optional[str] = sec.get(f'row_{i}', fallback=None)
-            if val is None:
-                break
-            fields = [f.strip().lower() for f in val.split(',') if f.strip()]
-            if fields:
-                parsed.append(fields)
-            i += 1
-        if parsed:
-            node_rows = parsed
-
-    return section_order, headings, node_rows
+    return section_order, headings
 
 
 # ---------------------------------------------------------------------------
@@ -143,29 +122,6 @@ def _generate_critical_path(result: CPMResult, heading: str) -> List[str]:
     return lines
 
 
-def _generate_netplan_ascii(result: CPMResult, heading: str, node_rows: List[List[str]]) -> List[str]:
-    """
-    ASCII-Netzplan: delegiert an _generate_netplan_ascii_section aus markdown_export.py
-    und entfernt die Markdown-spezifischen Code-Fences und die md-Überschrift.
-    """
-    # mermaid_cfg mit node_rows zusammenstellen (übrige Felder unused für ASCII)
-    mermaid_cfg = {'node_rows': node_rows}
-    md_text = _md_netplan_ascii(result, heading, mermaid_cfg)
-
-    # Markdown-Überschrift (### ...) und Code-Fences (```) rausfiltern,
-    # Abschnittsheader nach TXT-Konvention voranstellen
-    header_lines = _section_header(heading)
-    content_lines = []
-    for raw_line in md_text.splitlines():
-        stripped = raw_line.rstrip()
-        if stripped.startswith('### '):
-            continue          # md-Überschrift — durch TXT-Header ersetzt
-        if stripped == '```':
-            continue          # Code-Fence entfernen
-        content_lines.append(stripped)
-    return header_lines + content_lines
-
-
 def _generate_netplan_table(result: CPMResult, heading: str) -> List[str]:
     """
     Tabellarische Netzplandarstellung via generate_network_csv.
@@ -187,16 +143,13 @@ def _generate_netplan_table(result: CPMResult, heading: str) -> List[str]:
     lines.append(_SEP_THIN)
 
     csv_text = generate_network_csv(result)
-    csv_lines = csv_text.splitlines()
+    reader = csv.reader(io.StringIO(csv_text))
+    next(reader)  # CSV-Header überspringen
 
-    for raw in csv_lines[1:]:  # erste Zeile ist CSV-Header
-        parts = [p.strip('"') for p in raw.split('","')]
+    for parts in reader:
         if len(parts) < 11:
             continue
         tid, name, dur, faz, fez, saz, sez, gp, fp, successors, is_crit = parts[:11]
-
-        # Letzten Wert von is_crit von möglichem trailing Quote befreien
-        is_crit = is_crit.strip('"')
 
         name_out = name if len(name) <= col_name else name[:col_name - 3] + "..."
         succ_out = successors.replace(';', ', ')
@@ -358,13 +311,12 @@ def export_cpm_to_txt(
         True bei Erfolg, False bei Fehler
     """
     try:
-        section_order, headings, node_rows = _load_txt_config(cfg_dir)
+        section_order, headings = _load_txt_config(cfg_dir)
         name = project_name or result.project_name
 
         generators = {
             'summary':       lambda: _generate_summary(result, name, headings['summary']),
             'critical_path': lambda: _generate_critical_path(result, headings['critical_path']),
-            'netplan_ascii': lambda: _generate_netplan_ascii(result, headings['netplan_ascii'], node_rows),
             'netplan_table': lambda: _generate_netplan_table(result, headings['netplan_table']),
             'tasklist':      lambda: _generate_tasklist(result, headings['tasklist']),
             'resource_list': lambda: _generate_resource_list(result, headings['resource_list'], project),
