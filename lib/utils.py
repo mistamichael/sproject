@@ -5,8 +5,204 @@ Utility functions for sproject
 Common utility functions used across the project.
 """
 
-from typing import Union, Literal, List
+import configparser
+import os
+from pathlib import Path
+from typing import Union, Literal, List, Tuple, Dict, Optional
 from datetime import datetime, timedelta
+
+
+def get_project_root() -> Path:
+    """Gibt das Projektstammverzeichnis zurück.
+
+    Liest zuerst die Umgebungsvariable PROJECT (aus setenv.bat);
+    fällt auf das Verzeichnis oberhalb von lib/ zurück wenn nicht gesetzt.
+    """
+    env_root = os.environ.get('PROJECT')
+    if env_root:
+        return Path(env_root)
+    return Path(__file__).parent.parent
+
+
+def get_cfg_dir() -> Path:
+    """Gibt das cfg-Verzeichnis zurück.
+
+    Liest zuerst die Umgebungsvariable PV_CFG (aus setenv.bat);
+    fällt auf get_project_root() / 'cfg' zurück wenn nicht gesetzt.
+    """
+    env_cfg = os.environ.get('PV_CFG')
+    if env_cfg:
+        return Path(env_cfg)
+    return get_cfg_dir()
+
+
+# =============================================================================
+# Color Utilities
+# =============================================================================
+
+def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
+    """Konvertiert Hex-Farbe (mit oder ohne #) zu RGB-Tupel."""
+    hex_color = hex_color.lstrip('#')
+    return (int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16))
+
+
+def rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
+    """Konvertiert RGB-Tupel zu Hex-Farbe ohne #."""
+    return '{:02X}{:02X}{:02X}'.format(rgb[0], rgb[1], rgb[2])
+
+
+def interpolate_color(color_start: str, color_end: str, position: float) -> str:
+    """
+    Interpoliert linear zwischen zwei Hex-Farben.
+
+    Args:
+        color_start: Start-Farbe (Hex ohne #)
+        color_end:   End-Farbe (Hex ohne #)
+        position:    Position zwischen 0.0 und 1.0
+
+    Returns:
+        Interpolierte Hex-Farbe ohne #
+    """
+    s = hex_to_rgb(color_start)
+    e = hex_to_rgb(color_end)
+    r = int(s[0] + (e[0] - s[0]) * position)
+    g = int(s[1] + (e[1] - s[1]) * position)
+    b = int(s[2] + (e[2] - s[2]) * position)
+    return rgb_to_hex((r, g, b))
+
+
+# =============================================================================
+# Constants
+# =============================================================================
+
+def _read_hours_per_workday() -> int:
+    """Liest hours_per_day aus defaults.cfg [WorkingHours], Fallback 8."""
+    cfg_file = get_cfg_dir() / "defaults.cfg"
+    config = configparser.ConfigParser()
+    if cfg_file.exists():
+        config.read(cfg_file, encoding='utf-8')
+    return config.getint('WorkingHours', 'hours_per_day', fallback=8)
+
+
+HOURS_PER_WORKDAY: int = _read_hours_per_workday()
+MINUTES_PER_WORKDAY: int = HOURS_PER_WORKDAY * 60
+
+
+# =============================================================================
+# Task Utilities
+# =============================================================================
+
+def is_system_task(task_id) -> bool:
+    """Gibt True zurück wenn task_id ein System-Task ist (z.B. Wochenend-Blocker 'WE-...')."""
+    return isinstance(task_id, str) and task_id.startswith('WE-')
+
+
+def format_task_field(field: str, task, time_unit: Literal['minutes', 'hours', 'days'], task_id=None) -> str:
+    """
+    Formatiert ein CPM-Task-Feld als String für Diagramme und Tabellen.
+
+    Args:
+        field:     Feldname: id, name, duration/d/dauer, faz, fez, saz, sez, gp, fp
+        task:      CPMTaskResult-Objekt
+        time_unit: Zeiteinheit ('minutes', 'hours', 'days')
+        task_id:   Optionale Task-ID (überschreibt task.id für das 'id'-Feld)
+
+    Returns:
+        Formatierter String, oder '' für unbekannte Felder
+    """
+    f = field.lower()
+    if f == 'id':
+        tid = task_id if task_id is not None else task.id
+        return f"[{tid}]"
+    elif f == 'name':
+        return task.name
+    elif f in ('d', 'duration', 'dauer'):
+        return f"D:{format_time_value(task.duration, time_unit)}"
+    elif f == 'faz':
+        return f"FAZ:{format_time_value(task.faz, time_unit)}"
+    elif f == 'fez':
+        return f"FEZ:{format_time_value(task.fez, time_unit)}"
+    elif f == 'saz':
+        return f"SAZ:{format_time_value(task.saz, time_unit)}"
+    elif f == 'sez':
+        return f"SEZ:{format_time_value(task.sez, time_unit)}"
+    elif f == 'gp':
+        return f"GP:{format_time_value(task.puffer, time_unit)}"
+    elif f == 'fp':
+        return f"FP:{format_time_value(task.free_puffer, time_unit)}"
+    return ''
+
+
+def convert_cpm_time_to_datetime(cpm_time: float, start_date: datetime, time_unit: str) -> datetime:
+    """
+    Konvertiert einen CPM-internen Zeitwert (in Tagen) zu einem Kalender-Datum.
+
+    CPM-Werte (FAZ, FEZ, SAZ, SEZ) sind intern immer in Tagen, aber je nach
+    time_unit mit unterschiedlicher Auflösung (Minuten, Stunden, Tage).
+
+    Args:
+        cpm_time:   CPM-Zeitwert in Tagen
+        start_date: Projektstartdatum
+        time_unit:  Zeiteinheit ('minutes', 'hours', 'days')
+
+    Returns:
+        Absolutes Datum/Uhrzeit
+    """
+    if time_unit == 'minutes':
+        total_minutes = cpm_time * MINUTES_PER_WORKDAY
+        days    = int(total_minutes // MINUTES_PER_WORKDAY)
+        minutes = int(total_minutes % MINUTES_PER_WORKDAY)
+        return start_date + timedelta(days=days, minutes=minutes)
+    elif time_unit == 'hours':
+        total_hours = cpm_time * HOURS_PER_WORKDAY
+        days  = int(total_hours // HOURS_PER_WORKDAY)
+        hours = int(total_hours % HOURS_PER_WORKDAY)
+        return start_date + timedelta(days=days, hours=hours)
+    else:
+        return start_date + timedelta(days=cpm_time)
+
+
+def load_export_config(
+    cfg_dir: Optional[Path],
+    filename: str,
+    default_order: List[str],
+    default_headings: Dict[str, str],
+) -> Tuple[List[str], Dict[str, str]]:
+    """
+    Generischer Loader für Export-Config-Dateien.
+
+    Liest section_order aus [sections] und Überschriften aus [de].
+    Fallback auf default_order / default_headings wenn Datei fehlt.
+
+    Args:
+        cfg_dir:          Verzeichnis der .cfg-Dateien (None → ../cfg relativ zur Lib)
+        filename:         Dateiname der Config (z.B. 'txt_export.cfg')
+        default_order:    Fallback-Sektionsreihenfolge
+        default_headings: Fallback-Überschriften
+
+    Returns:
+        (section_order, headings)
+    """
+    if cfg_dir is None:
+        cfg_dir = get_cfg_dir()
+    config = configparser.ConfigParser()
+    cfg_file = cfg_dir / filename
+    if cfg_file.exists():
+        config.read(cfg_file, encoding='utf-8')
+
+    raw_order = config.get('sections', 'section_order', fallback=None)
+    section_order = (
+        [s.strip() for s in raw_order.split(',') if s.strip()]
+        if raw_order else list(default_order)
+    )
+
+    headings = dict(default_headings)
+    if config.has_section('de'):
+        for key, val in config.items('de'):
+            if val:
+                headings[key] = val
+
+    return section_order, headings
 
 
 # =============================================================================

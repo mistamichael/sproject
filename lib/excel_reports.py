@@ -24,12 +24,12 @@ try:
     from .models import Project
     from .models.reports import GanttReport, ResourceListReport
     from .models.cpm import CPMResult
-    from .utils import format_time_value_auto, add_workdays
+    from .utils import format_time_value_auto, add_workdays, hex_to_rgb, rgb_to_hex, interpolate_color
 except (ImportError, ValueError):
     from models import Project
     from models.reports import GanttReport, ResourceListReport
     from models.cpm import CPMResult
-    from utils import format_time_value_auto, add_workdays
+    from utils import format_time_value_auto, add_workdays, hex_to_rgb, rgb_to_hex, interpolate_color
 
 
 def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
@@ -125,7 +125,7 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
     }
 
     # Lese section_order aus [sections]
-    _default_order = ['summary', 'critical_path', 'tasklist', 'gantt_chart', 'resource_list']
+    _default_order = ['summary', 'critical_path', 'tasklist', 'gantt_chart', 'resource_list', 'cost_overview']
     raw_order = config.get('sections', 'section_order', fallback=None)
     defaults['sections'] = {
         'section_order': (
@@ -139,7 +139,8 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
         'summary':       'Projektzusammenfassung',
         'critical_path': 'Kritischer Pfad',
         'tasklist':      'Alle Tasks',
-        'netplan_table': 'Netzplan',
+        'netplan':       'Netzplan',
+        'cost_overview': 'Kosten',
     }
     tab_names = dict(_default_tab_names)
     if config.has_section('de'):
@@ -150,54 +151,6 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
 
     return defaults
 
-
-def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
-    """
-    Konvertiert Hex-Farbe zu RGB.
-
-    Args:
-        hex_color: Hex-Farbe (mit oder ohne #)
-
-    Returns:
-        RGB-Tupel (r, g, b)
-    """
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-
-def rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
-    """
-    Konvertiert RGB zu Hex-Farbe.
-
-    Args:
-        rgb: RGB-Tupel (r, g, b)
-
-    Returns:
-        Hex-Farbe ohne #
-    """
-    return '{:02X}{:02X}{:02X}'.format(rgb[0], rgb[1], rgb[2])
-
-
-def interpolate_color(color_start: str, color_end: str, position: float) -> str:
-    """
-    Interpoliert zwischen zwei Farben.
-
-    Args:
-        color_start: Start-Farbe (Hex)
-        color_end: End-Farbe (Hex)
-        position: Position zwischen 0.0 und 1.0
-
-    Returns:
-        Interpolierte Farbe (Hex)
-    """
-    rgb_start = hex_to_rgb(color_start)
-    rgb_end = hex_to_rgb(color_end)
-
-    r = int(rgb_start[0] + (rgb_end[0] - rgb_start[0]) * position)
-    g = int(rgb_start[1] + (rgb_end[1] - rgb_start[1]) * position)
-    b = int(rgb_start[2] + (rgb_end[2] - rgb_start[2]) * position)
-
-    return rgb_to_hex((r, g, b))
 
 
 def is_working_day(date: datetime, working_days_str: str) -> bool:
@@ -1260,6 +1213,104 @@ def create_netplan_table_sheet(wb: Workbook, result: CPMResult, tab_name: str = 
                 cell.fill = crit_fill
 
     col_widths = [10, 35, 8, 8, 8, 8, 8, 8, 8, 25, 10]
+    for i, w in enumerate(col_widths, start=1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
+
+def create_cost_sheet(wb: 'Workbook', project: Any, result: CPMResult,
+                      tab_name: str = "Kosten") -> None:
+    """
+    Erzeugt einen Kosten-Tab mit Personalkosten, Maschinenkosten und Bereitstellungskosten.
+
+    Args:
+        wb:       Workbook
+        project:  Projekt-Objekt mit persons und resources
+        result:   CPM-Berechnungsergebnis
+        tab_name: Reiter-Bezeichnung
+    """
+    try:
+        from cost_calculator import calculate_project_costs
+    except ImportError:
+        from .cost_calculator import calculate_project_costs
+
+    ws = wb.create_sheet(title=tab_name)
+
+    title_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    title_font = Font(bold=True, color="FFFFFF", size=14)
+    total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
+    subtotal_fill = PatternFill(start_color="EEF2FA", end_color="EEF2FA", fill_type="solid")
+
+    ws['A1'] = tab_name
+    ws['A1'].font = title_font
+    ws['A1'].fill = title_fill
+    ws.merge_cells('A1:G1')
+    ws.row_dimensions[1].height = 28
+
+    costs = calculate_project_costs(project, result)
+
+    if not costs:
+        ws['A3'] = "Keine Kostendaten verfügbar – Stundensätze fehlen."
+        ws.column_dimensions['A'].width = 50
+        return
+
+    # Spaltenköpfe
+    headers = ['Ressource', 'Typ', 'Stunden', '€/h', 'Bereitst. €', 'Lohnkosten €', 'Gesamt €']
+    for col, h in enumerate(headers, start=1):
+        cell = ws.cell(row=3, column=col, value=h)
+        _apply_header_style(cell)
+
+    person_fill  = PatternFill(start_color="EAF3FB", end_color="EAF3FB", fill_type="solid")
+    machine_fill = PatternFill(start_color="FFF3E0", end_color="FFF3E0", fill_type="solid")
+    money_align  = Alignment(horizontal='right')
+
+    row = 4
+    for e in costs.entries:
+        row_fill = person_fill if e.resource_type == 'person' else machine_fill
+        values = [
+            e.resource_name,
+            e.resource_type,
+            e.hours_worked,
+            e.hourly_rate,
+            e.provisioning_costs,
+            e.labor_costs,
+            e.total_costs,
+        ]
+        for col, val in enumerate(values, start=1):
+            cell = ws.cell(row=row, column=col, value=val)
+            cell.fill = row_fill
+            if col >= 3:
+                cell.alignment = money_align
+                if col >= 4 and isinstance(val, (int, float)):
+                    cell.number_format = '#,##0.00 "€"'
+        row += 1
+
+    # Leerzeile
+    row += 1
+
+    # Summenzeilen
+    def _sum_row(label: str, value: float, fill: 'PatternFill') -> None:
+        nonlocal row
+        ws.cell(row=row, column=5, value=label).font = Font(bold=True)
+        cell = ws.cell(row=row, column=7, value=value)
+        cell.number_format = '#,##0.00 "€"'
+        cell.font = Font(bold=True)
+        cell.alignment = money_align
+        for col in range(1, 8):
+            ws.cell(row=row, column=col).fill = fill
+        row += 1
+
+    if costs.total_person_costs > 0:
+        _sum_row("Personalkosten", costs.total_person_costs, subtotal_fill)
+    if costs.total_machine_costs > 0:
+        _sum_row("Maschinenkosten (Lohn)", costs.total_machine_costs, subtotal_fill)
+    if costs.total_provisioning_costs > 0:
+        _sum_row("Bereitstellungskosten", costs.total_provisioning_costs, subtotal_fill)
+
+    row += 1
+    _sum_row("GESAMTKOSTEN", costs.total_costs, total_fill)
+
+    # Spaltenbreiten
+    col_widths = [30, 12, 10, 10, 14, 14, 14]
     for i, w in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = w
 

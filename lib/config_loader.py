@@ -10,6 +10,11 @@ from pathlib import Path
 from typing import Any, Optional, Set
 from datetime import datetime
 
+try:
+    from .utils import get_cfg_dir
+except (ImportError, ValueError):
+    from utils import get_cfg_dir
+
 
 class ConfigLoader:
     """
@@ -25,8 +30,7 @@ class ConfigLoader:
         """
         if config_path is None:
             # Suche nach cfg/defaults.cfg relativ zum Skript oder im aktuellen Verzeichnis
-            script_dir = Path(__file__).parent.parent
-            config_path = script_dir / "cfg" / "defaults.cfg"
+            config_path = get_cfg_dir() / "defaults.cfg"
             if not config_path.exists():
                 config_path = Path("cfg") / "defaults.cfg"
 

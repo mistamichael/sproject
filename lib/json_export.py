@@ -6,17 +6,16 @@ Generiert konfigurierbaren JSON-Output aus CPM-Ergebnissen.
 Welche Sektionen exportiert werden, steuert cfg/json_export.cfg.
 """
 
-import configparser
 import json
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value, add_workdays
+    from .utils import format_time_value, add_workdays, is_system_task, load_export_config
 except (ImportError, ValueError):
     from models.cpm import CPMResult
-    from utils import format_time_value, add_workdays
+    from utils import format_time_value, add_workdays, is_system_task, load_export_config
 
 
 # ---------------------------------------------------------------------------
@@ -24,7 +23,7 @@ except (ImportError, ValueError):
 # ---------------------------------------------------------------------------
 
 _DEFAULT_SECTION_ORDER = [
-    'summary', 'critical_path', 'tasks', 'gantt_schedule', 'resources', 'settings'
+    'summary', 'critical_path', 'tasks', 'gantt_chart', 'resource_list', 'cost_overview', 'settings'
 ]
 
 
@@ -33,21 +32,11 @@ _DEFAULT_SECTION_ORDER = [
 # ---------------------------------------------------------------------------
 
 def _load_json_config(cfg_dir: Optional[Path] = None) -> List[str]:
-    """
-    Lädt json_export.cfg und gibt die section_order zurück.
-    """
-    if cfg_dir is None:
-        cfg_dir = Path(__file__).parent.parent / "cfg"
-
-    cfg_file = cfg_dir / "json_export.cfg"
-    config = configparser.ConfigParser()
-    if cfg_file.exists():
-        config.read(cfg_file, encoding='utf-8')
-
-    raw_order = config.get('sections', 'section_order', fallback=None)
-    if raw_order:
-        return [s.strip() for s in raw_order.split(',') if s.strip()]
-    return _DEFAULT_SECTION_ORDER
+    """Lädt json_export.cfg und gibt die section_order zurück."""
+    section_order, _ = load_export_config(
+        cfg_dir, 'json_export.cfg', _DEFAULT_SECTION_ORDER, {}
+    )
+    return section_order
 
 
 # ---------------------------------------------------------------------------
@@ -62,8 +51,7 @@ def _build_summary(result: CPMResult, project_name: str) -> Dict[str, Any]:
         'project_duration': base.get('project_duration', ''),
         'time_unit':        result.time_unit,
         'num_tasks':        len([t for t in result.tasks.values()
-                                 if not t.is_break
-                                 and not (isinstance(t.id, str) and t.id.startswith('WE-'))]),
+                                 if not t.is_break and not is_system_task(t.id)]),
         'num_critical':     len([t for t in result.tasks.values() if t.is_critical]),
     }
     if base.get('project_start'):
@@ -82,7 +70,7 @@ def _build_critical_path(result: CPMResult) -> List[Dict[str, Any]]:
         if tid not in result.tasks:
             continue
         task = result.tasks[tid]
-        if task.is_break or (isinstance(tid, str) and tid.startswith('WE-')):
+        if task.is_break or is_system_task(tid):
             continue
         out.append({
             'id':       str(tid),
@@ -177,6 +165,42 @@ def _build_resources(result: CPMResult, project: Optional[object]) -> Optional[D
     return out
 
 
+def _build_costs(result: CPMResult, project: Optional[object]) -> Optional[Dict[str, Any]]:
+    """Kostenrechnung als JSON-Objekt."""
+    try:
+        from cost_calculator import calculate_project_costs
+    except ImportError:
+        try:
+            from .cost_calculator import calculate_project_costs
+        except ImportError:
+            return None
+
+    costs = calculate_project_costs(project, result)
+    if not costs:
+        return None
+
+    entries = []
+    for e in costs.entries:
+        entries.append({
+            'resource_id':         e.resource_id,
+            'resource_name':       e.resource_name,
+            'resource_type':       e.resource_type,
+            'hours_worked':        e.hours_worked,
+            'hourly_rate':         e.hourly_rate,
+            'provisioning_costs':  e.provisioning_costs,
+            'labor_costs':         e.labor_costs,
+            'total_costs':         e.total_costs,
+        })
+
+    return {
+        'entries':                  entries,
+        'total_person_costs':       costs.total_person_costs,
+        'total_machine_costs':      costs.total_machine_costs,
+        'total_provisioning_costs': costs.total_provisioning_costs,
+        'total_costs':              costs.total_costs,
+    }
+
+
 def _build_settings(result: CPMResult) -> Dict[str, Any]:
     return {
         'skip_weekends': result.skip_weekends,
@@ -223,8 +247,9 @@ def export_cpm_to_json(
             'summary':        lambda: _build_summary(result, name),
             'critical_path':  lambda: _build_critical_path(result),
             'tasks':          lambda: _build_tasks(result),
-            'gantt_schedule': lambda: gantt_data,
-            'resources':      lambda: _build_resources(result, project),
+            'gantt_chart':    lambda: gantt_data,
+            'resource_list':  lambda: _build_resources(result, project),
+            'cost_overview':  lambda: _build_costs(result, project),
             'settings':       lambda: _build_settings(result),
         }
 

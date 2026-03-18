@@ -6,12 +6,13 @@ Test script for Pydantic models
 Tests all JSON files in examples/ with the Pydantic models.
 """
 
+import os
 import sys
 from pathlib import Path
 from pydantic import ValidationError
 
 # Add parent to path for lib import
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(os.environ.get("PROJECT", str(Path(__file__).parent.parent)))))
 
 from lib import load_project, PersonProject, CycleProject, LoopProject, SimpleProject
 
@@ -91,7 +92,7 @@ def main():
     """Testet alle JSON-Dateien in examples/"""
 
     # Finde alle JSON-Dateien
-    examples_dir = Path(__file__).parent.parent / "examples"
+    examples_dir = Path(os.environ.get("PV_EXAMPLES", str(Path(__file__).parent.parent / "examples")))
     json_files = sorted(examples_dir.glob("*.json"))
 
     if not json_files:

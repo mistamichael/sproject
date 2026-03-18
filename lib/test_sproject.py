@@ -13,6 +13,7 @@ Tests all major components:
 - Network diagram (generate_network_csv)
 """
 
+import os
 import unittest
 import sys
 import tempfile
@@ -20,8 +21,11 @@ from pathlib import Path
 from datetime import datetime
 
 # Add lib to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'lib'))
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(os.environ.get("PV_LIB", str(Path(__file__).parent.parent / "lib")))))
+sys.path.insert(0, str(Path(os.environ.get("PROJECT", str(Path(__file__).parent.parent)))))
+
+_EXAMPLES_DIR = Path(os.environ.get("PV_EXAMPLES", str(Path(__file__).parent.parent / "examples")))
+_CFG_DIR      = Path(os.environ.get("PV_CFG",      str(Path(__file__).parent.parent / "cfg")))
 
 from lib.models import (
     load_project, save_project,
@@ -36,8 +40,7 @@ class TestProjectLoading(unittest.TestCase):
 
     def test_load_simple_project(self):
         """Test: Einfaches Projekt laden (tankdesign.json)"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
@@ -54,9 +57,7 @@ class TestProjectLoading(unittest.TestCase):
 
     def test_load_person_project(self):
         """Test: Projekt mit Personen laden (software_simple.json)"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        software_file = examples_dir / 'software_simple.json'
-
+        software_file = _EXAMPLES_DIR / 'software_simple.json'
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
 
@@ -72,9 +73,7 @@ class TestProjectLoading(unittest.TestCase):
 
     def test_load_cycle_project(self):
         """Test: Projekt mit InstanceTasks laden (pizzas.json)"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        pizzas_file = examples_dir / 'pizzas.json'
-
+        pizzas_file = _EXAMPLES_DIR / 'pizzas.json'
         if not pizzas_file.exists():
             self.skipTest(f"Datei nicht gefunden: {pizzas_file}")
 
@@ -88,8 +87,7 @@ class TestProjectLoading(unittest.TestCase):
 
     def test_load_loop_project(self):
         """Test: Projekt mit LoopTasks laden (erdaushub.json)"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        erdaushub_file = examples_dir / 'erdaushub.json'
+        erdaushub_file = _EXAMPLES_DIR / 'erdaushub.json'
 
         if not erdaushub_file.exists():
             self.skipTest(f"Datei nicht gefunden: {erdaushub_file}")
@@ -108,8 +106,7 @@ class TestProjectMethods(unittest.TestCase):
 
     def test_get_time_unit(self):
         """Test: Zeiteinheit-Erkennung"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
@@ -121,8 +118,7 @@ class TestProjectMethods(unittest.TestCase):
 
     def test_get_all_task_ids(self):
         """Test: Alle Task-IDs abrufen"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
@@ -139,8 +135,7 @@ class TestCPMCalculation(unittest.TestCase):
 
     def test_cpm_calculation_simple(self):
         """Test: CPM-Berechnung für einfaches Projekt"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
@@ -155,8 +150,7 @@ class TestCPMCalculation(unittest.TestCase):
 
     def test_cpm_critical_path(self):
         """Test: Kritischer Pfad wird korrekt identifiziert"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        software_file = examples_dir / 'software_simple.json'
+        software_file = _EXAMPLES_DIR / 'software_simple.json'
 
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
@@ -172,8 +166,7 @@ class TestCPMCalculation(unittest.TestCase):
 
     def test_cpm_with_start_date(self):
         """Test: CPM mit spezifischem Startdatum"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
@@ -191,8 +184,7 @@ class TestProjectExpansion(unittest.TestCase):
 
     def test_expand_cycles(self):
         """Test: Zyklus-Expansion für Projekte mit InstanceTasks"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        pizzas_file = examples_dir / 'pizzas.json'
+        pizzas_file = _EXAMPLES_DIR / 'pizzas.json'
 
         if not pizzas_file.exists():
             self.skipTest(f"Datei nicht gefunden: {pizzas_file}")
@@ -210,8 +202,7 @@ class TestProjectExpansion(unittest.TestCase):
 
     def test_expand_loops(self):
         """Test: Loop-Expansion für Projekte mit LoopTasks"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        erdaushub_file = examples_dir / 'erdaushub.json'
+        erdaushub_file = _EXAMPLES_DIR / 'erdaushub.json'
 
         if not erdaushub_file.exists():
             self.skipTest(f"Datei nicht gefunden: {erdaushub_file}")
@@ -233,8 +224,7 @@ class TestProjectSaveLoad(unittest.TestCase):
 
     def test_save_and_load_project(self):
         """Test: Projekt speichern und wieder laden"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
@@ -268,8 +258,7 @@ class TestExcelExport(unittest.TestCase):
 
         from lib.sproject import export_cpm_to_xlsx
 
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        software_file = examples_dir / 'software_simple.json'
+        software_file = _EXAMPLES_DIR / 'software_simple.json'
 
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
@@ -281,7 +270,7 @@ class TestExcelExport(unittest.TestCase):
             tmp_path = Path(tmp.name)
 
         try:
-            cfg_dir = Path(__file__).parent.parent / 'cfg'
+            cfg_dir = _CFG_DIR
             export_cpm_to_xlsx(result, tmp_path, project, cfg_dir)
 
             self.assertTrue(tmp_path.exists())
@@ -390,15 +379,14 @@ class TestTxtExport(unittest.TestCase):
         """Test: TXT-Export mit echtem Beispielprojekt"""
         from lib.txt_export import export_cpm_to_txt
 
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        tankdesign_file = examples_dir / 'tankdesign.json'
+        tankdesign_file = _EXAMPLES_DIR / 'tankdesign.json'
 
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
 
         project = load_project(tankdesign_file)
         result = project.calculate_cpm()
-        cfg_dir = Path(__file__).parent.parent / 'cfg'
+        cfg_dir = _CFG_DIR
 
         with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp:
             tmp_path = Path(tmp.name)
@@ -494,8 +482,7 @@ class TestPersonProject(unittest.TestCase):
 
     def test_person_project_persons(self):
         """Test: Personen in Projekt mit persons-Feld"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        software_file = examples_dir / 'software_simple.json'
+        software_file = _EXAMPLES_DIR / 'software_simple.json'
 
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
@@ -519,8 +506,7 @@ class TestPersonProject(unittest.TestCase):
 
     def test_person_project_resources(self):
         """Test: Ressourcen in Projekt mit resources-Feld"""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        software_file = examples_dir / 'software_simple.json'
+        software_file = _EXAMPLES_DIR / 'software_simple.json'
 
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
@@ -737,8 +723,7 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
 
     def test_software_simple_regression(self):
         """Regression: software_simple.json darf keine Zyklen haben."""
-        examples_dir = Path(__file__).parent.parent / 'examples'
-        software_file = examples_dir / 'software_simple.json'
+        software_file = _EXAMPLES_DIR / 'software_simple.json'
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
 

@@ -19,6 +19,7 @@ from excel_reports import (
     create_critical_path_sheet,
     create_tasklist_sheet,
     create_netplan_table_sheet,
+    create_cost_sheet,
 )
 from mermaid_export import export_cpm_to_svg
 from markdown_export import export_cpm_to_markdown
@@ -212,7 +213,7 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
     Exportiert CPM-Ergebnisse in Excel-Format.
 
     Die erzeugten Tabs werden über [sections] / section_order in cfg/excel_export.cfg gesteuert.
-    Verfügbare Sektionen: summary, critical_path, tasklist, gantt_chart, resource_list
+    Verfügbare Sektionen: summary, critical_path, netplan, tasklist, gantt_chart, resource_list, cost_overview
 
     Args:
         result:      CPM-Berechnungsergebnis
@@ -252,9 +253,13 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
             create_tasklist_sheet(wb, result,
                                   tab_name=tab_names.get('tasklist', 'Alle Tasks'))
 
-        elif section == 'netplan_table':
+        elif section == 'netplan':
             create_netplan_table_sheet(wb, result,
-                                       tab_name=tab_names.get('netplan_table', 'Netzplan'))
+                                       tab_name=tab_names.get('netplan', 'Netzplan'))
+
+        elif section == 'cost_overview' and project:
+            create_cost_sheet(wb, project, result,
+                              tab_name=tab_names.get('cost_overview', 'Kosten'))
 
         elif section in ('gantt_chart', 'resource_list'):
             from models.reports import GanttReport, ResourceListReport
@@ -432,7 +437,7 @@ Beispiele:
                 output_dir = args.output_dir
             else:
                 # Standard: results Ordner
-                output_dir = Path("results")
+                output_dir = Path(os.environ.get("PV_RESULTS", "results"))
                 output_dir.mkdir(exist_ok=True)
 
             # Exportiere in gewünschte Formate

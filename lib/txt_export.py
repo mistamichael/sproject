@@ -6,7 +6,6 @@ Generiert ASCII-Text-Reports aus CPM-Ergebnissen.
 Sektionsreihenfolge und Überschriften werden aus cfg/txt_export.cfg gelesen.
 """
 
-import configparser
 import csv
 import io
 from pathlib import Path
@@ -15,11 +14,11 @@ from datetime import datetime
 
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value, format_time_value_auto, add_workdays
+    from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config
     from .network_diagram import generate_network_csv
 except (ImportError, ValueError):
     from models.cpm import CPMResult  # type: ignore[no-redef]
-    from utils import format_time_value, format_time_value_auto, add_workdays  # type: ignore[no-redef]
+    from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config  # type: ignore[no-redef]
     from network_diagram import generate_network_csv  # type: ignore[no-redef]
 
 
@@ -30,14 +29,15 @@ except (ImportError, ValueError):
 _SEP_WIDE  = "=" * 70
 _SEP_THIN  = "-" * 70
 
-_DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan_table', 'tasklist', 'resource_list']
+_DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan', 'tasklist', 'resource_list', 'cost_overview']
 
 _DEFAULT_HEADINGS = {
     'summary':       'PROJEKTZUSAMMENFASSUNG',
     'critical_path': 'KRITISCHER PFAD',
-    'netplan_table': 'NETZPLAN TABELLE',
+    'netplan': 'NETZPLAN TABELLE',
     'tasklist':      'ALLE TASKS',
     'resource_list': 'VERANTWORTLICHE',
+    'cost_overview': 'KOSTENÜBERSICHT',
 }
 
 
@@ -52,26 +52,11 @@ def _load_txt_config(cfg_dir: Optional[Path] = None) -> tuple:
     Returns:
         (section_order, headings)
     """
-    if cfg_dir is None:
-        cfg_dir = Path(__file__).parent.parent / "cfg"
-
-    cfg_file = cfg_dir / "txt_export.cfg"
-    config = configparser.ConfigParser()
-    if cfg_file.exists():
-        config.read(cfg_file, encoding='utf-8')
-
-    raw_order = config.get('sections', 'section_order', fallback=None)
-    section_order = (
-        [s.strip() for s in raw_order.split(',') if s.strip()]
-        if raw_order else _DEFAULT_SECTION_ORDER
+    section_order, headings = load_export_config(
+        cfg_dir, 'txt_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS
     )
-
-    headings = dict(_DEFAULT_HEADINGS)
-    if config.has_section('de'):
-        for key, val in config.items('de'):
-            if val:
-                headings[key] = val.upper()
-
+    # [de]-Überschriften groß schreiben wie die Defaults
+    headings = {k: v.upper() for k, v in headings.items()}
     return section_order, headings
 
 
@@ -94,7 +79,7 @@ def _generate_summary(result: CPMResult, project_name: str, heading: str) -> Lis
         lines.append(f"Startdatum:         {result.project_start.strftime('%Y-%m-%d')}")
         lines.append(f"Enddatum:           {end_date.strftime('%Y-%m-%d')}")
     non_break = [t for t in result.tasks.values()
-                 if not t.is_break and not (isinstance(t.id, str) and t.id.startswith('WE-'))]
+                 if not t.is_break and not is_system_task(t.id)]
     lines.append(f"Anzahl Tasks:       {len(non_break)}")
     lines.append(f"Kritische Tasks:    {len([t for t in non_break if t.is_critical])}")
     if result.calculation_date:
@@ -108,7 +93,7 @@ def _generate_critical_path(result: CPMResult, heading: str) -> List[str]:
     if result.critical_path:
         cp_tasks = [result.tasks[tid] for tid in result.critical_path
                     if tid in result.tasks
-                    and not (isinstance(tid, str) and tid.startswith('WE-'))
+                    and not is_system_task(tid)
                     and not result.tasks[tid].is_break]
         if cp_tasks:
             for task in cp_tasks:
@@ -122,7 +107,7 @@ def _generate_critical_path(result: CPMResult, heading: str) -> List[str]:
     return lines
 
 
-def _generate_netplan_table(result: CPMResult, heading: str) -> List[str]:
+def _generate_netplan(result: CPMResult, heading: str) -> List[str]:
     """
     Tabellarische Netzplandarstellung via generate_network_csv.
     Enthält zusätzlich die Nachfolger-Spalte gegenüber der tasklist.
@@ -191,7 +176,7 @@ def _generate_tasklist(result: CPMResult, heading: str) -> List[str]:
 
     task_ids = sorted(
         [tid for tid in result.tasks
-         if not (isinstance(tid, str) and tid.startswith('WE-'))
+         if not is_system_task(tid)
          and not result.tasks[tid].is_break],
         key=lambda x: result.tasks[x].faz
     )
@@ -212,6 +197,77 @@ def _generate_tasklist(result: CPMResult, heading: str) -> List[str]:
         )
 
     lines.append(_SEP_THIN)
+    lines.append("")
+    return lines
+
+
+def _generate_cost_overview(result: CPMResult, heading: str,
+                            project: Optional[Any] = None) -> List[str]:
+    """Kostenübersicht auf Basis von Personen-/Ressourcen-Stundensätzen."""
+    lines = _section_header(heading)
+
+    try:
+        from cost_calculator import calculate_project_costs
+    except ImportError:
+        try:
+            from .cost_calculator import calculate_project_costs
+        except ImportError:
+            lines.append("  (Kostenberechnung nicht verfügbar)")
+            lines.append("")
+            return lines
+
+    costs = calculate_project_costs(project, result)
+    if not costs:
+        lines.append("  (keine Kostendaten – Stundensätze fehlen)")
+        lines.append("")
+        return lines
+
+    col_name  = 28
+    col_h     =  8
+    col_rate  =  9
+    col_prov  = 12
+    col_labor = 13
+    col_total = 13
+
+    header = (
+        f"  {'Ressource':<{col_name}} {'Stunden':>{col_h}} {'€/h':>{col_rate}} "
+        f"{'Bereitst.€':>{col_prov}} {'Lohnkosten€':>{col_labor}} {'Gesamt €':>{col_total}}"
+    )
+    lines.append(header)
+    lines.append("  " + _SEP_THIN)
+
+    for e in costs.entries:
+        lines.append(
+            f"  {e.resource_name:<{col_name}} "
+            f"{e.hours_worked:>{col_h}.1f} "
+            f"{e.hourly_rate:>{col_rate}.2f} "
+            f"{e.provisioning_costs:>{col_prov}.2f} "
+            f"{e.labor_costs:>{col_labor}.2f} "
+            f"{e.total_costs:>{col_total}.2f}"
+        )
+
+    lines.append("  " + _SEP_THIN)
+    pad = col_name + col_h + col_rate + 4
+    if costs.total_person_costs > 0:
+        lines.append(
+            f"  {'Personalkosten:':<{pad}} "
+            f"{'':>{col_prov}} {'':>{col_labor}} {costs.total_person_costs:>{col_total}.2f}"
+        )
+    if costs.total_machine_costs > 0:
+        lines.append(
+            f"  {'Maschinenkosten (Lohn):':<{pad}} "
+            f"{'':>{col_prov}} {costs.total_machine_costs:>{col_labor}.2f} {'':>{col_total}}"
+        )
+    if costs.total_provisioning_costs > 0:
+        lines.append(
+            f"  {'Bereitstellungskosten:':<{pad}} "
+            f"{costs.total_provisioning_costs:>{col_prov}.2f} {'':>{col_labor}} {'':>{col_total}}"
+        )
+    lines.append("  " + _SEP_THIN)
+    lines.append(
+        f"  {'GESAMTKOSTEN:':<{pad}} "
+        f"{'':>{col_prov}} {'':>{col_labor}} {costs.total_costs:>{col_total}.2f} €"
+    )
     lines.append("")
     return lines
 
@@ -317,9 +373,10 @@ def export_cpm_to_txt(
         generators = {
             'summary':       lambda: _generate_summary(result, name, headings['summary']),
             'critical_path': lambda: _generate_critical_path(result, headings['critical_path']),
-            'netplan_table': lambda: _generate_netplan_table(result, headings['netplan_table']),
+            'netplan': lambda: _generate_netplan(result, headings['netplan']),
             'tasklist':      lambda: _generate_tasklist(result, headings['tasklist']),
             'resource_list': lambda: _generate_resource_list(result, headings['resource_list'], project),
+            'cost_overview': lambda: _generate_cost_overview(result, headings['cost_overview'], project),
         }
 
         all_lines: List[str] = []

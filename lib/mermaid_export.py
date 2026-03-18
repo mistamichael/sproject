@@ -19,8 +19,10 @@ except ImportError:
 # Import models - try relative import first, then absolute
 try:
     from .models.cpm import CPMResult
+    from .utils import is_system_task, convert_cpm_time_to_datetime
 except (ImportError, ValueError):
     from models.cpm import CPMResult
+    from utils import is_system_task, convert_cpm_time_to_datetime
 
 
 def encode_kroki_url(diagram: str) -> str:
@@ -61,11 +63,11 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
     if time_unit == 'minutes':
         # Für Minuten: zeige Datum + Uhrzeit
         lines.append("    dateFormat  YYYY-MM-DD HH:mm")
-        lines.append("    axisFormat  %H:%M")
+        lines.append("    axisFormat  %d.%m")
     elif time_unit == 'hours':
         # Für Stunden: zeige Datum + Uhrzeit
         lines.append("    dateFormat  YYYY-MM-DD HH:mm")
-        lines.append("    axisFormat  %H:%M")
+        lines.append("    axisFormat  %d.%m")
     else:
         # Für Tage: zeige nur Datum
         lines.append("    dateFormat  YYYY-MM-DD")
@@ -127,7 +129,7 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
     # tasks ist ein Dictionary: {task_id: CPMTaskResult}
     for task_id, task in result.tasks.items():
         # Skip Weekend-Blocker Tasks
-        if isinstance(task_id, str) and task_id.startswith('WE-'):
+        if is_system_task(task_id):
             continue
 
         # Task-Name
@@ -142,53 +144,11 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
             task_status = ""
 
         # Berechne Start- und Enddatum für den Task basierend auf Zeit-Einheit
-        if time_unit == 'minutes':
-            # FAZ/FEZ sind in Tagen, aber die Auflösung ist Minuten
-            # Berechne die Minuten-Offset innerhalb des Tages
-            total_minutes_start = task.faz * 480  # 1 Tag = 480 Minuten (8h * 60)
-            total_minutes_end = task.fez * 480
-
-            # Extrahiere Tage und Minuten
-            days_start = int(total_minutes_start // 480)
-            minutes_start = int(total_minutes_start % 480)
-            days_end = int(total_minutes_end // 480)
-            minutes_end = int(total_minutes_end % 480)
-
-            # Berechne DateTime
-            task_start = start_date + timedelta(days=days_start, minutes=minutes_start)
-            task_end = start_date + timedelta(days=days_end, minutes=minutes_end)
-
-            # Formatiere mit Uhrzeit
-            start_str = task_start.strftime('%Y-%m-%d %H:%M')
-            end_str = task_end.strftime('%Y-%m-%d %H:%M')
-
-        elif time_unit == 'hours':
-            # FAZ/FEZ sind in Tagen, aber die Auflösung ist Stunden
-            # 1 Tag = 8 Stunden
-            total_hours_start = task.faz * 8
-            total_hours_end = task.fez * 8
-
-            # Extrahiere Tage und Stunden
-            days_start = int(total_hours_start // 8)
-            hours_start = int(total_hours_start % 8)
-            days_end = int(total_hours_end // 8)
-            hours_end = int(total_hours_end % 8)
-
-            # Berechne DateTime
-            task_start = start_date + timedelta(days=days_start, hours=hours_start)
-            task_end = start_date + timedelta(days=days_end, hours=hours_end)
-
-            # Formatiere mit Uhrzeit
-            start_str = task_start.strftime('%Y-%m-%d %H:%M')
-            end_str = task_end.strftime('%Y-%m-%d %H:%M')
-        else:
-            # Für Tage: verwende nur Datum
-            task_start = start_date + timedelta(days=task.faz)
-            task_end = start_date + timedelta(days=task.fez)
-
-            # Formatiere Datum
-            start_str = task_start.strftime('%Y-%m-%d')
-            end_str = task_end.strftime('%Y-%m-%d')
+        task_start = convert_cpm_time_to_datetime(task.faz, start_date, time_unit)
+        task_end   = convert_cpm_time_to_datetime(task.fez, start_date, time_unit)
+        fmt = '%Y-%m-%d %H:%M' if time_unit in ('minutes', 'hours') else '%Y-%m-%d'
+        start_str = task_start.strftime(fmt)
+        end_str   = task_end.strftime(fmt)
 
         # Mermaid-Syntax: task_id, task_status, start, duration/end
         if task_status:

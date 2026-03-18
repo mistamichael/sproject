@@ -9,16 +9,22 @@ Sektionsreihenfolge und Überschriften werden aus cfg/markdown_export.cfg gelese
 import configparser
 from pathlib import Path
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Import models and utilities
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value
+    from .utils import (format_time_value, interpolate_color,
+                        is_system_task, format_task_field,
+                        convert_cpm_time_to_datetime, load_export_config,
+                        get_cfg_dir)
     from .mermaid_export import generate_mermaid_gantt
 except (ImportError, ValueError):
     from models.cpm import CPMResult
-    from utils import format_time_value
+    from utils import (format_time_value, interpolate_color,
+                       is_system_task, format_task_field,
+                       convert_cpm_time_to_datetime, load_export_config,
+                       get_cfg_dir)
     from mermaid_export import generate_mermaid_gantt
 
 
@@ -26,7 +32,7 @@ except (ImportError, ValueError):
 # Config loading
 # ---------------------------------------------------------------------------
 
-_DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan', 'netplan_ascii', 'tasklist', 'gantt_chart']
+_DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan', 'netplan_ascii', 'tasklist', 'gantt_chart', 'cost_overview']
 
 _DEFAULT_HEADINGS = {
     'summary':       'Projektzusammenfassung',
@@ -36,6 +42,7 @@ _DEFAULT_HEADINGS = {
     'tasklist':      'Alle Tasks',
     'gantt_chart':   'Gantt Chart (mit Wochenenden)',
     'resource_list': 'Resource List',
+    'cost_overview': 'Kostenübersicht',
 }
 
 _DEFAULT_MERMAID = {
@@ -56,6 +63,19 @@ _DEFAULT_NODE_ROWS = [
 ]
 
 
+def _load_auto_color_config(cfg_dir: Optional[Path] = None) -> tuple:
+    """Liest color_start/color_end aus defaults.cfg [ResourceAutoColor]."""
+    if cfg_dir is None:
+        cfg_dir = get_cfg_dir()
+    cfg_file = cfg_dir / "defaults.cfg"
+    config = configparser.ConfigParser()
+    if cfg_file.exists():
+        config.read(cfg_file, encoding='utf-8')
+    color_start = config.get('ResourceAutoColor', 'color_start', fallback='4472C4').strip()
+    color_end   = config.get('ResourceAutoColor', 'color_end',   fallback='8B7AB8').strip()
+    return color_start, color_end
+
+
 def _load_md_config(cfg_dir: Optional[Path] = None) -> tuple:
     """
     Lädt markdown_export.cfg.
@@ -63,27 +83,17 @@ def _load_md_config(cfg_dir: Optional[Path] = None) -> tuple:
     Returns:
         (section_order, headings, mermaid_cfg) mit Fallback auf Defaults.
     """
-    if cfg_dir is None:
-        cfg_dir = Path(__file__).parent.parent / "cfg"
+    section_order, headings = load_export_config(
+        cfg_dir, 'markdown_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS
+    )
 
+    # Für die Mermaid-spezifischen Einstellungen brauchen wir den config direkt
+    if cfg_dir is None:
+        cfg_dir = get_cfg_dir()
     cfg_file = cfg_dir / "markdown_export.cfg"
     config = configparser.ConfigParser()
     if cfg_file.exists():
         config.read(cfg_file, encoding='utf-8')
-
-    # Section order
-    raw_order = config.get('sections', 'section_order', fallback=None)
-    section_order = (
-        [s.strip() for s in raw_order.split(',') if s.strip()]
-        if raw_order else _DEFAULT_SECTION_ORDER
-    )
-
-    # Headings (alle bekannten Schlüssel + alle in [de] definierten)
-    headings = dict(_DEFAULT_HEADINGS)
-    if config.has_section('de'):
-        for key, val in config.items('de'):
-            if val:
-                headings[key] = val
 
     # Mermaid netplan config
     mermaid_cfg = dict(_DEFAULT_MERMAID)
@@ -194,10 +204,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
 
     lines = [f"### {heading}", ""]
 
-    def _is_blocker(tid) -> bool:
-        return isinstance(tid, str) and tid.startswith('WE-')
-
-    task_ids = [tid for tid in result.tasks if not _is_blocker(tid)]
+    task_ids = [tid for tid in result.tasks if not is_system_task(tid)]
     node_rows = mermaid_cfg.get('node_rows', _DEFAULT_NODE_ROWS)
     tu = result.time_unit
 
@@ -210,7 +217,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
         if tid in levels:
             return levels[tid]
         task = result.tasks[tid]
-        preds = [p for p in task.predecessors if p in result.tasks and not _is_blocker(p)]
+        preds = [p for p in task.predecessors if p in result.tasks and not is_system_task(p)]
         levels[tid] = 0 if not preds else max(get_level(p) for p in preds) + 1
         return levels[tid]
 
@@ -226,28 +233,6 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
     # ----------------------------------------------------------------
     # Box-Renderer
     # ----------------------------------------------------------------
-    def _field_str(field: str, task) -> str:
-        f = field.lower()
-        if f == 'id':
-            return f"[{task.id}]"
-        elif f == 'name':
-            return task.name
-        elif f in ('d', 'duration', 'dauer'):
-            return f"D:{format_time_value(task.duration, tu)}"
-        elif f == 'faz':
-            return f"FAZ:{format_time_value(task.faz, tu)}"
-        elif f == 'fez':
-            return f"FEZ:{format_time_value(task.fez, tu)}"
-        elif f == 'saz':
-            return f"SAZ:{format_time_value(task.saz, tu)}"
-        elif f == 'sez':
-            return f"SEZ:{format_time_value(task.sez, tu)}"
-        elif f == 'gp':
-            return f"GP:{format_time_value(task.puffer, tu)}"
-        elif f == 'fp':
-            return f"FP:{format_time_value(task.free_puffer, tu)}"
-        return ''
-
     def render_box(tid, task) -> List[str]:
         crit = " [*]" if task.is_critical else ""
         header = f" [{tid}] {task.name}{crit}"
@@ -256,7 +241,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
         _header_fields = {'id', 'name'}
         content_lines = []
         for row in node_rows:
-            parts = [_field_str(f, task) for f in row if f.lower() not in _header_fields]
+            parts = [format_task_field(f, task, tu) for f in row if f.lower() not in _header_fields]
             parts = [p for p in parts if p]
             if parts:
                 content_lines.append("  " + "  ".join(parts))
@@ -284,7 +269,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
             task = result.tasks[tid]
             ascii_lines.extend(render_box(tid, task))
 
-            succs = [s for s in task.successors if s in result.tasks and not _is_blocker(s)]
+            succs = [s for s in task.successors if s in result.tasks and not is_system_task(s)]
             if succs:
                 ascii_lines.append("  |")
                 for succ_id in succs:
@@ -319,34 +304,11 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
 
     node_rows = mermaid_cfg.get('node_rows', _DEFAULT_NODE_ROWS)
 
-    def _field_value(field: str, task, task_id) -> str:
-        """Gibt den formatierten Wert für ein Knoten-Feld zurück."""
-        f = field.lower()
-        tu = result.time_unit
-        if f == 'id':
-            return f"[{task_id}]"
-        elif f == 'name':
-            return task.name
-        elif f in ('d', 'duration', 'dauer'):
-            return f"D:{format_time_value(task.duration, tu)}"
-        elif f == 'faz':
-            return f"FAZ:{format_time_value(task.faz, tu)}"
-        elif f == 'fez':
-            return f"FEZ:{format_time_value(task.fez, tu)}"
-        elif f == 'saz':
-            return f"SAZ:{format_time_value(task.saz, tu)}"
-        elif f == 'sez':
-            return f"SEZ:{format_time_value(task.sez, tu)}"
-        elif f == 'gp':
-            return f"GP:{format_time_value(task.puffer, tu)}"
-        elif f == 'fp':
-            return f"FP:{format_time_value(task.free_puffer, tu)}"
-        return ''
-
     def _build_label(task, task_id) -> str:
+        tu = result.time_unit
         row_strings = []
         for row in node_rows:
-            parts = [_field_value(f, task, task_id) for f in row]
+            parts = [format_task_field(f, task, tu, task_id) for f in row]
             parts = [p for p in parts if p]
             if parts:
                 row_strings.append(' | '.join(parts))
@@ -374,11 +336,8 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
     #   AA: A ==> B          (dick, Pfeilspitze)
     #   EE: A --o B          (solid, Kreis)
     #   AE: A -.-> B         (gestrichelt, Pfeilspitze)
-    def _is_blocker(tid) -> bool:
-        return isinstance(tid, str) and tid.startswith('WE-')
-
     for task_id, task in result.tasks.items():
-        if _is_blocker(task_id):
+        if is_system_task(task_id):
             continue
 
         edges = [
@@ -389,7 +348,7 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
         ]
         for succ_list, arrow in edges:
             for succ_id in succ_list:
-                if _is_blocker(succ_id) or succ_id not in result.tasks:
+                if is_system_task(succ_id) or succ_id not in result.tasks:
                     continue
                 lines.append(f'    N{task_id} {arrow} N{succ_id}')
 
@@ -452,7 +411,7 @@ def _generate_resource_gantt_chart(
 
     if time_unit in ('minutes', 'hours'):
         lines.append("    dateFormat  YYYY-MM-DD HH:mm")
-        lines.append("    axisFormat  %H:%M")
+        lines.append("    axisFormat  %d.%m")
     else:
         lines.append("    dateFormat  YYYY-MM-DD")
         lines.append("    axisFormat  %d.%m")
@@ -485,34 +444,11 @@ def _generate_resource_gantt_chart(
         short_name = task_name if len(task_name) <= 25 else task_name[:22] + "..."
 
         if start_date:
-            if time_unit == 'minutes':
-                total_minutes_start = faz * 480
-                total_minutes_end   = fez * 480
-                days_start    = int(total_minutes_start // 480)
-                minutes_start = int(total_minutes_start % 480)
-                days_end      = int(total_minutes_end   // 480)
-                minutes_end   = int(total_minutes_end   % 480)
-                task_start = start_date + timedelta(days=days_start, minutes=minutes_start)
-                task_end   = start_date + timedelta(days=days_end,   minutes=minutes_end)
-                start_str = task_start.strftime('%Y-%m-%d %H:%M')
-                end_str   = task_end.strftime('%Y-%m-%d %H:%M')
-            elif time_unit == 'hours':
-                total_hours_start = faz * 8
-                total_hours_end   = fez * 8
-                days_start  = int(total_hours_start // 8)
-                hours_start = int(total_hours_start % 8)
-                days_end    = int(total_hours_end   // 8)
-                hours_end   = int(total_hours_end   % 8)
-                task_start = start_date + timedelta(days=days_start, hours=hours_start)
-                task_end   = start_date + timedelta(days=days_end,   hours=hours_end)
-                start_str = task_start.strftime('%Y-%m-%d %H:%M')
-                end_str   = task_end.strftime('%Y-%m-%d %H:%M')
-            else:
-                task_start = start_date + timedelta(days=faz)
-                task_end   = start_date + timedelta(days=fez)
-                start_str  = task_start.strftime("%Y-%m-%d")
-                end_str    = task_end.strftime("%Y-%m-%d")
-
+            task_start = convert_cpm_time_to_datetime(faz, start_date, time_unit)
+            task_end   = convert_cpm_time_to_datetime(fez, start_date, time_unit)
+            fmt = '%Y-%m-%d %H:%M' if time_unit in ('minutes', 'hours') else '%Y-%m-%d'
+            start_str = task_start.strftime(fmt)
+            end_str   = task_end.strftime(fmt)
             lines.append(f"    {short_name:<27} :t{idx}, {start_str}, {end_str}")
         else:
             duration = int(fez - faz)
@@ -521,6 +457,55 @@ def _generate_resource_gantt_chart(
             else:
                 lines.append(f"    {short_name:<27} :after t{idx - 1}, {duration}d")
 
+    return "\n".join(lines)
+
+
+def _generate_cost_overview_section(
+    result: CPMResult,
+    heading: str,
+    project: Optional[object] = None
+) -> str:
+    """Kostenübersicht als Markdown-Tabelle."""
+    lines = [f"### {heading}", ""]
+
+    try:
+        from cost_calculator import calculate_project_costs
+    except ImportError:
+        try:
+            from .cost_calculator import calculate_project_costs
+        except ImportError:
+            lines.append("*Kostenberechnung nicht verfügbar.*")
+            lines.append("")
+            return "\n".join(lines)
+
+    costs = calculate_project_costs(project, result)
+    if not costs:
+        lines.append("*Keine Kostendaten verfügbar – Stundensätze fehlen.*")
+        lines.append("")
+        return "\n".join(lines)
+
+    lines.append("| Ressource | Typ | Stunden | €/h | Bereitst. € | Lohnkosten € | Gesamt € |")
+    lines.append("|---|---|---|---|---|---|---|")
+
+    for e in costs.entries:
+        prov = f"{e.provisioning_costs:.2f}" if e.provisioning_costs else "—"
+        lines.append(
+            f"| {e.resource_name} | {e.resource_type} "
+            f"| {e.hours_worked:.1f} | {e.hourly_rate:.2f} "
+            f"| {prov} | {e.labor_costs:.2f} | **{e.total_costs:.2f}** |"
+        )
+
+    lines.append("")
+    lines.append("**Zusammenfassung:**")
+    lines.append("")
+    if costs.total_person_costs > 0:
+        lines.append(f"- Personalkosten: **{costs.total_person_costs:.2f} €**")
+    if costs.total_machine_costs > 0:
+        lines.append(f"- Maschinenkosten (Lohn): **{costs.total_machine_costs:.2f} €**")
+    if costs.total_provisioning_costs > 0:
+        lines.append(f"- Bereitstellungskosten: **{costs.total_provisioning_costs:.2f} €**")
+    lines.append(f"- **Gesamtkosten: {costs.total_costs:.2f} €**")
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -554,30 +539,43 @@ def _generate_resource_list_section(
 
     resource_names: Dict[str, str] = {}
     resource_colors: Dict[str, str] = {}
+    resource_person_names: Dict[str, str] = {}
     if project and hasattr(project, 'resources'):
         for res in project.resources:
             resource_names[res.id] = getattr(res, 'name', res.id)
             if hasattr(res, 'color') and res.color:
                 resource_colors[res.id] = res.color
+            if hasattr(res, 'person_id') and res.person_id and hasattr(project, 'persons'):
+                for person in project.persons:
+                    if person.id == res.person_id:
+                        resource_person_names[res.id] = person.name
+                        break
+
+    # Auto-Farbzuweisung für Ressourcen ohne explizite Farbe
+    color_start, color_end = _load_auto_color_config()
+    sorted_res_ids = sorted(resource_usage.keys())
+    uncolored = [rid for rid in sorted_res_ids if rid not in resource_colors]
+    n = len(uncolored)
+    for i, rid in enumerate(uncolored):
+        position = i / max(n - 1, 1) if n > 1 else 0.0
+        resource_colors[rid] = interpolate_color(color_start, color_end, position)
 
     lines.append("#### Ressourcenauslastung (Textform)")
     lines.append("")
-    lines.append("| Farbe | Ressource | Anzahl Tasks | Tasks |")
-    lines.append("|---|---|---|---|")
+    lines.append("| Farbe | Name | Ressource | Anzahl Tasks | Tasks |")
+    lines.append("|---|---|---|---|---|")
 
-    for res_id in sorted(resource_usage.keys()):
+    for res_id in sorted_res_ids:
         task_ids   = resource_usage[res_id]
         task_list  = ", ".join(task_ids[:10])
         if len(task_ids) > 10:
             task_list += f" ... (+{len(task_ids) - 10} weitere)"
         resource_name = resource_names.get(res_id, res_id)
-        color = resource_colors.get(res_id)
-        if color:
-            color_hex    = color if len(color) >= 6 else f"00{color}"
-            color_marker = f'<span style="background-color:#{color_hex};padding:2px 6px;color:#fff;border-radius:3px;">■</span>'
-        else:
-            color_marker = '—'
-        lines.append(f"| {color_marker} | {resource_name} ({res_id}) | {len(task_ids)} | {task_list} |")
+        person_name = resource_person_names.get(res_id, "")
+        color = resource_colors.get(res_id, "")
+        color_hex    = color if len(color) >= 6 else f"00{color}"
+        color_marker = f'<span style="background-color:#{color_hex};padding:2px 6px;color:#fff;border-radius:3px;">■</span>'
+        lines.append(f"| {color_marker} | {person_name} | {resource_name} ({res_id}) | {len(task_ids)} | {task_list} |")
 
     lines.append("")
     lines.append("#### Ressourcenauslastung (Gantt-Diagramm)")
@@ -600,11 +598,62 @@ def _generate_resource_list_section(
     if project and project.persons:
         lines.append("#### Personen")
         lines.append("")
-        lines.append("| Person | Kosten/Stunde | Verfügbarkeit |")
+        lines.append("| Person | Kosten/Stunde | Verfügbarkeit (Abwesenheiten im Projektzeitraum) |")
         lines.append("|---|---|---|")
+
+        # Compute project window for absence filtering
+        proj_start = getattr(result, 'project_start', None)
+        proj_end = None
+        if proj_start and result.tasks:
+            # fez values are always in working days internally
+            max_fez_days = max(t.fez for t in result.tasks.values())
+            # 1.5x buffer for weekends/holidays + 14-day safety margin
+            calendar_days = max_fez_days * 1.5 + 14
+            proj_end = proj_start + timedelta(days=calendar_days)
+
         for person in project.persons:
-            cost  = f"{person.cost_per_hour}€/h" if hasattr(person, 'cost_per_hour') and person.cost_per_hour else "n/a"
-            avail = f"{person.available_hours}h"  if hasattr(person, 'available_hours') and person.available_hours else "n/a"
+            # Stundensatz
+            hourly_rate = getattr(person, 'hourly_rate', None)
+            cost = f"{hourly_rate:.2f} €/h" if hourly_rate is not None else "n/a"
+
+            # Abwesenheiten: Urlaub der Person + globale Feiertage im Projektzeitraum
+            absences: List[str] = []
+
+            vacation_entries = getattr(person, 'vacation', None) or []
+            for vac in vacation_entries:
+                try:
+                    if getattr(vac, 'date', None):
+                        d = datetime.strptime(vac.date, '%Y-%m-%d')
+                        if proj_start is None or (d >= proj_start and (proj_end is None or d <= proj_end)):
+                            label = vac.date
+                            if vac.description:
+                                label += f" ({vac.description})"
+                            absences.append(label)
+                    elif getattr(vac, 'from_', None) and getattr(vac, 'to', None):
+                        d_from = datetime.strptime(vac.from_, '%Y-%m-%d')
+                        d_to   = datetime.strptime(vac.to,    '%Y-%m-%d')
+                        in_range = proj_start is None or (
+                            d_to >= proj_start and (proj_end is None or d_from <= proj_end)
+                        )
+                        if in_range:
+                            label = f"{vac.from_} – {vac.to}"
+                            if vac.description:
+                                label += f" ({vac.description})"
+                            absences.append(label)
+                except ValueError:
+                    pass
+
+            holidays = getattr(result, 'holidays', None)
+            if holidays and proj_start and proj_end:
+                for h_date in sorted(holidays):
+                    try:
+                        d = datetime.strptime(h_date, '%Y-%m-%d')
+                        if proj_start <= d <= proj_end:
+                            absences.append(f"{h_date} (Feiertag)")
+                    except ValueError:
+                        pass
+
+            avail = ", ".join(absences) if absences else "keine"
             lines.append(f"| {person.name} | {cost} | {avail} |")
         lines.append("")
 
@@ -667,6 +716,7 @@ def export_cpm_to_markdown(
                 'tasklist':      lambda: _generate_tasklist_section(result, headings['tasklist']),
                 'gantt_chart':   lambda: _generate_gantt_chart_section(result, project_name, headings['gantt_chart']),
                 'resource_list': lambda: _generate_resource_list_section(result, headings['resource_list'], project),
+                'cost_overview': lambda: _generate_cost_overview_section(result, headings['cost_overview'], project),
             }
 
         generators = make_sections(result, project_name, project, headings, mermaid_cfg)
