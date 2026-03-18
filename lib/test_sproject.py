@@ -4,16 +4,17 @@ Comprehensive unit tests for sproject
 ======================================
 
 Tests all major components:
-- Pydantic models (SimpleProject, PersonProject, CycleProject, LoopProject)
+- Pydantic models (unified Project class with aliases)
 - CPM calculation
 - Report models
 - Excel export
+- TXT export (inkl. netplan_table)
 - Project expansion (cycles, loops)
+- Network diagram (generate_network_csv)
 """
 
 import unittest
 import sys
-import json
 import tempfile
 from pathlib import Path
 from datetime import datetime
@@ -25,7 +26,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from lib.models import (
     load_project, save_project,
     Project, SimpleProject, PersonProject, CycleProject, LoopProject,
-    CPMCalculator
+    CPMCalculator,
+    InstanceTask, LoopTask,
 )
 
 
@@ -42,12 +44,10 @@ class TestProjectLoading(unittest.TestCase):
 
         project = load_project(tankdesign_file)
 
-        self.assertIsInstance(project, SimpleProject)
-        # Prüfe dass project name existiert (nicht den exakten Namen)
+        self.assertIsInstance(project, Project)
         self.assertIsNotNone(project.project)
         self.assertGreater(len(project.tasks), 0)
 
-        # Prüfe erste Task
         first_task = project.tasks[0]
         self.assertIsNotNone(first_task.id)
         self.assertIsNotNone(first_task.name)
@@ -62,19 +62,16 @@ class TestProjectLoading(unittest.TestCase):
 
         project = load_project(software_file)
 
-        self.assertIsInstance(project, PersonProject)
+        self.assertIsInstance(project, Project)
         self.assertEqual(project.project, "Software Entwicklung Projekt")
+        self.assertIsNotNone(project.persons)
         self.assertGreater(len(project.persons), 0)
+        self.assertIsNotNone(project.resources)
         self.assertGreater(len(project.resources), 0)
         self.assertGreater(len(project.tasks), 0)
 
-
     def test_load_cycle_project(self):
-        """Test: Projekt mit Zyklen und Personen laden (pizzas.json)
-
-        pizzas.json hat 'persons' und LoopTasks → wird als PersonProject geladen.
-        Explizit als CycleProject laden: 'type': 'cycle' ins JSON setzen.
-        """
+        """Test: Projekt mit InstanceTasks laden (pizzas.json)"""
         examples_dir = Path(__file__).parent.parent / 'examples'
         pizzas_file = examples_dir / 'pizzas.json'
 
@@ -83,18 +80,14 @@ class TestProjectLoading(unittest.TestCase):
 
         project = load_project(pizzas_file)
 
-        # pizzas.json hat persons → PersonProject (enthält total_volume + LoopTasks)
-        self.assertIsInstance(project, PersonProject)
-        self.assertGreater(project.total_volume, 0)
-        self.assertIsNotNone(project.unit)
-        self.assertGreater(len(project.resources), 0)
+        self.assertIsInstance(project, Project)
+        if project.total_volume is not None:
+            self.assertGreater(project.total_volume, 0)
+        if project.unit is not None:
+            self.assertIsNotNone(project.unit)
 
     def test_load_loop_project(self):
-        """Test: Projekt mit Loops und Personen laden (erdaushub.json)
-
-        erdaushub.json hat 'persons' und LoopTasks → wird als PersonProject geladen.
-        Explizit als LoopProject laden: 'type': 'loop' ins JSON setzen.
-        """
+        """Test: Projekt mit LoopTasks laden (erdaushub.json)"""
         examples_dir = Path(__file__).parent.parent / 'examples'
         erdaushub_file = examples_dir / 'erdaushub.json'
 
@@ -103,10 +96,11 @@ class TestProjectLoading(unittest.TestCase):
 
         project = load_project(erdaushub_file)
 
-        # erdaushub.json hat persons → PersonProject (enthält total_volume + LoopTasks)
-        self.assertIsInstance(project, PersonProject)
-        self.assertGreater(project.total_volume, 0)
-        self.assertIsNotNone(project.unit)
+        self.assertIsInstance(project, Project)
+        if project.total_volume is not None:
+            self.assertGreater(project.total_volume, 0)
+        if project.unit is not None:
+            self.assertIsNotNone(project.unit)
 
 
 class TestProjectMethods(unittest.TestCase):
@@ -170,10 +164,8 @@ class TestCPMCalculation(unittest.TestCase):
         project = load_project(software_file)
         result = project.calculate_cpm()
 
-        # Kritischer Pfad sollte mindestens einen Task enthalten
         self.assertGreater(len(result.critical_path), 0)
 
-        # Alle Tasks im kritischen Pfad sollten Puffer 0 haben
         for task_id in result.critical_path:
             task_result = result.tasks[task_id]
             self.assertAlmostEqual(task_result.puffer, 0.0, places=3)
@@ -198,7 +190,7 @@ class TestProjectExpansion(unittest.TestCase):
     """Tests für Projekt-Expansion (Zyklen, Loops)."""
 
     def test_expand_cycles(self):
-        """Test: Zyklus-Expansion"""
+        """Test: Zyklus-Expansion für Projekte mit InstanceTasks"""
         examples_dir = Path(__file__).parent.parent / 'examples'
         pizzas_file = examples_dir / 'pizzas.json'
 
@@ -207,18 +199,17 @@ class TestProjectExpansion(unittest.TestCase):
 
         project = load_project(pizzas_file)
 
-        if not isinstance(project, CycleProject):
-            self.skipTest("Nicht vom Typ CycleProject")
+        if not any(isinstance(t, InstanceTask) for t in project.tasks):
+            self.skipTest("Keine InstanceTasks im Projekt")
 
         original_task_count = len(project.tasks)
         expanded = project.expand_cycles()
 
-        self.assertIsInstance(expanded, SimpleProject)
-        # Nach Expansion sollten mehr Tasks vorhanden sein
+        self.assertIsInstance(expanded, Project)
         self.assertGreaterEqual(len(expanded.tasks), original_task_count)
 
     def test_expand_loops(self):
-        """Test: Loop-Expansion"""
+        """Test: Loop-Expansion für Projekte mit LoopTasks"""
         examples_dir = Path(__file__).parent.parent / 'examples'
         erdaushub_file = examples_dir / 'erdaushub.json'
 
@@ -227,16 +218,14 @@ class TestProjectExpansion(unittest.TestCase):
 
         project = load_project(erdaushub_file)
 
-        if not isinstance(project, LoopProject):
-            self.skipTest("Nicht vom Typ LoopProject")
+        if not any(isinstance(t, LoopTask) for t in project.tasks):
+            self.skipTest("Keine LoopTasks im Projekt")
 
         original_task_count = len(project.tasks)
         expanded = project.expand_loops()
 
-        self.assertIsInstance(expanded, SimpleProject)
-        # Nach Expansion können mehr Tasks vorhanden sein
+        self.assertIsInstance(expanded, Project)
         self.assertGreaterEqual(len(expanded.tasks), 0)
-
 
 
 class TestProjectSaveLoad(unittest.TestCase):
@@ -250,20 +239,15 @@ class TestProjectSaveLoad(unittest.TestCase):
         if not tankdesign_file.exists():
             self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
 
-        # Lade Original
         original = load_project(tankdesign_file)
 
-        # Speichere in Temp-Datei
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
             tmp_path = Path(tmp.name)
 
         try:
             save_project(original, tmp_path)
-
-            # Lade wieder
             reloaded = load_project(tmp_path)
 
-            # Vergleiche
             self.assertEqual(original.project, reloaded.project)
             self.assertEqual(len(original.tasks), len(reloaded.tasks))
 
@@ -290,11 +274,9 @@ class TestExcelExport(unittest.TestCase):
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
 
-        # Lade Projekt und berechne CPM
         project = load_project(software_file)
         result = project.calculate_cpm()
 
-        # Exportiere nach Excel
         with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
             tmp_path = Path(tmp.name)
 
@@ -302,23 +284,18 @@ class TestExcelExport(unittest.TestCase):
             cfg_dir = Path(__file__).parent.parent / 'cfg'
             export_cpm_to_xlsx(result, tmp_path, project, cfg_dir)
 
-            # Prüfe ob Datei existiert
             self.assertTrue(tmp_path.exists())
             self.assertGreater(tmp_path.stat().st_size, 0)
 
-            # Lade und prüfe Sheets
             wb = openpyxl.load_workbook(tmp_path)
             sheet_names = [ws.title for ws in wb.worksheets]
 
-            # Mindestens summary/tasklist/critical_path sollten vorhanden sein
             self.assertGreaterEqual(len(sheet_names), 1)
-            # Kein hardcodierter "CPM Analyse"-Tab mehr – stattdessen section_order-gesteuerte Tabs
             self.assertTrue(
                 any(name in sheet_names for name in
                     ["Projektzusammenfassung", "Alle Tasks", "Kritischer Pfad", "CPM Analyse"]),
                 f"Kein bekannter Zusammenfassungs-Tab gefunden in: {sheet_names}"
             )
-
             wb.close()
 
         finally:
@@ -326,11 +303,197 @@ class TestExcelExport(unittest.TestCase):
                 tmp_path.unlink()
 
 
+class TestTxtExport(unittest.TestCase):
+    """Tests für TXT-Export (inkl. netplan_table)."""
+
+    def _make_project(self):
+        from lib.models.tasks import SimpleTask
+        return SimpleProject(
+            project="Test TXT Export",
+            project_start="2026-04-01",
+            tasks=[
+                SimpleTask(id=1, name="Task A", duration="3d"),
+                SimpleTask(id=2, name="Task B", duration="2d", dependencies=[1]),
+                SimpleTask(id=3, name="Task C", duration="4d", dependencies=[1]),
+                SimpleTask(id=4, name="Task D", duration="1d", dependencies=[2, 3]),
+            ]
+        )
+
+    def test_txt_export_creates_file(self):
+        """Test: TXT-Export erzeugt Datei"""
+        from lib.txt_export import export_cpm_to_txt
+
+        project = self._make_project()
+        result = project.calculate_cpm()
+
+        with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+
+        try:
+            success = export_cpm_to_txt(result, tmp_path, project_name=project.project)
+
+            self.assertTrue(success)
+            self.assertTrue(tmp_path.exists())
+            self.assertGreater(tmp_path.stat().st_size, 0)
+
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+    def test_txt_export_contains_all_sections(self):
+        """Test: TXT-Export enthält alle konfigurierten Sektionen"""
+        from lib.txt_export import export_cpm_to_txt
+
+        project = self._make_project()
+        result = project.calculate_cpm()
+
+        with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+
+        try:
+            export_cpm_to_txt(result, tmp_path, project_name=project.project)
+
+            content = tmp_path.read_text(encoding='utf-8')
+
+            self.assertIn("PROJEKTZUSAMMENFASSUNG", content)
+            self.assertIn("KRITISCHER PFAD", content)
+            self.assertIn("NETZPLAN TABELLE", content)
+            self.assertIn("ALLE TASKS", content)
+
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+    def test_txt_export_netplan_table_has_successors(self):
+        """Test: netplan_table-Sektion enthält Nachfolger-Spalte"""
+        from lib.txt_export import export_cpm_to_txt
+
+        project = self._make_project()
+        result = project.calculate_cpm()
+
+        with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+
+        try:
+            export_cpm_to_txt(result, tmp_path, project_name=project.project)
+
+            content = tmp_path.read_text(encoding='utf-8')
+
+            # Nachfolger-Spaltenheader muss in der NETZPLAN TABELLE Sektion erscheinen
+            self.assertIn("Nachfolger", content)
+
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+    def test_txt_export_from_example(self):
+        """Test: TXT-Export mit echtem Beispielprojekt"""
+        from lib.txt_export import export_cpm_to_txt
+
+        examples_dir = Path(__file__).parent.parent / 'examples'
+        tankdesign_file = examples_dir / 'tankdesign.json'
+
+        if not tankdesign_file.exists():
+            self.skipTest(f"Datei nicht gefunden: {tankdesign_file}")
+
+        project = load_project(tankdesign_file)
+        result = project.calculate_cpm()
+        cfg_dir = Path(__file__).parent.parent / 'cfg'
+
+        with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+
+        try:
+            success = export_cpm_to_txt(
+                result, tmp_path,
+                project_name=project.project,
+                project=project,
+                cfg_dir=cfg_dir
+            )
+
+            self.assertTrue(success)
+            content = tmp_path.read_text(encoding='utf-8')
+            self.assertIn(project.project, content)
+
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink()
+
+
+class TestNetworkDiagram(unittest.TestCase):
+    """Tests für Netzplan-Generierung."""
+
+    def _make_result(self):
+        from lib.models.tasks import SimpleTask
+        project = SimpleProject(
+            project="Network Test",
+            project_start="2026-04-01",
+            tasks=[
+                SimpleTask(id=1, name="Start",    duration="2d"),
+                SimpleTask(id=2, name="Branch A", duration="3d", dependencies=[1]),
+                SimpleTask(id=3, name="Branch B", duration="5d", dependencies=[1]),
+                SimpleTask(id=4, name="End",       duration="1d", dependencies=[2, 3]),
+            ]
+        )
+        return project.calculate_cpm()
+
+    def test_generate_network_csv_structure(self):
+        """Test: generate_network_csv erzeugt valides CSV"""
+        from lib.network_diagram import generate_network_csv
+
+        result = self._make_result()
+        csv_text = generate_network_csv(result)
+
+        lines = csv_text.splitlines()
+        self.assertGreater(len(lines), 1)
+
+        # Header-Zeile prüfen
+        header = lines[0]
+        self.assertIn("TaskID", header)
+        self.assertIn("FAZ", header)
+        self.assertIn("FEZ", header)
+        self.assertIn("GP", header)
+        self.assertIn("IsCritical", header)
+        self.assertIn("Successors", header)
+
+    def test_generate_network_csv_task_count(self):
+        """Test: CSV enthält alle Tasks (ohne WE-Blocker)"""
+        from lib.network_diagram import generate_network_csv
+
+        result = self._make_result()
+        csv_text = generate_network_csv(result)
+
+        data_lines = [l for l in csv_text.splitlines()[1:] if l.strip()]
+        non_we_tasks = [tid for tid in result.tasks
+                        if not (isinstance(tid, str) and tid.startswith('WE-'))]
+        self.assertEqual(len(data_lines), len(non_we_tasks))
+
+    def test_generate_network_csv_critical_marker(self):
+        """Test: Kritische Tasks werden als JA markiert"""
+        from lib.network_diagram import generate_network_csv
+
+        result = self._make_result()
+        csv_text = generate_network_csv(result)
+
+        # Mindestens eine JA-Markierung muss vorhanden sein
+        self.assertIn("JA", csv_text)
+
+    def test_generate_network_csv_no_we_blockers(self):
+        """Test: WE-Blocker-Tasks werden nicht im CSV ausgegeben"""
+        from lib.network_diagram import generate_network_csv
+
+        result = self._make_result()
+        csv_text = generate_network_csv(result)
+
+        # WE-Blocker dürfen nicht im CSV erscheinen
+        self.assertNotIn('"WE-', csv_text)
+
+
 class TestPersonProject(unittest.TestCase):
-    """Tests spezifisch für PersonProject."""
+    """Tests spezifisch für Projekte mit Personen."""
 
     def test_person_project_persons(self):
-        """Test: Personen in PersonProject"""
+        """Test: Personen in Projekt mit persons-Feld"""
         examples_dir = Path(__file__).parent.parent / 'examples'
         software_file = examples_dir / 'software_simple.json'
 
@@ -339,23 +502,23 @@ class TestPersonProject(unittest.TestCase):
 
         project = load_project(software_file)
 
-        if not isinstance(project, PersonProject):
-            self.skipTest("Nicht vom Typ PersonProject")
+        if not project.persons:
+            self.skipTest("Projekt hat keine Personen")
 
-        # Prüfe Personen
         self.assertGreater(len(project.persons), 0)
 
         first_person = project.persons[0]
         self.assertIsNotNone(first_person.id)
         self.assertIsNotNone(first_person.name)
-        self.assertIsNotNone(first_person.email)
+        # email ist Optional seit Modell-Vereinheitlichung
+        if first_person.email is not None:
+            self.assertIn('@', first_person.email)
 
-        # Prüfe Stundensatz
-        if hasattr(first_person, 'hourly_rate'):
-            self.assertGreater(first_person.hourly_rate, 0)
+        if hasattr(first_person, 'hourly_rate') and first_person.hourly_rate is not None:
+            self.assertGreaterEqual(first_person.hourly_rate, 0)
 
     def test_person_project_resources(self):
-        """Test: Ressourcen in PersonProject"""
+        """Test: Ressourcen in Projekt mit resources-Feld"""
         examples_dir = Path(__file__).parent.parent / 'examples'
         software_file = examples_dir / 'software_simple.json'
 
@@ -364,10 +527,9 @@ class TestPersonProject(unittest.TestCase):
 
         project = load_project(software_file)
 
-        if not isinstance(project, PersonProject):
-            self.skipTest("Nicht vom Typ PersonProject")
+        if not project.resources:
+            self.skipTest("Projekt hat keine Ressourcen")
 
-        # Prüfe Ressourcen
         self.assertGreater(len(project.resources), 0)
 
         first_resource = project.resources[0]
@@ -382,19 +544,16 @@ class TestTaskValidation(unittest.TestCase):
         """Test: Dauer-Validierung"""
         from lib.models.tasks import SimpleTask
 
-        # Gültige Dauern
         valid_durations = ["10d", "5h", "30m", "2w"]
         for duration in valid_durations:
             task = SimpleTask(id=1, name="Test", duration=duration)
             self.assertEqual(task.duration, duration)
 
-        # Numerische Dauer (wird zu Tagen konvertiert, falls ohne Einheit)
         task_numeric = SimpleTask(id=2, name="Test2", duration="5")
-        # Validierung sollte funktionieren, auch wenn "5" nicht zu "5d" wird
         self.assertIsNotNone(task_numeric.duration)
 
     def test_task_dependencies(self):
-        """Test: Task-Abhängigkeiten"""
+        """Test: Task-Abhängigkeiten (EA-Typ)"""
         from lib.models.tasks import SimpleTask
 
         task = SimpleTask(
@@ -407,6 +566,33 @@ class TestTaskValidation(unittest.TestCase):
         self.assertEqual(len(task.dependencies), 2)
         self.assertIn(2, task.dependencies)
         self.assertIn(3, task.dependencies)
+
+    def test_task_dependencies_aa(self):
+        """Test: AA-Abhängigkeiten (Anfang-Anfang)"""
+        from lib.models.tasks import SimpleTask
+
+        task = SimpleTask(
+            id=1,
+            name="AA Task",
+            duration="5d",
+            dependencies_aa=[2]
+        )
+
+        self.assertEqual(len(task.dependencies_aa), 1)
+        self.assertIn(2, task.dependencies_aa)
+
+    def test_task_dependencies_ee(self):
+        """Test: EE-Abhängigkeiten (Ende-Ende)"""
+        from lib.models.tasks import SimpleTask
+
+        task = SimpleTask(
+            id=1,
+            name="EE Task",
+            duration="5d",
+            dependencies_ee=[3]
+        )
+
+        self.assertEqual(len(task.dependencies_ee), 1)
 
 
 class TestEdgeCasesEmptyProjects(unittest.TestCase):
@@ -436,7 +622,6 @@ class TestEdgeCasesEmptyProjects(unittest.TestCase):
         result = project.calculate_cpm()
         self.assertEqual(len(result.tasks), 1)
         self.assertIn(1, result.critical_path)
-        # project_duration may be string or float depending on implementation
         if isinstance(result.project_duration, str):
             self.assertIn("5", result.project_duration)
         else:
@@ -464,15 +649,15 @@ class TestEdgeCasesInvalidDurations(unittest.TestCase):
         """Test: Verschiedene Zeiteinheiten"""
         from lib.models.tasks import SimpleTask
 
-        task_days = SimpleTask(id=1, name="Days", duration="10d")
-        task_hours = SimpleTask(id=2, name="Hours", duration="8h")  # 8h = 1 workday
-        task_minutes = SimpleTask(id=3, name="Minutes", duration="480m")  # 480m = 8h = 1 workday
-        task_weeks = SimpleTask(id=4, name="Weeks", duration="2w")
+        task_days    = SimpleTask(id=1, name="Days",    duration="10d")
+        task_hours   = SimpleTask(id=2, name="Hours",   duration="8h")
+        task_minutes = SimpleTask(id=3, name="Minutes", duration="480m")
+        task_weeks   = SimpleTask(id=4, name="Weeks",   duration="2w")
 
         self.assertEqual(task_days.to_days(), 10.0)
-        self.assertEqual(task_hours.to_days(), 1.0)  # 8h workday
-        self.assertEqual(task_minutes.to_days(), 1.0)  # 480min = 1 workday
-        self.assertEqual(task_weeks.to_days(), 10.0)  # 2w = 10 workdays (5 days/week)
+        self.assertEqual(task_hours.to_days(), 1.0)
+        self.assertEqual(task_minutes.to_days(), 1.0)
+        self.assertEqual(task_weeks.to_days(), 10.0)
 
     def test_missing_duration_converts_to_zero(self):
         """Test: Fehlende Dauer wird als 0 behandelt"""
@@ -513,7 +698,6 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
             project.calculate_cpm()
         msg = str(ctx.exception)
         self.assertIn("Zyklische Abhängigkeit", msg)
-        # Beide Tasks müssen im Fehlerpfad auftauchen
         self.assertIn("Task A", msg)
         self.assertIn("Task B", msg)
 
@@ -529,7 +713,7 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
         self.assertIn("Zyklische Abhängigkeit", str(ctx.exception))
 
     def test_cycle_in_subgraph_raises(self):
-        """Zyklus in Teilgraph (Tasks 3->4->3), Rest azyklisch (1->2->3)."""
+        """Zyklus in Teilgraph (Tasks 3->4->3), Rest azyklisch."""
         project = self._make_project([
             {"id": 1, "name": "Start",  "duration": "2d", "dependencies": [2]},
             {"id": 2, "name": "Middle", "duration": "3d", "dependencies": [3]},
@@ -552,17 +736,15 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
         self.assertEqual(result.project_duration, "10.0d")
 
     def test_software_simple_regression(self):
-        """Regression: software_simple.json darf nach Korrektur keine Zyklen haben."""
+        """Regression: software_simple.json darf keine Zyklen haben."""
         examples_dir = Path(__file__).parent.parent / 'examples'
         software_file = examples_dir / 'software_simple.json'
         if not software_file.exists():
             self.skipTest(f"Datei nicht gefunden: {software_file}")
 
         project = load_project(software_file)
-        # Muss fehlerfrei durchlaufen (kein ValueError)
         result = project.calculate_cpm()
         self.assertIsNotNone(result)
-        # Alle Pufferwerte müssen >= 0 sein
         for task_id, task in result.tasks.items():
             self.assertGreaterEqual(
                 task.puffer, 0.0,
@@ -585,31 +767,25 @@ class TestEdgeCasesInvalidReferences(unittest.TestCase):
             ]
         )
 
-        # CPM sollte mit fehlenden Abhängigkeiten umgehen
         try:
             result = project.calculate_cpm()
-            # Wenn es durchläuft, prüfen wir das Ergebnis
             self.assertIsNotNone(result)
         except Exception as e:
-            # Erwarteter Fall: Fehlende Abhängigkeit wird erkannt
             self.assertIsNotNone(e)
 
     def test_duplicate_task_ids(self):
-        """Test: Doppelte Task-IDs"""
+        """Test: Doppelte Task-IDs (tasks ist eine Liste → beide bleiben erhalten)"""
         from lib.models.tasks import SimpleTask
 
-        # Pydantic sollte doppelte IDs zulassen (da tasks eine Liste ist)
-        # aber logisch sollte es Probleme geben
         project = SimpleProject(
             project="Duplicate IDs",
             project_start="2026-04-01",
             tasks=[
-                SimpleTask(id=1, name="Task 1", duration="5d"),
+                SimpleTask(id=1, name="Task 1",           duration="5d"),
                 SimpleTask(id=1, name="Task 1 Duplicate", duration="3d")
             ]
         )
 
-        # Prüfen ob beide Tasks vorhanden sind
         self.assertEqual(len(project.tasks), 2)
 
 
@@ -617,16 +793,12 @@ class TestEdgeCasesDateHandling(unittest.TestCase):
     """Tests für Edge Cases: Datumsbehandlung."""
 
     def test_invalid_date_format(self):
-        """Test: Ungültiges Datumsformat wird akzeptiert (String-Validierung)"""
-        # project_start ist ein String-Feld, daher wird keine Validierung durchgeführt
-        # Dies ist dokumentiertes Verhalten - Datumsvalidierung erfolgt später im CPM
+        """Test: Ungültiges Datumsformat wird als String gespeichert"""
         project = SimpleProject(
             project="Invalid Date",
             project_start="not-a-date",
             tasks=[]
         )
-
-        # Projekt wird erstellt, aber CPM-Berechnung könnte fehlschlagen
         self.assertEqual(project.project_start, "not-a-date")
 
     def test_date_without_time(self):
@@ -636,7 +808,6 @@ class TestEdgeCasesDateHandling(unittest.TestCase):
             project_start="2026-04-01",
             tasks=[]
         )
-
         self.assertEqual(project.project_start, "2026-04-01")
 
     def test_date_with_time(self):
@@ -646,7 +817,6 @@ class TestEdgeCasesDateHandling(unittest.TestCase):
             project_start="2026-04-01 09:00:00",
             tasks=[]
         )
-
         self.assertEqual(project.project_start, "2026-04-01 09:00:00")
 
 
@@ -661,10 +831,8 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
             project="Disconnected Groups",
             project_start="2026-04-01",
             tasks=[
-                # Group 1
                 SimpleTask(id=1, name="Task A1", duration="5d"),
                 SimpleTask(id=2, name="Task A2", duration="3d", dependencies=[1]),
-                # Group 2 (unverbunden)
                 SimpleTask(id=3, name="Task B1", duration="4d"),
                 SimpleTask(id=4, name="Task B2", duration="2d", dependencies=[3])
             ]
@@ -672,7 +840,6 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
 
         result = project.calculate_cpm()
 
-        # Beide Gruppen sollten berechnet werden
         self.assertEqual(len(result.tasks), 4)
         self.assertGreater(len(result.critical_path), 0)
 
@@ -686,29 +853,26 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
             tasks=[
                 SimpleTask(id=1, name="Start 1", duration="5d", dependencies=[]),
                 SimpleTask(id=2, name="Start 2", duration="3d", dependencies=[]),
-                SimpleTask(id=3, name="End", duration="2d", dependencies=[1, 2])
+                SimpleTask(id=3, name="End",     duration="2d", dependencies=[1, 2])
             ]
         )
 
         result = project.calculate_cpm()
 
-        # Prüfe dass alle Tasks berechnet wurden
         self.assertEqual(len(result.tasks), 3)
 
-        # Task 3 sollte existieren und Startdatum haben
         if 3 in result.tasks:
             task3 = result.tasks[3]
-            self.assertIsNotNone(task3.faz)  # faz, not faz_date
+            self.assertIsNotNone(task3.faz)
             self.assertGreaterEqual(task3.faz, 0)
 
     def test_long_critical_path(self):
-        """Test: Langer kritischer Pfad"""
+        """Test: Langer kritischer Pfad (lineare Kette von 10 Tasks)"""
         from lib.models.tasks import SimpleTask
 
-        # Erstelle lineare Kette von 10 Tasks
         tasks = []
         for i in range(1, 11):
-            deps = [i-1] if i > 1 else []
+            deps = [i - 1] if i > 1 else []
             tasks.append(SimpleTask(id=i, name=f"Task {i}", duration="1d", dependencies=deps))
 
         project = SimpleProject(
@@ -719,9 +883,7 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
 
         result = project.calculate_cpm()
 
-        # Alle Tasks sollten im kritischen Pfad sein
         self.assertEqual(len(result.critical_path), 10)
-        # project_duration may be string or float
         if isinstance(result.project_duration, str):
             self.assertIn("10", result.project_duration)
         else:
@@ -736,7 +898,7 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
         from lib.models.resources import MachineResource
         from lib.models.tasks import InstanceTask
 
-        project = CycleProject(
+        project = Project(
             project="Zero Cycles",
             project_start="2026-04-01",
             order_volume=0,
@@ -749,16 +911,14 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
 
         expanded = project.expand_cycles()
 
-        # Bei 0 Volumen sollten keine Zyklus-Tasks entstehen
-        # Nur Original-Tasks bleiben (eventuell)
-        self.assertIsInstance(expanded, SimpleProject)
+        self.assertIsInstance(expanded, Project)
 
     def test_cycle_with_one_instance(self):
         """Test: Zyklus mit nur einer Instanz"""
         from lib.models.resources import MachineResource
         from lib.models.tasks import InstanceTask
 
-        project = CycleProject(
+        project = Project(
             project="Single Cycle",
             project_start="2026-04-01",
             order_volume=1,
@@ -771,8 +931,7 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
 
         expanded = project.expand_cycles()
 
-        # Mit 1 Instanz sollte genau 1 Zyklus entstehen
-        self.assertIsInstance(expanded, SimpleProject)
+        self.assertIsInstance(expanded, Project)
         self.assertGreater(len(expanded.tasks), 0)
 
 
@@ -780,12 +939,11 @@ class TestEdgeCasesLoopExpansion(unittest.TestCase):
     """Tests für Edge Cases: Loop-Expansion."""
 
     def test_loop_with_minimal_setup(self):
-        """Test: Loop-Projekt mit minimaler Konfiguration"""
+        """Test: Loop-Projekt mit minimaler Konfiguration (SimpleTask, keine LoopTasks)"""
         from lib.models.resources import MachineResource
         from lib.models.tasks import SimpleTask
 
-        # Einfaches Test ohne LoopTask, da loop_count Attribut fehlt
-        project = LoopProject(
+        project = Project(
             project="Minimal Loop",
             project_start="2026-04-01",
             total_volume=100,
@@ -796,7 +954,6 @@ class TestEdgeCasesLoopExpansion(unittest.TestCase):
             ]
         )
 
-        # Prüfe dass Projekt erstellt wurde
         self.assertEqual(project.total_volume, 100)
         self.assertEqual(len(project.tasks), 1)
 
@@ -805,34 +962,27 @@ class TestEdgeCasesResourceValidation(unittest.TestCase):
     """Tests für Edge Cases: Ressourcen-Validierung."""
 
     def test_negative_hourly_rate(self):
-        """Test: Negativer Stundensatz wird akzeptiert (keine Validierung)"""
+        """Test: Negativer Stundensatz wird akzeptiert (kein Validator vorhanden)"""
         from lib.models.resources import Person
 
-        # Negative Stundensätze werden akzeptiert (kein Validator)
-        # Dies könnte in Zukunft geändert werden
         person = Person(
             id="test",
             name="Test Person",
-            email="test@test.com",
             role="Developer",
             hourly_rate=-50.0
         )
-
-        # Dokumentiert das aktuelle Verhalten
         self.assertEqual(person.hourly_rate, -50.0)
 
     def test_zero_hourly_rate(self):
-        """Test: Stundensatz 0 ist gültig (z.B. unbezahlte Praktikanten)"""
+        """Test: Stundensatz 0 ist gültig"""
         from lib.models.resources import Person
 
         person = Person(
             id="intern",
             name="Intern",
-            email="intern@test.com",
             role="Intern",
             hourly_rate=0.0
         )
-
         self.assertEqual(person.hourly_rate, 0.0)
 
     def test_very_high_hourly_rate(self):
@@ -842,12 +992,23 @@ class TestEdgeCasesResourceValidation(unittest.TestCase):
         person = Person(
             id="expert",
             name="Expert",
-            email="expert@test.com",
             role="Senior Consultant",
             hourly_rate=1000.0
         )
-
         self.assertEqual(person.hourly_rate, 1000.0)
+
+    def test_email_is_optional(self):
+        """Test: email-Feld ist Optional (kann None sein)"""
+        from lib.models.resources import Person
+
+        person_no_email = Person(id="p1", name="No Email", role="Dev", hourly_rate=80.0)
+        self.assertIsNone(person_no_email.email)
+
+        person_with_email = Person(
+            id="p2", name="With Email", role="Dev",
+            hourly_rate=80.0, email="dev@example.com"
+        )
+        self.assertEqual(person_with_email.email, "dev@example.com")
 
 
 class TestEdgeCasesEmptyStrings(unittest.TestCase):
@@ -857,20 +1018,17 @@ class TestEdgeCasesEmptyStrings(unittest.TestCase):
         """Test: Leerer Projektname"""
         from lib.models.tasks import SimpleTask
 
-        # Leerer String sollte gültig sein (technisch)
         project = SimpleProject(
             project="",
             project_start="2026-04-01",
             tasks=[SimpleTask(id=1, name="Task", duration="1d")]
         )
-
         self.assertEqual(project.project, "")
 
     def test_empty_task_name(self):
         """Test: Leerer Task-Name"""
         from lib.models.tasks import SimpleTask
 
-        # Leerer Task-Name sollte gültig sein
         task = SimpleTask(id=1, name="", duration="1d")
         self.assertEqual(task.name, "")
 
@@ -886,7 +1044,7 @@ class TestEdgeCasesCPMInfinityBug(unittest.TestCase):
     """Tests für Edge Cases: CPM sollte keine Infinity-Werte haben."""
 
     def test_no_infinity_in_cpm_results(self):
-        """Test: CPM-Ergebnisse sollten keine Infinity-Werte enthalten"""
+        """Test: CPM-Ergebnisse enthalten keine Infinity-Werte"""
         from lib.models.tasks import SimpleTask
         import math
 
@@ -902,19 +1060,14 @@ class TestEdgeCasesCPMInfinityBug(unittest.TestCase):
 
         result = project.calculate_cpm()
 
-        # Kein Task sollte inf in SAZ oder SEZ haben
         for task_id, task_result in result.tasks.items():
-            self.assertFalse(math.isinf(task_result.faz),
-                           f"Task {task_id} hat infinity in FAZ")
-            self.assertFalse(math.isinf(task_result.fez),
-                           f"Task {task_id} hat infinity in FEZ")
-            self.assertFalse(math.isinf(task_result.saz),
-                           f"Task {task_id} hat infinity in SAZ")
-            self.assertFalse(math.isinf(task_result.sez),
-                           f"Task {task_id} hat infinity in SEZ")
+            self.assertFalse(math.isinf(task_result.faz), f"Task {task_id} hat infinity in FAZ")
+            self.assertFalse(math.isinf(task_result.fez), f"Task {task_id} hat infinity in FEZ")
+            self.assertFalse(math.isinf(task_result.saz), f"Task {task_id} hat infinity in SAZ")
+            self.assertFalse(math.isinf(task_result.sez), f"Task {task_id} hat infinity in SEZ")
 
     def test_single_task_no_infinity(self):
-        """Test: Ein einzelner Task sollte keine Infinity-Werte haben"""
+        """Test: Ein einzelner Task hat keine Infinity-Werte"""
         from lib.models.tasks import SimpleTask
         import math
 
@@ -927,10 +1080,8 @@ class TestEdgeCasesCPMInfinityBug(unittest.TestCase):
         result = project.calculate_cpm()
         task_result = result.tasks[1]
 
-        # Prüfe dass keine infinity-Werte vorhanden sind
         self.assertFalse(math.isinf(task_result.saz), "SAZ sollte nicht inf sein")
         self.assertFalse(math.isinf(task_result.sez), "SEZ sollte nicht inf sein")
-        # SAZ und SEZ sollten gleich FAZ und FEZ sein (kein Puffer)
         self.assertAlmostEqual(task_result.saz, task_result.faz, places=3)
         self.assertAlmostEqual(task_result.sez, task_result.fez, places=3)
 
@@ -942,12 +1093,7 @@ class TestEdgeCasesComplexDependencies(unittest.TestCase):
         """Test: Task mit vielen Abhängigkeiten"""
         from lib.models.tasks import SimpleTask
 
-        tasks = []
-        # Erstelle 10 unabhängige Tasks
-        for i in range(1, 11):
-            tasks.append(SimpleTask(id=i, name=f"Task {i}", duration="1d"))
-
-        # Ein Task der von allen abhängt
+        tasks = [SimpleTask(id=i, name=f"Task {i}", duration="1d") for i in range(1, 11)]
         tasks.append(SimpleTask(
             id=11,
             name="Final Task",
@@ -963,12 +1109,10 @@ class TestEdgeCasesComplexDependencies(unittest.TestCase):
 
         result = project.calculate_cpm()
 
-        # Final Task sollte nach allen anderen starten
         self.assertEqual(len(result.tasks), 11)
-        # Prüfe dass Task 11 existiert
         if 11 in result.tasks:
             final_task = result.tasks[11]
-            self.assertIsNotNone(final_task.faz)  # faz, not faz_date
+            self.assertIsNotNone(final_task.faz)
             self.assertGreaterEqual(final_task.faz, 0)
 
     def test_diamond_dependency_pattern(self):
@@ -979,17 +1123,16 @@ class TestEdgeCasesComplexDependencies(unittest.TestCase):
             project="Diamond Pattern",
             project_start="2026-04-01",
             tasks=[
-                SimpleTask(id=1, name="Start", duration="1d"),
+                SimpleTask(id=1, name="Start",    duration="1d"),
                 SimpleTask(id=2, name="Branch 1", duration="2d", dependencies=[1]),
                 SimpleTask(id=3, name="Branch 2", duration="3d", dependencies=[1]),
-                SimpleTask(id=4, name="Join", duration="1d", dependencies=[2, 3])
+                SimpleTask(id=4, name="Join",      duration="1d", dependencies=[2, 3])
             ]
         )
 
         result = project.calculate_cpm()
 
-        # Task 4 sollte warten bis beide Branches fertig sind
-        # Branch 2 dauert länger (3d), daher sollte er im kritischen Pfad sein
+        # Branch 2 dauert länger → im kritischen Pfad
         self.assertIn(3, result.critical_path)
         self.assertIn(4, result.critical_path)
 

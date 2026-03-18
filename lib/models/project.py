@@ -7,7 +7,7 @@ Ein einzelnes `Project`-Modell ersetzt SimpleProject, CycleProject,
 LoopProject und PersonProject.  Backward-Compat-Aliase bleiben erhalten.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List, Union
 
 # Import utils - try relative import first, then absolute
@@ -81,7 +81,6 @@ class ProjectBase(BaseModel):
         """
         from .cpm import CPMCalculator
         from datetime import datetime
-        from pathlib import Path
 
         # Verwende übergebenes Startdatum oder project_start
         if start_date:

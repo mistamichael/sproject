@@ -10,15 +10,12 @@ import configparser
 import json
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-from datetime import datetime
 
 try:
     from .models.cpm import CPMResult
-    from .models.project import Project
     from .utils import format_time_value, add_workdays
 except (ImportError, ValueError):
     from models.cpm import CPMResult
-    from models.project import Project
     from utils import format_time_value, add_workdays
 
 

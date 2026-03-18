@@ -12,10 +12,9 @@ Berechnet echte Datumsangaben unter Berücksichtigung von:
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple, Union
 from dataclasses import dataclass, field
-import math
 
-from .resources import Person, VacationEntry, RestInterval
-from .cpm import CPMResult, CPMTaskResult
+from .resources import Person, RestInterval
+from .cpm import CPMResult
 
 
 @dataclass

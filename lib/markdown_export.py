@@ -8,24 +8,18 @@ Sektionsreihenfolge und Überschriften werden aus cfg/markdown_export.cfg gelese
 
 import configparser
 from pathlib import Path
-from typing import Optional, Dict, List, Callable
+from typing import Optional, Dict, List
 from datetime import datetime
 
 # Import models and utilities
 try:
-    from .models.cpm import CPMResult, CPMTaskResult
-    from .models.project import Project
-    from .models.resources import Resource, Person
+    from .models.cpm import CPMResult
     from .utils import format_time_value
     from .mermaid_export import generate_mermaid_gantt
-    from .network_diagram import generate_mermaid_network
 except (ImportError, ValueError):
-    from models.cpm import CPMResult, CPMTaskResult
-    from models.project import Project
-    from models.resources import Resource, Person
+    from models.cpm import CPMResult
     from utils import format_time_value
     from mermaid_export import generate_mermaid_gantt
-    from network_diagram import generate_mermaid_network
 
 
 # ---------------------------------------------------------------------------

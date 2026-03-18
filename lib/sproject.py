@@ -7,7 +7,6 @@ wie z.B. einen Resourcenplan über der Zeit, ein Gant-Diagramm mit kritischen Pf
 
 import os
 import sys
-import json
 import logging
 import argparse
 from pathlib import Path
@@ -25,8 +24,7 @@ from mermaid_export import export_cpm_to_svg
 from markdown_export import export_cpm_to_markdown
 from txt_export import export_cpm_to_txt as _txt_export
 from json_export import export_cpm_to_json as _json_export
-from models.project import Project
-from models.resources import Person, PersonResource
+from models.resources import Person
 from models.cpm import CPMResult
 from models.gantt import GanttCalculator
 

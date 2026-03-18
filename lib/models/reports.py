@@ -5,7 +5,7 @@ Report models for sproject
 Models for different report types (Gantt Chart, Resource List, etc.)
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List, Literal
 
 

@@ -8,7 +8,6 @@ Generiert Gantt-Charts und Diagramme im SVG-Format über Mermaid und kroki-API.
 import base64
 import zlib
 from pathlib import Path
-from typing import Optional
 from datetime import datetime
 
 try:
@@ -20,10 +19,8 @@ except ImportError:
 # Import models - try relative import first, then absolute
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value_auto
 except (ImportError, ValueError):
     from models.cpm import CPMResult
-    from utils import format_time_value_auto
 
 
 def encode_kroki_url(diagram: str) -> str:

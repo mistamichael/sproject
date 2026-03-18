@@ -7,7 +7,6 @@ Contains base classes and shared types for all project models.
 
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Union, List
-from datetime import datetime
 
 # Import utils - try relative import first, then absolute
 try:

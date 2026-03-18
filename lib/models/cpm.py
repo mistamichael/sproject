@@ -5,7 +5,7 @@ CPM (Critical Path Method) calculation with Pydantic models
 Provides CPM calculation functionality for Project models.
 """
 
-from typing import Dict, List, Union, Optional, Any, Set
+from typing import Dict, List, Literal, Union, Optional, Set
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 from pathlib import Path
@@ -14,7 +14,6 @@ from pathlib import Path
 try:
     from ..utils import (
         parse_duration_to_days,
-        detect_time_unit,
         format_time_value,
         format_datetime_value,
         add_workdays,
@@ -24,7 +23,6 @@ try:
 except (ImportError, ValueError):
     from utils import (
         parse_duration_to_days,
-        detect_time_unit,
         format_time_value,
         format_datetime_value,
         add_workdays,
@@ -105,7 +103,7 @@ class CPMResult(BaseModel):
     project_duration: str
     critical_path: List[Union[int, str]]
     tasks: Dict[Union[int, str], CPMTaskResult]
-    time_unit: str = 'days'
+    time_unit: Literal['minutes', 'hours', 'days'] = 'days'
     project_start: Optional[datetime] = None
     calculation_date: Optional[datetime] = None
     holidays: Optional[Set[str]] = None

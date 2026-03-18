@@ -4,17 +4,14 @@ Excel Report Generator for Gantt Charts and Resource Lists
 
 Generates Excel worksheets with Gantt charts and resource allocation diagrams.
 """
-from __future__ import annotations
-
 import csv
 import io
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Dict, Tuple, Any
 import configparser
 
 try:
-    import openpyxl
     from openpyxl import Workbook
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from openpyxl.utils import get_column_letter
@@ -25,12 +22,12 @@ except ImportError:
 # Import models - try relative import first, then absolute
 try:
     from .models import Project
-    from .models.reports import Report, GanttReport, ResourceListReport
+    from .models.reports import GanttReport, ResourceListReport
     from .models.cpm import CPMResult
     from .utils import format_time_value_auto, add_workdays
 except (ImportError, ValueError):
     from models import Project
-    from models.reports import Report, GanttReport, ResourceListReport
+    from models.reports import GanttReport, ResourceListReport
     from models.cpm import CPMResult
     from utils import format_time_value_auto, add_workdays
 

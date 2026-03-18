@@ -5,7 +5,7 @@ Cycle and Loop expansion logic for Projects
 Provides expansion functionality for InstanceTask and LoopTask.
 """
 
-from typing import List, Union, Optional, Dict, Any
+from typing import List, Union, Optional, Any
 import math
 import re
 
@@ -14,9 +14,9 @@ from .resources import Resource
 
 # Import utils - try relative import first, then absolute
 try:
-    from ..utils import generate_cycle_id, parse_cycle_id
+    from ..utils import generate_cycle_id
 except (ImportError, ValueError):
-    from utils import generate_cycle_id, parse_cycle_id
+    from utils import generate_cycle_id
 
 
 def expand_instance_task(

@@ -8,21 +8,21 @@ Sektionsreihenfolge und Überschriften werden aus cfg/txt_export.cfg gelesen.
 
 import configparser
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 from datetime import datetime
 
 try:
     from .models.cpm import CPMResult
-    from .models.project import Project
     from .utils import format_time_value, format_time_value_auto, add_workdays
     from .markdown_export import _generate_netplan_ascii_section as _md_netplan_ascii
     from .markdown_export import _DEFAULT_NODE_ROWS as _MD_DEFAULT_NODE_ROWS
+    from .network_diagram import generate_network_csv
 except (ImportError, ValueError):
-    from models.cpm import CPMResult
-    from models.project import Project
-    from utils import format_time_value, format_time_value_auto, add_workdays
-    from markdown_export import _generate_netplan_ascii_section as _md_netplan_ascii
-    from markdown_export import _DEFAULT_NODE_ROWS as _MD_DEFAULT_NODE_ROWS
+    from models.cpm import CPMResult  # type: ignore[no-redef]
+    from utils import format_time_value, format_time_value_auto, add_workdays  # type: ignore[no-redef]
+    from markdown_export import _generate_netplan_ascii_section as _md_netplan_ascii  # type: ignore[no-redef]
+    from markdown_export import _DEFAULT_NODE_ROWS as _MD_DEFAULT_NODE_ROWS  # type: ignore[no-redef]
+    from network_diagram import generate_network_csv  # type: ignore[no-redef]
 
 
 # ---------------------------------------------------------------------------
@@ -38,6 +38,7 @@ _DEFAULT_HEADINGS = {
     'summary':       'PROJEKTZUSAMMENFASSUNG',
     'critical_path': 'KRITISCHER PFAD',
     'netplan_ascii': 'NETZPLAN ASCII',
+    'netplan_table': 'NETZPLAN TABELLE',
     'tasklist':      'ALLE TASKS',
     'resource_list': 'VERANTWORTLICHE',
 }
@@ -82,7 +83,7 @@ def _load_txt_config(cfg_dir: Optional[Path] = None) -> tuple:
         parsed = []
         i = 1
         while True:
-            val = sec.get(f'row_{i}', fallback=None)
+            val: Optional[str] = sec.get(f'row_{i}', fallback=None)
             if val is None:
                 break
             fields = [f.strip().lower() for f in val.split(',') if f.strip()]
@@ -165,6 +166,61 @@ def _generate_netplan_ascii(result: CPMResult, heading: str, node_rows: List[Lis
     return header_lines + content_lines
 
 
+def _generate_netplan_table(result: CPMResult, heading: str) -> List[str]:
+    """
+    Tabellarische Netzplandarstellung via generate_network_csv.
+    Enthält zusätzlich die Nachfolger-Spalte gegenüber der tasklist.
+    """
+    lines = _section_header(heading)
+
+    col_id   = 7
+    col_name = 30
+    col_val  = 8
+    col_succ = 20
+
+    header = (f"{'ID':<{col_id}} {'Name':<{col_name}} {'Dauer':<{col_val}} "
+              f"{'FAZ':<{col_val}} {'FEZ':<{col_val}} "
+              f"{'SAZ':<{col_val}} {'SEZ':<{col_val}} "
+              f"{'GP':<{col_val}} {'FP':<{col_val}} "
+              f"{'Nachfolger':<{col_succ}} Krit.")
+    lines.append(header)
+    lines.append(_SEP_THIN)
+
+    csv_text = generate_network_csv(result)
+    csv_lines = csv_text.splitlines()
+
+    for raw in csv_lines[1:]:  # erste Zeile ist CSV-Header
+        parts = [p.strip('"') for p in raw.split('","')]
+        if len(parts) < 11:
+            continue
+        tid, name, dur, faz, fez, saz, sez, gp, fp, successors, is_crit = parts[:11]
+
+        # Letzten Wert von is_crit von möglichem trailing Quote befreien
+        is_crit = is_crit.strip('"')
+
+        name_out = name if len(name) <= col_name else name[:col_name - 3] + "..."
+        succ_out = successors.replace(';', ', ')
+        if len(succ_out) > col_succ:
+            succ_out = succ_out[:col_succ - 3] + "..."
+
+        lines.append(
+            f"{tid:<{col_id}} {name_out:<{col_name}} "
+            f"{float(dur):<{col_val}.1f} "
+            f"{float(faz):<{col_val}.1f} "
+            f"{float(fez):<{col_val}.1f} "
+            f"{float(saz):<{col_val}.1f} "
+            f"{float(sez):<{col_val}.1f} "
+            f"{float(gp):<{col_val}.1f} "
+            f"{float(fp):<{col_val}.1f} "
+            f"{succ_out:<{col_succ}} "
+            f"{'JA' if is_crit == 'JA' else ''}"
+        )
+
+    lines.append(_SEP_THIN)
+    lines.append("")
+    return lines
+
+
 def _generate_tasklist(result: CPMResult, heading: str) -> List[str]:
     lines = _section_header(heading)
     tu = result.time_unit
@@ -208,7 +264,7 @@ def _generate_tasklist(result: CPMResult, heading: str) -> List[str]:
 
 
 def _generate_resource_list(result: CPMResult, heading: str,
-                             project: Optional[object] = None) -> List[str]:
+                             project: Optional[Any] = None) -> List[str]:
     lines = _section_header(heading)
 
     if not project or not hasattr(project, 'tasks'):
@@ -309,6 +365,7 @@ def export_cpm_to_txt(
             'summary':       lambda: _generate_summary(result, name, headings['summary']),
             'critical_path': lambda: _generate_critical_path(result, headings['critical_path']),
             'netplan_ascii': lambda: _generate_netplan_ascii(result, headings['netplan_ascii'], node_rows),
+            'netplan_table': lambda: _generate_netplan_table(result, headings['netplan_table']),
             'tasklist':      lambda: _generate_tasklist(result, headings['tasklist']),
             'resource_list': lambda: _generate_resource_list(result, headings['resource_list'], project),
         }

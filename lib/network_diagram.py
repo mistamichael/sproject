@@ -6,8 +6,7 @@ Generiert einen Netzplan (Dependency Graph) aus CPM-Ergebnissen
 mit Auflistung von Task-IDs, Dauer und Abhängigkeiten.
 """
 
-from typing import Dict, List, Set, Union, Tuple
-from models.cpm import CPMResult, CPMTaskResult
+from models.cpm import CPMResult
 
 
 def _format_duration(duration: float, time_unit: str = 'days') -> str:
@@ -54,7 +53,7 @@ def generate_mermaid_network(
             puffer = _format_duration(task.puffer, result.time_unit)
             label += f"<br/>GP: {puffer}"
 
-        # Formatiere Node basierend auf kritischheit
+        # Formatiere Node basierend auf kritizität
         if task.is_critical and show_critical_path:
             # Kritischer Task: rote Box
             lines.append(f'    N{task_id}["<b>{label}</b>"]:::critical')

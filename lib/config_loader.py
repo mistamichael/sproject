@@ -6,9 +6,8 @@ Lädt und verwaltet die Default-Konfiguration aus cfg/defaults.cfg
 """
 
 import configparser
-import json
 from pathlib import Path
-from typing import Any, Optional, List, Set
+from typing import Any, Optional, Set
 from datetime import datetime
 
 
