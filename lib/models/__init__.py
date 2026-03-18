@@ -13,17 +13,16 @@ Usage:
 """
 
 from .loader import load_project, save_project, load_project_from_dict
-from .project import SimpleProject, CycleProject, LoopProject, PersonProject
+from .project import Project, SimpleProject, CycleProject, LoopProject, PersonProject
 from .tasks import SimpleTask, ExpandableTask, InstanceTask, LoopTask, SubTask
 from .resources import Person, ResourceBase, MachineResource, PersonResource
 from .base import TaskBase
 from .cpm import CPMTaskResult, CPMResult, CPMCalculator
-from .reports import GanttReport, ResourceListReport, StatusUpdateReport, Report
-
 __all__ = [
     'load_project',
     'save_project',
     'load_project_from_dict',
+    'Project',
     'SimpleProject',
     'CycleProject',
     'LoopProject',
@@ -41,8 +40,4 @@ __all__ = [
     'CPMTaskResult',
     'CPMResult',
     'CPMCalculator',
-    'GanttReport',
-    'ResourceListReport',
-    'StatusUpdateReport',
-    'Report',
 ]

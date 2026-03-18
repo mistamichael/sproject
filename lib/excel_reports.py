@@ -4,7 +4,10 @@ Excel Report Generator for Gantt Charts and Resource Lists
 
 Generates Excel worksheets with Gantt charts and resource allocation diagrams.
 """
+from __future__ import annotations
 
+import csv
+import io
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple, Any
@@ -21,11 +24,13 @@ except ImportError:
 
 # Import models - try relative import first, then absolute
 try:
-    from .models import PersonProject, Report, GanttReport, ResourceListReport
+    from .models import Project
+    from .models.reports import Report, GanttReport, ResourceListReport
     from .models.cpm import CPMResult
     from .utils import format_time_value_auto, add_workdays
 except (ImportError, ValueError):
-    from models import PersonProject, Report, GanttReport, ResourceListReport
+    from models import Project
+    from models.reports import Report, GanttReport, ResourceListReport
     from models.cpm import CPMResult
     from utils import format_time_value_auto, add_workdays
 
@@ -105,18 +110,48 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
                     else:
                         defaults[section_name][key] = value
 
+    # Lese Gantt_timeline-Defaults: hours_per_day und Schichtstart aus defaults.cfg
+    _tl_hours_per_day = 8
+    _tl_morning_start = '09:00'
+    if defaults_config_file.exists():
+        _dc = configparser.ConfigParser()
+        _dc.read(defaults_config_file, encoding='utf-8')
+        if _dc.has_section('WorkingHours'):
+            _tl_hours_per_day = int(_dc.get('WorkingHours', 'hours_per_day', fallback='8'))
+            _ms = _dc.get('WorkingHours', 'morning_shift', fallback='09:00-12:00')
+            _tl_morning_start = _ms.split('-')[0].strip()
+    defaults['Gantt_timeline'] = {
+        'minutes_per_col': 1,
+        'hours_col_minutes': 30,
+        'hours_per_day': _tl_hours_per_day,
+        'morning_shift_start': _tl_morning_start,
+    }
+
+    # Lese section_order aus [sections]
+    _default_order = ['summary', 'critical_path', 'tasklist', 'gantt_chart', 'resource_list']
+    raw_order = config.get('sections', 'section_order', fallback=None)
+    defaults['sections'] = {
+        'section_order': (
+            [s.strip() for s in raw_order.split(',') if s.strip()]
+            if raw_order else _default_order
+        )
+    }
+
+    # Lese Tab-Namen aus [de]
+    _default_tab_names = {
+        'summary':       'Projektzusammenfassung',
+        'critical_path': 'Kritischer Pfad',
+        'tasklist':      'Alle Tasks',
+        'netplan_table': 'Netzplan',
+    }
+    tab_names = dict(_default_tab_names)
+    if config.has_section('de'):
+        for key, val in config.items('de'):
+            if val:
+                tab_names[key] = val
+    defaults['tab_names'] = tab_names
+
     return defaults
-
-
-# Backwards compatibility alias
-def load_gantt_config(cfg_dir: Path) -> Dict[str, Any]:
-    """
-    Lädt Gantt-Chart-Konfiguration (backwards compatibility).
-
-    Gibt nur die GanttChart-Sektion zurück für Kompatibilität mit altem Code.
-    """
-    full_config = load_excel_export_config(cfg_dir)
-    return full_config['GanttChart']
 
 
 def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
@@ -253,7 +288,9 @@ def get_timeline_range(result: CPMResult, loadunit: str, resolution_config: Dict
 
 
 def create_timeline_header(ws, start_col: int, start_row: int, start_date: datetime,
-                          end_date: datetime, granularity: str, working_days: str = 'mon,tue,wed,thu,fri') -> int:
+                          end_date: datetime, granularity: str,
+                          working_days: str = 'mon,tue,wed,thu,fri',
+                          timeline_config: dict = None) -> tuple:
     """
     Erstellt Timeline-Header (Zeitstrahl) in Excel.
 
@@ -265,10 +302,12 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
         end_date: Projekt-Enddatum
         granularity: 'minutes', 'hours', 'halfdays', 'days'
         working_days: Kommaseparierte Liste von Arbeitstagen (z.B. 'mon,tue,wed,thu,fri')
+        timeline_config: Gantt_timeline-Konfiguration (aus excel_export.cfg)
 
     Returns:
-        Anzahl der Zeilen, die für den Header verwendet wurden
+        (rows_used, cols_per_workday): Header-Zeilenanzahl und Spalten pro Arbeitstag
     """
+    tlcfg = timeline_config or {}
     duration_days = (end_date - start_date).days
 
     # Header-Stil
@@ -286,118 +325,132 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
     rows_used = 1
 
     if granularity == 'minutes':
-        # Minuten-basierte Timeline (für sehr kurze Projekte wie Pizza-Produktion)
-        # Zeige Stunden (0-7) pro Arbeitstag, jede Spalte = 1 Stunde = 60 Minuten
-        # time_unit_factor=480 sorgt dafür, dass Minuten korrekt auf Spalten gemappt werden
-        rows_used = 2  # Datum + Stunde
+        # Minutengranularität: jede Spalte = minutes_per_col Minuten
+        minutes_per_col   = int(tlcfg.get('minutes_per_col', 1))
+        hours_per_day     = int(tlcfg.get('hours_per_day', 8))
+        morning_start_str = tlcfg.get('morning_shift_start', '09:00')
+        mh, mm_s          = map(int, morning_start_str.split(':'))
+        morning_start_min = mh * 60 + mm_s
+        cols_per_workday  = (hours_per_day * 60) // minutes_per_col
+        col_width         = max(1.2, 12.0 / max(1, cols_per_workday // 8))
 
-        # Extrahiere working_days Konfiguration
+        rows_used     = 2  # Datum + Uhrzeit
+        weekend_fill  = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
         weekday_names = {0: 'Mo', 1: 'Di', 2: 'Mi', 3: 'Do', 4: 'Fr', 5: 'Sa', 6: 'So'}
-        weekend_fill = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
+        label_every   = max(1, 60 // minutes_per_col)  # Beschriftung jede volle Stunde
 
-        # Zeile 1: Datum mit einer Spalte pro Arbeitsstunde
         current_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        date_col_start = current_col
-
         while current_date.date() <= end_date.date():
             is_workday = is_working_day(current_date, working_days)
-            hours_for_day = 8 if is_workday else 1  # 8 Stunden für Arbeitstage, 1 Spalte für Nicht-Arbeitstage
-
-            # Merge Datum über alle Stunden des Tages
-            if hours_for_day > 1:
-                ws.merge_cells(
-                    start_row=start_row,
-                    start_column=current_col,
-                    end_row=start_row,
-                    end_column=current_col + hours_for_day - 1
-                )
-
-            cell = ws.cell(row=start_row, column=current_col,
-                         value=current_date.strftime('%d.%m') if is_workday else current_date.strftime('%d.%m'))
-            cell.fill = weekend_fill if not is_workday else header_fill
-            cell.font = header_font
-            cell.alignment = header_alignment
-            cell.border = border
-
-            # Zeile 2: Stunden (0-7 für 8-Stunden-Tag) oder Wochentag-Kürzel
             if is_workday:
-                for hour in range(8):
-                    cell = ws.cell(row=start_row + 1, column=current_col + hour, value=f'{hour}h')
+                # Zeile 1: Datum über alle Minuten-Spalten
+                ws.merge_cells(
+                    start_row=start_row, start_column=current_col,
+                    end_row=start_row,   end_column=current_col + cols_per_workday - 1
+                )
+                cell = ws.cell(row=start_row, column=current_col,
+                               value=current_date.strftime('%d.%m'))
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = header_alignment
+                cell.border = border
+
+                # Zeile 2: HH:MM jede volle Stunde, sonst leer
+                for col_i in range(cols_per_workday):
+                    abs_min = morning_start_min + col_i * minutes_per_col
+                    h, m = divmod(abs_min, 60)
+                    label = f'{h:02d}:{m:02d}' if col_i % label_every == 0 else ''
+                    cell = ws.cell(row=start_row + 1, column=current_col + col_i, value=label)
                     cell.fill = header_fill
                     cell.font = header_font
                     cell.alignment = header_alignment
                     cell.border = border
-                    ws.column_dimensions[get_column_letter(current_col + hour)].width = 5
+                    ws.column_dimensions[get_column_letter(current_col + col_i)].width = col_width
+
+                current_col += cols_per_workday
             else:
-                # Nicht-Arbeitstag: Wochentag-Kürzel
-                weekday_label = weekday_names[current_date.weekday()]
-                cell = ws.cell(row=start_row + 1, column=current_col, value=weekday_label)
+                # Nicht-Arbeitstag: 1 Spalte
+                cell = ws.cell(row=start_row, column=current_col,
+                               value=current_date.strftime('%d.%m'))
                 cell.fill = weekend_fill
                 cell.font = header_font
                 cell.alignment = header_alignment
                 cell.border = border
-                ws.column_dimensions[get_column_letter(current_col)].width = 5
+                weekday_label = weekday_names[current_date.weekday()]
+                cell2 = ws.cell(row=start_row + 1, column=current_col, value=weekday_label)
+                cell2.fill = weekend_fill
+                cell2.font = header_font
+                cell2.alignment = header_alignment
+                cell2.border = border
+                ws.column_dimensions[get_column_letter(current_col)].width = col_width
+                current_col += 1
 
-            current_col += hours_for_day
             current_date += timedelta(days=1)
 
     elif granularity == 'hours':
-        # Stunden-basierte Timeline (nur Arbeitsstunden pro Tag)
-        # Zeige 8 Stunden pro Arbeitstag (Standard aus defaults.cfg)
-        rows_used = 2  # Datum + Stunde
+        # Stundengranularität: jede Spalte = hours_col_minutes Minuten (Standard: 30 = halbe Stunde)
+        hours_col_minutes = int(tlcfg.get('hours_col_minutes', 30))
+        hours_per_day     = int(tlcfg.get('hours_per_day', 8))
+        morning_start_str = tlcfg.get('morning_shift_start', '09:00')
+        mh, mm_s          = map(int, morning_start_str.split(':'))
+        morning_start_min = mh * 60 + mm_s
+        cols_per_workday  = (hours_per_day * 60) // hours_col_minutes
 
-        # Extrahiere working_days Konfiguration
+        rows_used     = 2  # Datum + Uhrzeit
+        weekend_fill  = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
         weekday_names = {0: 'Mo', 1: 'Di', 2: 'Mi', 3: 'Do', 4: 'Fr', 5: 'Sa', 6: 'So'}
-        weekend_fill = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
 
-        # Zeile 1: Datum mit einer Spalte pro Arbeitsstunde
         current_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        date_col_start = current_col
-
         while current_date.date() <= end_date.date():
             is_workday = is_working_day(current_date, working_days)
-            hours_for_day = 8 if is_workday else 1  # 8 Stunden für Arbeitstage, 1 Spalte für Nicht-Arbeitstage
-
-            # Merge Datum über alle Stunden des Tages
-            if hours_for_day > 1:
-                ws.merge_cells(
-                    start_row=start_row,
-                    start_column=current_col,
-                    end_row=start_row,
-                    end_column=current_col + hours_for_day - 1
-                )
-
-            cell = ws.cell(row=start_row, column=current_col,
-                         value=current_date.strftime('%d.%m') if is_workday else current_date.strftime('%d.%m'))
-            cell.fill = weekend_fill if not is_workday else header_fill
-            cell.font = header_font
-            cell.alignment = header_alignment
-            cell.border = border
-
-            # Zeile 2: Stunden (0-7 für 8-Stunden-Tag) oder Wochentag-Kürzel
             if is_workday:
-                for hour in range(8):
-                    cell = ws.cell(row=start_row + 1, column=current_col + hour, value=str(hour))
+                # Zeile 1: Datum über alle Slot-Spalten
+                ws.merge_cells(
+                    start_row=start_row, start_column=current_col,
+                    end_row=start_row,   end_column=current_col + cols_per_workday - 1
+                )
+                cell = ws.cell(row=start_row, column=current_col,
+                               value=current_date.strftime('%d.%m'))
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = header_alignment
+                cell.border = border
+
+                # Zeile 2: HH:MM für jeden Slot
+                for slot_i in range(cols_per_workday):
+                    abs_min = morning_start_min + slot_i * hours_col_minutes
+                    h, m = divmod(abs_min, 60)
+                    cell = ws.cell(row=start_row + 1, column=current_col + slot_i,
+                                   value=f'{h:02d}:{m:02d}')
                     cell.fill = header_fill
                     cell.font = header_font
                     cell.alignment = header_alignment
                     cell.border = border
-                    ws.column_dimensions[get_column_letter(current_col + hour)].width = 4
+                    ws.column_dimensions[get_column_letter(current_col + slot_i)].width = 5
+
+                current_col += cols_per_workday
             else:
-                # Nicht-Arbeitstag: Wochentag-Kürzel
-                weekday_label = weekday_names[current_date.weekday()]
-                cell = ws.cell(row=start_row + 1, column=current_col, value=weekday_label)
+                # Nicht-Arbeitstag: 1 Spalte
+                cell = ws.cell(row=start_row, column=current_col,
+                               value=current_date.strftime('%d.%m'))
                 cell.fill = weekend_fill
                 cell.font = header_font
                 cell.alignment = header_alignment
                 cell.border = border
+                weekday_label = weekday_names[current_date.weekday()]
+                cell2 = ws.cell(row=start_row + 1, column=current_col, value=weekday_label)
+                cell2.fill = weekend_fill
+                cell2.font = header_font
+                cell2.alignment = header_alignment
+                cell2.border = border
                 ws.column_dimensions[get_column_letter(current_col)].width = 4
+                current_col += 1
 
-            current_col += hours_for_day
             current_date += timedelta(days=1)
 
     elif granularity == 'halfdays':
         # Halbtages-basierte Timeline (Vormittag/Nachmittag)
+        cols_per_workday = 2
         # Arbeitstage: 2 Spalten (VM/NM)
         # Nicht-Arbeitstage: 1 Spalte pro Tag (Sa, So)
         rows_used = 2  # Datum und VM/NM/Sa/So
@@ -477,6 +530,8 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
             current_date += timedelta(days=1)
 
     elif granularity == 'days':
+        # Tagesgranularität: 1 Spalte pro Tag
+        cols_per_workday = 1
         # Wenn mehr als 7 Tage: Zeige Kalenderwochen
         # Wochenenden-Hintergrund
         weekend_fill = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
@@ -611,7 +666,7 @@ def create_timeline_header(ws, start_col: int, start_row: int, start_date: datet
                 current_date += timedelta(days=1)
                 current_col += 1
 
-    return rows_used
+    return rows_used, cols_per_workday
 
 
 def draw_gantt_bar(ws, row: int, start_col: int, faz_offset: int, duration_cols: int,
@@ -668,7 +723,7 @@ def draw_gantt_bar(ws, row: int, start_col: int, faz_offset: int, duration_cols:
                 cell.border = Border(top=border_side, bottom=border_side)
 
 
-def create_gantt_chart(wb: Workbook, project: PersonProject, result: CPMResult,
+def create_gantt_chart(wb: Workbook, project: Project, result: CPMResult,
                       report: GanttReport, full_config: Dict[str, Any]) -> None:
     """
     Erstellt Gantt-Chart-Worksheet.
@@ -713,7 +768,10 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, result: CPMResult,
     # Timeline-Header (ab Spalte 6 = 'chart')
     chart_start_col = len(report.columns)
     working_days = resolution_config['working_days']
-    timeline_rows = create_timeline_header(ws, chart_start_col, row, start_date, end_date, granularity, working_days)
+    timeline_config = full_config.get('Gantt_timeline', {})
+    timeline_rows, cols_per_workday = create_timeline_header(
+        ws, chart_start_col, row, start_date, end_date, granularity, working_days, timeline_config
+    )
 
     # Daten-Zeilen
     data_start_row = row + timeline_rows
@@ -763,26 +821,10 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, result: CPMResult,
         ws.cell(row=current_row, column=5, value=format_time_value_auto(task.duration))
 
         # Spalte F+: chart (Balkendiagramm)
-        # Berechne Positionen basierend auf Granularität
-        # Hinweis: task.faz, task.duration sind in "Tagen" (1 Tag = 8 Arbeitsstunden aus defaults.cfg)
-        if granularity == 'minutes':
-            # Bei Minutenauflösung: 1 Arbeitstag = 480 Minuten
-            time_unit_factor = 480  # 1 Arbeitstag = 480 Minuten
-        elif granularity == 'hours':
-            # Bei Stundenauflösung: 1 Arbeitstag = 8 Stunden (Standard aus defaults.cfg)
-            # Die Timeline zeigt Stunden an, daher time_unit_factor = 8
-            time_unit_factor = 8  # 1 Arbeitstag = 8 Arbeitsstunden
-        elif granularity == 'halfdays':
-            # Bei Halbtagesauflösung: 1 Tag = 2 Spalten (VM + NM)
-            # Aber Nicht-Arbeitstage haben nur 1 Spalte - das wird in der Offset-Berechnung berücksichtigt
-            time_unit_factor = 2  # 1 Arbeitstag = 2 halbe Tage
-        else:
-            # Bei Tagesauflösung: 1 Tag = 1 Spalte
-            time_unit_factor = 1  # 1 Tag = 1 Spalte
-
-        faz_offset = int(task.faz * time_unit_factor)
-        duration_cols = max(1, int(task.duration * time_unit_factor))
-        sez_offset = int(task.sez * time_unit_factor)
+        # cols_per_workday bestimmt die Skalierung: task.faz/duration in Tagen × cols_per_workday = Spalten-Offset
+        faz_offset    = int(task.faz      * cols_per_workday)
+        duration_cols = max(1, int(task.duration * cols_per_workday))
+        sez_offset    = int(task.sez      * cols_per_workday)
 
         is_critical = task_id in critical_path
 
@@ -794,7 +836,7 @@ def create_gantt_chart(wb: Workbook, project: PersonProject, result: CPMResult,
         current_row += 1
 
 
-def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult,
+def create_resource_list(wb: Workbook, project: Project, result: CPMResult,
                         report: ResourceListReport, full_config: Dict[str, Any]) -> None:
     """
     Erstellt Resource-List-Worksheet.
@@ -839,7 +881,10 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
     # Timeline-Header (ab Spalte 5 = 'chart')
     chart_start_col = len(report.columns)
     working_days = resolution_config['working_days']
-    timeline_rows = create_timeline_header(ws, chart_start_col, row, start_date, end_date, granularity, working_days)
+    timeline_config = full_config.get('Gantt_timeline', {})
+    timeline_rows, cols_per_workday = create_timeline_header(
+        ws, chart_start_col, row, start_date, end_date, granularity, working_days, timeline_config
+    )
 
     # Daten-Zeilen (Personen und Maschinen)
     data_start_row = row + timeline_rows
@@ -901,16 +946,7 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
                 color_position = 0.0
             resource_colors[res_info['id']] = interpolate_color(config['color_start'], config['color_end'], color_position)
 
-    # Zeitfaktor (analog zu Gantt-Chart)
-    # task.faz, task.duration sind in "Tagen" (1 Tag = 8 Arbeitsstunden)
-    if granularity == 'minutes':
-        time_unit_factor = 480  # 1 Arbeitstag = 480 Minuten
-    elif granularity == 'hours':
-        time_unit_factor = 8  # 1 Arbeitstag = 8 Arbeitsstunden
-    elif granularity == 'halfdays':
-        time_unit_factor = 2  # 1 Arbeitstag = 2 halbe Tage
-    else:
-        time_unit_factor = 1  # 1 Tag = 1 Spalte
+    # cols_per_workday bestimmt die Skalierung (konsistent mit Gantt-Chart)
 
     # Zeige alle Ressourcen
     for res_info in display_resources:
@@ -936,8 +972,8 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
         for task_id in resource_tasks[res_info['id']]:
             task = result.tasks[task_id]
 
-            faz_offset = int(task.faz * time_unit_factor)
-            duration_cols = max(1, int(task.duration * time_unit_factor))
+            faz_offset = int(task.faz * cols_per_workday)
+            duration_cols = max(1, int(task.duration * cols_per_workday))
 
             # Prüfe ob Task eine Pause ist
             is_break = hasattr(task, 'is_break') and task.is_break
@@ -972,26 +1008,261 @@ def create_resource_list(wb: Workbook, project: PersonProject, result: CPMResult
                         cell.fill = weekend_fill
 
 
-def add_report_sheets(wb: Workbook, project: PersonProject, result: CPMResult,
-                     cfg_dir: Path) -> None:
+def _apply_header_style(cell, fill_color: str = "4472C4") -> None:
+    """Wendet Standard-Header-Stil auf eine Zelle an."""
+    cell.fill = PatternFill(start_color=fill_color, end_color=fill_color, fill_type="solid")
+    cell.font = Font(bold=True, color="FFFFFF")
+    cell.alignment = Alignment(horizontal='center')
+
+
+def create_summary_sheet(wb: Workbook, result: CPMResult, project_name: str,
+                         tab_name: str = "Projektzusammenfassung") -> None:
     """
-    Fügt Report-Worksheets zur Excel-Datei hinzu.
+    Erzeugt einen Zusammenfassungs-Tab mit Projektübersicht.
+
+    Enthält: Projektname, Dauer, Start, Ende, Zeiteinheit,
+             Anzahl Tasks, Anzahl kritische Tasks, Puffer-Statistik.
 
     Args:
-        wb: Workbook
-        project: Projekt-Daten (PersonProject mit reports)
-        result: CPM-Berechnungsergebnis
-        cfg_dir: Verzeichnis mit Konfigurationsdateien
+        wb:           Workbook
+        result:       CPM-Berechnungsergebnis
+        project_name: Projektname
+        tab_name:     Reiter-Bezeichnung (aus [de]-Sektion der CFG)
     """
-    if not project.reports:
-        return
+    ws = wb.create_sheet(title=tab_name)
 
-    # Lade Excel-Export-Konfiguration (alle Sektionen)
-    full_config = load_excel_export_config(cfg_dir)
+    label_font = Font(bold=True)
+    title_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    title_font = Font(bold=True, color="FFFFFF", size=14)
 
-    for report in project.reports:
-        if isinstance(report, GanttReport):
-            create_gantt_chart(wb, project, result, report, full_config)
-        elif isinstance(report, ResourceListReport):
-            create_resource_list(wb, project, result, report, full_config)
-        # Weitere Report-Typen können hier hinzugefügt werden
+    # Titel
+    ws['A1'] = "Projektzusammenfassung"
+    ws['A1'].font = title_font
+    ws['A1'].fill = title_fill
+    ws.merge_cells('A1:B1')
+    ws.row_dimensions[1].height = 28
+
+    # Projektdaten
+    project_duration = max(task.fez for task in result.tasks.values())
+    critical_tasks = [t for t in result.tasks.values() if t.is_critical]
+    non_break_tasks = [t for t in result.tasks.values()
+                       if not t.is_break and not (isinstance(t.id, str) and t.id.startswith('WE-'))]
+
+    rows = [
+        ("Projekt:",         project_name),
+        ("Projektdauer:",    format_time_value_auto(project_duration)),
+        ("Zeiteinheit:",     result.time_unit),
+        ("Anzahl Tasks:",    len(non_break_tasks)),
+        ("Kritische Tasks:", len([t for t in non_break_tasks if t.is_critical])),
+    ]
+
+    if result.project_start:
+        end_date = add_workdays(result.project_start, project_duration)
+        rows.insert(2, ("Startdatum:", result.project_start.strftime('%Y-%m-%d')))
+        rows.insert(3, ("Enddatum:",   end_date.strftime('%Y-%m-%d')))
+
+    if result.calculation_date:
+        rows.append(("Erstellt am:", result.calculation_date.strftime('%Y-%m-%d %H:%M')))
+
+    for i, (label, value) in enumerate(rows, start=3):
+        ws.cell(row=i, column=1, value=label).font = label_font
+        ws.cell(row=i, column=2, value=value)
+
+    # Puffer-Statistik
+    puffer_row = len(rows) + 4
+    ws.cell(row=puffer_row, column=1, value="Puffer-Statistik").font = Font(bold=True, size=11)
+    puffer_row += 1
+
+    headers = ["Task", "Dauer", "GP", "FP", "Kritisch"]
+    for col, h in enumerate(headers, start=1):
+        _apply_header_style(ws.cell(row=puffer_row, column=col))
+        ws.cell(row=puffer_row, column=col).value = h
+
+    puffer_row += 1
+    crit_fill = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
+    for task in sorted(non_break_tasks, key=lambda t: t.faz):
+        ws.cell(row=puffer_row, column=1, value=task.name)
+        ws.cell(row=puffer_row, column=2, value=format_time_value_auto(task.duration))
+        ws.cell(row=puffer_row, column=3, value=format_time_value_auto(task.puffer))
+        ws.cell(row=puffer_row, column=4, value=format_time_value_auto(task.free_puffer))
+        ws.cell(row=puffer_row, column=5, value="JA" if task.is_critical else "")
+        if task.is_critical:
+            for col in range(1, 6):
+                ws.cell(row=puffer_row, column=col).fill = crit_fill
+        puffer_row += 1
+
+    ws.column_dimensions['A'].width = 22
+    ws.column_dimensions['B'].width = 25
+    ws.column_dimensions['C'].width = 12
+    ws.column_dimensions['D'].width = 12
+    ws.column_dimensions['E'].width = 10
+
+
+def create_critical_path_sheet(wb: Workbook, result: CPMResult,
+                               tab_name: str = "Kritischer Pfad") -> None:
+    """
+    Erzeugt einen Tab mit ausschließlich den kritischen Tasks.
+
+    Enthält: ID, Name, Dauer, FAZ, FEZ (in der Zeiteinheit des Projekts).
+
+    Args:
+        wb:       Workbook
+        result:   CPM-Berechnungsergebnis
+        tab_name: Reiter-Bezeichnung (aus [de]-Sektion der CFG)
+    """
+    ws = wb.create_sheet(title=tab_name)
+
+    title_fill = PatternFill(start_color="C92A2A", end_color="C92A2A", fill_type="solid")
+    title_font = Font(bold=True, color="FFFFFF", size=14)
+    crit_fill  = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
+
+    ws['A1'] = "Kritischer Pfad"
+    ws['A1'].font = title_font
+    ws['A1'].fill = title_fill
+    ws.merge_cells('A1:F1')
+    ws.row_dimensions[1].height = 28
+
+    tu = result.time_unit
+    headers = ["ID", "Name", f"Dauer ({tu})", f"FAZ ({tu})", f"FEZ ({tu})", f"GP ({tu})"]
+    for col, h in enumerate(headers, start=1):
+        cell = ws.cell(row=3, column=col, value=h)
+        _apply_header_style(cell, fill_color="C92A2A")
+
+    row = 4
+    critical_ids = [tid for tid in result.critical_path
+                    if tid in result.tasks
+                    and not (isinstance(tid, str) and tid.startswith('WE-'))
+                    and not result.tasks[tid].is_break]
+
+    for tid in critical_ids:
+        task = result.tasks[tid]
+        ws.cell(row=row, column=1, value=str(tid))
+        ws.cell(row=row, column=2, value=task.name)
+        ws.cell(row=row, column=3, value=format_time_value_auto(task.duration))
+        ws.cell(row=row, column=4, value=format_time_value_auto(task.faz))
+        ws.cell(row=row, column=5, value=format_time_value_auto(task.fez))
+        ws.cell(row=row, column=6, value=format_time_value_auto(task.puffer))
+        for col in range(1, 7):
+            ws.cell(row=row, column=col).fill = crit_fill
+        row += 1
+
+    ws.column_dimensions['A'].width = 10
+    ws.column_dimensions['B'].width = 35
+    ws.column_dimensions['C'].width = 12
+    ws.column_dimensions['D'].width = 12
+    ws.column_dimensions['E'].width = 12
+    ws.column_dimensions['F'].width = 12
+
+
+def create_tasklist_sheet(wb: Workbook, result: CPMResult,
+                          tab_name: str = "Alle Tasks") -> None:
+    """
+    Erzeugt einen vollständigen Tasklisten-Tab mit allen CPM-Werten.
+
+    Entspricht dem früheren "CPM Analyse"-Tab: ID, Name, Dauer,
+    FAZ, FEZ, SAZ, SEZ, Puffer, Kritisch.
+
+    Args:
+        wb:       Workbook
+        result:   CPM-Berechnungsergebnis
+        tab_name: Reiter-Bezeichnung (aus [de]-Sektion der CFG)
+    """
+    ws = wb.create_sheet(title=tab_name)
+
+    title_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    title_font = Font(bold=True, color="FFFFFF", size=14)
+    crit_fill  = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
+
+    ws['A1'] = "Taskliste"
+    ws['A1'].font = title_font
+    ws['A1'].fill = title_fill
+    ws.merge_cells('A1:I1')
+    ws.row_dimensions[1].height = 28
+
+    tu = result.time_unit
+    headers = ['ID', 'Name', 'Dauer', f'FAZ ({tu})', f'FEZ ({tu})',
+               f'SAZ ({tu})', f'SEZ ({tu})', 'Puffer', 'Kritisch']
+    for col, h in enumerate(headers, start=1):
+        _apply_header_style(ws.cell(row=3, column=col, value=h))
+
+    sorted_ids = sorted(
+        [tid for tid in result.tasks
+         if not (isinstance(tid, str) and tid.startswith('WE-'))
+         and not result.tasks[tid].is_break],
+        key=lambda x: result.tasks[x].faz
+    )
+
+    row = 4
+    for tid in sorted_ids:
+        task = result.tasks[tid]
+        ws.cell(row=row, column=1, value=str(tid))
+        ws.cell(row=row, column=2, value=task.name)
+        ws.cell(row=row, column=3, value=format_time_value_auto(task.duration))
+        ws.cell(row=row, column=4, value=format_time_value_auto(task.faz))
+        ws.cell(row=row, column=5, value=format_time_value_auto(task.fez))
+        ws.cell(row=row, column=6, value=format_time_value_auto(task.saz))
+        ws.cell(row=row, column=7, value=format_time_value_auto(task.sez))
+        ws.cell(row=row, column=8, value=format_time_value_auto(task.puffer))
+        ws.cell(row=row, column=9, value="JA" if task.is_critical else "")
+        if task.is_critical:
+            for col in range(1, 10):
+                ws.cell(row=row, column=col).fill = crit_fill
+        row += 1
+
+    ws.column_dimensions['A'].width = 10
+    ws.column_dimensions['B'].width = 35
+    ws.column_dimensions['C'].width = 10
+    ws.column_dimensions['D'].width = 10
+    ws.column_dimensions['E'].width = 10
+    ws.column_dimensions['F'].width = 10
+    ws.column_dimensions['G'].width = 10
+    ws.column_dimensions['H'].width = 10
+    ws.column_dimensions['I'].width = 10
+
+
+def create_netplan_table_sheet(wb: Workbook, result: CPMResult, tab_name: str = "Netzplan") -> None:
+    """
+    Erzeugt einen Tab mit Netzplan-Daten als Tabelle (aus generate_network_csv).
+
+    Args:
+        wb:       Workbook
+        result:   CPM-Berechnungsergebnis
+        tab_name: Reiter-Bezeichnung
+    """
+    try:
+        from network_diagram import generate_network_csv
+    except ImportError:
+        from .network_diagram import generate_network_csv
+
+    csv_text = generate_network_csv(result)
+    reader = csv.reader(io.StringIO(csv_text))
+    rows = list(reader)
+
+    ws = wb.create_sheet(title=tab_name)
+
+    title_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    title_font = Font(bold=True, color="FFFFFF", size=14)
+    crit_fill  = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
+
+    ws['A1'] = tab_name
+    ws['A1'].font = title_font
+    ws['A1'].fill = title_fill
+    if rows:
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(rows[0]))
+    ws.row_dimensions[1].height = 28
+
+    for row_idx, cols in enumerate(rows, start=3):
+        is_header = row_idx == 3
+        is_critical = len(cols) >= 11 and cols[10].strip() == 'JA'
+
+        for col_idx, value in enumerate(cols, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            if is_header:
+                _apply_header_style(cell)
+            elif is_critical:
+                cell.fill = crit_fill
+
+    col_widths = [10, 35, 8, 8, 8, 8, 8, 8, 8, 25, 10]
+    for i, w in enumerate(col_widths, start=1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+

@@ -1,12 +1,10 @@
 """
-Project models for different types
-===================================
+Project model (unified)
+========================
 
-Projekt-Modelle für verschiedene JSON-Strukturen:
-- SimpleProject: Einfache Projekte (tankdesign, pizza)
-- CycleProject: Projekte mit Instanzen (pizzas)
-- LoopProject: Projekte mit Loops (erdaushub)
-- PersonProject: Projekte mit Personen (software_simple)
+Einheitliches Projekt-Modell für alle JSON-Strukturen.
+Ein einzelnes `Project`-Modell ersetzt SimpleProject, CycleProject,
+LoopProject und PersonProject.  Backward-Compat-Aliase bleiben erhalten.
 """
 
 from pydantic import BaseModel, Field
@@ -20,7 +18,6 @@ except (ImportError, ValueError):
 
 from .tasks import SimpleTask, InstanceTask, LoopTask
 from .resources import Resource, Person, RestInterval
-from .reports import Report
 
 
 class ProjectBase(BaseModel):
@@ -108,228 +105,124 @@ class ProjectBase(BaseModel):
     }
 
 
-class SimpleProject(ProjectBase):
+class Project(ProjectBase):
     """
-    Einfaches Projekt (tankdesign.json, pizza.json)
+    Einheitliches Projekt-Modell (ersetzt SimpleProject, CycleProject,
+    LoopProject und PersonProject).
 
-    Nur Basis-Felder, keine speziellen Ressourcen oder Personen.
-    """
-
-    tasks: List[SimpleTask]
-
-
-class CycleProject(ProjectBase):
-    """
-    Projekt mit Zyklen/Instanzen (pizzas.json)
-
-    Zusätzliche Felder:
-    - order_volume: Anzahl der zu produzierenden Einheiten
-    - unit: Einheit (z.B. "Pizzen")
-    - resources: Liste von Ressourcen
-    - tasks: Kann SimpleTask oder InstanceTask enthalten
+    Alle Felder sind optional — vorhandene Felder bestimmen das Verhalten:
+    - order_volume + InstanceTask → expand_cycles() anwenden
+    - total_volume + LoopTask    → expand_loops() anwenden
+    - persons                    → Ressourcen/Personenauswertung aktiv
     """
 
-    order_volume: int
-    unit: str
-    resources: List[Resource]
-    tasks: List[Union[SimpleTask, InstanceTask]]
+    # Felder für Zyklus-Projekte (ehemals CycleProject)
+    order_volume: Optional[int] = None
 
-    def expand_cycles(self) -> 'SimpleProject':
+    # Felder für Loop- und Personen-Projekte (ehemals LoopProject / PersonProject)
+    total_volume: Optional[Union[int, float]] = None
+    total_hours: Optional[int] = None
+    unit: Optional[str] = None
+
+    # Ressourcen und Personen (ehemals PersonProject / CycleProject / LoopProject)
+    resources: Optional[List[Resource]] = None
+    persons: Optional[List[Person]] = None
+    resting_times: Optional[List['RestInterval']] = None
+
+    # Alle Task-Typen in einem Union (spezifischere zuerst)
+    tasks: List[Union[LoopTask, InstanceTask, SimpleTask]] = []
+
+    # ------------------------------------------------------------------
+    # Expansion
+    # ------------------------------------------------------------------
+
+    def expand_cycles(self) -> 'Project':
         """
         Expandiert InstanceTasks in einzelne Zyklen.
 
-        Returns:
-            Neues SimpleProject mit expandierten Tasks
+        Gibt `self` unverändert zurück, wenn keine InstanceTasks vorhanden sind.
 
-        Examples:
-            >>> project = load_project("examples/pizzas.json")
-            >>> expanded = project.expand_cycles()
-            >>> len(expanded.tasks)  # 1 + (3 * 12) = 37 tasks
-            37
+        Returns:
+            Neues Project mit expandierten Tasks
         """
         from .expander import expand_instance_task
 
+        if not any(isinstance(t, InstanceTask) for t in self.tasks):
+            return self  # Keine InstanceTasks → nichts zu tun
+
+        if self.order_volume is None:
+            raise ValueError("order_volume muss für Cycle-Expansion gesetzt sein")
+
         expanded_tasks = []
-        instance_task_mapping = {}  # Mapping: original_id -> [expanded_task_ids]
+        instance_task_mapping: dict = {}
 
         for task in self.tasks:
             if isinstance(task, InstanceTask):
-                # Expandiere InstanceTask
                 expanded = expand_instance_task(task, self.order_volume, self.tasks)
                 expanded_tasks.extend(expanded)
-                # Speichere Mapping
                 instance_task_mapping[task.id] = [t.id for t in expanded]
             else:
-                # SimpleTask bleibt unverändert
                 expanded_tasks.append(task)
 
-        # Aktualisiere Dependencies: Ersetze Referenzen auf expandierte Tasks
         for task in expanded_tasks:
             if task.dependencies:
                 updated_deps = []
                 for dep_id in task.dependencies:
                     if dep_id in instance_task_mapping:
-                        # Referenziert einen expandierten InstanceTask
-                        # Verweise auf den LETZTEN expandierten Task (letzte Instanz)
                         updated_deps.append(instance_task_mapping[dep_id][-1])
                     else:
-                        # Normale Dependency
                         updated_deps.append(dep_id)
-                # Aktualisiere dependencies
                 task.dependencies = updated_deps
 
-        # Erstelle neues SimpleProject
-        return SimpleProject(
+        return Project(
             project=self.project,
             project_start=self.project_start,
-            tasks=expanded_tasks
+            tasks=expanded_tasks,
         )
 
-
-class LoopProject(ProjectBase):
-    """
-    Projekt mit Loops (erdaushub.json)
-
-    Zusätzliche Felder:
-    - total_volume: Gesamtvolumen
-    - unit: Einheit (z.B. "m3")
-    - resources: Liste von Ressourcen (Maschinen, LKWs)
-    - tasks: Kann SimpleTask oder LoopTask enthalten
-    """
-
-    total_volume: Union[int, float]
-    unit: str
-    resources: List[Resource]
-    tasks: List[Union[SimpleTask, LoopTask]]
-
-    def expand_loops(self) -> 'SimpleProject':
+    def expand_loops(self) -> 'Project':
         """
-        Expandiert LoopTasks basierend auf loop_until Bedingung.
+        Expandiert LoopTasks basierend auf loop_until-Bedingung.
+
+        Gibt `self` unverändert zurück, wenn keine LoopTasks vorhanden sind.
+        Personen, Ressourcen und Ruhepausen-Regeln werden im Ergebnis beibehalten.
 
         Returns:
-            Neues SimpleProject mit expandierten Tasks
-
-        Examples:
-            >>> project = load_project("examples/erdaushub.json")
-            >>> expanded = project.expand_loops()
-            >>> # Tasks werden basierend auf total_volume expandiert
+            Neues Project mit expandierten Tasks
         """
         from .expander import expand_loop_task
 
+        if not any(isinstance(t, LoopTask) for t in self.tasks):
+            return self  # Keine LoopTasks → nichts zu tun
+
+        if self.total_volume is None:
+            raise ValueError("total_volume muss für Loop-Expansion gesetzt sein")
+
         expanded_tasks = []
-        loop_task_mapping = {}  # Mapping: original_id -> [expanded_task_ids]
+        loop_task_mapping: dict = {}
 
         for task in self.tasks:
             if isinstance(task, LoopTask):
-                # Expandiere LoopTask
-                expanded = expand_loop_task(task, self.total_volume, self.resources)
+                expanded = expand_loop_task(task, self.total_volume, self.resources or [])
                 expanded_tasks.extend(expanded)
-                # Speichere Mapping
                 loop_task_mapping[task.id] = [t.id for t in expanded]
             else:
-                # SimpleTask bleibt unverändert
                 expanded_tasks.append(task)
 
-        # Aktualisiere Dependencies: Ersetze Referenzen auf expandierte Tasks
         for task in expanded_tasks:
             if task.dependencies:
                 updated_deps = []
                 for dep_id in task.dependencies:
                     if dep_id in loop_task_mapping:
-                        # Referenziert einen expandierten LoopTask
-                        # Verweise auf den ERSTEN expandierten Task (erste Iteration)
-                        # weil die Task-Abhängigkeit auf den Anfang der Loop zeigen soll
                         updated_deps.append(loop_task_mapping[dep_id][0])
                     else:
-                        # Normale Dependency
                         updated_deps.append(dep_id)
-                # Aktualisiere dependencies
                 task.dependencies = updated_deps
 
-        # Erstelle neues SimpleProject
-        return SimpleProject(
-            project=self.project,
-            project_start=self.project_start,
-            tasks=expanded_tasks
-        )
-
-
-class PersonProject(ProjectBase):
-    """
-    Projekt mit Personen (software_simple.json, erdaushub.json mit Personen)
-
-    Zusätzliche Felder:
-    - total_hours: Geschätzte Gesamtstunden (optional)
-    - total_volume: Gesamtvolumen für Loop-Tasks (optional)
-    - unit: Einheit (z.B. "hours", "m3")
-    - persons: Liste von Personen mit Details
-    - resources: Liste von Ressourcen (verweisen auf persons via person_id)
-    - tasks: Liste von SimpleTask oder LoopTask
-    - reports: Liste von Reports (Gantt Chart, Resource List, etc.)
-    - resting_times: Gemeinsame Ruhepausen-Regeln (optional)
-    """
-
-    total_hours: Optional[int] = None
-    total_volume: Optional[Union[int, float]] = None
-    unit: Optional[str] = None
-    persons: List[Person]
-    resources: List[Resource]
-    tasks: List[Union[SimpleTask, LoopTask]]
-    reports: Optional[List[Report]] = None
-    resting_times: Optional[List['RestInterval']] = None
-
-    def expand_loops(self) -> 'PersonProject':
-        """
-        Expandiert LoopTasks basierend auf loop_until Bedingung.
-
-        Returns:
-            Neues PersonProject mit expandierten Tasks
-
-        Examples:
-            >>> project = load_project("examples/erdaushub.json")
-            >>> expanded = project.expand_loops()
-            >>> # Tasks werden basierend auf total_volume expandiert
-        """
-        from .expander import expand_loop_task
-
-        expanded_tasks = []
-        loop_task_mapping = {}  # Mapping: original_id -> [expanded_task_ids]
-
-        for task in self.tasks:
-            if isinstance(task, LoopTask):
-                # Expandiere LoopTask
-                if self.total_volume is None:
-                    raise ValueError(f"total_volume muss für Loop-Task '{task.name}' gesetzt sein")
-                expanded = expand_loop_task(task, self.total_volume, self.resources)
-                expanded_tasks.extend(expanded)
-                # Speichere Mapping
-                loop_task_mapping[task.id] = [t.id for t in expanded]
-            else:
-                # SimpleTask bleibt unverändert
-                expanded_tasks.append(task)
-
-        # Aktualisiere Dependencies: Ersetze Referenzen auf expandierte Tasks
-        for task in expanded_tasks:
-            if task.dependencies:
-                updated_deps = []
-                for dep_id in task.dependencies:
-                    if dep_id in loop_task_mapping:
-                        # Referenziert einen expandierten LoopTask
-                        # Verweise auf den ERSTEN expandierten Task (erste Iteration)
-                        # weil die Task-Abhängigkeit auf den Anfang der Loop zeigen soll
-                        updated_deps.append(loop_task_mapping[dep_id][0])
-                    else:
-                        # Normale Dependency
-                        updated_deps.append(dep_id)
-                # Aktualisiere dependencies
-                task.dependencies = updated_deps
-
-        # Füge Ruhepausen ein (falls resting_times definiert)
-        if self.resting_times:
+        if self.persons and self.resting_times:
             expanded_tasks = self._insert_rest_breaks(expanded_tasks)
 
-        # Erstelle neues PersonProject mit expandierten Tasks
-        return PersonProject(
+        return Project(
             project=self.project,
             project_start=self.project_start,
             total_hours=self.total_hours,
@@ -338,19 +231,12 @@ class PersonProject(ProjectBase):
             persons=self.persons,
             resources=self.resources,
             tasks=expanded_tasks,
-            reports=self.reports,
-            resting_times=self.resting_times
+            resting_times=self.resting_times,
         )
 
     def _insert_rest_breaks(self, tasks: List[SimpleTask]) -> List[SimpleTask]:
         """
         Fügt Ruhepausen-Tasks basierend auf Arbeitszeit-Regeln ein.
-
-        Args:
-            tasks: Liste der expandierten Tasks
-
-        Returns:
-            Liste mit Tasks inklusive eingefügten Pausen
         """
         try:
             from .rest_breaks import resolve_rest_intervals, PersonWorkTracker
@@ -362,7 +248,6 @@ class PersonProject(ProjectBase):
         except (ImportError, ValueError):
             from utils import parse_duration_to_minutes
 
-        # Erstelle Tracker für jede Person
         trackers = {}
         for person in self.persons:
             intervals = resolve_rest_intervals(person, self.resting_times)
@@ -370,11 +255,10 @@ class PersonProject(ProjectBase):
                 trackers[person.id] = PersonWorkTracker(person.id, intervals)
 
         if not trackers:
-            return tasks  # Keine Pausenregeln
+            return tasks
 
-        # Erstelle Ressource -> Person Mapping
         res_to_person = {}
-        for res in self.resources:
+        for res in (self.resources or []):
             if hasattr(res, 'person_id') and res.person_id:
                 res_to_person[res.id] = res.person_id
 
@@ -382,65 +266,59 @@ class PersonProject(ProjectBase):
         break_counter = 1
 
         for task in tasks:
-            # Berechne Arbeitszeit für diesen Task
             if task.resources and not task.is_break:
                 task_minutes = parse_duration_to_minutes(task.duration)
                 task_hours = task_minutes / 60.0
 
-                # Sammle alle Personen die an diesem Task arbeiten
                 working_persons = set()
                 for res_id in task.resources:
                     person_id = res_to_person.get(res_id)
                     if person_id and person_id in trackers:
                         working_persons.add(person_id)
 
-                # Prüfe ob Pausen erforderlich sind
-                required_breaks = {}  # person_id -> RestInterval
+                required_breaks = {}
                 for person_id in working_persons:
                     tracker = trackers[person_id]
                     required_break = tracker.add_work_time(task_hours)
                     if required_break:
                         required_breaks[person_id] = required_break
 
-                # Füge Task hinzu
                 tasks_with_breaks.append(task)
 
-                # Füge Pausen-Tasks ein (eine pro Person die eine Pause braucht)
                 for person_id, rest_interval in required_breaks.items():
                     person = next((p for p in self.persons if p.id == person_id), None)
-                    person_res_id = next((rid for rid, pid in res_to_person.items() if pid == person_id), None)
 
                     if person:
-                        # Kürze Person-ID für kompaktere Pause-IDs (PERS1 -> P1)
                         person_id_short = person_id.replace('PERS', 'P')
-
-                        # Pause-ID basiert auf vorheriger Task-ID für korrekte Sortierung
-                        # z.B. "2-F10-TRA" -> "2-F10-TRA-BRK-P1"
                         break_id = f"{task.id}-BRK-{person_id_short}"
 
                         break_task = SimpleTask(
                             id=break_id,
                             name=f"Pause: {person.name} ({rest_interval.note or rest_interval.duration})",
                             duration=rest_interval.duration,
-                            resources=None,   # Keine Ressourcen – Pause blockiert Zeit, nicht die Person
-                            cost=0.0,         # Keine Kosten
-                            dependencies=[],  # Wird über den Vorgänger-Task verknüpft
+                            resources=None,
+                            cost=0.0,
+                            dependencies=[],
                             is_break=True
                         )
 
-                        # WICHTIG: Der vorherige Task muss die Pause als Nachfolger haben
-                        # (dependencies = Nachfolger im System!)
                         task.dependencies.append(break_id)
-
                         tasks_with_breaks.append(break_task)
                         trackers[person_id].take_break(rest_interval)
                         break_counter += 1
             else:
-                # Task ohne Ressourcen oder ist bereits eine Pause
                 tasks_with_breaks.append(task)
 
         return tasks_with_breaks
 
 
-# Union-Type für alle Projekt-Varianten
-Project = Union[SimpleProject, CycleProject, LoopProject, PersonProject]
+# ---------------------------------------------------------------------------
+# Backward-Compat-Aliase
+# Alle vier ehemaligen Klassen zeigen auf Project.
+# isinstance(project, PersonProject) etc. funktionieren weiterhin, weil
+# alle Projects Instanzen von Project sind.
+# ---------------------------------------------------------------------------
+SimpleProject = Project
+CycleProject = Project
+LoopProject = Project
+PersonProject = Project

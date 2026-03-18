@@ -20,64 +20,6 @@ def _format_duration(duration: float, time_unit: str = 'days') -> str:
         return f"{duration:.0f}d"
 
 
-def generate_network_text(
-    result: CPMResult,
-    include_duration: bool = True,
-    include_times: bool = True
-) -> str:
-    """
-    Generiert eine Text-basierte Netzplan-Darstellung.
-
-    Format:
-    [ID] Task Name (Duration)
-        → [ID] Task Name
-        → [ID] Task Name
-
-    Args:
-        result: CPMResult mit berechneten Tasks
-        include_duration: Ob Dauer angezeigt werden soll
-        include_times: Ob FAZ/FEZ angezeigt werden sollen
-
-    Returns:
-        Formatierter Netzplan als String
-    """
-    lines = []
-    lines.append("### Netzplan")
-    lines.append("")
-
-    # Sortiere nach Topologie (FAZ)
-    sorted_tasks = sorted(
-        result.tasks.items(),
-        key=lambda x: x[1].faz
-    )
-
-    for task_id, task in sorted_tasks:
-        # Task-Zeile
-        task_line = f"[{task_id}] {task.name}"
-
-        if include_duration:
-            duration = _format_duration(task.duration, result.time_unit)
-            task_line += f" ({duration})"
-
-        if include_times:
-            faz = _format_duration(task.faz, result.time_unit)
-            fez = _format_duration(task.fez, result.time_unit)
-            task_line += f" | FAZ: {faz}, FEZ: {fez}"
-
-        lines.append(task_line)
-
-        # Abhängigkeiten (Nachfolger)
-        if task.successors:
-            for succ_id in sorted(task.successors, key=str):
-                if succ_id in result.tasks:
-                    succ_task = result.tasks[succ_id]
-                    lines.append(f"  → [{succ_id}] {succ_task.name}")
-
-        lines.append("")
-
-    return "\n".join(lines)
-
-
 def generate_mermaid_network(
     result: CPMResult,
     show_critical_path: bool = True,
@@ -151,53 +93,6 @@ def generate_mermaid_network(
     lines.append('    classDef critical fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:3px')
     lines.append('    classDef normal fill:#4472c4,stroke:#2f5496,color:#fff')
 
-    return "\n".join(lines)
-
-
-def generate_network_ascii(result: CPMResult) -> str:
-    """
-    Generiert eine ASCII-basierte Netzplan-Darstellung.
-
-    Args:
-        result: CPMResult mit berechneten Tasks
-
-    Returns:
-        ASCII-Netzplan als String
-    """
-    lines = []
-    lines.append("### Netzplan (ASCII)")
-    lines.append("")
-
-    # Gruppiere Tasks in Spalten basierend auf FAZ
-    min_faz = min(task.faz for task in result.tasks.values())
-    max_fez = max(task.fez for task in result.tasks.values())
-
-    # Erstelle Matrix für Visualisierung
-    # Zeilen = Zeit (in Tagen/Stunden)
-    # Spalten = verschiedene Task-Pfade
-
-    sorted_tasks = sorted(
-        result.tasks.items(),
-        key=lambda x: (x[1].faz, x[1].fez)
-    )
-
-    for task_id, task in sorted_tasks:
-        # Visualisierung: Zeitbalken
-        faz = int(task.faz)
-        fez = int(task.fez)
-        duration = int(task.duration)
-
-        # Erstelle Balken
-        bar = "=" * duration
-        if task.is_critical:
-            bar = "[" + bar + "]"  # Kritischer Task: in Klammern
-
-        # Task-Zeile
-        spacing = " " * faz
-        line = f"[{task_id:2d}] {spacing}{bar} {task.name[:40]}"
-        lines.append(line)
-
-    lines.append("")
     return "\n".join(lines)
 
 

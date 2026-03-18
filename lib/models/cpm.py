@@ -785,7 +785,7 @@ class CPMCalculator:
         Hinweis: In dieser Phase arbeiten wir mit reinen Arbeitstagen ohne Kalender-Unterbrechungen.
         """
         # Hole Ressourcen aus dem Projekt
-        resources = getattr(self.project, 'resources', []) if hasattr(self.project, 'resources') else []
+        resources = getattr(self.project, 'resources', None) or []
 
         # Finde Maschinen-Ressourcen mit Kapazitätslimit
         machine_resources = {}

@@ -1,8 +1,8 @@
 """
-Project loader with auto-detection
-===================================
+Project loader
+==============
 
-Automatische Erkennung und Laden von verschiedenen Projekt-Typen.
+Lädt Projekt-JSON-Dateien als einheitliches Project-Modell.
 """
 
 import json
@@ -10,75 +10,33 @@ from pathlib import Path
 from typing import Union
 from pydantic import ValidationError
 
-from .project import SimpleProject, CycleProject, LoopProject, PersonProject, Project
-
-
-def detect_project_type(data: dict) -> str:
-    """
-    Erkennt den Projekt-Typ basierend auf vorhandenen Feldern.
-
-    Args:
-        data: Dictionary mit JSON-Daten
-
-    Returns:
-        Projekt-Typ als String: 'person', 'cycle', 'loop' oder 'simple'
-    """
-    # Prüfe auf charakteristische Felder
-    if 'persons' in data:
-        return 'person'
-    elif 'order_volume' in data:
-        return 'cycle'
-    elif 'total_volume' in data:
-        return 'loop'
-    else:
-        return 'simple'
+from .project import Project
 
 
 def load_project(file_path: Union[str, Path]) -> Project:
     """
-    Lädt eine Projekt-JSON-Datei und erkennt automatisch den Typ.
+    Lädt eine Projekt-JSON-Datei.
 
     Args:
         file_path: Pfad zur JSON-Datei
 
     Returns:
-        Pydantic-Projekt-Modell (SimpleProject, CycleProject, LoopProject, oder PersonProject)
+        Project-Modell
 
     Raises:
         ValidationError: Wenn die JSON-Struktur ungültig ist
         FileNotFoundError: Wenn die Datei nicht existiert
         json.JSONDecodeError: Wenn die Datei kein gültiges JSON enthält
-
-    Examples:
-        >>> project = load_project("examples/software_simple.json")
-        >>> print(project.project)
-        'Software Entwicklung Projekt'
-        >>> if isinstance(project, PersonProject):
-        ...     print(f"Personen: {len(project.persons)}")
     """
     file_path = Path(file_path)
 
-    # Lade JSON
     with open(file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    # Erkenne Projekt-Typ
-    project_type = detect_project_type(data)
-
-    # Lade entsprechendes Modell
     try:
-        if project_type == 'person':
-            return PersonProject(**data)
-        elif project_type == 'cycle':
-            return CycleProject(**data)
-        elif project_type == 'loop':
-            return LoopProject(**data)
-        else:
-            return SimpleProject(**data)
-    except ValidationError as e:
-        # Erweitere Fehlermeldung mit Dateiinformationen
+        return Project(**data)
+    except ValidationError:
         print(f"Validation error in {file_path}:")
-        print(f"Detected project type: {project_type}")
         raise
 
 
@@ -86,32 +44,13 @@ def load_project_from_dict(data: dict) -> Project:
     """
     Lädt ein Projekt aus einem Dictionary.
 
-    Erkennt automatisch den Projekt-Typ und erstellt das entsprechende Modell.
-
     Args:
         data: Dictionary mit Projektdaten
 
     Returns:
-        Pydantic-Projekt-Modell (SimpleProject, CycleProject, LoopProject, oder PersonProject)
-
-    Examples:
-        >>> data = {"project": "Test", "tasks": []}
-        >>> project = load_project_from_dict(data)
-        >>> isinstance(project, SimpleProject)
-        True
+        Project-Modell
     """
-    # Erkenne Projekt-Typ
-    project_type = detect_project_type(data)
-
-    # Lade entsprechendes Modell
-    if project_type == 'person':
-        return PersonProject(**data)
-    elif project_type == 'cycle':
-        return CycleProject(**data)
-    elif project_type == 'loop':
-        return LoopProject(**data)
-    else:
-        return SimpleProject(**data)
+    return Project(**data)
 
 
 def load_project_raw(file_path: Union[str, Path]) -> dict:

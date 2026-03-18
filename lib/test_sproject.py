@@ -24,8 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from lib.models import (
     load_project, save_project,
-    SimpleProject, PersonProject, CycleProject, LoopProject,
-    GanttReport, ResourceListReport,
+    Project, SimpleProject, PersonProject, CycleProject, LoopProject,
     CPMCalculator
 )
 
@@ -69,12 +68,13 @@ class TestProjectLoading(unittest.TestCase):
         self.assertGreater(len(project.resources), 0)
         self.assertGreater(len(project.tasks), 0)
 
-        # Prüfe Reports
-        if project.reports:
-            self.assertIsInstance(project.reports[0], (GanttReport, ResourceListReport))
 
     def test_load_cycle_project(self):
-        """Test: Projekt mit Zyklen laden (pizzas.json)"""
+        """Test: Projekt mit Zyklen und Personen laden (pizzas.json)
+
+        pizzas.json hat 'persons' und LoopTasks → wird als PersonProject geladen.
+        Explizit als CycleProject laden: 'type': 'cycle' ins JSON setzen.
+        """
         examples_dir = Path(__file__).parent.parent / 'examples'
         pizzas_file = examples_dir / 'pizzas.json'
 
@@ -83,13 +83,18 @@ class TestProjectLoading(unittest.TestCase):
 
         project = load_project(pizzas_file)
 
-        self.assertIsInstance(project, CycleProject)
-        self.assertGreater(project.order_volume, 0)
+        # pizzas.json hat persons → PersonProject (enthält total_volume + LoopTasks)
+        self.assertIsInstance(project, PersonProject)
+        self.assertGreater(project.total_volume, 0)
         self.assertIsNotNone(project.unit)
         self.assertGreater(len(project.resources), 0)
 
     def test_load_loop_project(self):
-        """Test: Projekt mit Loops laden (erdaushub.json)"""
+        """Test: Projekt mit Loops und Personen laden (erdaushub.json)
+
+        erdaushub.json hat 'persons' und LoopTasks → wird als PersonProject geladen.
+        Explizit als LoopProject laden: 'type': 'loop' ins JSON setzen.
+        """
         examples_dir = Path(__file__).parent.parent / 'examples'
         erdaushub_file = examples_dir / 'erdaushub.json'
 
@@ -98,7 +103,8 @@ class TestProjectLoading(unittest.TestCase):
 
         project = load_project(erdaushub_file)
 
-        self.assertIsInstance(project, LoopProject)
+        # erdaushub.json hat persons → PersonProject (enthält total_volume + LoopTasks)
+        self.assertIsInstance(project, PersonProject)
         self.assertGreater(project.total_volume, 0)
         self.assertIsNotNone(project.unit)
 
@@ -232,36 +238,6 @@ class TestProjectExpansion(unittest.TestCase):
         self.assertGreaterEqual(len(expanded.tasks), 0)
 
 
-class TestReportModels(unittest.TestCase):
-    """Tests für Report-Modelle."""
-
-    def test_gantt_report_creation(self):
-        """Test: GanttReport-Erstellung"""
-        report = GanttReport(
-            id="gantt_test",
-            name="Test Gantt",
-            headline="Test Headline",
-            type="gantt",
-            columns=["Vorgang", "name", "start", "end", "chart"]
-        )
-
-        self.assertEqual(report.type, "gantt")
-        self.assertEqual(len(report.columns), 5)
-        self.assertEqual(report.id, "gantt_test")
-
-    def test_resource_list_report_creation(self):
-        """Test: ResourceListReport-Erstellung"""
-        report = ResourceListReport(
-            id="resource_test",
-            name="Test Resource List",
-            headline="Test Resource Headline",
-            type="resource_list",
-            columns=["User", "Rolle", "chart"]
-        )
-
-        self.assertEqual(report.type, "resource_list")
-        self.assertEqual(len(report.columns), 3)
-
 
 class TestProjectSaveLoad(unittest.TestCase):
     """Tests für Speichern und Laden von Projekten."""
@@ -334,20 +310,14 @@ class TestExcelExport(unittest.TestCase):
             wb = openpyxl.load_workbook(tmp_path)
             sheet_names = [ws.title for ws in wb.worksheets]
 
-            # CPM Analyse sollte immer da sein
-            self.assertIn("CPM Analyse", sheet_names)
-
-            # Bei PersonProject mit Reports sollten zusätzliche Sheets da sein
-            if isinstance(project, PersonProject) and project.reports:
-                # Es sollten mindestens 2 Sheets sein (CPM Analyse + Reports)
-                # Aber wir testen nur ob die Funktion läuft, nicht die exakte Anzahl
-                self.assertGreaterEqual(len(sheet_names), 1)
-
-                # Prüfe ob Report-Sheets existieren (falls Reports vorhanden)
-                for report in project.reports:
-                    if hasattr(report, 'name'):
-                        # Report-Sheets sollten vorhanden sein
-                        pass
+            # Mindestens summary/tasklist/critical_path sollten vorhanden sein
+            self.assertGreaterEqual(len(sheet_names), 1)
+            # Kein hardcodierter "CPM Analyse"-Tab mehr – stattdessen section_order-gesteuerte Tabs
+            self.assertTrue(
+                any(name in sheet_names for name in
+                    ["Projektzusammenfassung", "Alle Tasks", "Kritischer Pfad", "CPM Analyse"]),
+                f"Kein bekannter Zusammenfassungs-Tab gefunden in: {sheet_names}"
+            )
 
             wb.close()
 

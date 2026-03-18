@@ -14,14 +14,14 @@ from datetime import datetime
 # Import models and utilities
 try:
     from .models.cpm import CPMResult, CPMTaskResult
-    from .models.project import PersonProject, SimpleProject, CycleProject, LoopProject
+    from .models.project import Project
     from .models.resources import Resource, Person
     from .utils import format_time_value
     from .mermaid_export import generate_mermaid_gantt
     from .network_diagram import generate_mermaid_network
 except (ImportError, ValueError):
     from models.cpm import CPMResult, CPMTaskResult
-    from models.project import PersonProject, SimpleProject, CycleProject, LoopProject
+    from models.project import Project
     from models.resources import Resource, Person
     from utils import format_time_value
     from mermaid_export import generate_mermaid_gantt
@@ -476,8 +476,11 @@ def _generate_resource_gantt_chart(
 
     resource_tasks = []
     for task_id in task_ids:
-        if str(task_id) in result.tasks:
-            task = result.tasks[str(task_id)]
+        key = task_id if task_id in result.tasks else (
+            int(task_id) if str(task_id).isdigit() and int(task_id) in result.tasks else None
+        )
+        if key is not None:
+            task = result.tasks[key]
             resource_tasks.append((str(task_id), task.name, task.faz, task.fez))
     resource_tasks.sort(key=lambda x: x[2])
 
@@ -600,7 +603,7 @@ def _generate_resource_list_section(
         lines.append("```")
         lines.append("")
 
-    if project and isinstance(project, PersonProject):
+    if project and project.persons:
         lines.append("#### Personen")
         lines.append("")
         lines.append("| Person | Kosten/Stunde | Verfügbarkeit |")

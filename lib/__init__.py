@@ -15,6 +15,7 @@ Usage:
 from .models import (
     load_project,
     save_project,
+    Project,
     SimpleProject,
     CycleProject,
     LoopProject,
@@ -52,6 +53,7 @@ __all__ = [
     # Project models
     'load_project',
     'save_project',
+    'Project',
     'SimpleProject',
     'CycleProject',
     'LoopProject',

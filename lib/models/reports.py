@@ -93,15 +93,5 @@ class ResourceListReport(ReportBase):
     type: Literal["resource_list"] = "resource_list"
 
 
-class StatusUpdateReport(ReportBase):
-    """
-    Status Update Report (zukünftige Erweiterung).
-
-    Zeigt aktuellen Status des Projekts.
-    """
-
-    type: Literal["status_update"] = "status_update"
-
-
 # Union-Type für alle Report-Varianten
-Report = GanttReport | ResourceListReport | StatusUpdateReport
+Report = GanttReport | ResourceListReport

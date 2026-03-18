@@ -68,14 +68,6 @@ class GanttTaskResult(BaseModel):
     puffer_days: float = 0.0
 
 
-class InterruptionInfo(BaseModel):
-    """Information über eine Unterbrechung (Wochenende, Feiertag, etc.)"""
-    type: str  # 'weekend', 'holiday', 'vacation', 'rest_break'
-    start_date: datetime
-    end_date: datetime
-    duration_days: int
-    description: Optional[str] = None
-
 
 class GanttResult(BaseModel):
     """

@@ -5,7 +5,7 @@ Rest Break Management for Person Resources
 Verwaltet Ruhepausen für Personen basierend auf Arbeitszeit-Regeln.
 """
 
-from typing import List, Optional, Dict
+from typing import List, Optional
 from .resources import Person, RestInterval
 
 
@@ -33,38 +33,6 @@ def resolve_rest_intervals(person: Person, project_resting_times: Optional[List[
     # Fall 2: Direkte Liste von RestInterval
     return person.rest_intervals
 
-
-def calculate_required_breaks(
-    worked_hours: float,
-    rest_intervals: List[RestInterval],
-    already_taken_breaks: Optional[List[float]] = None
-) -> List[RestInterval]:
-    """
-    Berechnet welche Pausen basierend auf der Arbeitszeit erforderlich sind.
-
-    Args:
-        worked_hours: Bereits gearbeitete Stunden
-        rest_intervals: Anwendbare Pausenregeln (sortiert nach after_hours)
-        already_taken_breaks: Bereits genommene Pausen (Liste von after_hours Werten)
-
-    Returns:
-        Liste der erforderlichen, aber noch nicht genommenen Pausen
-    """
-    if not rest_intervals:
-        return []
-
-    # Sortiere Regeln nach after_hours
-    sorted_intervals = sorted(rest_intervals, key=lambda x: x.after_hours)
-
-    # Bestimme bereits genommene Pausen
-    taken = set(already_taken_breaks or [])
-
-    required_breaks = []
-    for interval in sorted_intervals:
-        if worked_hours >= interval.after_hours and interval.after_hours not in taken:
-            required_breaks.append(interval)
-
-    return required_breaks
 
 
 class PersonWorkTracker:

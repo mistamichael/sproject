@@ -14,11 +14,18 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 
-from excel_reports import add_report_sheets
+from excel_reports import (
+    load_excel_export_config,
+    create_summary_sheet,
+    create_critical_path_sheet,
+    create_tasklist_sheet,
+    create_netplan_table_sheet,
+)
 from mermaid_export import export_cpm_to_svg
 from markdown_export import export_cpm_to_markdown
-from models.project import PersonProject
-from models.reports import GanttReport, ResourceListReport
+from txt_export import export_cpm_to_txt as _txt_export
+from json_export import export_cpm_to_json as _json_export
+from models.project import Project
 from models.resources import Person, PersonResource
 from models.cpm import CPMResult
 from models.gantt import GanttCalculator
@@ -140,56 +147,26 @@ def print_cpm_summary(result: CPMResult) -> None:
     print("=" * 70)
 
 
-def export_cpm_to_txt(result: CPMResult, output_file: Path) -> None:
+def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None, cfg_dir: Path = None) -> None:
     """
-    Exportiert CPM-Ergebnisse in Textformat (wie Konsolen-Ausgabe).
+    Exportiert CPM-Ergebnisse als strukturierte ASCII-Textdatei.
+
+    Delegiert an txt_export.export_cpm_to_txt() – Sektionen und Überschriften
+    werden aus cfg/txt_export.cfg gelesen.
 
     Args:
-        result: CPM-Berechnungsergebnis
+        result:      CPM-Berechnungsergebnis
         output_file: Ausgabedatei (.txt)
+        project:     Projekt-Objekt (optional, für Ressourcen-Details)
+        cfg_dir:     Konfigurationsverzeichnis (optional)
     """
-    from utils import format_time_value_auto, add_workdays
-
-    with open(output_file, 'w', encoding='utf-8') as f:
-        critical_path = result.critical_path
-        project_duration = max(task.fez for task in result.tasks.values())
-
-        f.write("=" * 70 + "\n")
-        f.write(f"Projekt: {result.project_name}\n")
-        f.write(f"Projektdauer: {format_time_value_auto(project_duration)}\n")
-        f.write(f"Startdatum: {result.project_start.strftime('%Y-%m-%d')}\n")
-        f.write(f"Enddatum (geschaetzt): {add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')}\n")
-        f.write("=" * 70 + "\n")
-        f.write("\n")
-        f.write("Kritischer Pfad:\n")
-        for task_id in critical_path:
-            task = result.tasks[task_id]
-            duration_str = format_time_value_auto(task.duration)
-            f.write(f"  [{task_id}] {task.name:<30} (Dauer: {duration_str})\n")
-        f.write("\n")
-        f.write("=" * 70 + "\n")
-        f.write("Alle Tasks:\n")
-        f.write(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'GP':<6} {'FP':<6} {'Krit.'}\n")
-        f.write("-" * 70 + "\n")
-
-        # Sortiere Tasks topologisch (nach FAZ)
-        sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
-
-        for task_id in sorted_task_ids:
-            task = result.tasks[task_id]
-            critical_marker = "JA" if task.is_critical else ""
-            duration_str = format_time_value_auto(task.duration)
-            gp_str = format_time_value_auto(task.puffer)  # Gesamtpuffer
-            fp_str = format_time_value_auto(task.free_puffer)  # Freier Puffer
-
-            id_str = str(task_id)
-
-            f.write(
-                f"{id_str:<7} {task.name:<30} {duration_str:<8} "
-                f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
-                f"{task.sez:<6.1f} {gp_str:<6} {fp_str:<6} {critical_marker}\n"
-            )
-        f.write("=" * 70 + "\n")
+    _txt_export(
+        result,
+        output_file,
+        project_name=result.project_name,
+        project=project,
+        cfg_dir=cfg_dir,
+    )
 
 
 def create_default_person_from_config(cfg_dir: Path) -> Person:
@@ -231,173 +208,84 @@ def create_default_person_from_config(cfg_dir: Path) -> Person:
     return Person(**person_data)
 
 
-def add_dynamic_reports(project, gantt: bool, resource_list: bool, cfg_dir: Path):
-    """
-    Fügt dynamisch Reports zu einem Projekt hinzu.
-
-    Args:
-        project: Projekt-Objekt
-        gantt: Ob Gantt-Chart erstellt werden soll
-        resource_list: Ob Resource-List erstellt werden soll
-        cfg_dir: Verzeichnis mit Konfigurationsdateien
-
-    Returns:
-        Modifiziertes Projekt mit Reports und ggf. Default-Personen
-    """
-    from models.project import PersonProject, SimpleProject, LoopProject, CycleProject
-
-    # Wenn keine Reports gewünscht, nichts tun
-    if not gantt and not resource_list:
-        return project
-
-    # Erstelle Reports-Liste
-    reports = []
-
-    if gantt:
-        reports.append(GanttReport(
-            id="gantt_chart",
-            name="Gantt Chart",
-            headline="Projekt Zeitplan",
-            type="gantt",
-            columns=["Vorgang", "name", "start", "end", "effort", "chart"],
-            timeformat="%Y-%m-%d",
-            loadunit="days"
-        ))
-
-    if resource_list:
-        reports.append(ResourceListReport(
-            id="resource_view",
-            name="Resource List",
-            headline="Resourcendiagramm",
-            type="resource_list",
-            columns=["User", "Rolle", "start", "end", "chart"],
-            timeformat="%Y-%m-%d",
-            loadunit="days"
-        ))
-
-    # Wenn Projekt bereits PersonProject ist, füge Reports hinzu
-    if isinstance(project, PersonProject):
-        project.reports = reports
-        return project
-
-    # Ansonsten wandle in PersonProject um mit Default-Person
-    default_person = create_default_person_from_config(cfg_dir)
-
-    # Erstelle Default-Ressource
-    default_resource = PersonResource(
-        id=default_person.id,
-        name=default_person.name,
-        type="person",
-        person_id=default_person.id
-    )
-
-    # Konvertiere zu PersonProject
-    person_project = PersonProject(
-        project=project.project,
-        project_start=project.project_start if hasattr(project, 'project_start') else None,
-        total_hours=None,
-        unit="hours",
-        persons=[default_person],
-        resources=[default_resource],
-        tasks=project.tasks,
-        reports=reports
-    )
-
-    return person_project
-
 
 def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_dir: Path = None) -> None:
     """
     Exportiert CPM-Ergebnisse in Excel-Format.
 
+    Die erzeugten Tabs werden über [sections] / section_order in cfg/excel_export.cfg gesteuert.
+    Verfügbare Sektionen: summary, critical_path, tasklist, gantt_chart, resource_list
+
     Args:
-        result: CPM-Berechnungsergebnis
+        result:      CPM-Berechnungsergebnis
         output_file: Ausgabedatei (.xlsx)
-        project: Optional - Projekt-Daten für Report-Sheets (PersonProject)
-        cfg_dir: Optional - Verzeichnis mit Konfigurationsdateien
+        project:     Optional – Projekt-Daten für Gantt/Resource-Tabs (PersonProject)
+        cfg_dir:     Optional – Verzeichnis mit Konfigurationsdateien
     """
     try:
         import openpyxl
-        from openpyxl.styles import Font, Alignment, PatternFill
-        from utils import format_time_value_auto, add_workdays
-
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "CPM Analyse"
-
-        # Header-Stil
-        header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-        header_font = Font(bold=True, color="FFFFFF")
-
-        # Projekt-Informationen
-        project_duration = max(task.fez for task in result.tasks.values())
-        ws['A1'] = "Projekt:"
-        ws['B1'] = result.project_name
-        ws['A2'] = "Projektdauer:"
-        ws['B2'] = format_time_value_auto(project_duration)
-        ws['A3'] = "Startdatum:"
-        ws['B3'] = result.project_start.strftime('%Y-%m-%d')
-        ws['A4'] = "Enddatum:"
-        ws['B4'] = add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')
-
-        # Leere Zeile
-        row = 6
-
-        # Tabellen-Header mit Zeiteinheit
-        from utils import get_time_unit_label
-        unit_label = get_time_unit_label(result.time_unit)
-        headers = ['ID', 'Name', 'Dauer', f'FAZ ({unit_label})', f'FEZ ({unit_label})',
-                   f'SAZ ({unit_label})', f'SEZ ({unit_label})', 'Puffer', 'Kritisch']
-        for col, header in enumerate(headers, start=1):
-            cell = ws.cell(row=row, column=col, value=header)
-            cell.fill = header_fill
-            cell.font = header_font
-            cell.alignment = Alignment(horizontal='center')
-
-        # Daten - sortiere Tasks topologisch (nach FAZ)
-        sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
-
-        row += 1
-        from utils import convert_days_to_time_unit
-        for task_id in sorted_task_ids:
-            task = result.tasks[task_id]
-            ws.cell(row=row, column=1, value=str(task_id))
-            ws.cell(row=row, column=2, value=task.name)
-            ws.cell(row=row, column=3, value=format_time_value_auto(task.duration))
-            ws.cell(row=row, column=4, value=round(convert_days_to_time_unit(task.faz, result.time_unit), 1))
-            ws.cell(row=row, column=5, value=round(convert_days_to_time_unit(task.fez, result.time_unit), 1))
-            ws.cell(row=row, column=6, value=round(convert_days_to_time_unit(task.saz, result.time_unit), 1))
-            ws.cell(row=row, column=7, value=round(convert_days_to_time_unit(task.sez, result.time_unit), 1))
-            ws.cell(row=row, column=8, value=format_time_value_auto(task.puffer))
-            ws.cell(row=row, column=9, value="JA" if task.is_critical else "")
-
-            # Kritische Tasks hervorheben
-            if task.is_critical:
-                for col in range(1, 10):
-                    ws.cell(row=row, column=col).fill = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
-
-            row += 1
-
-        # Spaltenbreiten anpassen
-        ws.column_dimensions['A'].width = 10
-        ws.column_dimensions['B'].width = 35
-        ws.column_dimensions['C'].width = 10
-        ws.column_dimensions['D'].width = 8
-        ws.column_dimensions['E'].width = 8
-        ws.column_dimensions['F'].width = 8
-        ws.column_dimensions['G'].width = 8
-        ws.column_dimensions['H'].width = 10
-        ws.column_dimensions['I'].width = 10
-
-        # Füge Report-Sheets hinzu, falls vorhanden
-        if project and isinstance(project, PersonProject) and project.reports:
-            if cfg_dir is None:
-                cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
-            add_report_sheets(wb, project, result, cfg_dir)
-
-        wb.save(output_file)
     except ImportError:
         raise ImportError("openpyxl ist nicht installiert. Installieren Sie es mit: pip install openpyxl")
+
+    if cfg_dir is None:
+        cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
+
+    # Konfiguration laden – enthält section_order und tab_names
+    full_config = load_excel_export_config(cfg_dir)
+    section_order = full_config['sections']['section_order']
+    tab_names     = full_config['tab_names']
+
+    wb = openpyxl.Workbook()
+    # Das automatisch erzeugte leere Sheet entfernen
+    wb.remove(wb.active)
+
+    project_name = result.project_name
+
+    for section in section_order:
+        if section == 'summary':
+            create_summary_sheet(wb, result, project_name,
+                                 tab_name=tab_names.get('summary', 'Projektzusammenfassung'))
+
+        elif section == 'critical_path':
+            create_critical_path_sheet(wb, result,
+                                       tab_name=tab_names.get('critical_path', 'Kritischer Pfad'))
+
+        elif section == 'tasklist':
+            create_tasklist_sheet(wb, result,
+                                  tab_name=tab_names.get('tasklist', 'Alle Tasks'))
+
+        elif section == 'netplan_table':
+            create_netplan_table_sheet(wb, result,
+                                       tab_name=tab_names.get('netplan_table', 'Netzplan'))
+
+        elif section in ('gantt_chart', 'resource_list'):
+            from models.reports import GanttReport, ResourceListReport
+            from excel_reports import create_gantt_chart, create_resource_list
+            if section == 'gantt_chart' and project:
+                report = GanttReport(
+                    id='gantt_chart',
+                    name=tab_names.get('gantt_chart', 'Gantt Chart'),
+                    headline=tab_names.get('gantt_chart', 'Gantt Chart'),
+                    type='gantt',
+                    columns=['ID', 'Name', 'Start', 'Ende', 'Aufwand', 'Diagramm'],
+                    loadunit=result.time_unit,
+                )
+                create_gantt_chart(wb, project, result, report, full_config)
+            elif section == 'resource_list' and project and project.persons:
+                report = ResourceListReport(
+                    id='resource_list',
+                    name=tab_names.get('resource_list', 'Ressourcen'),
+                    headline=tab_names.get('resource_list', 'Ressourcen'),
+                    type='resource_list',
+                    columns=['Ressource', 'Vorgang', 'Start', 'Ende', 'Diagramm'],
+                    loadunit=result.time_unit,
+                )
+                create_resource_list(wb, project, result, report, full_config)
+
+        else:
+            logger.warning(f"Unbekannte Excel-Sektion '{section}' – wird übersprungen.")
+
+    wb.save(output_file)
 
 
 def main() -> int:
@@ -462,18 +350,6 @@ Beispiele:
         help="Exportformate (kommagetrennt): txt, json, xlsx, svg, md (Standard: json). Beispiel: --export txt,json,xlsx,svg,md"
     )
 
-    parser.add_argument(
-        "--gantt",
-        action="store_true",
-        help="Erstellt Gantt-Chart im Excel-Export (nur mit --export xlsx)"
-    )
-
-    parser.add_argument(
-        "--resource",
-        action="store_true",
-        help="Erstellt Resource-List im Excel-Export (nur mit --export xlsx)"
-    )
-
     args = parser.parse_args()
 
     # Parse Export-Formate
@@ -524,27 +400,22 @@ Beispiele:
         try:
             # Lade Projekt mit Pydantic-Modellen
             from models import load_project
-            from models.project import CycleProject, LoopProject, PersonProject
-            from models.tasks import LoopTask
+            from models.tasks import InstanceTask, LoopTask
 
             project = load_project(project_file)
 
             # Expandiere Cycle/Loop-Tasks falls nötig
-            if isinstance(project, CycleProject):
+            has_instance_tasks = any(isinstance(t, InstanceTask) for t in project.tasks)
+            has_loop_tasks = any(isinstance(t, LoopTask) for t in project.tasks)
+
+            if has_instance_tasks:
                 logger.info(f"Expandiere Cycle-Tasks fuer {project_file.name}...")
                 project = project.expand_cycles()
                 logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
-            elif isinstance(project, LoopProject):
+            elif has_loop_tasks:
                 logger.info(f"Expandiere Loop-Tasks fuer {project_file.name}...")
                 project = project.expand_loops()
                 logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
-            elif isinstance(project, PersonProject):
-                # Prüfe ob PersonProject Loop-Tasks enthält
-                has_loop_tasks = any(isinstance(task, LoopTask) for task in project.tasks)
-                if has_loop_tasks:
-                    logger.info(f"Expandiere Loop-Tasks in PersonProject fuer {project_file.name}...")
-                    project = project.expand_loops()
-                    logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
 
             # Berechne CPM
             start_date = None
@@ -569,14 +440,9 @@ Beispiele:
             # Exportiere in gewünschte Formate
             for fmt in export_formats:
                 if fmt == 'json':
-                    # Phase 1: Netzplan (reine CPM ohne Kalender)
                     output_file_network = output_dir / f"{project_file.stem}_network_plan.json"
-                    output_data = result.export_to_dict(include_dates=False)  # Nur CPM-Zeiten, keine Kalender-Daten
-                    with open(output_file_network, 'w', encoding='utf-8') as f:
-                        json.dump(output_data, f, indent=2, ensure_ascii=False)
-                    logger.info(f"Netzplan (Phase 1, JSON) gespeichert in: {output_file_network}")
-
-                    # Phase 2: Gantt-Schedule (mit Kalender-Daten und Unterbrechungen)
+                    # Gantt-Schedule (Phase 2) ermitteln falls möglich
+                    gantt_data = None
                     try:
                         gantt_calc = GanttCalculator(
                             result,
@@ -585,33 +451,30 @@ Beispiele:
                             holidays=result.holidays if result.skip_holidays else None,
                             cfg_dir=args.cfg_dir if hasattr(args, 'cfg_dir') else None
                         )
-                        gantt_result = gantt_calc.calculate()
-
-                        output_file_gantt = output_dir / f"{project_file.stem}_gantt.json"
+                        gantt_calc.calculate()
                         gantt_data = gantt_calc.export_to_dict()
-                        with open(output_file_gantt, 'w', encoding='utf-8') as f:
-                            json.dump(gantt_data, f, indent=2, ensure_ascii=False, default=str)
-                        logger.info(f"Gantt-Schedule (Phase 2, JSON) gespeichert in: {output_file_gantt}")
                     except Exception as e:
-                        logger.error(f"Gantt-Export fehlgeschlagen: {e}", exc_info=True)
+                        logger.warning(f"Gantt-Schedule für JSON nicht verfügbar: {e}")
+
+                    project_name_json = project.project if hasattr(project, 'project') else project_file.stem
+                    _json_export(
+                        result,
+                        output_file_network,
+                        project_name=project_name_json,
+                        project=project,
+                        cfg_dir=args.cfg_dir,
+                        gantt_data=gantt_data,
+                    )
+                    logger.info(f"Netzplan (JSON) gespeichert in: {output_file_network}")
                 elif fmt == 'txt':
                     output_file = output_dir / f"{project_file.stem}.txt"
-                    export_cpm_to_txt(result, output_file)
+                    project_name_txt = project.project if hasattr(project, 'project') else project_file.stem
+                    export_cpm_to_txt(result, output_file, project=project, cfg_dir=args.cfg_dir)
                     logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
                 elif fmt == 'xlsx':
                     output_file = output_dir / f"{project_file.stem}.xlsx"
                     try:
-                        # Füge dynamisch Reports hinzu wenn gewünscht
-                        export_project = project
-                        if args.gantt or args.resource:
-                            export_project = add_dynamic_reports(
-                                project,
-                                args.gantt,
-                                args.resource,
-                                args.cfg_dir
-                            )
-
-                        export_cpm_to_xlsx(result, output_file, export_project, args.cfg_dir)
+                        export_cpm_to_xlsx(result, output_file, project, args.cfg_dir)
                         logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
                     except ImportError as ie:
                         logger.warning(f"XLSX-Export übersprungen: {ie}")
