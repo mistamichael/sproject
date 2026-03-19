@@ -1,0 +1,457 @@
+{
+  "summary": {
+    "project": "Software Entwicklung Projekt",
+    "project_duration": "124.0h",
+    "time_unit": "hours",
+    "num_tasks": 8,
+    "num_critical": 7,
+    "project_start": "2026-03-03",
+    "project_end": "2026-03-24",
+    "calculation_date": "2026-03-19 14:40:00"
+  },
+  "critical_path": [
+    {
+      "id": "1",
+      "name": "Projektinitialisierung",
+      "duration": "4.0h"
+    },
+    {
+      "id": "2",
+      "name": "Requirements Analyse",
+      "duration": "16.0h"
+    },
+    {
+      "id": "4",
+      "name": "Backend Entwicklung",
+      "duration": "40.0h"
+    },
+    {
+      "id": "5",
+      "name": "Frontend Entwicklung",
+      "duration": "32.0h"
+    },
+    {
+      "id": "6",
+      "name": "Testing & QA",
+      "duration": "20.0h"
+    },
+    {
+      "id": "7",
+      "name": "Deployment",
+      "duration": "8.0h"
+    },
+    {
+      "id": "8",
+      "name": "Projektabschluss",
+      "duration": "4.0h"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "name": "Projektinitialisierung",
+      "duration": "4.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.00h",
+        "fez": "4.00h",
+        "saz": "0.00h",
+        "sez": "4.00h",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Requirements Analyse",
+      "duration": "16.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.00h",
+        "fez": "20.00h",
+        "saz": "4.00h",
+        "sez": "20.00h",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-05",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-05"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "name": "UI/UX Design",
+      "duration": "24.0h",
+      "is_critical": false,
+      "cpm": {
+        "faz": "20.00h",
+        "fez": "2026-03-10 21:00",
+        "saz": "2026-03-09 21:00",
+        "sez": "2026-03-12 21:00",
+        "gp": "16.0h",
+        "fp": "16.0h",
+        "dates": {
+          "faz_date": "2026-03-05",
+          "fez_date": "2026-03-10",
+          "saz_date": "2026-03-09",
+          "sez_date": "2026-03-12"
+        }
+      }
+    },
+    {
+      "id": "4",
+      "name": "Backend Entwicklung",
+      "duration": "40.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "20.00h",
+        "fez": "2026-03-12 21:00",
+        "saz": "20.00h",
+        "sez": "2026-03-12 21:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-05",
+          "fez_date": "2026-03-12",
+          "saz_date": "2026-03-05",
+          "sez_date": "2026-03-12"
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Frontend Entwicklung",
+      "duration": "32.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-12 21:00",
+        "fez": "2026-03-18 21:00",
+        "saz": "2026-03-12 21:00",
+        "sez": "2026-03-18 21:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-12",
+          "fez_date": "2026-03-18",
+          "saz_date": "2026-03-12",
+          "sez_date": "2026-03-18"
+        }
+      }
+    },
+    {
+      "id": "6",
+      "name": "Testing & QA",
+      "duration": "20.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-18 21:00",
+        "fez": "2026-03-23 09:00",
+        "saz": "2026-03-18 21:00",
+        "sez": "2026-03-23 09:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-18",
+          "fez_date": "2026-03-23",
+          "saz_date": "2026-03-18",
+          "sez_date": "2026-03-23"
+        }
+      }
+    },
+    {
+      "id": "7",
+      "name": "Deployment",
+      "duration": "8.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-23 09:00",
+        "fez": "2026-03-24 09:00",
+        "saz": "2026-03-23 09:00",
+        "sez": "2026-03-24 09:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-23",
+          "fez_date": "2026-03-24",
+          "saz_date": "2026-03-23",
+          "sez_date": "2026-03-24"
+        }
+      }
+    },
+    {
+      "id": "8",
+      "name": "Projektabschluss",
+      "duration": "4.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-24 09:00",
+        "fez": "2026-03-24 21:00",
+        "saz": "2026-03-24 09:00",
+        "sez": "2026-03-24 21:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-24",
+          "fez_date": "2026-03-24",
+          "saz_date": "2026-03-24",
+          "sez_date": "2026-03-24"
+        }
+      }
+    }
+  ],
+  "gantt_chart": {
+    "project_name": "Software Entwicklung Projekt",
+    "project_start_date": "2026-03-03T09:00:00",
+    "time_unit": "hours",
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "tasks": {
+      "1": {
+        "id": "1",
+        "name": "Projektinitialisierung",
+        "network_duration_days": 0.5,
+        "calendar_start_date": "2026-03-03T09:00:00",
+        "calendar_end_date": "2026-03-03T09:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2": {
+        "id": "2",
+        "name": "Requirements Analyse",
+        "network_duration_days": 2.0,
+        "calendar_start_date": "2026-03-03T21:00:00",
+        "calendar_end_date": "2026-03-04T21:00:00",
+        "working_days": 2.0,
+        "calendar_days": 2,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "3": {
+        "id": "3",
+        "name": "UI/UX Design",
+        "network_duration_days": 3.0,
+        "calendar_start_date": "2026-03-05T21:00:00",
+        "calendar_end_date": "2026-03-09T21:00:00",
+        "working_days": 3.0,
+        "calendar_days": 5,
+        "is_critical": false,
+        "puffer_days": 2.0
+      },
+      "4": {
+        "id": "4",
+        "name": "Backend Entwicklung",
+        "network_duration_days": 5.0,
+        "calendar_start_date": "2026-03-05T21:00:00",
+        "calendar_end_date": "2026-03-11T21:00:00",
+        "working_days": 5.0,
+        "calendar_days": 7,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "5": {
+        "id": "5",
+        "name": "Frontend Entwicklung",
+        "network_duration_days": 4.0,
+        "calendar_start_date": "2026-03-12T21:00:00",
+        "calendar_end_date": "2026-03-17T21:00:00",
+        "working_days": 4.0,
+        "calendar_days": 6,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "6": {
+        "id": "6",
+        "name": "Testing & QA",
+        "network_duration_days": 2.5,
+        "calendar_start_date": "2026-03-18T21:00:00",
+        "calendar_end_date": "2026-03-20T21:00:00",
+        "working_days": 3.0,
+        "calendar_days": 3,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "7": {
+        "id": "7",
+        "name": "Deployment",
+        "network_duration_days": 1.0,
+        "calendar_start_date": "2026-03-23T09:00:00",
+        "calendar_end_date": "2026-03-23T09:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "8": {
+        "id": "8",
+        "name": "Projektabschluss",
+        "network_duration_days": 0.5,
+        "calendar_start_date": "2026-03-24T09:00:00",
+        "calendar_end_date": "2026-03-24T09:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      }
+    }
+  },
+  "resource_list": {
+    "assignments": [
+      {
+        "resource_id": "R_DES1",
+        "resource_name": "UI/UX Designer",
+        "task_ids": [
+          "3"
+        ]
+      },
+      {
+        "resource_id": "R_DEV1",
+        "resource_name": "Senior Developer",
+        "task_ids": [
+          "2",
+          "4",
+          "6",
+          "7"
+        ]
+      },
+      {
+        "resource_id": "R_DEV2",
+        "resource_name": "Junior Developer",
+        "task_ids": [
+          "5",
+          "6"
+        ]
+      },
+      {
+        "resource_id": "R_PM1",
+        "resource_name": "Project Manager",
+        "task_ids": [
+          "1",
+          "2",
+          "8"
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "name": "Senior Developer",
+        "type": "person",
+        "person_id": "DEV1"
+      },
+      {
+        "name": "Junior Developer",
+        "type": "person",
+        "person_id": "DEV2"
+      },
+      {
+        "name": "UI/UX Designer",
+        "type": "person",
+        "person_id": "DES1"
+      },
+      {
+        "name": "Project Manager",
+        "type": "person",
+        "person_id": "PM1"
+      }
+    ],
+    "persons": [
+      {
+        "id": "DEV1",
+        "name": "Alice",
+        "hourly_rate": 85.0
+      },
+      {
+        "id": "DEV2",
+        "name": "Bob",
+        "hourly_rate": 55.0
+      },
+      {
+        "id": "DES1",
+        "name": "Charlie",
+        "hourly_rate": 70.0
+      },
+      {
+        "id": "PM1",
+        "name": "Diana",
+        "hourly_rate": 95.0
+      }
+    ]
+  },
+  "cost_overview": {
+    "entries": [
+      {
+        "resource_id": "R_DES1",
+        "resource_name": "UI/UX Designer",
+        "resource_type": "person",
+        "hours_worked": 24.0,
+        "hourly_rate": 70.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 1680.0,
+        "total_costs": 1680.0
+      },
+      {
+        "resource_id": "R_DEV1",
+        "resource_name": "Senior Developer",
+        "resource_type": "person",
+        "hours_worked": 84.0,
+        "hourly_rate": 85.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 7140.0,
+        "total_costs": 7140.0
+      },
+      {
+        "resource_id": "R_DEV2",
+        "resource_name": "Junior Developer",
+        "resource_type": "person",
+        "hours_worked": 52.0,
+        "hourly_rate": 55.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 2860.0,
+        "total_costs": 2860.0
+      },
+      {
+        "resource_id": "R_PM1",
+        "resource_name": "Project Manager",
+        "resource_type": "person",
+        "hours_worked": 24.0,
+        "hourly_rate": 95.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 2280.0,
+        "total_costs": 2280.0
+      }
+    ],
+    "total_person_costs": 13960.0,
+    "total_machine_costs": 0,
+    "total_provisioning_costs": 0,
+    "total_costs": 13960.0
+  },
+  "settings": {
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "holidays": [
+      "2026-01-01",
+      "2026-01-06",
+      "2026-04-03",
+      "2026-04-06",
+      "2026-05-01",
+      "2026-05-14",
+      "2026-05-25",
+      "2026-06-04",
+      "2026-08-15",
+      "2026-10-03",
+      "2026-11-01",
+      "2026-12-25",
+      "2026-12-26"
+    ]
+  }
+}
