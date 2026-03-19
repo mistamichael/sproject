@@ -377,17 +377,17 @@ class CPMCalculator:
             # Parse duration using utils
             duration = parse_duration_to_days(task.duration) if task.duration else 0.0
 
-            # Hole dependencies (EA - Ende-Anfang, Standard)
-            deps_ea = task.dependencies if hasattr(task, 'dependencies') and task.dependencies else []
+            # Hole successors (EA - Ende-Anfang, Standard)
+            deps_ea = task.successors if hasattr(task, 'successors') and task.successors else []
 
-            # Hole dependencies_aa (Anfang-Anfang)
-            deps_aa = task.dependencies_aa if hasattr(task, 'dependencies_aa') and task.dependencies_aa else []
+            # Hole successors_aa (Anfang-Anfang)
+            deps_aa = task.successors_aa if hasattr(task, 'successors_aa') and task.successors_aa else []
 
-            # Hole dependencies_ee (Ende-Ende)
-            deps_ee = task.dependencies_ee if hasattr(task, 'dependencies_ee') and task.dependencies_ee else []
+            # Hole successors_ee (Ende-Ende)
+            deps_ee = task.successors_ee if hasattr(task, 'successors_ee') and task.successors_ee else []
 
-            # Hole dependencies_ae (Anfang-Ende)
-            deps_ae = task.dependencies_ae if hasattr(task, 'dependencies_ae') and task.dependencies_ae else []
+            # Hole successors_ae (Anfang-Ende)
+            deps_ae = task.successors_ae if hasattr(task, 'successors_ae') and task.successors_ae else []
 
             # Hole is_break Flag
             is_break = task.is_break if hasattr(task, 'is_break') else False

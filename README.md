@@ -151,19 +151,19 @@ python lib/sproject.py --help
       "id": 1,
       "name": "Planung",
       "duration": "3d",
-      "dependencies": [2]
+      "successors": [2]
     },
     {
       "id": 2,
       "name": "Umsetzung",
       "duration": "10d",
-      "dependencies": [3]
+      "successors": [3]
     },
     {
       "id": 3,
       "name": "Abnahme",
       "duration": "2d",
-      "dependencies": []
+      "successors": []
     }
   ]
 }
@@ -183,9 +183,9 @@ python lib/sproject.py --help
 
 | Feld              | Typ | Bedeutung                                                            |
 | ----------------- | --- | -------------------------------------------------------------------- |
-| `dependencies`    | EA  | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard)  |
-| `dependencies_aa` | AA  | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger         |
-| `dependencies_ee` | EE  | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger               |
+| `successors`    | EA  | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard)  |
+| `successors_aa` | AA  | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger         |
+| `successors_ee` | EE  | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger               |
 
 Beispiel (aus `hausbau.json`):
 
@@ -194,8 +194,8 @@ Beispiel (aus `hausbau.json`):
   "id": 5,
   "name": "Mauerwerk errichten",
   "duration": "10d",
-  "dependencies": [10],
-  "dependencies_aa": [6, 7],
+  "successors": [10],
+  "successors_aa": [6, 7],
   "note": "AA: Elektrik und Sanitär beginnen sobald Mauern beginnen"
 }
 ```
@@ -232,14 +232,14 @@ Beispiel (aus `hausbau.json`):
       "name": "Backend Entwicklung",
       "duration": "40h",
       "resources": ["R_DEV1"],
-      "dependencies": [2]
+      "successors": [2]
     },
     {
       "id": 2,
       "name": "Deployment",
       "duration": "8h",
       "resources": ["R_DEV1"],
-      "dependencies": []
+      "successors": []
     }
   ]
 }

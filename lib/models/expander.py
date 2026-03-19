@@ -59,21 +59,19 @@ def expand_instance_task(
     }
 
     for cycle_num in range(1, num_instances + 1):
-        # Expandiere Dependencies
-        new_dependencies = []
-        for dep_id in (task.dependencies or []):
+        # Expandiere Nachfolger
+        new_successors = []
+        for dep_id in (task.successors or []):
             if dep_id in instance_task_ids:
-                # Dependency ist auch ein InstanceTask -> verknüpfe mit gleichem Zyklus
-                # Hole Präfix des Dependency-Tasks
+                # Nachfolger ist auch ein InstanceTask -> verknüpfe mit gleichem Zyklus
                 dep_task = next((t for t in all_tasks if t.id == dep_id), None)
                 if dep_task and isinstance(dep_task, InstanceTask):
                     dep_prefix = dep_task.cycle_prefix or 'P'
-                    new_dependencies.append(generate_cycle_id(dep_id, cycle_num, dep_prefix))
+                    new_successors.append(generate_cycle_id(dep_id, cycle_num, dep_prefix))
                 else:
-                    new_dependencies.append(dep_id)
+                    new_successors.append(dep_id)
             else:
-                # Normale Dependency
-                new_dependencies.append(dep_id)
+                new_successors.append(dep_id)
 
         # Erstelle expandierten Task
         current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
@@ -82,20 +80,18 @@ def expand_instance_task(
             name=task.name,
             duration=task.duration,
             resources=task.resources,
-            dependencies=new_dependencies,
+            successors=new_successors,
             # Zusätzliche Metadaten
             original_id=task.id,
             cycle_number=cycle_num,
             cycle_prefix=prefix
         )
 
-        # Verkette Zyklen: Füge den aktuellen Zyklus als Nachfolger (dependency) des vorherigen hinzu.
-        # Da dependencies = Nachfolger (successors), muss der VORHERIGE Task den AKTUELLEN als Nachfolger haben.
-        # Falsch wäre: prev_cycle an current's dependencies anfügen (das kehrt die Reihenfolge um).
+        # Verkette Zyklen: Vorgänger-Task bekommt aktuellen als Nachfolger.
         if cycle_num > 1 and expanded_tasks:
             prev_task = expanded_tasks[-1]
-            if current_cycle_id not in prev_task.dependencies:
-                prev_task.dependencies.append(current_cycle_id)
+            if current_cycle_id not in prev_task.successors:
+                prev_task.successors.append(current_cycle_id)
 
         expanded_tasks.append(expanded_task)
 
@@ -140,9 +136,9 @@ def expand_loop_task(
             task_resources = _collect_resources_from_subtasks(task, cycle_num)
 
             if cycle_num == 1:
-                dependencies = task.dependencies.copy() if task.dependencies else []
+                successors = task.successors.copy() if task.successors else []
             else:
-                dependencies = []
+                successors = []
 
             current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
             expanded_task = SimpleTask(
@@ -150,7 +146,7 @@ def expand_loop_task(
                 name=f"{task.name} #{cycle_num}",
                 duration=loop_duration,
                 resources=task_resources,
-                dependencies=dependencies,
+                successors=successors,
                 original_id=task.id,
                 cycle_number=cycle_num,
                 cycle_prefix=prefix
@@ -158,8 +154,8 @@ def expand_loop_task(
 
             if cycle_num > 1 and expanded_tasks:
                 prev_task = expanded_tasks[-1]
-                if current_cycle_id not in prev_task.dependencies:
-                    prev_task.dependencies.append(current_cycle_id)
+                if current_cycle_id not in prev_task.successors:
+                    prev_task.successors.append(current_cycle_id)
 
             expanded_tasks.append(expanded_task)
 
@@ -184,30 +180,25 @@ def expand_loop_task(
                 # Nummeriere Subtasks: P1.1, P1.2, P1.3, etc.
                 subtask_id = f"{generate_cycle_id(task.id, cycle_num, prefix)}.{subtask_idx + 1}"
 
-            # Erstelle den Task zunächst ohne Dependencies
+            # Erstelle den Task zunächst ohne Nachfolger
             expanded_task = SimpleTask(
                 id=subtask_id,
                 name=f"{subtask.name} #{cycle_num}",
                 duration=subtask_duration,
                 resources=subtask_resources,
-                dependencies=[],  # Wird unten gesetzt
+                successors=[],  # Wird unten gesetzt
                 original_id=task.id,
                 cycle_number=cycle_num,
                 cycle_prefix=prefix
             )
 
-            # Setze Dependencies (Nachfolger!) korrekt:
-            # dependencies = Liste der Nachfolger (Tasks die NACH diesem kommen)
-            # NUR der erste Subtask des ersten Zyklus erhält die Loop-Task's Dependencies
-            # (z.B. wenn Task 1 -> Task 2 (Loop), dann 2-P1.1 -> erbt dependencies von Task 2)
+            # NUR der erste Subtask des ersten Zyklus erbt die Nachfolger des Loop-Tasks
             if cycle_num == 1 and subtask_idx == 0:
-                # Erster Subtask im ersten Zyklus hat originale Dependencies
-                expanded_task.dependencies = task.dependencies.copy() if task.dependencies else []
+                expanded_task.successors = task.successors.copy() if task.successors else []
 
             # Der vorherige Task soll auf den aktuellen Task zeigen (als Nachfolger)
             if subtask_idx > 0:
-                # Vorheriger Subtask im gleichen Zyklus zeigt auf aktuellen
-                cycle_subtasks[subtask_idx - 1].dependencies.append(expanded_task.id)
+                cycle_subtasks[subtask_idx - 1].successors.append(expanded_task.id)
             elif cycle_num > 1 and expanded_tasks:
                 # Inter-Cycle Dependency: nur wenn dieselbe Ressource verwendet wird
                 # Das ermöglicht Parallelisierung: während Pizza #1 backt, kann Pizza #2 geformt werden
@@ -225,7 +216,7 @@ def expand_loop_task(
                             # Suche diesen Task in expanded_tasks
                             for earlier_task in reversed(expanded_tasks):
                                 if earlier_task.id == prev_cycle_id:
-                                    earlier_task.dependencies.append(expanded_task.id)
+                                    earlier_task.successors.append(expanded_task.id)
                                     break
 
             cycle_subtasks.append(expanded_task)

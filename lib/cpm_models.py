@@ -74,7 +74,7 @@ class CPMCalculationMixin:
                 'id': task_id,
                 'name': task.get('name', f'Task {task_id}'),
                 'duration': duration,
-                'successors': task.get('dependencies', []),
+                'successors': task.get('successors', []),
                 'predecessors': [],
                 'faz': 0,  # Frühester Anfangszeitpunkt
                 'fez': 0,  # Frühester Endzeitpunkt

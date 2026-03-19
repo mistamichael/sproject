@@ -164,14 +164,14 @@ class Project(ProjectBase):
                 expanded_tasks.append(task)
 
         for task in expanded_tasks:
-            if task.dependencies:
+            if task.successors:
                 updated_deps = []
-                for dep_id in task.dependencies:
+                for dep_id in task.successors:
                     if dep_id in instance_task_mapping:
                         updated_deps.append(instance_task_mapping[dep_id][-1])
                     else:
                         updated_deps.append(dep_id)
-                task.dependencies = updated_deps
+                task.successors = updated_deps
 
         return Project(
             project=self.project,
@@ -209,14 +209,14 @@ class Project(ProjectBase):
                 expanded_tasks.append(task)
 
         for task in expanded_tasks:
-            if task.dependencies:
+            if task.successors:
                 updated_deps = []
-                for dep_id in task.dependencies:
+                for dep_id in task.successors:
                     if dep_id in loop_task_mapping:
                         updated_deps.append(loop_task_mapping[dep_id][0])
                     else:
                         updated_deps.append(dep_id)
-                task.dependencies = updated_deps
+                task.successors = updated_deps
 
         if self.persons and self.resting_times:
             expanded_tasks = self._insert_rest_breaks(expanded_tasks)
@@ -297,11 +297,11 @@ class Project(ProjectBase):
                             duration=rest_interval.duration,
                             resources=None,
                             cost=0.0,
-                            dependencies=[],
+                            successors=[],
                             is_break=True
                         )
 
-                        task.dependencies.append(break_id)
+                        task.successors.append(break_id)
                         tasks_with_breaks.append(break_task)
                         trackers[person_id].take_break(rest_interval)
                         break_counter += 1

@@ -302,9 +302,9 @@ class TestTxtExport(unittest.TestCase):
             project_start="2026-04-01",
             tasks=[
                 SimpleTask(id=1, name="Task A", duration="3d"),
-                SimpleTask(id=2, name="Task B", duration="2d", dependencies=[1]),
-                SimpleTask(id=3, name="Task C", duration="4d", dependencies=[1]),
-                SimpleTask(id=4, name="Task D", duration="1d", dependencies=[2, 3]),
+                SimpleTask(id=2, name="Task B", duration="2d", successors=[1]),
+                SimpleTask(id=3, name="Task C", duration="4d", successors=[1]),
+                SimpleTask(id=4, name="Task D", duration="1d", successors=[2, 3]),
             ]
         )
 
@@ -418,9 +418,9 @@ class TestNetworkDiagram(unittest.TestCase):
             project_start="2026-04-01",
             tasks=[
                 SimpleTask(id=1, name="Start",    duration="2d"),
-                SimpleTask(id=2, name="Branch A", duration="3d", dependencies=[1]),
-                SimpleTask(id=3, name="Branch B", duration="5d", dependencies=[1]),
-                SimpleTask(id=4, name="End",       duration="1d", dependencies=[2, 3]),
+                SimpleTask(id=2, name="Branch A", duration="3d", successors=[1]),
+                SimpleTask(id=3, name="Branch B", duration="5d", successors=[1]),
+                SimpleTask(id=4, name="End",       duration="1d", successors=[2, 3]),
             ]
         )
         return project.calculate_cpm()
@@ -538,12 +538,12 @@ class TestTaskValidation(unittest.TestCase):
             id=1,
             name="Test Task",
             duration="10d",
-            dependencies=[2, 3]
+            successors=[2, 3]
         )
 
-        self.assertEqual(len(task.dependencies), 2)
-        self.assertIn(2, task.dependencies)
-        self.assertIn(3, task.dependencies)
+        self.assertEqual(len(task.successors), 2)
+        self.assertIn(2, task.successors)
+        self.assertIn(3, task.successors)
 
     def test_task_dependencies_aa(self):
         """Test: AA-Abhängigkeiten (Anfang-Anfang)"""
@@ -553,11 +553,11 @@ class TestTaskValidation(unittest.TestCase):
             id=1,
             name="AA Task",
             duration="5d",
-            dependencies_aa=[2]
+            successors_aa=[2]
         )
 
-        self.assertEqual(len(task.dependencies_aa), 1)
-        self.assertIn(2, task.dependencies_aa)
+        self.assertEqual(len(task.successors_aa), 1)
+        self.assertIn(2, task.successors_aa)
 
     def test_task_dependencies_ee(self):
         """Test: EE-Abhängigkeiten (Ende-Ende)"""
@@ -567,10 +567,10 @@ class TestTaskValidation(unittest.TestCase):
             id=1,
             name="EE Task",
             duration="5d",
-            dependencies_ee=[3]
+            successors_ee=[3]
         )
 
-        self.assertEqual(len(task.dependencies_ee), 1)
+        self.assertEqual(len(task.successors_ee), 1)
 
 
 class TestEdgeCasesEmptyProjects(unittest.TestCase):
@@ -659,7 +659,7 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
     def test_self_dependency_raises(self):
         """Selbstreferenz (Task 1 -> 1) muss ValueError auslösen."""
         project = self._make_project([
-            {"id": 1, "name": "Self Loop", "duration": "5d", "dependencies": [1]}
+            {"id": 1, "name": "Self Loop", "duration": "5d", "successors": [1]}
         ])
         with self.assertRaises(ValueError) as ctx:
             project.calculate_cpm()
@@ -669,8 +669,8 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
     def test_two_task_cycle_raises(self):
         """Direkter Zyklus (1 -> 2 -> 1) muss ValueError auslösen."""
         project = self._make_project([
-            {"id": 1, "name": "Task A", "duration": "5d", "dependencies": [2]},
-            {"id": 2, "name": "Task B", "duration": "5d", "dependencies": [1]},
+            {"id": 1, "name": "Task A", "duration": "5d", "successors": [2]},
+            {"id": 2, "name": "Task B", "duration": "5d", "successors": [1]},
         ])
         with self.assertRaises(ValueError) as ctx:
             project.calculate_cpm()
@@ -682,9 +682,9 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
     def test_three_task_cycle_raises(self):
         """Indirekter Zyklus (1 -> 2 -> 3 -> 1) muss ValueError auslösen."""
         project = self._make_project([
-            {"id": 1, "name": "Task A", "duration": "5d", "dependencies": [2]},
-            {"id": 2, "name": "Task B", "duration": "5d", "dependencies": [3]},
-            {"id": 3, "name": "Task C", "duration": "5d", "dependencies": [1]},
+            {"id": 1, "name": "Task A", "duration": "5d", "successors": [2]},
+            {"id": 2, "name": "Task B", "duration": "5d", "successors": [3]},
+            {"id": 3, "name": "Task C", "duration": "5d", "successors": [1]},
         ])
         with self.assertRaises(ValueError) as ctx:
             project.calculate_cpm()
@@ -693,10 +693,10 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
     def test_cycle_in_subgraph_raises(self):
         """Zyklus in Teilgraph (Tasks 3->4->3), Rest azyklisch."""
         project = self._make_project([
-            {"id": 1, "name": "Start",  "duration": "2d", "dependencies": [2]},
-            {"id": 2, "name": "Middle", "duration": "3d", "dependencies": [3]},
-            {"id": 3, "name": "CycleA", "duration": "4d", "dependencies": [4]},
-            {"id": 4, "name": "CycleB", "duration": "4d", "dependencies": [3]},
+            {"id": 1, "name": "Start",  "duration": "2d", "successors": [2]},
+            {"id": 2, "name": "Middle", "duration": "3d", "successors": [3]},
+            {"id": 3, "name": "CycleA", "duration": "4d", "successors": [4]},
+            {"id": 4, "name": "CycleB", "duration": "4d", "successors": [3]},
         ])
         with self.assertRaises(ValueError) as ctx:
             project.calculate_cpm()
@@ -705,9 +705,9 @@ class TestEdgeCasesCircularDependencies(unittest.TestCase):
     def test_valid_project_no_error(self):
         """Fehlerfreier Graph (1->2->3) darf keinen ValueError auslösen."""
         project = self._make_project([
-            {"id": 1, "name": "Task A", "duration": "5d", "dependencies": [2]},
-            {"id": 2, "name": "Task B", "duration": "3d", "dependencies": [3]},
-            {"id": 3, "name": "Task C", "duration": "2d", "dependencies": []},
+            {"id": 1, "name": "Task A", "duration": "5d", "successors": [2]},
+            {"id": 2, "name": "Task B", "duration": "3d", "successors": [3]},
+            {"id": 3, "name": "Task C", "duration": "2d", "successors": []},
         ])
         result = project.calculate_cpm()
         self.assertIsNotNone(result)
@@ -740,7 +740,7 @@ class TestEdgeCasesInvalidReferences(unittest.TestCase):
             project="Missing Dependency",
             project_start="2026-04-01",
             tasks=[
-                SimpleTask(id=1, name="Task 1", duration="5d", dependencies=[999])
+                SimpleTask(id=1, name="Task 1", duration="5d", successors=[999])
             ]
         )
 
@@ -809,9 +809,9 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
             project_start="2026-04-01",
             tasks=[
                 SimpleTask(id=1, name="Task A1", duration="5d"),
-                SimpleTask(id=2, name="Task A2", duration="3d", dependencies=[1]),
+                SimpleTask(id=2, name="Task A2", duration="3d", successors=[1]),
                 SimpleTask(id=3, name="Task B1", duration="4d"),
-                SimpleTask(id=4, name="Task B2", duration="2d", dependencies=[3])
+                SimpleTask(id=4, name="Task B2", duration="2d", successors=[3])
             ]
         )
 
@@ -828,9 +828,9 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
             project="Multiple Starts",
             project_start="2026-04-01",
             tasks=[
-                SimpleTask(id=1, name="Start 1", duration="5d", dependencies=[]),
-                SimpleTask(id=2, name="Start 2", duration="3d", dependencies=[]),
-                SimpleTask(id=3, name="End",     duration="2d", dependencies=[1, 2])
+                SimpleTask(id=1, name="Start 1", duration="5d", successors=[]),
+                SimpleTask(id=2, name="Start 2", duration="3d", successors=[]),
+                SimpleTask(id=3, name="End",     duration="2d", successors=[1, 2])
             ]
         )
 
@@ -850,7 +850,7 @@ class TestEdgeCasesCPMCalculation(unittest.TestCase):
         tasks = []
         for i in range(1, 11):
             deps = [i - 1] if i > 1 else []
-            tasks.append(SimpleTask(id=i, name=f"Task {i}", duration="1d", dependencies=deps))
+            tasks.append(SimpleTask(id=i, name=f"Task {i}", duration="1d", successors=deps))
 
         project = SimpleProject(
             project="Long Chain",
@@ -1030,8 +1030,8 @@ class TestEdgeCasesCPMInfinityBug(unittest.TestCase):
             project_start="2026-04-01",
             tasks=[
                 SimpleTask(id=1, name="Task A", duration="1d"),
-                SimpleTask(id=2, name="Task B", duration="2d", dependencies=[1]),
-                SimpleTask(id=3, name="Task C", duration="1d", dependencies=[2])
+                SimpleTask(id=2, name="Task B", duration="2d", successors=[1]),
+                SimpleTask(id=3, name="Task C", duration="1d", successors=[2])
             ]
         )
 
@@ -1075,7 +1075,7 @@ class TestEdgeCasesComplexDependencies(unittest.TestCase):
             id=11,
             name="Final Task",
             duration="1d",
-            dependencies=list(range(1, 11))
+            successors=list(range(1, 11))
         ))
 
         project = SimpleProject(
@@ -1101,9 +1101,9 @@ class TestEdgeCasesComplexDependencies(unittest.TestCase):
             project_start="2026-04-01",
             tasks=[
                 SimpleTask(id=1, name="Start",    duration="1d"),
-                SimpleTask(id=2, name="Branch 1", duration="2d", dependencies=[1]),
-                SimpleTask(id=3, name="Branch 2", duration="3d", dependencies=[1]),
-                SimpleTask(id=4, name="Join",      duration="1d", dependencies=[2, 3])
+                SimpleTask(id=2, name="Branch 1", duration="2d", successors=[1]),
+                SimpleTask(id=3, name="Branch 2", duration="3d", successors=[1]),
+                SimpleTask(id=4, name="Join",      duration="1d", successors=[2, 3])
             ]
         )
 
@@ -1130,10 +1130,10 @@ class TestCPMDependencyTypes(unittest.TestCase):
     Tests für alle vier Abhängigkeitstypen – je 3 Tasks pro Typ.
 
     Konvention in diesem Projekt:
-      dependencies     = [Nachfolger-IDs]  (EA: Ende→Anfang, Standard)
-      dependencies_aa  = [Nachfolger-IDs]  (AA: Anfang→Anfang, paralleler Start)
-      dependencies_ee  = [Nachfolger-IDs]  (EE: Ende→Ende, gleichzeitiges Ende)
-      dependencies_ae  = [Nachfolger-IDs]  (AE: Anfang→Ende, Nachfolger endet
+      successors     = [Nachfolger-IDs]  (EA: Ende→Anfang, Standard)
+      successors_aa  = [Nachfolger-IDs]  (AA: Anfang→Anfang, paralleler Start)
+      successors_ee  = [Nachfolger-IDs]  (EE: Ende→Ende, gleichzeitiges Ende)
+      successors_ae  = [Nachfolger-IDs]  (AE: Anfang→Ende, Nachfolger endet
                                                   wenn dieser startet)
     """
 
@@ -1154,9 +1154,9 @@ class TestCPMDependencyTypes(unittest.TestCase):
         #  Kritischer Pfad: alle drei
         #
         project = self._build("EA-Test", [
-            SimpleTask(id=1, name="Vorbereitung", duration="5d", dependencies=[2]),
-            SimpleTask(id=2, name="Durchführung", duration="3d", dependencies=[3]),
-            SimpleTask(id=3, name="Abschluss",    duration="2d", dependencies=[]),
+            SimpleTask(id=1, name="Vorbereitung", duration="5d", successors=[2]),
+            SimpleTask(id=2, name="Durchführung", duration="3d", successors=[3]),
+            SimpleTask(id=3, name="Abschluss",    duration="2d", successors=[]),
         ])
         result = project.calculate_cpm()
         _print_cpm_csv(result, "EA (Ende-Anfang) – 3 Tasks")
@@ -1190,9 +1190,9 @@ class TestCPMDependencyTypes(unittest.TestCase):
         #
         project = self._build("AA-Test", [
             SimpleTask(id=1, name="Aushub",       duration="8d",
-                       dependencies=[3], dependencies_aa=[2]),
-            SimpleTask(id=2, name="Abtransport",  duration="3d", dependencies=[3]),
-            SimpleTask(id=3, name="Fundament",    duration="2d", dependencies=[]),
+                       successors=[3], successors_aa=[2]),
+            SimpleTask(id=2, name="Abtransport",  duration="3d", successors=[3]),
+            SimpleTask(id=3, name="Fundament",    duration="2d", successors=[]),
         ])
         result = project.calculate_cpm()
         _print_cpm_csv(result, "AA (Anfang-Anfang) – 3 Tasks")
@@ -1227,9 +1227,9 @@ class TestCPMDependencyTypes(unittest.TestCase):
         #
         project = self._build("EE-Test", [
             SimpleTask(id=1, name="Innenausbau",  duration="8d",
-                       dependencies=[3], dependencies_ee=[2]),
-            SimpleTask(id=2, name="Reinigung",    duration="3d", dependencies=[3]),
-            SimpleTask(id=3, name="Abnahme",      duration="2d", dependencies=[]),
+                       successors=[3], successors_ee=[2]),
+            SimpleTask(id=2, name="Reinigung",    duration="3d", successors=[3]),
+            SimpleTask(id=3, name="Abnahme",      duration="2d", successors=[]),
         ])
         result = project.calculate_cpm()
         _print_cpm_csv(result, "EE (Ende-Ende) – 3 Tasks")
@@ -1263,9 +1263,9 @@ class TestCPMDependencyTypes(unittest.TestCase):
         #
         project = self._build("AE-Test", [
             SimpleTask(id=1, name="Lieferung",   duration="5d",
-                       dependencies=[], dependencies_ae=[2]),
-            SimpleTask(id=2, name="Vorbereitung", duration="3d", dependencies=[]),
-            SimpleTask(id=3, name="Vorgänger",    duration="5d", dependencies=[1]),
+                       successors=[], successors_ae=[2]),
+            SimpleTask(id=2, name="Vorbereitung", duration="3d", successors=[]),
+            SimpleTask(id=3, name="Vorgänger",    duration="5d", successors=[1]),
         ])
         result = project.calculate_cpm()
         _print_cpm_csv(result, "AE (Anfang-Ende) – 3 Tasks")
@@ -1293,9 +1293,9 @@ class TestCPMResultExportToDict(unittest.TestCase):
             project="Export Test",
             project_start="2026-06-01",
             tasks=[
-                SimpleTask(id=1, name="Start",  duration="3d", dependencies=[2, 3]),
-                SimpleTask(id=2, name="Zweig A", duration="2d", dependencies=[]),
-                SimpleTask(id=3, name="Zweig B", duration="4d", dependencies=[]),
+                SimpleTask(id=1, name="Start",  duration="3d", successors=[2, 3]),
+                SimpleTask(id=2, name="Zweig A", duration="2d", successors=[]),
+                SimpleTask(id=3, name="Zweig B", duration="4d", successors=[]),
             ]
         )
         return project.calculate_cpm()
@@ -1369,17 +1369,17 @@ class TestNetworkCSVDetails(unittest.TestCase):
         #  T1 ──EA──> T2 ──EA──> T4(end)
         #  T1 ──EA──> T3 ──EA──> T4(end)
         #
-        #  dependencies zeigen auf Nachfolger:
+        #  successors zeigen auf Nachfolger:
         #  T1.deps=[2,3], T2.deps=[4], T3.deps=[4], T4.deps=[]
         #
         project = SimpleProject(
             project="CSV Detail Test",
             project_start="2026-04-01",
             tasks=[
-                SimpleTask(id=1, name="Start",    duration="2d", dependencies=[2, 3]),
-                SimpleTask(id=2, name="Branch A", duration="3d", dependencies=[4]),
-                SimpleTask(id=3, name="Branch B", duration="5d", dependencies=[4]),
-                SimpleTask(id=4, name="End",       duration="1d", dependencies=[]),
+                SimpleTask(id=1, name="Start",    duration="2d", successors=[2, 3]),
+                SimpleTask(id=2, name="Branch A", duration="3d", successors=[4]),
+                SimpleTask(id=3, name="Branch B", duration="5d", successors=[4]),
+                SimpleTask(id=4, name="End",       duration="1d", successors=[]),
             ]
         )
         return project.calculate_cpm()
@@ -1447,10 +1447,10 @@ class TestExcelExportContent(unittest.TestCase):
             project="Excel Content Test",
             project_start="2026-04-01",
             tasks=[
-                SimpleTask(id=1, name="Alpha", duration="3d", dependencies=[2, 3]),
-                SimpleTask(id=2, name="Beta",  duration="2d", dependencies=[4]),
-                SimpleTask(id=3, name="Gamma", duration="5d", dependencies=[4]),
-                SimpleTask(id=4, name="Delta", duration="1d", dependencies=[]),
+                SimpleTask(id=1, name="Alpha", duration="3d", successors=[2, 3]),
+                SimpleTask(id=2, name="Beta",  duration="2d", successors=[4]),
+                SimpleTask(id=3, name="Gamma", duration="5d", successors=[4]),
+                SimpleTask(id=4, name="Delta", duration="1d", successors=[]),
             ]
         )
         return project, project.calculate_cpm()
