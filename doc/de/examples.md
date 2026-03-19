@@ -364,8 +364,8 @@ results/fassadenbau.xlsx  # PersonProject (Tage)
 
 ## Weiterführende Dokumentation
 
-- [DEPENDENCY_TYPES.md](DEPENDENCY_TYPES.md) - Detaillierte Erklärung aller Abhängigkeitstypen
-- [../cfg/defaults.cfg](../cfg/defaults.cfg) - Projekt-Standards
+- [dependency_types.md](DEPENDENCY_TYPES.md) - Detaillierte Erklärung aller Abhängigkeitstypen
+- [../../cfg/defaults.cfg](../cfg/defaults.cfg) - Projekt-Standards
 
 ---
 
