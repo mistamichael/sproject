@@ -88,56 +88,56 @@
       "name": "Projektinitialisierung",
       "duration": "4h",
       "resources": ["R_PM1"],
-      "dependencies": [2]
+      "successors": [2]
     },
     {
       "id": 2,
       "name": "Requirements Analyse",
       "duration": "16h",
       "resources": ["R_PM1", "R_DEV1"],
-      "dependencies": [3,4]
+      "successors": [3,4]
     },
     {
       "id": 3,
       "name": "UI/UX Design",
       "duration": "24h",
       "resources": ["R_DES1"],
-      "dependencies": [5]
+      "successors": [5]
     },
     {
       "id": 4,
       "name": "Backend Entwicklung",
       "duration": "40h",
       "resources": ["R_DEV1"],
-      "dependencies": [5]
+      "successors": [5]
     },
     {
       "id": 5,
       "name": "Frontend Entwicklung",
       "duration": "32h",
       "resources": ["R_DEV2"],
-      "dependencies": [6]
+      "successors": [6]
     },
     {
       "id": 6,
       "name": "Testing & QA",
       "duration": "20h",
       "resources": ["R_DEV1", "R_DEV2"],
-      "dependencies": [7]
+      "successors": [7]
     },
     {
       "id": 7,
       "name": "Deployment",
       "duration": "8h",
       "resources": ["R_DEV1"],
-      "dependencies": [8]
+      "successors": [8]
     },
     {
       "id": 8,
       "name": "Projektabschluss",
       "duration": "4h",
       "resources": ["R_PM1"],
-      "dependencies": []
+      "successors": []
     }
   ]
 }

@@ -45,7 +45,7 @@
       "name": "Teigvorbereitung (Batch für alle Pizzen)",
       "duration": "60m",
       "resources": ["R_BAECKER"],
-      "dependencies": [2],
+      "successors": [2],
       "description": "Einmaliger Vorgang: Teig für 12 Pizzen vorbereiten"
     },
     {
@@ -54,7 +54,7 @@
       "is_loop": true,
       "loop_until": "total_volume <= 0",
       "cycle_prefix": "P",
-      "dependencies": [],
+      "successors": [],
       "subtasks": [
         {
           "name": "Pizza formen & belegen",

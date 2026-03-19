@@ -71,7 +71,7 @@
       "id": 1,
       "name": "Erdarbeiten & Freilegung",
       "duration": "8h",
-      "dependencies": [2],
+      "successors": [2],
       "resources": ["PERS_ERD", "MB1"],
       "note": "Aufgraben des Erdreichs bis Fundamentkante"
     },
@@ -79,7 +79,7 @@
       "id": 2,
       "name": "Kellerisolierung (Perimeter)",
       "duration": "6h",
-      "dependencies": [3],
+      "successors": [3],
       "resources": ["PERS_ERD", "MAT_XPS"],
       "note": "Reinigung, Abdichtung und Ankleben der XPS-Platten"
     },
@@ -87,7 +87,7 @@
       "id": 3,
       "name": "Holzständerwerk & Holzfaserplatten",
       "duration": "16h",
-      "dependencies": [4],
+      "successors": [4],
       "resources": ["PERS_ZIM", "MAT_WOOD"],
       "note": "Montage der Unterkonstruktion und äußeren Hülle"
     },
@@ -95,7 +95,7 @@
       "id": 4,
       "name": "Zellulose Einblasdämmung",
       "duration": "4h",
-      "dependencies": [5],
+      "successors": [5],
       "resources": ["PERS_ISO", "EB1"],
       "note": "Lückenloses Ausblasen der Gefache"
     },
@@ -103,7 +103,7 @@
       "id": 5,
       "name": "Verfüllen & Abschluss",
       "duration": "4h",
-      "dependencies": [],
+      "successors": [],
       "resources": ["PERS_ERD", "MB1"],
       "note": "Kies/Erde verfüllen und Geländeanpassung"
     }

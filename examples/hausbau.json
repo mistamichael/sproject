@@ -6,71 +6,71 @@
       "id": 1,
       "name": "Grube ausheben",
       "duration": "3d",
-      "dependencies": [3],
-      "dependencies_aa": [2],
+      "successors": [3],
+      "successors_aa": [2],
       "note": "EA: Fundament gießen nach Grube, AA: Abtransport parallel"
     },
     {
       "id": 2,
       "name": "Erde abtransportieren",
       "duration": "4d",
-      "dependencies": [],
+      "successors": [],
       "note": "AA zu Task 1: Beginnt sobald Aushub beginnt"
     },
     {
       "id": 3,
       "name": "Fundament gießen",
       "duration": "2d",
-      "dependencies": [4]
+      "successors": [4]
     },
     {
       "id": 4,
       "name": "Fundament trocknen",
       "duration": "7d",
-      "dependencies": [5]
+      "successors": [5]
     },
     {
       "id": 5,
       "name": "Mauerwerk errichten",
       "duration": "10d",
-      "dependencies": [10],
-      "dependencies_aa": [6, 7],
+      "successors": [10],
+      "successors_aa": [6, 7],
       "note": "AA: Elektrik und Sanitär beginnen sobald Mauern beginnen"
     },
     {
       "id": 6,
       "name": "Elektroinstallation",
       "duration": "5d",
-      "dependencies": [8],
+      "successors": [8],
       "note": "Wird für den Innenausbau benötigt"
     },
     {
       "id": 7,
       "name": "Sanitärinstallation",
       "duration": "6d",
-      "dependencies": [8],
+      "successors": [8],
       "note": "Wird für den Innenausbau benötigt"
     },
     {
       "id": 8,
       "name": "Innenausbau (Trockenbau/Böden)",
       "duration": "12d",
-      "dependencies": [10],
-      "dependencies_ee": [9],
+      "successors": [10],
+      "successors_ee": [9],
       "note": "EE: Reinigung endet erst, wenn der Ausbau fertig ist"
     },
     {
       "id": 9,
       "name": "Laufende Bauschuttreinigung",
       "duration": "14d",
-      "dependencies": [10],
+      "successors": [10],
       "note": "EE zu Task 8: Die finale Reinigung erfolgt zeitgleich mit Abschluss des Ausbaus"
     },
     {
       "id": 10,
       "name": "Abnahme",
       "duration": "1d",
-      "dependencies": []
+      "successors": []
     }
   ]
 }

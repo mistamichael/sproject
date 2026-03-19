@@ -104,7 +104,7 @@
       "name": "Initialisierung und Bereitstellung",
       "duration": "15m",
       "resources": ["R_PERS1", "R_PERS2", "R_PERS3", "B1", "L1", "L2"],
-      "dependencies": [2]
+      "successors": [2]
     },
     {
       "id": 2,
@@ -112,7 +112,7 @@
       "is_loop": true,
       "loop_until": "total_volume <= 0",
       "cycle_prefix": "F",
-      "dependencies": [],
+      "successors": [],
       "subtasks": [
         {
           "name": "Beladen",
