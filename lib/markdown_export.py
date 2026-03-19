@@ -17,14 +17,14 @@ try:
     from .utils import (format_time_value, interpolate_color,
                         is_system_task, format_task_field,
                         convert_cpm_time_to_datetime, load_export_config,
-                        get_cfg_dir, collect_resource_data)
+                        get_cfg_dir, collect_resource_data, collect_person_entries)
     from .mermaid_export import generate_mermaid_gantt
 except (ImportError, ValueError):
     from models.cpm import CPMResult
     from utils import (format_time_value, interpolate_color,
                        is_system_task, format_task_field,
                        convert_cpm_time_to_datetime, load_export_config,
-                       get_cfg_dir, collect_resource_data)
+                       get_cfg_dir, collect_resource_data, collect_person_entries)
     from mermaid_export import generate_mermaid_gantt
 
 
@@ -444,7 +444,7 @@ def _generate_resource_gantt_chart(
         if getattr(result, 'skip_weekends', True):
             excludes.append("weekends")
         if getattr(result, 'skip_holidays', False) and getattr(result, 'holidays', None):
-            excludes.extend(sorted(result.holidays))
+            excludes.extend(sorted(result.holidays or {}))
         if excludes:
             lines.append(f"    excludes    {', '.join(excludes)}")
 
@@ -600,66 +600,16 @@ def _generate_resource_list_section(
         lines.append("```")
         lines.append("")
 
-    if project and project.persons:
+    if rd.persons:
         lines.append("#### Personen")
         lines.append("")
-        lines.append("| Person | Kosten/Stunde | Verfügbarkeit (Abwesenheiten im Projektzeitraum) |")
-        lines.append("|---|---|---|")
-
-        # Compute project window for absence filtering
-        proj_start = getattr(result, 'project_start', None)
-        proj_end = None
-        if proj_start and result.tasks:
-            # fez values are always in working days internally
-            max_fez_days = max(t.fez for t in result.tasks.values())
-            # 1.5x buffer for weekends/holidays + 14-day safety margin
-            calendar_days = max_fez_days * 1.5 + 14
-            proj_end = proj_start + timedelta(days=calendar_days)
-
-        for person in project.persons:
-            # Stundensatz
-            hourly_rate = getattr(person, 'hourly_rate', None)
-            cost = f"{hourly_rate:.2f} €/h" if hourly_rate is not None else "n/a"
-
-            # Abwesenheiten: Urlaub der Person + globale Feiertage im Projektzeitraum
-            absences: List[str] = []
-
-            vacation_entries = getattr(person, 'vacation', None) or []
-            for vac in vacation_entries:
-                try:
-                    if getattr(vac, 'date', None):
-                        d = datetime.strptime(vac.date, '%Y-%m-%d')
-                        if proj_start is None or (d >= proj_start and (proj_end is None or d <= proj_end)):
-                            label = vac.date
-                            if vac.description:
-                                label += f" ({vac.description})"
-                            absences.append(label)
-                    elif getattr(vac, 'from_', None) and getattr(vac, 'to', None):
-                        d_from = datetime.strptime(vac.from_, '%Y-%m-%d')
-                        d_to   = datetime.strptime(vac.to,    '%Y-%m-%d')
-                        in_range = proj_start is None or (
-                            d_to >= proj_start and (proj_end is None or d_from <= proj_end)
-                        )
-                        if in_range:
-                            label = f"{vac.from_} – {vac.to}"
-                            if vac.description:
-                                label += f" ({vac.description})"
-                            absences.append(label)
-                except ValueError:
-                    pass
-
-            holidays = getattr(result, 'holidays', None)
-            if holidays and proj_start and proj_end:
-                for h_date in sorted(holidays):
-                    try:
-                        d = datetime.strptime(h_date, '%Y-%m-%d')
-                        if proj_start <= d <= proj_end:
-                            absences.append(f"{h_date} (Feiertag)")
-                    except ValueError:
-                        pass
-
-            avail = ", ".join(absences) if absences else "keine"
-            lines.append(f"| {person.name} | {cost} | {avail} |")
+        lines.append("| Person | Kosten/Stunde | Abwesenheiten im Projektzeitraum | Abwesenheiten kurz nach dem Projektzeitraum |")
+        lines.append("|---|---|---|---|")
+        for pe in collect_person_entries(rd.persons, result):
+            cost  = f"{pe.hourly_rate:.2f} €/h" if pe.hourly_rate is not None else "n/a"
+            avail = ", ".join(pe.absences)        if pe.absences        else "keine"
+            buf   = ", ".join(pe.absences_buffer) if pe.absences_buffer else "keine"
+            lines.append(f"| {pe.name} | {cost} | {avail} | {buf} |")
         lines.append("")
 
         if project.resources:
@@ -683,8 +633,49 @@ def _generate_resource_list_section(
 
 
 # ---------------------------------------------------------------------------
-# Public export function
+# Public export functions
 # ---------------------------------------------------------------------------
+
+def _generate_md_content(
+    result: CPMResult,
+    project_name: str,
+    project: Optional[object],
+    cfg_dir: Optional[Path],
+    lang: str,
+) -> str:
+    """Generiert den vollständigen Markdown-Inhalt als String."""
+    section_order, headings, mermaid_cfg = _load_md_config(cfg_dir, lang=lang)
+
+    generators = {
+        'summary':       lambda: _generate_summary_section(result, project_name, headings['summary']),
+        'critical_path': lambda: _generate_critical_path_section(result, headings['critical_path']),
+        'netplan':       lambda: _generate_netplan_section(result, headings['netplan'], mermaid_cfg),
+        'netplan_ascii': lambda: _generate_netplan_ascii_section(result, headings.get('netplan_ascii', 'Netzplan ASCII'), mermaid_cfg),
+        'tasklist':      lambda: _generate_tasklist_section(result, headings['tasklist'], headings),
+        'gantt_chart':   lambda: _generate_gantt_chart_section(result, project_name, headings['gantt_chart']),
+        'resource_list': lambda: _generate_resource_list_section(result, headings['resource_list'], project),
+        'cost_overview': lambda: _generate_cost_overview_section(result, headings['cost_overview'], project),
+    }
+
+    lines: List[str] = []
+    lines.append(f"# {project_name} - CPM Report")
+    lines.append("")
+    lines.append(f"Erstellt am: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    lines.append("")
+    lines.append("## CPM Analyse")
+    lines.append("")
+
+    for i, section_name in enumerate(section_order):
+        if section_name not in generators:
+            print(f"WARNUNG: Unbekannte Sektion '{section_name}' – wird übersprungen.")
+            continue
+        lines.append(generators[section_name]())
+        if i < len(section_order) - 1:
+            lines.append("---")
+            lines.append("")
+
+    return "\n".join(lines)
+
 
 def export_cpm_to_markdown(
     result: CPMResult,
@@ -711,49 +702,104 @@ def export_cpm_to_markdown(
         True bei Erfolg, False bei Fehler
     """
     try:
-        section_order, headings, mermaid_cfg = _load_md_config(cfg_dir, lang=lang)
+        content = _generate_md_content(result, project_name, project, cfg_dir, lang)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        print(f"INFO: Markdown erfolgreich exportiert nach: {output_path}")
+        return True
+    except Exception as e:
+        print(f"FEHLER: Markdown-Export fehlgeschlagen: {e}")
+        return False
 
-        # Section-Generator-Registry
-        def make_sections(result, project_name, project, headings, mermaid_cfg):
-            return {
-                'summary':       lambda: _generate_summary_section(result, project_name, headings['summary']),
-                'critical_path': lambda: _generate_critical_path_section(result, headings['critical_path']),
-                'netplan':       lambda: _generate_netplan_section(result, headings['netplan'], mermaid_cfg),
-                'netplan_ascii': lambda: _generate_netplan_ascii_section(result, headings.get('netplan_ascii', 'Netzplan ASCII'), mermaid_cfg),
-                'tasklist':      lambda: _generate_tasklist_section(result, headings['tasklist'], headings),
-                'gantt_chart':   lambda: _generate_gantt_chart_section(result, project_name, headings['gantt_chart']),
-                'resource_list': lambda: _generate_resource_list_section(result, headings['resource_list'], project),
-                'cost_overview': lambda: _generate_cost_overview_section(result, headings['cost_overview'], project),
-            }
 
-        generators = make_sections(result, project_name, project, headings, mermaid_cfg)
+def export_cpm_to_html(
+    result: CPMResult,
+    output_path: Path,
+    project_name: str = "Project",
+    project: Optional[object] = None,
+    cfg_dir: Optional[Path] = None,
+    lang: str = 'de',
+) -> bool:
+    """
+    Exportiert CPM-Ergebnisse als HTML-Datei.
 
-        lines = []
-        lines.append(f"# {project_name} - CPM Report")
-        lines.append("")
-        lines.append(f"Erstellt am: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append("")
+    Basiert auf dem Markdown-Export (gleiche Konfiguration in markdown_export.cfg).
+    Mermaid-Diagramme werden via mermaid.js im Browser gerendert.
 
-        # Wrap everything in one top-level section
-        lines.append("## CPM Analyse")
-        lines.append("")
+    Args:
+        result:       CPM Berechnungsergebnis
+        output_path:  Pfad zur Ausgabe-HTML-Datei
+        project_name: Projektname
+        project:      Projekt-Objekt (optional, für Ressourcen-Details)
+        cfg_dir:      Verzeichnis der Konfigurationsdateien (default: cfg/)
+        lang:         Sprachkürzel ('de' oder 'en')
 
-        for i, section_name in enumerate(section_order):
-            if section_name not in generators:
-                print(f"WARNUNG: Unbekannte Sektion '{section_name}' – wird übersprungen.")
-                continue
-            lines.append(generators[section_name]())
-            if i < len(section_order) - 1:
-                lines.append("---")
-                lines.append("")
+    Returns:
+        True bei Erfolg, False bei Fehler
+    """
+    try:
+        import markdown as md_lib
+    except ImportError:
+        print("FEHLER: Python-Paket 'markdown' nicht installiert (pip install markdown).")
+        return False
+
+    try:
+        import re
+        import html as html_mod
+
+        md_content = _generate_md_content(result, project_name, project, cfg_dir, lang)
+
+        html_body = md_lib.markdown(md_content, extensions=['tables', 'fenced_code'])
+
+        # Mermaid-Blöcke: <pre><code class="language-mermaid">…</code></pre>
+        # → <pre class="mermaid">…</pre>  (für mermaid.js)
+        def _unescape_mermaid(m: re.Match) -> str:
+            code = html_mod.unescape(m.group(1))
+            return f'<pre class="mermaid">{code}</pre>'
+
+        html_body = re.sub(
+            r'<pre><code class="language-mermaid">(.*?)</code></pre>',
+            _unescape_mermaid,
+            html_body,
+            flags=re.DOTALL,
+        )
+
+        html_doc = f"""<!DOCTYPE html>
+<html lang="{lang}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{project_name} – CPM Report</title>
+  <style>
+    body {{ font-family: sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.5; }}
+    h1, h2, h3 {{ color: #1a3a5c; }}
+    table {{ border-collapse: collapse; width: 100%; margin-bottom: 1em; font-size: 0.9em; }}
+    th, td {{ border: 1px solid #ccc; padding: 6px 10px; text-align: left; }}
+    th {{ background: #4472c4; color: #fff; }}
+    tr:nth-child(even) {{ background: #f5f7fa; }}
+    pre {{ background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }}
+    pre.mermaid {{ background: transparent; padding: 0; }}
+    code {{ font-family: monospace; font-size: 0.9em; }}
+    hr {{ border: none; border-top: 1px solid #ddd; margin: 2em 0; }}
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({{ startOnLoad: true }});
+  </script>
+</head>
+<body>
+{html_body}
+</body>
+</html>"""
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w', encoding='utf-8') as f:
-            f.write("\n".join(lines))
+            f.write(html_doc)
 
-        print(f"INFO: Markdown erfolgreich exportiert nach: {output_path}")
+        print(f"INFO: HTML erfolgreich exportiert nach: {output_path}")
         return True
 
     except Exception as e:
-        print(f"FEHLER: Markdown-Export fehlgeschlagen: {e}")
+        print(f"FEHLER: HTML-Export fehlgeschlagen: {e}")
         return False

@@ -10,5 +10,8 @@ holidays>=0.93
 # HTTP requests for kroki-API (SVG export)
 requests>=2.31.0
 
+# Markdown → HTML conversion (HTML export)
+markdown>=3.0
+
 # Testing
 pytest>=9.0.0

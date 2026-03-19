@@ -118,7 +118,8 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
                 holiday_date = datetime.strptime(holiday_str, '%Y-%m-%d')
                 # Prüfe ob Feiertag im Projektbereich liegt
                 if start_date + timedelta(days=int(min_faz)) <= holiday_date <= start_date + timedelta(days=int(max_fez) + 1):
-                    holiday_label = holiday_date.strftime('%d.%m')
+                    name = result.holidays[holiday_str] if isinstance(result.holidays, dict) else ''
+                    holiday_label = f"{holiday_date.strftime('%d.%m')} {name}".strip()
                     lines.append(f"    {holiday_label} :crit, {holiday_str}, {holiday_str}")
             except ValueError:
                 pass

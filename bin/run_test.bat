@@ -97,7 +97,7 @@ for %%F in ("%PV_EXAMPLES%\*.json") do (
 
     REM Baue Parameterliste auf mit absolutem output-dir und cfg-dir Pfad
     REM CPM wird automatisch berechnet, daher Export-Formate und Reports direkt angeben
-    set "FILE_PARAMS=--project "%%F" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%" --export xlsx,md,json,txt"
+    set "FILE_PARAMS=--project "%%F" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%" --export xlsx,md,json,txt,html"
 
     REM Führe sproject.py aus dem lib Verzeichnis aus, aber mit absolutem output-dir
     python "%PV_LIB%\sproject.py" !FILE_PARAMS!

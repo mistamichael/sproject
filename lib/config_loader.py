@@ -6,8 +6,9 @@ Lädt und verwaltet die Default-Konfiguration aus cfg/defaults.cfg
 """
 
 import configparser
+import json
 from pathlib import Path
-from typing import Any, Optional, Set
+from typing import Any, Dict, Optional
 from datetime import datetime
 
 try:
@@ -207,64 +208,80 @@ class ConfigLoader:
             'vat_percent': self.get_float('Costs', 'vat_percent', 19.0),
         }
 
-    def get_holidays(self, year: Optional[int] = None, year_range: int = 1) -> Set[str]:
+    def get_holidays(self, year: Optional[int] = None, year_range: int = 1) -> Dict[str, str]:
         """
-        Lädt Feiertage mithilfe der holidays-Bibliothek.
+        Lädt Feiertage als Dict {Datum: Name}.
+
+        Priorität:
+        1. JSON-Datei aus [Holidays] holidays_file (regional konfigurierbar)
+        2. Python-Bibliothek 'holidays' (Fallback)
 
         Args:
             year: Jahr für die Feiertage (default: aktuelles Jahr)
             year_range: Anzahl Jahre voraus/zurück (default: 1, also year-1 bis year+1)
 
         Returns:
-            Set mit Feiertagsdaten im Format 'YYYY-MM-DD'
+            Dict mit Feiertagsdaten im Format {'YYYY-MM-DD': 'Feiertagsname'}
         """
-        # Cache-Key beinhaltet year und year_range
         cache_key = f"{year}_{year_range}"
         if hasattr(self, '_holidays_cache_dict') and cache_key in self._holidays_cache_dict:
             return self._holidays_cache_dict[cache_key]
 
-        holidays_set: Set[str] = set()
+        holidays_dict: Dict[str, str] = {}
 
-        # Prüfe ob Feiertage berücksichtigt werden sollen
         consider_holidays = self.get_bool('Holidays', 'consider_holidays', True)
         if not consider_holidays:
             if not hasattr(self, '_holidays_cache_dict'):
                 self._holidays_cache_dict = {}
-            self._holidays_cache_dict[cache_key] = holidays_set
-            return holidays_set
+            self._holidays_cache_dict[cache_key] = holidays_dict
+            return holidays_dict
 
-        # Bestimme Jahr
         if year is None:
             year = datetime.now().year
 
+        # 1. Versuche holidays_file zu laden (JSON mit Namen)
+        holidays_file = self.get('Holidays', 'holidays_file', '')
+        if holidays_file:
+            json_path = self.cfg_dir / holidays_file
+            if json_path.exists():
+                try:
+                    with open(json_path, encoding='utf-8') as f:
+                        data = json.load(f)
+                    for entry in data.get('holidays', []):
+                        holidays_dict[entry['date']] = entry['name']
+                    if not hasattr(self, '_holidays_cache_dict'):
+                        self._holidays_cache_dict = {}
+                    self._holidays_cache_dict[cache_key] = holidays_dict
+                    return holidays_dict
+                except Exception as e:
+                    print(f"WARNUNG: Fehler beim Laden der Feiertags-Datei '{json_path}': {e}")
+                    print("Fallback auf holidays-Bibliothek.")
+            else:
+                print(f"WARNUNG: Feiertags-Datei nicht gefunden: {json_path}")
+                print("Fallback auf holidays-Bibliothek.")
+
+        # 2. Fallback: holidays-Bibliothek
         country = self.get('Holidays', 'country', 'DE')
         region = self.get('Holidays', 'region', 'BY')
-
-        # Versuche holidays-Bibliothek zu verwenden
         try:
             import holidays as holidays_lib
 
-            # Erstelle Feiertags-Objekt für das Land und die Region
-            # Für Deutschland: holidays.country_holidays('DE', subdiv='BY')
             years_to_load = list(range(year - year_range, year + year_range + 1))
             country_holidays = holidays_lib.country_holidays(country, subdiv=region, years=years_to_load)
-
-            # Konvertiere zu Set von Strings im Format 'YYYY-MM-DD'
-            for holiday_date in country_holidays.keys():
-                holidays_set.add(holiday_date.strftime('%Y-%m-%d'))
+            for holiday_date, name in country_holidays.items():
+                holidays_dict[holiday_date.strftime('%Y-%m-%d')] = name
 
         except ImportError:
-            print(f"WARNUNG: holidays-Bibliothek nicht verfügbar. Installiere mit: pip install holidays")
-            print(f"Feiertage werden NICHT berücksichtigt.")
+            print("WARNUNG: holidays-Bibliothek nicht verfügbar. Installiere mit: pip install holidays")
+            print("Feiertage werden NICHT berücksichtigt.")
         except Exception as e:
             print(f"WARNUNG: Fehler beim Laden der Feiertage für {country}/{region}: {e}")
-            print(f"Feiertage werden NICHT berücksichtigt.")
+            print("Feiertage werden NICHT berücksichtigt.")
 
-        # Cache speichern
         if not hasattr(self, '_holidays_cache_dict'):
             self._holidays_cache_dict = {}
-        self._holidays_cache_dict[cache_key] = holidays_set
-        return holidays_set
+        self._holidays_cache_dict[cache_key] = holidays_dict
+        return holidays_dict
 
     def print_summary(self) -> None:
         """Gibt eine Übersicht der Konfiguration aus."""

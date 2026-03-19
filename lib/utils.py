@@ -685,6 +685,160 @@ def parse_cycle_id(cycle_id: str) -> tuple[Union[int, str], int, str]:
 
 
 # =============================================================================
+# Person Data Collection
+# =============================================================================
+
+@dataclass
+class PersonEntry:
+    """Aufbereitete Personen-Daten für den Export."""
+    name:            str
+    hourly_rate:     Optional[float]
+    absences:        List[str]   # Abwesenheiten im Projektzeitraum [proj_start, proj_end]
+    absences_buffer: List[str]   # Abwesenheiten im Verzögerungspuffer (proj_end, proj_end_buffer]
+
+
+def _collect_absences_in_window(
+    person: Any,
+    holidays: Optional[Any],
+    win_start: Any,
+    win_end: Any,
+    exclusive_start: bool = False,
+) -> List[str]:
+    """
+    Gibt Abwesenheits-Labels für eine Person innerhalb eines Zeitfensters zurück.
+
+    Args:
+        person:          Person-Objekt mit optionalem .vacation
+        holidays:        Set von Feiertagsdaten ('YYYY-MM-DD') oder None
+        win_start:       Fenster-Anfang (datetime oder None → kein unteres Limit)
+        win_end:         Fenster-Ende   (datetime oder None → kein oberes Limit)
+        exclusive_start: True → win_start ist exklusiv (Puffer beginnt nach proj_end)
+    """
+    absences: List[str] = []
+
+    def _in_window(d: datetime) -> bool:
+        after = (d > win_start) if exclusive_start else (d >= win_start)
+        return (win_start is None or after) and (win_end is None or d <= win_end)
+
+    for vac in (getattr(person, 'vacation', None) or []):
+        try:
+            if getattr(vac, 'date', None):
+                d = datetime.strptime(vac.date, '%Y-%m-%d')
+                if _in_window(d):
+                    label = vac.date
+                    if vac.description:
+                        label += f" ({vac.description})"
+                    absences.append(label)
+            elif getattr(vac, 'from_', None) and getattr(vac, 'to', None):
+                d_from = datetime.strptime(vac.from_, '%Y-%m-%d')
+                d_to   = datetime.strptime(vac.to,    '%Y-%m-%d')
+                # Zeitraum überlappt das Fenster
+                if (win_start is None or d_to >= win_start) and (win_end is None or d_from <= win_end):
+                    label = f"{vac.from_} – {vac.to}"
+                    if vac.description:
+                        label += f" ({vac.description})"
+                    absences.append(label)
+        except ValueError:
+            pass
+
+    if holidays and win_start and win_end:
+        for h_date in sorted(holidays):
+            try:
+                d = datetime.strptime(h_date, '%Y-%m-%d')
+                if _in_window(d):
+                    name = holidays[h_date] if isinstance(holidays, dict) else 'Feiertag'
+                    absences.append(f"{h_date} ({name})")
+            except ValueError:
+                pass
+
+    return absences
+
+
+def collect_person_entries(persons: List[Any], result: Any) -> List['PersonEntry']:
+    """
+    Bereitet Personen-Daten (Stundensatz, Abwesenheiten) für den Export auf.
+
+    Zwei Zeitfenster:
+    - absences:        [proj_start, proj_end]         — exakter Projektzeitraum
+    - absences_buffer: (proj_end, proj_end_buffer]    — Verzögerungsrisiko
+
+    Puffergröße: min(N_personen × 3, 30) Arbeitstage
+    (Annahme: je Person ≥ 3 Krankheitstage innerhalb von 30 Arbeitstagen)
+
+    Args:
+        persons: Liste von Person-Objekten
+        result:  CPMResult (für project_start, tasks, holidays)
+
+    Returns:
+        Liste von PersonEntry
+    """
+    proj_start = getattr(result, 'project_start', None)
+    proj_end   = None
+    proj_end_buffer = None
+
+    if proj_start and getattr(result, 'tasks', None):
+        max_fez_days  = max(t.fez for t in result.tasks.values())
+        proj_end      = add_workdays(proj_start, max_fez_days)
+        buffer_days   = min(len(persons) * 3, 30)
+        proj_end_buffer = add_workdays(proj_end, buffer_days)
+
+    holidays = getattr(result, 'holidays', None)
+
+    entries: List[PersonEntry] = []
+    for person in persons:
+        hourly_rate = getattr(person, 'hourly_rate', None)
+        absences = _collect_absences_in_window(
+            person, holidays, proj_start, proj_end, exclusive_start=False
+        )
+        absences_buffer = _collect_absences_in_window(
+            person, holidays, proj_end, proj_end_buffer, exclusive_start=True
+        ) if proj_end else []
+        entries.append(PersonEntry(
+            name=person.name,
+            hourly_rate=hourly_rate,
+            absences=absences,
+            absences_buffer=absences_buffer,
+        ))
+
+    return entries
+
+
+@dataclass
+class ResourceDetailEntry:
+    """Ressourcen-Detail-Zeile für den Export (Ressource ↔ Person ↔ Typ)."""
+    resource_id:   str
+    resource_name: str
+    person_name:   str   # Leer wenn keine Person verknüpft
+    resource_type: str
+
+
+def collect_resource_details(resources: List[Any], persons: List[Any]) -> List['ResourceDetailEntry']:
+    """
+    Erzeugt eine flache Liste von Ressourcen-Details (Name, Person, Typ).
+
+    Args:
+        resources: Liste von Ressource-Objekten (.id, .name, .type, .person_id)
+        persons:   Liste von Person-Objekten (.id, .name)
+
+    Returns:
+        Liste von ResourceDetailEntry, sortiert nach resource_id
+    """
+    person_lookup = {p.id: p.name for p in persons}
+    entries: List[ResourceDetailEntry] = []
+    for res in sorted(resources, key=lambda r: r.id):
+        person_name = ''
+        if hasattr(res, 'person_id') and res.person_id:
+            person_name = person_lookup.get(res.person_id, res.person_id)
+        entries.append(ResourceDetailEntry(
+            resource_id=res.id,
+            resource_name=getattr(res, 'name', res.id),
+            person_name=person_name,
+            resource_type=getattr(res, 'type', 'unknown'),
+        ))
+    return entries
+
+
+# =============================================================================
 # Resource Data Collection
 # =============================================================================
 

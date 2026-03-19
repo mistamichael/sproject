@@ -24,12 +24,12 @@ try:
     from .models import Project
     from .models.reports import GanttReport, ResourceListReport
     from .models.cpm import CPMResult
-    from .utils import format_time_value_auto, add_workdays, interpolate_color
+    from .utils import format_time_value_auto, add_workdays, interpolate_color, collect_person_entries, collect_resource_details
 except (ImportError, ValueError):
     from models import Project
     from models.reports import GanttReport, ResourceListReport
     from models.cpm import CPMResult
-    from utils import format_time_value_auto, add_workdays, interpolate_color
+    from utils import format_time_value_auto, add_workdays, interpolate_color, collect_person_entries, collect_resource_details
 
 
 def load_excel_export_config(cfg_dir: Path, lang: str = 'de') -> Dict[str, Any]:
@@ -968,6 +968,65 @@ def create_resource_list(wb: Workbook, project: Project, result: CPMResult,
                     # Nur färben wenn Zelle noch keine Füllung hat (leer)
                     if not cell.fill or cell.fill.start_color.index in ['00000000', 'FFFFFFFF', None]:
                         cell.fill = weekend_fill
+
+    # --- Personen-Tabelle ---
+    header_fill  = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font  = Font(bold=True, color="FFFFFF")
+    section_font = Font(bold=True, size=12)
+
+    current_row += 2
+    ws.cell(row=current_row, column=1, value="Personen").font = section_font
+    current_row += 1
+
+    person_headers = [
+        "Person", "Kosten/Stunde",
+        "Abwesenheiten im Projektzeitraum",
+        "Abwesenheiten kurz nach dem Projektzeitraum",
+    ]
+    for col_idx, h in enumerate(person_headers, start=1):
+        cell = ws.cell(row=current_row, column=col_idx, value=h)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal='center')
+    ws.column_dimensions['A'].width = max(ws.column_dimensions['A'].width, 25)
+    ws.column_dimensions['B'].width = 16
+    ws.column_dimensions['C'].width = 55
+    ws.column_dimensions['D'].width = 55
+    current_row += 1
+
+    alt_fill = PatternFill(start_color="EAF3FB", end_color="EAF3FB", fill_type="solid")
+    for i, pe in enumerate(collect_person_entries(project.persons, result)):
+        row_fill = alt_fill if i % 2 == 0 else None
+        cost  = f"{pe.hourly_rate:.2f} €/h" if pe.hourly_rate is not None else "n/a"
+        avail = ", ".join(pe.absences)        if pe.absences        else "keine"
+        buf   = ", ".join(pe.absences_buffer) if pe.absences_buffer else "keine"
+        for col_idx, val in enumerate([pe.name, cost, avail, buf], start=1):
+            cell = ws.cell(row=current_row, column=col_idx, value=val)
+            if row_fill:
+                cell.fill = row_fill
+        current_row += 1
+
+    # --- Ressourcen-Details-Tabelle ---
+    current_row += 1
+    ws.cell(row=current_row, column=1, value="Ressourcen-Details").font = section_font
+    current_row += 1
+
+    detail_headers = ["Ressource (ID)", "Person", "Typ"]
+    for col_idx, h in enumerate(detail_headers, start=1):
+        cell = ws.cell(row=current_row, column=col_idx, value=h)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal='center')
+    current_row += 1
+
+    for i, rd_entry in enumerate(collect_resource_details(project.resources, project.persons)):
+        row_fill = alt_fill if i % 2 == 0 else None
+        res_label = f"{rd_entry.resource_name} ({rd_entry.resource_id})"
+        for col_idx, val in enumerate([res_label, rd_entry.person_name, rd_entry.resource_type], start=1):
+            cell = ws.cell(row=current_row, column=col_idx, value=val)
+            if row_fill:
+                cell.fill = row_fill
+        current_row += 1
 
 
 def _apply_header_style(cell, fill_color: str = "4472C4") -> None:

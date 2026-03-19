@@ -22,7 +22,7 @@ from excel_reports import (
     create_cost_sheet,
 )
 from mermaid_export import export_cpm_to_svg
-from markdown_export import export_cpm_to_markdown
+from markdown_export import export_cpm_to_markdown, export_cpm_to_html
 from txt_export import export_cpm_to_txt as _txt_export
 from json_export import export_cpm_to_json as _json_export
 from utils import load_labels
@@ -351,7 +351,7 @@ Beispiele:
 
     # Parse Export-Formate
     export_formats = [fmt.strip().lower() for fmt in args.export.split(',')]
-    valid_formats = {'txt', 'json', 'xlsx', 'svg', 'md'}
+    valid_formats = {'txt', 'json', 'xlsx', 'svg', 'md', 'html'}
     for fmt in export_formats:
         if fmt not in valid_formats:
             print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx, svg, md")
@@ -499,6 +499,15 @@ Beispiele:
                             logger.info(f"CPM-Ergebnisse (Markdown) gespeichert in: {output_file}")
                     except Exception as e:
                         logger.error(f"Markdown-Export fehlgeschlagen: {e}")
+                elif fmt == 'html':
+                    output_file = output_dir / f"{project_file.stem}.html"
+                    try:
+                        project_name = project.project if hasattr(project, 'project') else project_file.stem
+                        success = export_cpm_to_html(result, output_file, project_name, project, lang=lang)
+                        if success:
+                            logger.info(f"CPM-Ergebnisse (HTML) gespeichert in: {output_file}")
+                    except Exception as e:
+                        logger.error(f"HTML-Export fehlgeschlagen: {e}")
 
             success_count += 1
         except Exception as e:

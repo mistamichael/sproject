@@ -14,10 +14,10 @@ from datetime import datetime
 
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data
+    from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data, collect_person_entries
 except (ImportError, ValueError):
     from models.cpm import CPMResult  # type: ignore[no-redef]
-    from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data  # type: ignore[no-redef]
+    from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data, collect_person_entries  # type: ignore[no-redef]
 
 
 # ---------------------------------------------------------------------------
@@ -356,11 +356,14 @@ def _generate_resource_list(result: CPMResult, heading: str,
         lines.append(_SEP_THIN)
         lines.append("Personen:")
         lines.append("")
-        for person in rd.persons:
-            hourly_rate = getattr(person, 'hourly_rate', None)
-            cost  = f"{hourly_rate:.2f} €/h" if hourly_rate is not None else "n/a"
-            avail = f"{person.available_hours}h" if getattr(person, 'available_hours', None) else "n/a"
-            lines.append(f"  {person.name:<25} Kosten: {cost:<10} Verfügbar: {avail}")
+        col_name = 25
+        col_cost = 12
+        for pe in collect_person_entries(rd.persons, result):
+            cost   = f"{pe.hourly_rate:.2f} €/h" if pe.hourly_rate is not None else "n/a"
+            avail  = ", ".join(pe.absences)        if pe.absences        else "keine"
+            buf    = ", ".join(pe.absences_buffer) if pe.absences_buffer else "keine"
+            lines.append(f"  {pe.name:<{col_name}} Kosten: {cost:<{col_cost}} Abwesenheiten: {avail}")
+            lines.append(f"  {'':<{col_name}} {'':<{col_cost+9}}  Puffer-Abwesenheiten: {buf}")
         lines.append("")
 
     return lines

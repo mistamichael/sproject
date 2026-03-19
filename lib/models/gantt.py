@@ -11,7 +11,7 @@ Diese Komponente berücksichtigt:
 - Arbeitszeiten pro Person/Ressource
 """
 
-from typing import Dict, List, Union, Optional, Any, Set
+from typing import Dict, List, Union, Optional, Any
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
@@ -85,7 +85,7 @@ class GanttResult(BaseModel):
     tasks: Dict[Union[int, str], GanttTaskResult] = {}
     time_unit: str = 'days'  # 'minutes', 'hours', 'days'
     critical_path: List[Union[int, str]] = []
-    holidays: Optional[Set[str]] = None
+    holidays: Optional[Dict[str, str]] = None
     skip_weekends: bool = True
     skip_holidays: bool = False
     calculation_date: Optional[datetime] = None
@@ -104,7 +104,7 @@ class GanttCalculator:
         cpm_result: CPMResult,
         skip_weekends: bool = True,
         skip_holidays: bool = False,
-        holidays: Optional[Set[str]] = None,
+        holidays: Optional[Dict[str, str]] = None,
         cfg_dir: Optional['Path'] = None
     ):
         """
@@ -120,7 +120,7 @@ class GanttCalculator:
         self.cpm_result = cpm_result
         self.skip_weekends = skip_weekends
         self.skip_holidays = skip_holidays
-        self.holidays = holidays or set()
+        self.holidays = holidays or {}
         self.start_date = cpm_result.project_start or datetime.now()
         self.time_unit = cpm_result.time_unit
 
