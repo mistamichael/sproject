@@ -8,7 +8,7 @@
 - **Kalender-Integration**: Wochenenden und Feiertage werden bei Datumsberechnung übersprungen
 - **Ressourcenverwaltung**: Optional Personen, Stundensätze und Kostenübersicht
 - **Gantt-Diagramm**: Terminplanung mit Arbeitstagen
-- **Mehrere Exportformate**: JSON, TXT, XLSX, Mermaid-SVG, Markdown
+- **Mehrere Exportformate**: JSON, TXT, XLSX, Markdown, HTML, SVG-ZIP
 
 ## Projektstruktur
 
@@ -71,7 +71,8 @@ sproject/
 ```bash
 pip install pydantic          # Pflicht
 pip install openpyxl          # Für XLSX-Export
-pip install requests          # Für SVG-Export (via kroki.io)
+pip install requests          # Für SVG/ZIP-Export (via kroki.io)
+pip install markdown          # Für HTML-Export
 ```
 
 Oder mit virtueller Umgebung:
@@ -79,7 +80,7 @@ Oder mit virtueller Umgebung:
 ```bash
 python -m venv venv
 venv\Scripts\activate.bat     # Windows
-pip install pydantic openpyxl requests
+pip install pydantic openpyxl requests markdown
 ```
 
 ## Verwendung
@@ -97,10 +98,10 @@ python lib/sproject.py --project examples/pizza.json
 python lib/sproject.py --project examples/tankdesign.json
 
 # Mehrere Formate gleichzeitig
-python lib/sproject.py --project examples/hausbau.json --export txt,json,xlsx,svg,md
+python lib/sproject.py --project examples/hausbau.json --export txt,json,xlsx,md,html,zip
 
 # Alle verfügbaren Formate
-python lib/sproject.py --project examples/software_simple.json --export txt,json,xlsx,svg,md
+python lib/sproject.py --project examples/software_simple.json --export txt,json,xlsx,md,html,zip
 ```
 
 ### Alle Projekte im Verzeichnis verarbeiten
@@ -130,13 +131,14 @@ python lib/sproject.py --help
 
 ### Exportformate
 
-| Format | Beschreibung                               |
-| ------ | ------------------------------------------ |
-| `json` | Netzplan + Gantt als JSON (Standard)       |
-| `txt`  | Strukturierte ASCII-Textdatei              |
-| `xlsx` | Excel mit konfigurierbaren Tabs            |
-| `svg`  | Gantt-Diagramm als SVG (via Mermaid/kroki) |
-| `md`   | Markdown-Report mit Mermaid-Diagramm       |
+| Format | Beschreibung |
+| ------ | ------------ |
+| `json` | Netzplan + Gantt als JSON (Standard) |
+| `txt` | Strukturierte ASCII-Textdatei |
+| `xlsx` | Excel mit konfigurierbaren Tabs (via `cfg/excel_export.cfg`) |
+| `md` | Markdown-Report mit eingebetteten Mermaid-Diagrammen |
+| `html` | HTML-Report, Mermaid-Diagramme werden im Browser gerendert |
+| `zip` | Alle Diagramme als SVG in einem ZIP-Archiv (via Mermaid/kroki.io) |
 
 ## Projektdatei-Format (JSON)
 
@@ -181,11 +183,11 @@ python lib/sproject.py --help
 
 ### Abhängigkeitstypen
 
-| Feld              | Typ | Bedeutung                                                            |
-| ----------------- | --- | -------------------------------------------------------------------- |
-| `successors`    | EA  | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard)  |
-| `successors_aa` | AA  | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger         |
-| `successors_ee` | EE  | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger               |
+| Feld | Typ | Bedeutung |
+| ---- | --- | --------- |
+| `successors` | EA | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard) |
+| `successors_aa` | AA | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger |
+| `successors_ee` | EE | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger |
 
 Beispiel (aus `hausbau.json`):
 
@@ -380,7 +382,7 @@ Logdateien werden automatisch unter `log/` erstellt:
 - Format: `sproject_YYYYMMDD_HHMMSS.log`
 - Konsole: INFO-Level (wichtige Meldungen)
 - Datei: DEBUG-Level (vollständige Details)
-
+  
 ## Lizenz
 
-Dieses Projekt ist für den internen Gebrauch bestimmt.
+Dieses Projekt ist unter der [MIT-Lizenz](LICENSE) lizenziert.

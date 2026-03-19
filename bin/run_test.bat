@@ -5,9 +5,11 @@ REM run_test.bat - Verarbeitet Projekt-Dateien mit sproject.py
 REM
 REM Usage:
 REM   run_test.bat                      - Verarbeitet alle .json Dateien im examples Ordner
-REM                                       (mit CPM-Berechnung, Excel-Export, Gantt und Resource List)
+REM                                       (mit CPM-Berechnung, Excel, Markdown, HTML, JSON, TXT, ZIP)
 REM   run_test.bat <filename>           - Verarbeitet eine einzelne Projekt-Datei
-REM   run_test.bat <filename> --export xlsx --gantt --resource - Excel mit Reports
+REM   run_test.bat <filename> --export xlsx  - Excel-Report (Tabs per cfg/excel_export.cfg steuerbar)
+REM   run_test.bat <filename> --export html  - HTML-Report mit Mermaid-Diagrammen
+REM   run_test.bat <filename> --export zip   - Alle Grafiken als SVG im ZIP-Archiv
 REM
 REM ============================================================================
 
@@ -97,7 +99,7 @@ for %%F in ("%PV_EXAMPLES%\*.json") do (
 
     REM Baue Parameterliste auf mit absolutem output-dir und cfg-dir Pfad
     REM CPM wird automatisch berechnet, daher Export-Formate und Reports direkt angeben
-    set "FILE_PARAMS=--project "%%F" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%" --export xlsx,md,json,txt,html"
+    set "FILE_PARAMS=--project "%%F" --output-dir "%PV_RESULTS%" --cfg-dir "%PV_CFG%" --export xlsx,md,json,txt,html,zip"
 
     REM Führe sproject.py aus dem lib Verzeichnis aus, aber mit absolutem output-dir
     python "%PV_LIB%\sproject.py" !FILE_PARAMS!
@@ -190,19 +192,26 @@ echo                     Die Datei wird im examples Ordner gesucht.
 echo                     Ohne Angabe werden alle .json Dateien im examples Ordner verarbeitet.
 echo.
 echo Optionen:
-echo   --export FORMAT   Exportformate (kommagetrennt): txt, json, xlsx, svg, md
-echo   --gantt           Erstellt Gantt-Chart im Excel-Export
-echo   --resource        Erstellt Resource-List im Excel-Export
+echo   --export FORMAT   Exportformate (kommagetrennt): txt, json, xlsx, md, html, zip
+echo                       txt  - Text-Report
+echo                       json - Netzplan als JSON
+echo                       xlsx - Excel-Report (Tabs per cfg/excel_export.cfg konfigurierbar)
+echo                       md   - Markdown-Report mit eingebetteten Mermaid-Diagrammen
+echo                       html - HTML-Report (Mermaid-Diagramme werden im Browser gerendert)
+echo                       zip  - Alle Grafiken als SVG-Dateien in einem ZIP-Archiv
+echo                              (Gantt, Netzplan, Ressourcen-Gantts via kroki.io)
 echo.
 echo Hinweis:
 echo   CPM (Critical Path Method) wird automatisch für alle Projekte berechnet.
+echo   Welche Tabs im Excel erscheinen, steuert cfg/excel_export.cfg (section_order).
 echo.
 echo Beispiele:
-echo   %~nx0                                              Verarbeitet alle .json Dateien (mit CPM, Excel, Gantt)
-echo   %~nx0 tankdesign                                   Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign.json                              Verarbeitet tankdesign.json
-echo   %~nx0 tankdesign --export xlsx                     CPM-Berechnung mit Excel-Export
-echo   %~nx0 erdaushub --export xlsx --gantt --resource   Excel mit Gantt und Resource List
+echo   %~nx0                          Verarbeitet alle .json Dateien
+echo   %~nx0 tankdesign               Verarbeitet tankdesign.json
+echo   %~nx0 tankdesign.json          Verarbeitet tankdesign.json
+echo   %~nx0 tankdesign --export xlsx CPM-Berechnung mit Excel-Export
+echo   %~nx0 tankdesign --export html HTML-Report mit Mermaid-Diagrammen
+echo   %~nx0 tankdesign --export zip  Alle Grafiken als SVG im ZIP-Archiv
 echo.
 echo Hinweis:
 echo   Ergebnisse werden in %PV_RESULTS% erzeugt und automatisch mit

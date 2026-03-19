@@ -101,11 +101,19 @@ Software-Phase:
 
 ### Verwendung
 ```bash
-# Excel mit Gantt-Chart erstellen
-python lib/sproject.py --project examples/hausbau.json --export xlsx --gantt --resource
+# Excel erstellen (Tabs werden über cfg/excel_export.cfg gesteuert)
+python lib/sproject.py --project examples/hausbau.json --export xlsx
 
-# Ergebnis ansehen
+# HTML-Report mit Mermaid-Diagrammen
+python lib/sproject.py --project examples/hausbau.json --export html
+
+# Alle Grafiken als SVG im ZIP-Archiv
+python lib/sproject.py --project examples/hausbau.json --export zip
+
+# Ergebnisse ansehen
 results/hausbau.xlsx
+results/hausbau.html
+results/hausbau_svg.zip
 ```
 
 ---
@@ -256,14 +264,18 @@ duration = resource.truck.capacity / resource.B1.loading_speed_per_min
 
 ```bash
 # Vollständige Auswertung mit Excel
-python lib/sproject.py --project examples/erdaushub.json --export xlsx --gantt --resource
+python lib/sproject.py --project examples/erdaushub.json --export xlsx
 
 # Nur Text-Ausgabe
 python lib/sproject.py --project examples/erdaushub.json --export txt
 
+# Alle Grafiken als SVG im ZIP-Archiv
+python lib/sproject.py --project examples/erdaushub.json --export zip
+
 # Ergebnisse ansehen
 results/erdaushub.xlsx  # Excel mit Gantt (Stunden-Auflösung!)
 results/erdaushub.txt   # Text-Report
+results/erdaushub_svg.zip  # SVG-Grafiken (Gantt, Netzplan, Ressourcen)
 ```
 
 ### Besonderheiten

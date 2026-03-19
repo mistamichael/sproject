@@ -21,8 +21,7 @@ from excel_reports import (
     create_netplan_table_sheet,
     create_cost_sheet,
 )
-from mermaid_export import export_cpm_to_svg
-from markdown_export import export_cpm_to_markdown, export_cpm_to_html
+from markdown_export import export_cpm_to_markdown, export_cpm_to_html, export_cpm_to_svg_zip
 from txt_export import export_cpm_to_txt as _txt_export
 from json_export import export_cpm_to_json as _json_export
 from utils import load_labels
@@ -351,10 +350,10 @@ Beispiele:
 
     # Parse Export-Formate
     export_formats = [fmt.strip().lower() for fmt in args.export.split(',')]
-    valid_formats = {'txt', 'json', 'xlsx', 'svg', 'md', 'html'}
+    valid_formats = {'txt', 'json', 'xlsx', 'md', 'html', 'zip'}
     for fmt in export_formats:
         if fmt not in valid_formats:
-            print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx, svg, md")
+            print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx, md, html, zip")
             return 1
 
     lang = args.lang
@@ -477,18 +476,6 @@ Beispiele:
                         logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
                     except ImportError as ie:
                         logger.warning(f"XLSX-Export übersprungen: {ie}")
-                elif fmt == 'svg':
-                    output_file = output_dir / f"{project_file.stem}_gantt.svg"
-                    try:
-                        # Exportiere Gantt-Chart als SVG über Mermaid/kroki
-                        project_name = project.project if hasattr(project, 'project') else project_file.stem
-                        success = export_cpm_to_svg(result, output_file, project_name)
-                        if success:
-                            logger.info(f"CPM-Ergebnisse (SVG) gespeichert in: {output_file}")
-                    except ImportError as ie:
-                        logger.warning(f"SVG-Export übersprungen: {ie}")
-                    except Exception as e:
-                        logger.error(f"SVG-Export fehlgeschlagen: {e}")
                 elif fmt == 'md':
                     output_file = output_dir / f"{project_file.stem}.md"
                     try:
@@ -508,6 +495,15 @@ Beispiele:
                             logger.info(f"CPM-Ergebnisse (HTML) gespeichert in: {output_file}")
                     except Exception as e:
                         logger.error(f"HTML-Export fehlgeschlagen: {e}")
+                elif fmt == 'zip':
+                    output_file = output_dir / f"{project_file.stem}_svgs.zip"
+                    try:
+                        project_name = project.project if hasattr(project, 'project') else project_file.stem
+                        success = export_cpm_to_svg_zip(result, output_file, project_name, project, args.cfg_dir, lang=lang)
+                        if success:
+                            logger.info(f"SVG-ZIP gespeichert in: {output_file}")
+                    except Exception as e:
+                        logger.error(f"ZIP-Export fehlgeschlagen: {e}")
 
             success_count += 1
         except Exception as e:

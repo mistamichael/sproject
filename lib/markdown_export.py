@@ -7,6 +7,8 @@ Sektionsreihenfolge und Überschriften werden aus cfg/markdown_export.cfg gelese
 """
 
 import configparser
+import tempfile
+import zipfile
 from pathlib import Path
 from typing import Optional, Dict, List
 from datetime import datetime, timedelta
@@ -18,14 +20,14 @@ try:
                         is_system_task, format_task_field,
                         convert_cpm_time_to_datetime, load_export_config,
                         get_cfg_dir, collect_resource_data, collect_person_entries)
-    from .mermaid_export import generate_mermaid_gantt
+    from .mermaid_export import generate_mermaid_gantt, export_mermaid_to_svg
 except (ImportError, ValueError):
     from models.cpm import CPMResult
     from utils import (format_time_value, interpolate_color,
                        is_system_task, format_task_field,
                        convert_cpm_time_to_datetime, load_export_config,
                        get_cfg_dir, collect_resource_data, collect_person_entries)
-    from mermaid_export import generate_mermaid_gantt
+    from mermaid_export import generate_mermaid_gantt, export_mermaid_to_svg
 
 
 # ---------------------------------------------------------------------------
@@ -802,4 +804,100 @@ def export_cpm_to_html(
 
     except Exception as e:
         print(f"FEHLER: HTML-Export fehlgeschlagen: {e}")
+        return False
+
+
+def export_cpm_to_svg_zip(
+    result: CPMResult,
+    output_path: Path,
+    project_name: str = "Project",
+    project: Optional[object] = None,
+    cfg_dir: Optional[Path] = None,
+    lang: str = 'de',
+) -> bool:
+    """
+    Exportiert alle CPM-Grafiken als SVG-Dateien in ein ZIP-Archiv.
+
+    Enthält:
+    - Gantt-Chart ({stem}_gantt.svg)
+    - Netzplan ({stem}_netzplan.svg)
+    - Ressourcen-Gantts ({stem}_ressource_{res_id}.svg, falls vorhanden)
+
+    Args:
+        result:       CPM Berechnungsergebnis
+        output_path:  Pfad zur Ausgabe-ZIP-Datei
+        project_name: Projektname
+        project:      Projekt-Objekt (optional, für Ressourcen-Details)
+        cfg_dir:      Verzeichnis der Konfigurationsdateien (default: cfg/)
+        lang:         Sprachkürzel ('de' oder 'en')
+
+    Returns:
+        True bei Erfolg, False bei Fehler
+    """
+    try:
+        _, _, mermaid_cfg = _load_md_config(cfg_dir, lang)
+        stem = output_path.stem.replace('_svgs', '') or project_name
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            svg_files: List[Path] = []
+
+            # Gantt-Chart
+            gantt_diagram = generate_mermaid_gantt(result, project_name)
+            gantt_path = tmp / f"{stem}_gantt.svg"
+            if export_mermaid_to_svg(gantt_diagram, gantt_path):
+                svg_files.append(gantt_path)
+            else:
+                print("WARNUNG: Gantt-SVG konnte nicht erzeugt werden.")
+
+            # Netzplan
+            netplan_diagram = _build_mermaid_network(result, mermaid_cfg)
+            netplan_path = tmp / f"{stem}_netzplan.svg"
+            if export_mermaid_to_svg(netplan_diagram, netplan_path):
+                svg_files.append(netplan_path)
+            else:
+                print("WARNUNG: Netzplan-SVG konnte nicht erzeugt werden.")
+
+            # Ressourcen-Gantts
+            rd = collect_resource_data(project)
+            if rd is not None:
+                resource_colors: Dict[str, str] = {}
+                for res in rd.resources:
+                    if hasattr(res, 'color') and res.color:
+                        resource_colors[res.id] = res.color
+                color_start, color_end = _load_auto_color_config()
+                sorted_res_ids = sorted(rd.resource_usage.keys())
+                uncolored = [rid for rid in sorted_res_ids if rid not in resource_colors]
+                n = len(uncolored)
+                for i, rid in enumerate(uncolored):
+                    position = i / max(n - 1, 1) if n > 1 else 0.0
+                    resource_colors[rid] = interpolate_color(color_start, color_end, position)
+
+                for res_id in sorted_res_ids:
+                    task_ids = rd.resource_usage[res_id]
+                    res_name = rd.resource_names.get(res_id, res_id)
+                    color = resource_colors.get(res_id)
+                    res_diagram = _generate_resource_gantt_chart(
+                        res_id, res_name, task_ids, result, result.project_start, color
+                    )
+                    res_path = tmp / f"{stem}_ressource_{res_id}.svg"
+                    if export_mermaid_to_svg(res_diagram, res_path):
+                        svg_files.append(res_path)
+                    else:
+                        print(f"WARNUNG: Ressourcen-SVG für '{res_id}' konnte nicht erzeugt werden.")
+
+            if not svg_files:
+                print("FEHLER: Keine SVG-Dateien erzeugt.")
+                return False
+
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for svg_file in svg_files:
+                    zf.write(svg_file, svg_file.name)
+
+        print(f"INFO: SVG-ZIP erfolgreich exportiert nach: {output_path} ({len(svg_files)} Dateien)")
+        return True
+
+    except Exception as e:
+        print(f"FEHLER: SVG-ZIP-Export fehlgeschlagen: {e}")
         return False
