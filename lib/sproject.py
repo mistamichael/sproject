@@ -209,11 +209,13 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
 
         elif section == 'critical_path':
             create_critical_path_sheet(wb, result,
-                                       tab_name=tab_names.get('critical_path', 'Kritischer Pfad'))
+                                       tab_name=tab_names.get('critical_path', 'Kritischer Pfad'),
+                                       labels=tab_names)
 
         elif section == 'tasklist':
             create_tasklist_sheet(wb, result,
-                                  tab_name=tab_names.get('tasklist', 'Alle Tasks'))
+                                  tab_name=tab_names.get('tasklist', 'Alle Tasks'),
+                                  labels=tab_names)
 
         elif section == 'netplan':
             create_netplan_table_sheet(wb, result,

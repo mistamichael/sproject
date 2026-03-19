@@ -8,7 +8,7 @@ import csv
 import io
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Tuple, Any
+from typing import Dict, Optional, Tuple, Any
 import configparser
 
 try:
@@ -44,7 +44,7 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
     """
     config = configparser.ConfigParser()
 
-    # Lade zuerst excel_export.cfg, dann defaults.cfg als Fallback
+    # Erst defaults.cfg als Basis, dann excel_export.cfg (überschreibt bei gleichen Keys).
     excel_config_file = cfg_dir / "excel_export.cfg"
     defaults_config_file = cfg_dir / "defaults.cfg"
 
@@ -83,12 +83,11 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
         }
     }
 
-    # Lade excel_export.cfg falls vorhanden
+    # Erst defaults.cfg (Basis), dann excel_export.cfg (überschreibt bei gleichen Keys)
+    if defaults_config_file.exists():
+        config.read(defaults_config_file, encoding='utf-8')
     if excel_config_file.exists():
         config.read(excel_config_file, encoding='utf-8')
-    # Fallback auf defaults.cfg
-    elif defaults_config_file.exists():
-        config.read(defaults_config_file, encoding='utf-8')
 
     # Überschreibe Defaults mit Werten aus Config-Datei
     for section_name, section_defaults in defaults.items():
@@ -134,13 +133,25 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
         )
     }
 
-    # Lese Tab-Namen aus [de]
+    # Lese Tab-Namen und Spaltentitel aus [de]
     _default_tab_names = {
         'summary':       'Projektzusammenfassung',
         'critical_path': 'Kritischer Pfad',
         'tasklist':      'Alle Tasks',
         'netplan':       'Netzplan',
         'cost_overview': 'Kosten',
+        # Spaltentitel
+        'id':            'ID',
+        'name':          'Name',
+        'dauer':         'Dauer',
+        'faz':           'FAZ',
+        'fez':           'FEZ',
+        'saz':           'SAZ',
+        'sez':           'SEZ',
+        'gp':            'GP',
+        'fp':            'FP',
+        'puffer':        'Puffer',
+        'kritisch':      'Kritisch',
     }
     tab_names = dict(_default_tab_names)
     if config.has_section('de'):
@@ -1049,7 +1060,8 @@ def create_summary_sheet(wb: Workbook, result: CPMResult, project_name: str,
 
 
 def create_critical_path_sheet(wb: Workbook, result: CPMResult,
-                               tab_name: str = "Kritischer Pfad") -> None:
+                               tab_name: str = "Kritischer Pfad",
+                               labels: Optional[Dict[str, str]] = None) -> None:
     """
     Erzeugt einen Tab mit ausschließlich den kritischen Tasks.
 
@@ -1059,21 +1071,31 @@ def create_critical_path_sheet(wb: Workbook, result: CPMResult,
         wb:       Workbook
         result:   CPM-Berechnungsergebnis
         tab_name: Reiter-Bezeichnung (aus [de]-Sektion der CFG)
+        labels:   Spaltentitel-Dict (aus [de]-Sektion der CFG)
     """
+    if labels is None:
+        labels = {}
     ws = wb.create_sheet(title=tab_name)
 
     title_fill = PatternFill(start_color="C92A2A", end_color="C92A2A", fill_type="solid")
     title_font = Font(bold=True, color="FFFFFF", size=14)
     crit_fill  = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
 
-    ws['A1'] = "Kritischer Pfad"
+    ws['A1'] = tab_name
     ws['A1'].font = title_font
     ws['A1'].fill = title_fill
     ws.merge_cells('A1:F1')
     ws.row_dimensions[1].height = 28
 
     tu = result.time_unit
-    headers = ["ID", "Name", f"Dauer ({tu})", f"FAZ ({tu})", f"FEZ ({tu})", f"GP ({tu})"]
+    headers = [
+        labels.get('id',    'ID'),
+        labels.get('name',  'Name'),
+        f"{labels.get('dauer', 'Dauer')} ({tu})",
+        f"{labels.get('faz',   'FAZ')} ({tu})",
+        f"{labels.get('fez',   'FEZ')} ({tu})",
+        f"{labels.get('gp',    'GP')} ({tu})",
+    ]
     for col, h in enumerate(headers, start=1):
         cell = ws.cell(row=3, column=col, value=h)
         _apply_header_style(cell, fill_color="C92A2A")
@@ -1105,7 +1127,8 @@ def create_critical_path_sheet(wb: Workbook, result: CPMResult,
 
 
 def create_tasklist_sheet(wb: Workbook, result: CPMResult,
-                          tab_name: str = "Alle Tasks") -> None:
+                          tab_name: str = "Alle Tasks",
+                          labels: Optional[Dict[str, str]] = None) -> None:
     """
     Erzeugt einen vollständigen Tasklisten-Tab mit allen CPM-Werten.
 
@@ -1116,22 +1139,34 @@ def create_tasklist_sheet(wb: Workbook, result: CPMResult,
         wb:       Workbook
         result:   CPM-Berechnungsergebnis
         tab_name: Reiter-Bezeichnung (aus [de]-Sektion der CFG)
+        labels:   Spaltentitel-Dict (aus [de]-Sektion der CFG)
     """
+    if labels is None:
+        labels = {}
     ws = wb.create_sheet(title=tab_name)
 
     title_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
     title_font = Font(bold=True, color="FFFFFF", size=14)
     crit_fill  = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
 
-    ws['A1'] = "Taskliste"
+    ws['A1'] = tab_name
     ws['A1'].font = title_font
     ws['A1'].fill = title_fill
     ws.merge_cells('A1:I1')
     ws.row_dimensions[1].height = 28
 
     tu = result.time_unit
-    headers = ['ID', 'Name', 'Dauer', f'FAZ ({tu})', f'FEZ ({tu})',
-               f'SAZ ({tu})', f'SEZ ({tu})', 'Puffer', 'Kritisch']
+    headers = [
+        labels.get('id',       'ID'),
+        labels.get('name',     'Name'),
+        labels.get('dauer',    'Dauer'),
+        f"{labels.get('faz',  'FAZ')} ({tu})",
+        f"{labels.get('fez',  'FEZ')} ({tu})",
+        f"{labels.get('saz',  'SAZ')} ({tu})",
+        f"{labels.get('sez',  'SEZ')} ({tu})",
+        labels.get('puffer',   'Puffer'),
+        labels.get('kritisch', 'Kritisch'),
+    ]
     for col, h in enumerate(headers, start=1):
         _apply_header_style(ws.cell(row=3, column=col, value=h))
 

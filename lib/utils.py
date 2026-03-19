@@ -175,6 +175,11 @@ def load_export_config(
     if cfg_dir is None:
         cfg_dir = get_cfg_dir()
     config = configparser.ConfigParser()
+    # Erst defaults.cfg einlesen (liefert gemeinsame [de]-Basis-Einträge),
+    # dann export-spezifische Config (überschreibt bei gleichen Keys).
+    defaults_file = cfg_dir / 'defaults.cfg'
+    if defaults_file.exists():
+        config.read(defaults_file, encoding='utf-8')
     cfg_file = cfg_dir / filename
     if cfg_file.exists():
         config.read(cfg_file, encoding='utf-8')

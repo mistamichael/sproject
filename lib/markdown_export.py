@@ -43,6 +43,17 @@ _DEFAULT_HEADINGS = {
     'gantt_chart':   'Gantt Chart (mit Wochenenden)',
     'resource_list': 'Resource List',
     'cost_overview': 'Kostenübersicht',
+    # Spaltentitel
+    'id':            'ID',
+    'name':          'Name',
+    'dauer':         'Dauer',
+    'faz':           'FAZ',
+    'fez':           'FEZ',
+    'saz':           'SAZ',
+    'sez':           'SEZ',
+    'gp':            'GP',
+    'fp':            'FP',
+    'krit':          'Krit.',
 }
 
 _DEFAULT_MERMAID = {
@@ -358,9 +369,19 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
     return "\n".join(lines)
 
 
-def _generate_tasklist_section(result: CPMResult, heading: str) -> str:
+def _generate_tasklist_section(result: CPMResult, heading: str, headings: dict) -> str:
     lines = [f"### {heading}", ""]
-    lines.append("| ID | Name | Dauer | FAZ | FEZ | SAZ | SEZ | GP | FP | Krit. |")
+    h_id   = headings.get('id',    'ID')
+    h_name = headings.get('name',  'Name')
+    h_d    = headings.get('dauer', 'Dauer')
+    h_faz  = headings.get('faz',   'FAZ')
+    h_fez  = headings.get('fez',   'FEZ')
+    h_saz  = headings.get('saz',   'SAZ')
+    h_sez  = headings.get('sez',   'SEZ')
+    h_gp   = headings.get('gp',    'GP')
+    h_fp   = headings.get('fp',    'FP')
+    h_krit = headings.get('krit',  'Krit.')
+    lines.append(f"| {h_id} | {h_name} | {h_d} | {h_faz} | {h_fez} | {h_saz} | {h_sez} | {h_gp} | {h_fp} | {h_krit} |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|")
 
     for task_id, task in result.tasks.items():
@@ -712,7 +733,7 @@ def export_cpm_to_markdown(
                 'critical_path': lambda: _generate_critical_path_section(result, headings['critical_path']),
                 'netplan':       lambda: _generate_netplan_section(result, headings['netplan'], mermaid_cfg),
                 'netplan_ascii': lambda: _generate_netplan_ascii_section(result, headings.get('netplan_ascii', 'Netzplan ASCII'), mermaid_cfg),
-                'tasklist':      lambda: _generate_tasklist_section(result, headings['tasklist']),
+                'tasklist':      lambda: _generate_tasklist_section(result, headings['tasklist'], headings),
                 'gantt_chart':   lambda: _generate_gantt_chart_section(result, project_name, headings['gantt_chart']),
                 'resource_list': lambda: _generate_resource_list_section(result, headings['resource_list'], project),
                 'cost_overview': lambda: _generate_cost_overview_section(result, headings['cost_overview'], project),

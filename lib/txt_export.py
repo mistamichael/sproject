@@ -32,10 +32,22 @@ _DEFAULT_SECTION_ORDER = ['summary', 'critical_path', 'netplan', 'tasklist', 're
 _DEFAULT_HEADINGS = {
     'summary':       'PROJEKTZUSAMMENFASSUNG',
     'critical_path': 'KRITISCHER PFAD',
-    'netplan': 'NETZPLAN TABELLE',
+    'netplan':       'NETZPLAN TABELLE',
     'tasklist':      'ALLE TASKS',
     'resource_list': 'VERANTWORTLICHE',
     'cost_overview': 'KOSTENÜBERSICHT',
+    # Spaltentitel
+    'id':            'ID',
+    'name':          'Name',
+    'dauer':         'Dauer',
+    'faz':           'FAZ',
+    'fez':           'FEZ',
+    'saz':           'SAZ',
+    'sez':           'SEZ',
+    'gp':            'GP',
+    'fp':            'FP',
+    'krit':          'Krit.',
+    'nachfolger':    'Nachfolger',
 }
 
 
@@ -53,8 +65,9 @@ def _load_txt_config(cfg_dir: Optional[Path] = None) -> tuple:
     section_order, headings = load_export_config(
         cfg_dir, 'txt_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS
     )
-    # [de]-Überschriften groß schreiben wie die Defaults
-    headings = {k: v.upper() for k, v in headings.items()}
+    # Nur Sektions-Überschriften groß schreiben, Spaltentitel unverändert lassen
+    _section_keys = set(_DEFAULT_SECTION_ORDER)
+    headings = {k: (v.upper() if k in _section_keys else v) for k, v in headings.items()}
     return section_order, headings
 
 
@@ -105,7 +118,7 @@ def _generate_critical_path(result: CPMResult, heading: str) -> List[str]:
     return lines
 
 
-def _generate_netplan(result: CPMResult, heading: str) -> List[str]:
+def _generate_netplan(result: CPMResult, heading: str, headings: dict) -> List[str]:
     """
     Tabellarische Netzplandarstellung via generate_network_csv.
     Enthält zusätzlich die Nachfolger-Spalte gegenüber der tasklist.
@@ -117,11 +130,23 @@ def _generate_netplan(result: CPMResult, heading: str) -> List[str]:
     col_val  = 8
     col_succ = 20
 
-    header = (f"{'ID':<{col_id}} {'Name':<{col_name}} {'Dauer':<{col_val}} "
-              f"{'FAZ':<{col_val}} {'FEZ':<{col_val}} "
-              f"{'SAZ':<{col_val}} {'SEZ':<{col_val}} "
-              f"{'GP':<{col_val}} {'FP':<{col_val}} "
-              f"{'Nachfolger':<{col_succ}} Krit.")
+    h_id   = headings.get('id',         'ID')
+    h_name = headings.get('name',        'Name')
+    h_d    = headings.get('dauer',       'Dauer')
+    h_faz  = headings.get('faz',         'FAZ')
+    h_fez  = headings.get('fez',         'FEZ')
+    h_saz  = headings.get('saz',         'SAZ')
+    h_sez  = headings.get('sez',         'SEZ')
+    h_gp   = headings.get('gp',          'GP')
+    h_fp   = headings.get('fp',          'FP')
+    h_succ = headings.get('nachfolger',  'Nachfolger')
+    h_krit = headings.get('krit',        'Krit.')
+
+    header = (f"{h_id:<{col_id}} {h_name:<{col_name}} {h_d:<{col_val}} "
+              f"{h_faz:<{col_val}} {h_fez:<{col_val}} "
+              f"{h_saz:<{col_val}} {h_sez:<{col_val}} "
+              f"{h_gp:<{col_val}} {h_fp:<{col_val}} "
+              f"{h_succ:<{col_succ}} {h_krit}")
     lines.append(header)
     lines.append(_SEP_THIN)
 
@@ -157,7 +182,7 @@ def _generate_netplan(result: CPMResult, heading: str) -> List[str]:
     return lines
 
 
-def _generate_tasklist(result: CPMResult, heading: str) -> List[str]:
+def _generate_tasklist(result: CPMResult, heading: str, headings: dict) -> List[str]:
     lines = _section_header(heading)
     tu = result.time_unit
 
@@ -165,10 +190,21 @@ def _generate_tasklist(result: CPMResult, heading: str) -> List[str]:
     col_name = 30
     col_val  = 8
 
-    header = (f"{'ID':<{col_id}} {'Name':<{col_name}} {'Dauer':<{col_val}} "
-              f"{'FAZ':<{col_val}} {'FEZ':<{col_val}} "
-              f"{'SAZ':<{col_val}} {'SEZ':<{col_val}} "
-              f"{'GP':<{col_val}} {'FP':<{col_val}} Krit.")
+    h_id   = headings.get('id',    'ID')
+    h_name = headings.get('name',  'Name')
+    h_d    = headings.get('dauer', 'Dauer')
+    h_faz  = headings.get('faz',   'FAZ')
+    h_fez  = headings.get('fez',   'FEZ')
+    h_saz  = headings.get('saz',   'SAZ')
+    h_sez  = headings.get('sez',   'SEZ')
+    h_gp   = headings.get('gp',    'GP')
+    h_fp   = headings.get('fp',    'FP')
+    h_krit = headings.get('krit',  'Krit.')
+
+    header = (f"{h_id:<{col_id}} {h_name:<{col_name}} {h_d:<{col_val}} "
+              f"{h_faz:<{col_val}} {h_fez:<{col_val}} "
+              f"{h_saz:<{col_val}} {h_sez:<{col_val}} "
+              f"{h_gp:<{col_val}} {h_fp:<{col_val}} {h_krit}")
     lines.append(header)
     lines.append(_SEP_THIN)
 
@@ -271,7 +307,8 @@ def _generate_cost_overview(result: CPMResult, heading: str,
 
 
 def _generate_resource_list(result: CPMResult, heading: str,
-                             project: Optional[Any] = None) -> List[str]:
+                             project: Optional[Any] = None,
+                             headings: Optional[dict] = None) -> List[str]:
     lines = _section_header(heading)
 
     if not project or not hasattr(project, 'tasks'):
@@ -314,14 +351,17 @@ def _generate_resource_list(result: CPMResult, heading: str,
         lines.append(f"  {res_name:<{col_res}} [{task_ids_str}]")
 
         # Detail: Tasks mit Zeitwerten
+        h_faz  = (headings or {}).get('faz',  'FAZ')
+        h_fez  = (headings or {}).get('fez',  'FEZ')
+        h_krit = (headings or {}).get('krit', 'Krit.')
         for tid_str in task_ids:
             if tid_str in result.tasks:
                 t = result.tasks[tid_str]
                 lines.append(
                     f"    [{tid_str}] {t.name[:28]:<28}  "
-                    f"FAZ: {format_time_value(t.faz, tu):<8} "
-                    f"FEZ: {format_time_value(t.fez, tu):<8} "
-                    f"{'KRIT' if t.is_critical else ''}"
+                    f"{h_faz}: {format_time_value(t.faz, tu):<8} "
+                    f"{h_fez}: {format_time_value(t.fez, tu):<8} "
+                    f"{h_krit if t.is_critical else ''}"
                 )
         lines.append("")
 
@@ -371,9 +411,9 @@ def export_cpm_to_txt(
         generators = {
             'summary':       lambda: _generate_summary(result, name, headings['summary']),
             'critical_path': lambda: _generate_critical_path(result, headings['critical_path']),
-            'netplan': lambda: _generate_netplan(result, headings['netplan']),
-            'tasklist':      lambda: _generate_tasklist(result, headings['tasklist']),
-            'resource_list': lambda: _generate_resource_list(result, headings['resource_list'], project),
+            'netplan':       lambda: _generate_netplan(result, headings['netplan'], headings),
+            'tasklist':      lambda: _generate_tasklist(result, headings['tasklist'], headings),
+            'resource_list': lambda: _generate_resource_list(result, headings['resource_list'], project, headings),
             'cost_overview': lambda: _generate_cost_overview(result, headings['cost_overview'], project),
         }
 
