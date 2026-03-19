@@ -6,7 +6,7 @@ if not exist %PROJECT%\.venv (
 
    call %PROJECT%\.venv\Scripts\activate.bat
    ECHO Installiere erforderliche Python Packages...
-   pip install -r %PV_LIB%/requirements.txt -q
+   pip install -r %PROJECT%/requirements.txt -q
    ECHO Erfolgreich
    deactivate
 
