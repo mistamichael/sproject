@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Montage Gesamtsystem – CPM Report</title>
+  <style>
+    body { font-family: sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.5; }
+    h1, h2, h3 { color: #1a3a5c; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1em; font-size: 0.9em; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #4472c4; color: #fff; }
+    tr:nth-child(even) { background: #f5f7fa; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
+    pre.mermaid { background: transparent; padding: 0; }
+    code { font-family: monospace; font-size: 0.9em; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</head>
+<body>
+<h1>Montage Gesamtsystem - CPM Report</h1>
+<p>Erstellt am: 2026-03-19 14:39:59</p>
+<h2>CPM Analyse</h2>
+<h3>Projektzusammenfassung</h3>
+<ul>
+<li><strong>Projekt:</strong> Montage Gesamtsystem</li>
+<li><strong>Projektdauer:</strong> 30.0d</li>
+<li><strong>Startdatum:</strong> 2026-03-09 08:00</li>
+<li><strong>Enddatum (geschätzt):</strong> 2026-04-08 08:00</li>
+<li><strong>Zeiteinheit:</strong> days</li>
+<li><strong>Anzahl Tasks:</strong> 8</li>
+<li><strong>Kritische Tasks:</strong> 5</li>
+</ul>
+<hr />
+<h3>Kritischer Pfad</h3>
+<p>Der kritische Pfad besteht aus folgenden Tasks:</p>
+<ul>
+<li><strong>[1]</strong> Transport/Anlieferung (Dauer: 3.0d)</li>
+<li><strong>[2]</strong> Vormontage Prozessstationen (Dauer: 10.0d)</li>
+<li><strong>[6]</strong> Montage Gesamtsystem (Dauer: 10.0d)</li>
+<li><strong>[7]</strong> Test Gesamtsystem (Dauer: 5.0d)</li>
+<li><strong>[8]</strong> Einweisung der Produktionsmitarbeiter (Dauer: 2.0d)</li>
+</ul>
+<hr />
+<h3>Netzplan</h3>
+<pre class="mermaid">graph TD
+
+    N1["<b>[1] | Transport/Anlieferung<br/>GP:0.0d | FP:0.0d</b>"]:::critical
+    N2["<b>[2] | Vormontage Prozessstationen<br/>GP:0.0d | FP:0.0d</b>"]:::critical
+    N3["[3] | Vormontage Transportband<br/>GP:3.0d | FP:3.0d"]
+    N4["[4] | Anpassung Steuereinheiten<br/>GP:8.0d | FP:0.0d"]
+    N5["[5] | Programmierung Steuereinheiten<br/>GP:10.0d | FP:10.0d"]
+    N6["<b>[6] | Montage Gesamtsystem<br/>GP:0.0d | FP:0.0d</b>"]:::critical
+    N7["<b>[7] | Test Gesamtsystem<br/>GP:0.0d | FP:0.0d</b>"]:::critical
+    N8["<b>[8] | Einweisung der Produktionsmitarbeiter<br/>GP:0.0d | FP:0.0d</b>"]:::critical
+
+    N1 --> N2
+    N1 --> N3
+    N1 --> N4
+    N2 --> N6
+    N3 --> N6
+    N4 --> N5
+    N4 --> N6
+    N5 --> N7
+    N6 --> N7
+    N7 --> N8
+
+    classDef critical fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:3px
+    classDef normal   fill:#4472c4,stroke:#2f5496,color:#fff
+</pre>
+<hr />
+<h3>Alle Tasks</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Dauer</th>
+<th>FAZ</th>
+<th>FEZ</th>
+<th>SAZ</th>
+<th>SEZ</th>
+<th>GP</th>
+<th>FP</th>
+<th>Krit.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Transport/Anlieferung</td>
+<td>3.0d</td>
+<td>0.0d</td>
+<td>3.0d</td>
+<td>0.0d</td>
+<td>3.0d</td>
+<td>0.0d</td>
+<td>0.0d</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Vormontage Prozessstationen</td>
+<td>10.0d</td>
+<td>3.0d</td>
+<td>13.0d</td>
+<td>3.0d</td>
+<td>13.0d</td>
+<td>0.0d</td>
+<td>0.0d</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Vormontage Transportband</td>
+<td>7.0d</td>
+<td>3.0d</td>
+<td>10.0d</td>
+<td>6.0d</td>
+<td>13.0d</td>
+<td>3.0d</td>
+<td>3.0d</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Anpassung Steuereinheiten</td>
+<td>2.0d</td>
+<td>3.0d</td>
+<td>5.0d</td>
+<td>11.0d</td>
+<td>13.0d</td>
+<td>8.0d</td>
+<td>0.0d</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Programmierung Steuereinheiten</td>
+<td>8.0d</td>
+<td>5.0d</td>
+<td>13.0d</td>
+<td>15.0d</td>
+<td>23.0d</td>
+<td>10.0d</td>
+<td>10.0d</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>Montage Gesamtsystem</td>
+<td>10.0d</td>
+<td>13.0d</td>
+<td>23.0d</td>
+<td>13.0d</td>
+<td>23.0d</td>
+<td>0.0d</td>
+<td>0.0d</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Test Gesamtsystem</td>
+<td>5.0d</td>
+<td>23.0d</td>
+<td>28.0d</td>
+<td>23.0d</td>
+<td>28.0d</td>
+<td>0.0d</td>
+<td>0.0d</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Einweisung der Produktionsmitarb...</td>
+<td>2.0d</td>
+<td>28.0d</td>
+<td>30.0d</td>
+<td>28.0d</td>
+<td>30.0d</td>
+<td>0.0d</td>
+<td>0.0d</td>
+<td>JA</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Gantt Chart (mit Wochenenden)</h3>
+<pre class="mermaid">gantt
+    title Montage Gesamtsystem
+    dateFormat  YYYY-MM-DD
+    axisFormat  %d.%m
+
+    section Wochenenden
+    WE 14.03 :crit, 2026-03-14, 2026-03-15
+    WE 21.03 :crit, 2026-03-21, 2026-03-22
+    WE 28.03 :crit, 2026-03-28, 2026-03-29
+    WE 04.04 :crit, 2026-04-04, 2026-04-05
+    section Feiertage
+    03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
+    06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
+    section Tasks
+    [1] Transport/Anlieferung (KRIT) :crit, 2026-03-09, 2026-03-12
+    [2] Vormontage Prozessstationen (KRIT) :crit, 2026-03-12, 2026-03-22
+    [3] Vormontage Transportband :2026-03-12, 2026-03-19
+    [4] Anpassung Steuereinheiten :2026-03-12, 2026-03-14
+    [5] Programmierung Steuereinheiten :2026-03-14, 2026-03-22
+    [6] Montage Gesamtsystem (KRIT) :crit, 2026-03-22, 2026-04-01
+    [7] Test Gesamtsystem (KRIT) :crit, 2026-04-01, 2026-04-06
+    [8] Einweisung der Produktionsmitarbeiter (KRIT) :crit, 2026-04-06, 2026-04-08
+</pre>
+<hr />
+<h3>Resource List</h3>
+<p><em>Keine Ressourcen-Informationen verfügbar.</em></p>
+<hr />
+<h3>Kostenübersicht</h3>
+<p><em>Keine Kostendaten verfügbar – Stundensätze fehlen.</em></p>
+</body>
+</html>

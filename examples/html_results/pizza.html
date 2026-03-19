@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pizza Project – CPM Report</title>
+  <style>
+    body { font-family: sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.5; }
+    h1, h2, h3 { color: #1a3a5c; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1em; font-size: 0.9em; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #4472c4; color: #fff; }
+    tr:nth-child(even) { background: #f5f7fa; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
+    pre.mermaid { background: transparent; padding: 0; }
+    code { font-family: monospace; font-size: 0.9em; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</head>
+<body>
+<h1>Pizza Project - CPM Report</h1>
+<p>Erstellt am: 2026-03-19 14:39:57</p>
+<h2>CPM Analyse</h2>
+<h3>Projektzusammenfassung</h3>
+<ul>
+<li><strong>Projekt:</strong> Pizza Project</li>
+<li><strong>Projektdauer:</strong> 84.0m</li>
+<li><strong>Startdatum:</strong> 2026-03-03 09:00</li>
+<li><strong>Enddatum (geschätzt):</strong> 2026-03-03 13:12</li>
+<li><strong>Zeiteinheit:</strong> minutes</li>
+<li><strong>Anzahl Tasks:</strong> 10</li>
+<li><strong>Kritische Tasks:</strong> 7</li>
+</ul>
+<hr />
+<h3>Kritischer Pfad</h3>
+<p>Der kritische Pfad besteht aus folgenden Tasks:</p>
+<ul>
+<li><strong>[1]</strong> Zutaten abwiegen &amp; bereitstellen (Dauer: 5.0m)</li>
+<li><strong>[2]</strong> Teig mischen &amp; kneten (Dauer: 10.0m)</li>
+<li><strong>[3]</strong> Teig gehen lassen (Gare) (Dauer: 60.0m)</li>
+<li><strong>[7]</strong> Teig ausrollen / formen (Dauer: 1.0m)</li>
+<li><strong>[8]</strong> Pizza belegen (Soße + Belag) (Dauer: 2.0m)</li>
+<li><strong>[9]</strong> Pizza backen (Dauer: 5.0m)</li>
+<li><strong>[10]</strong> Pizza servieren (Dauer: 1.0m)</li>
+</ul>
+<hr />
+<h3>Netzplan</h3>
+<pre class="mermaid">graph TD
+
+    N1["<b>[1] | Zutaten abwiegen & bereitstellen<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2["<b>[2] | Teig mischen & kneten<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N3["<b>[3] | Teig gehen lassen (Gare)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N4["[4] | Soße zubereiten<br/>GP:61.0m | FP:61.0m"]
+    N5["[5] | Belag schneiden (Käse, Gemüse, etc.)<br/>GP:61.0m | FP:61.0m"]
+    N6["[6] | Ofen vorheizen<br/>GP:58.0m | FP:58.0m"]
+    N7["<b>[7] | Teig ausrollen / formen<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N8["<b>[8] | Pizza belegen (Soße + Belag)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N9["<b>[9] | Pizza backen<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N10["<b>[10] | Pizza servieren<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+
+    N1 --> N2
+    N1 --> N4
+    N1 --> N5
+    N2 --> N3
+    N3 --> N7
+    N4 --> N8
+    N5 --> N8
+    N6 --> N9
+    N7 --> N8
+    N8 --> N9
+    N9 --> N10
+
+    classDef critical fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:3px
+    classDef normal   fill:#4472c4,stroke:#2f5496,color:#fff
+</pre>
+<hr />
+<h3>Alle Tasks</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Dauer</th>
+<th>FAZ</th>
+<th>FEZ</th>
+<th>SAZ</th>
+<th>SEZ</th>
+<th>GP</th>
+<th>FP</th>
+<th>Krit.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Zutaten abwiegen &amp; bereitstellen</td>
+<td>5.0m</td>
+<td>0.0m</td>
+<td>5.0m</td>
+<td>0.0m</td>
+<td>5.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Teig mischen &amp; kneten</td>
+<td>10.0m</td>
+<td>5.0m</td>
+<td>15.0m</td>
+<td>5.0m</td>
+<td>15.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Teig gehen lassen (Gare)</td>
+<td>60.0m</td>
+<td>15.0m</td>
+<td>75.0m</td>
+<td>15.0m</td>
+<td>75.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Soße zubereiten</td>
+<td>10.0m</td>
+<td>5.0m</td>
+<td>15.0m</td>
+<td>66.0m</td>
+<td>76.0m</td>
+<td>61.0m</td>
+<td>61.0m</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Belag schneiden (Käse, Gemüse, e...</td>
+<td>10.0m</td>
+<td>5.0m</td>
+<td>15.0m</td>
+<td>66.0m</td>
+<td>76.0m</td>
+<td>61.0m</td>
+<td>61.0m</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>Ofen vorheizen</td>
+<td>20.0m</td>
+<td>0.0m</td>
+<td>20.0m</td>
+<td>58.0m</td>
+<td>78.0m</td>
+<td>58.0m</td>
+<td>58.0m</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Teig ausrollen / formen</td>
+<td>1.0m</td>
+<td>75.0m</td>
+<td>76.0m</td>
+<td>75.0m</td>
+<td>76.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Pizza belegen (Soße + Belag)</td>
+<td>2.0m</td>
+<td>76.0m</td>
+<td>78.0m</td>
+<td>76.0m</td>
+<td>78.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Pizza backen</td>
+<td>5.0m</td>
+<td>78.0m</td>
+<td>83.0m</td>
+<td>78.0m</td>
+<td>83.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Pizza servieren</td>
+<td>1.0m</td>
+<td>83.0m</td>
+<td>84.0m</td>
+<td>83.0m</td>
+<td>84.0m</td>
+<td>0.0m</td>
+<td>0.0m</td>
+<td>JA</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Gantt Chart (mit Wochenenden)</h3>
+<pre class="mermaid">gantt
+    title Pizza Project
+    dateFormat  YYYY-MM-DD HH:mm
+    axisFormat  %d.%m
+
+    section Feiertage
+    section Tasks
+    [1] Zutaten abwiegen & bereitstellen (KRIT) :crit, 2026-03-03 09:00, 2026-03-03 09:05
+    [2] Teig mischen & kneten (KRIT) :crit, 2026-03-03 09:05, 2026-03-03 09:15
+    [3] Teig gehen lassen (Gare) (KRIT) :crit, 2026-03-03 09:15, 2026-03-03 10:15
+    [4] Soße zubereiten :2026-03-03 09:05, 2026-03-03 09:15
+    [5] Belag schneiden (Käse Gemüse etc.) :2026-03-03 09:05, 2026-03-03 09:15
+    [6] Ofen vorheizen :2026-03-03 09:00, 2026-03-03 09:20
+    [7] Teig ausrollen / formen (KRIT) :crit, 2026-03-03 10:15, 2026-03-03 10:16
+    [8] Pizza belegen (Soße + Belag) (KRIT) :crit, 2026-03-03 10:16, 2026-03-03 10:18
+    [9] Pizza backen (KRIT) :crit, 2026-03-03 10:18, 2026-03-03 10:23
+    [10] Pizza servieren (KRIT) :crit, 2026-03-03 10:23, 2026-03-03 10:24
+</pre>
+<hr />
+<h3>Resource List</h3>
+<p><em>Keine Ressourcen-Informationen verfügbar.</em></p>
+<hr />
+<h3>Kostenübersicht</h3>
+<p><em>Keine Kostendaten verfügbar – Stundensätze fehlen.</em></p>
+</body>
+</html>
