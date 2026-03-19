@@ -95,7 +95,29 @@ Verfügbare Sektionen:
 | `resource_list`  | Ressourcenauslastung je Person      |
 | `cost_overview`  | Kostenübersicht                     |
 
-Tab-Bezeichnungen werden je Sprache in `[de]` und `[en]` definiert.
+Tab-Bezeichnungen werden je Sprache in `[de]` und `[en]` definiert:
+
+```ini
+[de]
+summary       = Projektzusammenfassung
+critical_path = Kritischer Pfad
+tasklist      = Alle Tasks
+resource_list = Auslastung
+cost_overview = Kosten
+puffer        = Puffer
+kritisch      = Kritisch
+
+[en]
+summary       = Project Summary
+critical_path = Critical Path
+tasklist      = All Tasks
+resource_list = Resources
+cost_overview = Costs
+puffer        = Float
+kritisch      = Critical
+```
+
+Die aktive Sprache wird über `--lang de` bzw. `--lang en` beim Aufruf gewählt (Standard: `de`).
 
 ---
 
@@ -107,7 +129,29 @@ Konfiguriert sowohl den Markdown-Export (`--export md`) als auch den HTML-Export
 
 ```ini
 [sections]
-section_order = summary, critical_path, gantt_chart, network_diagram, resource_gantt
+section_order = summary, critical_path, netplan, tasklist, gantt_chart, resource_list, cost_overview
+```
+
+Abschnittsbezeichnungen ebenfalls zweisprachig:
+
+```ini
+[de]
+summary       = Projektzusammenfassung
+critical_path = Kritischer Pfad
+netplan       = Netzplan
+tasklist      = Alle Tasks
+gantt_chart   = Gantt Chart (mit Wochenenden)
+resource_list = Resource List
+cost_overview = Kostenübersicht
+
+[en]
+summary       = Project Summary
+critical_path = Critical Path
+netplan       = Network Plan
+tasklist      = All Tasks
+gantt_chart   = Gantt Chart (with weekends)
+resource_list = Resource List
+cost_overview = Cost Overview
 ```
 
 ---
