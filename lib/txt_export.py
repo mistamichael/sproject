@@ -14,10 +14,10 @@ from datetime import datetime
 
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config
+    from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data
 except (ImportError, ValueError):
     from models.cpm import CPMResult  # type: ignore[no-redef]
-    from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config  # type: ignore[no-redef]
+    from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data  # type: ignore[no-redef]
 
 
 # ---------------------------------------------------------------------------
@@ -55,15 +55,18 @@ _DEFAULT_HEADINGS = {
 # Config loading
 # ---------------------------------------------------------------------------
 
-def _load_txt_config(cfg_dir: Optional[Path] = None) -> tuple:
+def _load_txt_config(cfg_dir: Optional[Path] = None, lang: str = 'de') -> tuple:
     """
     Lädt txt_export.cfg.
+
+    Args:
+        lang: Sprachkürzel ('de' oder 'en')
 
     Returns:
         (section_order, headings)
     """
     section_order, headings = load_export_config(
-        cfg_dir, 'txt_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS
+        cfg_dir, 'txt_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS, lang=lang
     )
     # Nur Sektions-Überschriften groß schreiben, Spaltentitel unverändert lassen
     _section_keys = set(_DEFAULT_SECTION_ORDER)
@@ -311,52 +314,36 @@ def _generate_resource_list(result: CPMResult, heading: str,
                              headings: Optional[dict] = None) -> List[str]:
     lines = _section_header(heading)
 
-    if not project or not hasattr(project, 'tasks'):
+    rd = collect_resource_data(project)
+    if rd is None:
         lines.append("  (keine Ressourcen-Informationen verfügbar)")
         lines.append("")
         return lines
-
-    # Ressourcen-Zuordnung aus den Projekt-Tasks aufbauen
-    resource_usage: Dict[str, List[str]] = {}
-    for orig_task in project.tasks:
-        if hasattr(orig_task, 'resources') and orig_task.resources:
-            for res_id in orig_task.resources:
-                resource_usage.setdefault(res_id, []).append(str(orig_task.id))
-
-    if not resource_usage:
-        lines.append("  (keine Ressourcen-Zuordnungen gefunden)")
-        lines.append("")
-        return lines
-
-    resource_names: Dict[str, str] = {}
-    if project and hasattr(project, 'resources'):
-        for res in project.resources:
-            resource_names[res.id] = getattr(res, 'name', res.id)
 
     tu = result.time_unit
     col_res  = 25
     col_task = 8
     col_val  = 8
+    h_faz  = (headings or {}).get('faz',  'FAZ')
+    h_fez  = (headings or {}).get('fez',  'FEZ')
+    h_krit = (headings or {}).get('krit', 'Krit.')
 
     header = f"  {'Ressource':<{col_res}} {'Tasks':<{col_task*3}}  {'Frühester Start':<{col_val*2}}"
     lines.append(header)
     lines.append("  " + _SEP_THIN)
 
-    for res_id in sorted(resource_usage.keys()):
-        task_ids      = resource_usage[res_id]
-        res_name      = resource_names.get(res_id, res_id)
-        task_ids_str  = ", ".join(task_ids[:8])
+    for res_id in sorted(rd.resource_usage.keys()):
+        task_ids     = rd.resource_usage[res_id]
+        res_name     = rd.resource_names.get(res_id, res_id)
+        task_ids_str = ", ".join(task_ids[:8])
         if len(task_ids) > 8:
             task_ids_str += f" (+{len(task_ids) - 8})"
         lines.append(f"  {res_name:<{col_res}} [{task_ids_str}]")
 
-        # Detail: Tasks mit Zeitwerten
-        h_faz  = (headings or {}).get('faz',  'FAZ')
-        h_fez  = (headings or {}).get('fez',  'FEZ')
-        h_krit = (headings or {}).get('krit', 'Krit.')
         for tid_str in task_ids:
-            if tid_str in result.tasks:
-                t = result.tasks[tid_str]
+            tid_key = int(tid_str) if tid_str.isdigit() else tid_str
+            if tid_key in result.tasks:
+                t = result.tasks[tid_key]
                 lines.append(
                     f"    [{tid_str}] {t.name[:28]:<28}  "
                     f"{h_faz}: {format_time_value(t.faz, tu):<8} "
@@ -365,13 +352,14 @@ def _generate_resource_list(result: CPMResult, heading: str,
                 )
         lines.append("")
 
-    if project and project.persons:
+    if rd.persons:
         lines.append(_SEP_THIN)
         lines.append("Personen:")
         lines.append("")
-        for person in project.persons:
-            cost  = f"{person.cost_per_hour}€/h" if getattr(person, 'cost_per_hour', None) else "n/a"
-            avail = f"{person.available_hours}h"  if getattr(person, 'available_hours', None) else "n/a"
+        for person in rd.persons:
+            hourly_rate = getattr(person, 'hourly_rate', None)
+            cost  = f"{hourly_rate:.2f} €/h" if hourly_rate is not None else "n/a"
+            avail = f"{person.available_hours}h" if getattr(person, 'available_hours', None) else "n/a"
             lines.append(f"  {person.name:<25} Kosten: {cost:<10} Verfügbar: {avail}")
         lines.append("")
 
@@ -388,6 +376,7 @@ def export_cpm_to_txt(
     project_name: Optional[str] = None,
     project: Optional[object] = None,
     cfg_dir: Optional[Path] = None,
+    lang: str = 'de',
 ) -> bool:
     """
     Exportiert CPM-Ergebnisse als strukturierte ASCII-Textdatei.
@@ -400,12 +389,13 @@ def export_cpm_to_txt(
         project_name: Projektname (default: result.project_name)
         project:      Projekt-Objekt (optional, für Ressourcen-Details)
         cfg_dir:      Verzeichnis der Konfigurationsdateien (default: cfg/)
+        lang:         Sprachkürzel ('de' oder 'en')
 
     Returns:
         True bei Erfolg, False bei Fehler
     """
     try:
-        section_order, headings = _load_txt_config(cfg_dir)
+        section_order, headings = _load_txt_config(cfg_dir, lang=lang)
         name = project_name or result.project_name
 
         generators = {

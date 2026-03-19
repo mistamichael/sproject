@@ -25,6 +25,7 @@ from mermaid_export import export_cpm_to_svg
 from markdown_export import export_cpm_to_markdown
 from txt_export import export_cpm_to_txt as _txt_export
 from json_export import export_cpm_to_json as _json_export
+from utils import load_labels
 from models.resources import Person
 from models.cpm import CPMResult
 from models.gantt import GanttCalculator
@@ -94,50 +95,67 @@ def find_project_files(data_dir: Path) -> List[Path]:
     return project_files
 
 
-def print_cpm_summary(result: CPMResult) -> None:
+def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
     """
     Druckt CPM-Zusammenfassung auf die Konsole.
 
     Args:
         result: CPM-Berechnungsergebnis
+        labels: Beschriftungs-Dict aus load_labels() (sprachabhängig)
     """
     from utils import format_time_value_auto
+
+    lb = labels or {}
+    l_project   = lb.get('label_project',   'Projekt')
+    l_duration  = lb.get('label_duration',  'Projektdauer')
+    l_start     = lb.get('label_start',     'Startdatum')
+    l_end       = lb.get('label_end',       'Enddatum (geschätzt)')
+    l_crit_path = lb.get('label_crit_path', 'Kritischer Pfad')
+    l_all_tasks = lb.get('label_all_tasks', 'Alle Tasks')
+    l_yes       = lb.get('label_yes',       'JA')
+    l_id        = lb.get('id',    'ID')
+    l_name      = lb.get('name',  'Name')
+    l_dauer     = lb.get('dauer', 'Dauer')
+    l_faz       = lb.get('faz',   'FAZ')
+    l_fez       = lb.get('fez',   'FEZ')
+    l_saz       = lb.get('saz',   'SAZ')
+    l_sez       = lb.get('sez',   'SEZ')
+    l_gp        = lb.get('gp',    'GP')
+    l_fp        = lb.get('fp',    'FP')
+    l_krit      = lb.get('krit',  'Krit.')
 
     critical_path = result.critical_path
     project_duration = max(task.fez for task in result.tasks.values())
 
     print("=" * 70)
-    print(f"Projekt: {result.project_name}")
-    print(f"Projektdauer: {format_time_value_auto(project_duration)}")
+    print(f"{l_project}: {result.project_name}")
+    print(f"{l_duration}: {format_time_value_auto(project_duration)}")
     if result.project_start:
         from utils import add_workdays
-        print(f"Startdatum: {result.project_start.strftime('%Y-%m-%d')}")
-        print(f"Enddatum (geschaetzt): {add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')}")
+        print(f"{l_start}: {result.project_start.strftime('%Y-%m-%d')}")
+        print(f"{l_end}: {add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')}")
     print("=" * 70)
     print()
-    print("Kritischer Pfad:")
+    print(f"{l_crit_path}:")
     for task_id in critical_path:
         task = result.tasks[task_id]
         duration_str = format_time_value_auto(task.duration)
-        print(f"  [{task_id}] {task.name:<30} (Dauer: {duration_str})")
+        print(f"  [{task_id}] {task.name:<30} ({l_dauer}: {duration_str})")
     print()
     print("=" * 70)
-    print("Alle Tasks:")
-    print(f"{'ID':<7} {'Name':<30} {'Dauer':<8} {'FAZ':<6} {'FEZ':<6} {'SAZ':<6} {'SEZ':<6} {'GP':<6} {'FP':<6} {'Krit.'}")
+    print(f"{l_all_tasks}:")
+    print(f"{l_id:<7} {l_name:<30} {l_dauer:<8} {l_faz:<6} {l_fez:<6} {l_saz:<6} {l_sez:<6} {l_gp:<6} {l_fp:<6} {l_krit}")
     print("-" * 70)
 
-    # Sortiere Tasks topologisch (nach FAZ)
     sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
 
     for task_id in sorted_task_ids:
         task = result.tasks[task_id]
-        critical_marker = "JA" if task.is_critical else ""
+        critical_marker = l_yes if task.is_critical else ""
         duration_str = format_time_value_auto(task.duration)
-        gp_str = format_time_value_auto(task.puffer)  # Gesamtpuffer
-        fp_str = format_time_value_auto(task.free_puffer)  # Freier Puffer
-
+        gp_str = format_time_value_auto(task.puffer)
+        fp_str = format_time_value_auto(task.free_puffer)
         id_str = str(task_id)
-
         print(
             f"{id_str:<7} {task.name:<30} {duration_str:<8} "
             f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
@@ -146,7 +164,8 @@ def print_cpm_summary(result: CPMResult) -> None:
     print("=" * 70)
 
 
-def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None, cfg_dir: Path = None) -> None:
+def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None,
+                      cfg_dir: Path = None, lang: str = 'de') -> None:
     """
     Exportiert CPM-Ergebnisse als strukturierte ASCII-Textdatei.
 
@@ -158,6 +177,7 @@ def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None, cfg_di
         output_file: Ausgabedatei (.txt)
         project:     Projekt-Objekt (optional, für Ressourcen-Details)
         cfg_dir:     Konfigurationsverzeichnis (optional)
+        lang:        Sprachkürzel ('de' oder 'en')
     """
     _txt_export(
         result,
@@ -165,12 +185,14 @@ def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None, cfg_di
         project_name=result.project_name,
         project=project,
         cfg_dir=cfg_dir,
+        lang=lang,
     )
 
 
 
 
-def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_dir: Path = None) -> None:
+def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None,
+                       cfg_dir: Path = None, lang: str = 'de') -> None:
     """
     Exportiert CPM-Ergebnisse in Excel-Format.
 
@@ -192,7 +214,7 @@ def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None, cfg_d
         cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
 
     # Konfiguration laden – enthält section_order und tab_names
-    full_config = load_excel_export_config(cfg_dir)
+    full_config = load_excel_export_config(cfg_dir, lang=lang)
     section_order = full_config['sections']['section_order']
     tab_names     = full_config['tab_names']
 
@@ -317,6 +339,14 @@ Beispiele:
         help="Exportformate (kommagetrennt): txt, json, xlsx, svg, md (Standard: json). Beispiel: --export txt,json,xlsx,svg,md"
     )
 
+    parser.add_argument(
+        "--lang",
+        type=str,
+        default="de",
+        choices=["de", "en"],
+        help="Ausgabesprache für Beschriftungen in Reports (Standard: de)"
+    )
+
     args = parser.parse_args()
 
     # Parse Export-Formate
@@ -326,6 +356,8 @@ Beispiele:
         if fmt not in valid_formats:
             print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx, svg, md")
             return 1
+
+    lang = args.lang
 
     # Logging einrichten
     logger = setup_logging()
@@ -394,7 +426,8 @@ Beispiele:
             result = project.calculate_cpm(start_date=start_date, cfg_dir=args.cfg_dir)
 
             # Ausgabe auf Konsole
-            print_cpm_summary(result)
+            labels = load_labels(args.cfg_dir, lang=lang)
+            print_cpm_summary(result, labels=labels)
 
             # Bestimme Ausgabeverzeichnis
             if args.output_dir:
@@ -435,12 +468,12 @@ Beispiele:
                     logger.info(f"Netzplan (JSON) gespeichert in: {output_file_network}")
                 elif fmt == 'txt':
                     output_file = output_dir / f"{project_file.stem}.txt"
-                    export_cpm_to_txt(result, output_file, project=project, cfg_dir=args.cfg_dir)
+                    export_cpm_to_txt(result, output_file, project=project, cfg_dir=args.cfg_dir, lang=lang)
                     logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
                 elif fmt == 'xlsx':
                     output_file = output_dir / f"{project_file.stem}.xlsx"
                     try:
-                        export_cpm_to_xlsx(result, output_file, project, args.cfg_dir)
+                        export_cpm_to_xlsx(result, output_file, project, args.cfg_dir, lang=lang)
                         logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
                     except ImportError as ie:
                         logger.warning(f"XLSX-Export übersprungen: {ie}")
@@ -461,7 +494,7 @@ Beispiele:
                     try:
                         # Exportiere CPM-Report als Markdown
                         project_name = project.project if hasattr(project, 'project') else project_file.stem
-                        success = export_cpm_to_markdown(result, output_file, project_name, project)
+                        success = export_cpm_to_markdown(result, output_file, project_name, project, lang=lang)
                         if success:
                             logger.info(f"CPM-Ergebnisse (Markdown) gespeichert in: {output_file}")
                     except Exception as e:

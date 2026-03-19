@@ -17,14 +17,14 @@ try:
     from .utils import (format_time_value, interpolate_color,
                         is_system_task, format_task_field,
                         convert_cpm_time_to_datetime, load_export_config,
-                        get_cfg_dir)
+                        get_cfg_dir, collect_resource_data)
     from .mermaid_export import generate_mermaid_gantt
 except (ImportError, ValueError):
     from models.cpm import CPMResult
     from utils import (format_time_value, interpolate_color,
                        is_system_task, format_task_field,
                        convert_cpm_time_to_datetime, load_export_config,
-                       get_cfg_dir)
+                       get_cfg_dir, collect_resource_data)
     from mermaid_export import generate_mermaid_gantt
 
 
@@ -87,15 +87,18 @@ def _load_auto_color_config(cfg_dir: Optional[Path] = None) -> tuple:
     return color_start, color_end
 
 
-def _load_md_config(cfg_dir: Optional[Path] = None) -> tuple:
+def _load_md_config(cfg_dir: Optional[Path] = None, lang: str = 'de') -> tuple:
     """
     Lädt markdown_export.cfg.
+
+    Args:
+        lang: Sprachkürzel ('de' oder 'en')
 
     Returns:
         (section_order, headings, mermaid_cfg) mit Fallback auf Defaults.
     """
     section_order, headings = load_export_config(
-        cfg_dir, 'markdown_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS
+        cfg_dir, 'markdown_export.cfg', _DEFAULT_SECTION_ORDER, _DEFAULT_HEADINGS, lang=lang
     )
 
     # Für die Mermaid-spezifischen Einstellungen brauchen wir den config direkt
@@ -536,40 +539,22 @@ def _generate_resource_list_section(
 ) -> str:
     lines = [f"### {heading}", ""]
 
-    resource_usage: Dict[str, List[str]] = {}
-
-    for task_id, task in result.tasks.items():
-        if project and hasattr(project, 'tasks'):
-            original_task = None
-            for orig_task in project.tasks:
-                if str(orig_task.id) == str(task_id) or str(getattr(orig_task, 'original_id', None)) == str(task_id):
-                    original_task = orig_task
-                    break
-
-            if original_task and hasattr(original_task, 'resources') and original_task.resources:
-                for res_id in original_task.resources:
-                    if res_id not in resource_usage:
-                        resource_usage[res_id] = []
-                    resource_usage[res_id].append(str(task_id))
-
-    if not resource_usage:
+    rd = collect_resource_data(project)
+    if rd is None:
         lines.append("*Keine Ressourcen-Informationen verfügbar.*")
         lines.append("")
         return "\n".join(lines)
 
-    resource_names: Dict[str, str] = {}
+    resource_usage      = rd.resource_usage
+    resource_names      = rd.resource_names
     resource_colors: Dict[str, str] = {}
     resource_person_names: Dict[str, str] = {}
-    if project and hasattr(project, 'resources'):
-        for res in project.resources:
-            resource_names[res.id] = getattr(res, 'name', res.id)
-            if hasattr(res, 'color') and res.color:
-                resource_colors[res.id] = res.color
-            if hasattr(res, 'person_id') and res.person_id and hasattr(project, 'persons'):
-                for person in project.persons:
-                    if person.id == res.person_id:
-                        resource_person_names[res.id] = person.name
-                        break
+    person_lookup = {p.id: p for p in rd.persons}
+    for res in rd.resources:
+        if hasattr(res, 'color') and res.color:
+            resource_colors[res.id] = res.color
+        if hasattr(res, 'person_id') and res.person_id and res.person_id in person_lookup:
+            resource_person_names[res.id] = person_lookup[res.person_id].name
 
     # Auto-Farbzuweisung für Ressourcen ohne explizite Farbe
     color_start, color_end = _load_auto_color_config()
@@ -706,7 +691,8 @@ def export_cpm_to_markdown(
     output_path: Path,
     project_name: str = "Project",
     project: Optional[object] = None,
-    cfg_dir: Optional[Path] = None
+    cfg_dir: Optional[Path] = None,
+    lang: str = 'de',
 ) -> bool:
     """
     Exportiert CPM-Ergebnisse als Markdown-Datei.
@@ -719,12 +705,13 @@ def export_cpm_to_markdown(
         project_name: Projektname
         project:      Projekt-Objekt (optional, für Ressourcen-Details)
         cfg_dir:      Verzeichnis der Konfigurationsdateien (default: cfg/)
+        lang:         Sprachkürzel ('de' oder 'en')
 
     Returns:
         True bei Erfolg, False bei Fehler
     """
     try:
-        section_order, headings, mermaid_cfg = _load_md_config(cfg_dir)
+        section_order, headings, mermaid_cfg = _load_md_config(cfg_dir, lang=lang)
 
         # Section-Generator-Registry
         def make_sections(result, project_name, project, headings, mermaid_cfg):

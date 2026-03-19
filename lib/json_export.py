@@ -12,10 +12,10 @@ from typing import Optional, Dict, Any, List
 
 try:
     from .models.cpm import CPMResult
-    from .utils import format_time_value, add_workdays, is_system_task, load_export_config
+    from .utils import format_time_value, add_workdays, is_system_task, load_export_config, collect_resource_data
 except (ImportError, ValueError):
     from models.cpm import CPMResult
-    from utils import format_time_value, add_workdays, is_system_task, load_export_config
+    from utils import format_time_value, add_workdays, is_system_task, load_export_config, collect_resource_data
 
 
 # ---------------------------------------------------------------------------
@@ -117,45 +117,37 @@ def _build_tasks(result: CPMResult) -> List[Dict[str, Any]]:
 
 
 def _build_resources(result: CPMResult, project: Optional[object]) -> Optional[Dict[str, Any]]:
-    if not project or not hasattr(project, 'tasks'):
-        return None
-
-    resource_usage: Dict[str, List[str]] = {}
-    for orig_task in project.tasks:
-        if hasattr(orig_task, 'resources') and orig_task.resources:
-            for res_id in orig_task.resources:
-                resource_usage.setdefault(res_id, []).append(str(orig_task.id))
-
-    if not resource_usage:
+    rd = collect_resource_data(project)
+    if rd is None:
         return None
 
     resource_details: Dict[str, Any] = {}
-    if hasattr(project, 'resources'):
-        for res in project.resources:
-            resource_details[res.id] = {
-                'name': getattr(res, 'name', res.id),
-                'type': getattr(res, 'type', 'unknown'),
-            }
-            if hasattr(res, 'person_id') and res.person_id:
-                resource_details[res.id]['person_id'] = res.person_id
+    for res in rd.resources:
+        resource_details[res.id] = {
+            'name': getattr(res, 'name', res.id),
+            'type': getattr(res, 'type', 'unknown'),
+        }
+        if hasattr(res, 'person_id') and res.person_id:
+            resource_details[res.id]['person_id'] = res.person_id
 
     persons_out: List[Dict[str, Any]] = []
-    if project and project.persons:
-        for person in project.persons:
-            p: Dict[str, Any] = {'id': person.id, 'name': person.name}
-            if getattr(person, 'cost_per_hour', None):
-                p['cost_per_hour'] = person.cost_per_hour
-            if getattr(person, 'available_hours', None):
-                p['available_hours'] = person.available_hours
-            persons_out.append(p)
+    for person in rd.persons:
+        p: Dict[str, Any] = {'id': person.id, 'name': person.name}
+        hourly_rate = getattr(person, 'hourly_rate', None)
+        if hourly_rate is not None:
+            p['hourly_rate'] = hourly_rate
+        if getattr(person, 'available_hours', None):
+            p['available_hours'] = person.available_hours
+        persons_out.append(p)
 
-    assignments = []
-    for res_id, task_ids in sorted(resource_usage.items()):
-        assignments.append({
+    assignments = [
+        {
             'resource_id':   res_id,
             'resource_name': resource_details.get(res_id, {}).get('name', res_id),
             'task_ids':      task_ids,
-        })
+        }
+        for res_id, task_ids in sorted(rd.resource_usage.items())
+    ]
 
     out: Dict[str, Any] = {'assignments': assignments}
     if resource_details:

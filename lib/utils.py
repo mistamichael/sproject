@@ -7,8 +7,9 @@ Common utility functions used across the project.
 
 import configparser
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Union, Literal, List, Tuple, Dict, Optional
+from typing import Any, Union, Literal, List, Tuple, Dict, Optional
 from datetime import datetime, timedelta
 
 
@@ -151,23 +152,50 @@ def convert_cpm_time_to_datetime(cpm_time: float, start_date: datetime, time_uni
         return start_date + timedelta(days=cpm_time)
 
 
+def load_labels(cfg_dir: Optional[Path] = None, lang: str = 'de') -> Dict[str, str]:
+    """
+    Lädt Beschriftungen aus der [lang]-Sektion von defaults.cfg.
+
+    Args:
+        cfg_dir: Verzeichnis der .cfg-Dateien (None → get_cfg_dir())
+        lang:    Sprachkürzel ('de' oder 'en')
+
+    Returns:
+        Dict mit Beschriftungs-Schlüsseln und -Werten
+    """
+    if cfg_dir is None:
+        cfg_dir = get_cfg_dir()
+    config = configparser.ConfigParser()
+    defaults_file = cfg_dir / 'defaults.cfg'
+    if defaults_file.exists():
+        config.read(defaults_file, encoding='utf-8')
+    labels: Dict[str, str] = {}
+    if config.has_section(lang):
+        for key, val in config.items(lang):
+            if val:
+                labels[key] = val
+    return labels
+
+
 def load_export_config(
     cfg_dir: Optional[Path],
     filename: str,
     default_order: List[str],
     default_headings: Dict[str, str],
+    lang: str = 'de',
 ) -> Tuple[List[str], Dict[str, str]]:
     """
     Generischer Loader für Export-Config-Dateien.
 
-    Liest section_order aus [sections] und Überschriften aus [de].
-    Fallback auf default_order / default_headings wenn Datei fehlt.
+    Liest section_order aus [sections] und Überschriften aus [lang].
+    Reihenfolge: Python-Defaults → defaults.cfg [lang] → export-spezifisch [lang].
 
     Args:
         cfg_dir:          Verzeichnis der .cfg-Dateien (None → ../cfg relativ zur Lib)
         filename:         Dateiname der Config (z.B. 'txt_export.cfg')
         default_order:    Fallback-Sektionsreihenfolge
         default_headings: Fallback-Überschriften
+        lang:             Sprachkürzel ('de' oder 'en')
 
     Returns:
         (section_order, headings)
@@ -175,8 +203,7 @@ def load_export_config(
     if cfg_dir is None:
         cfg_dir = get_cfg_dir()
     config = configparser.ConfigParser()
-    # Erst defaults.cfg einlesen (liefert gemeinsame [de]-Basis-Einträge),
-    # dann export-spezifische Config (überschreibt bei gleichen Keys).
+    # Erst defaults.cfg (gemeinsame [lang]-Basis), dann export-spezifisch (überschreibt)
     defaults_file = cfg_dir / 'defaults.cfg'
     if defaults_file.exists():
         config.read(defaults_file, encoding='utf-8')
@@ -191,8 +218,8 @@ def load_export_config(
     )
 
     headings = dict(default_headings)
-    if config.has_section('de'):
-        for key, val in config.items('de'):
+    if config.has_section(lang):
+        for key, val in config.items(lang):
             if val:
                 headings[key] = val
 
@@ -655,6 +682,58 @@ def parse_cycle_id(cycle_id: str) -> tuple[Union[int, str], int, str]:
 
     # Fallback
     return cycle_id, 0, ''
+
+
+# =============================================================================
+# Resource Data Collection
+# =============================================================================
+
+@dataclass
+class ResourceData:
+    """Gesammelte Ressourcen-Daten aus einem Projekt-Objekt."""
+    resource_usage:  Dict[str, List[str]]  # res_id → [task_id strings]
+    resource_names:  Dict[str, str]        # res_id → Anzeigename
+    resources:       List[Any]             # rohe Ressource-Objekte
+    persons:         List[Any]             # rohe Person-Objekte
+
+
+def collect_resource_data(project: Any) -> Optional['ResourceData']:
+    """
+    Sammelt Ressourcen- und Personen-Daten aus einem Projekt-Objekt.
+
+    Args:
+        project: Projekt-Objekt mit .tasks, .resources und .persons
+
+    Returns:
+        ResourceData oder None wenn keine Ressourcen vorhanden
+    """
+    if not project or not hasattr(project, 'tasks'):
+        return None
+
+    resource_usage: Dict[str, List[str]] = {}
+    for orig_task in project.tasks:
+        if hasattr(orig_task, 'resources') and orig_task.resources:
+            for res_id in orig_task.resources:
+                resource_usage.setdefault(res_id, []).append(str(orig_task.id))
+
+    if not resource_usage:
+        return None
+
+    resource_names: Dict[str, str] = {}
+    resources: List[Any] = []
+    if hasattr(project, 'resources'):
+        resources = list(project.resources)
+        for res in resources:
+            resource_names[res.id] = getattr(res, 'name', res.id)
+
+    persons: List[Any] = list(project.persons) if hasattr(project, 'persons') and project.persons else []
+
+    return ResourceData(
+        resource_usage=resource_usage,
+        resource_names=resource_names,
+        resources=resources,
+        persons=persons,
+    )
 
 
 # =============================================================================

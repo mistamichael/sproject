@@ -32,12 +32,13 @@ except (ImportError, ValueError):
     from utils import format_time_value_auto, add_workdays, interpolate_color
 
 
-def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
+def load_excel_export_config(cfg_dir: Path, lang: str = 'de') -> Dict[str, Any]:
     """
     Lädt Excel-Export-Konfiguration aus excel_export.cfg und defaults.cfg.
 
     Args:
         cfg_dir: Verzeichnis mit Konfigurationsdateien
+        lang:    Sprachkürzel ('de' oder 'en')
 
     Returns:
         Dictionary mit Konfigurationswerten (alle Sektionen)
@@ -133,7 +134,7 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
         )
     }
 
-    # Lese Tab-Namen und Spaltentitel aus [de]
+    # Lese Tab-Namen und Spaltentitel aus [lang] (defaults.cfg Basis + excel_export.cfg Override)
     _default_tab_names = {
         'summary':       'Projektzusammenfassung',
         'critical_path': 'Kritischer Pfad',
@@ -154,8 +155,8 @@ def load_excel_export_config(cfg_dir: Path) -> Dict[str, Any]:
         'kritisch':      'Kritisch',
     }
     tab_names = dict(_default_tab_names)
-    if config.has_section('de'):
-        for key, val in config.items('de'):
+    if config.has_section(lang):
+        for key, val in config.items(lang):
             if val:
                 tab_names[key] = val
     defaults['tab_names'] = tab_names
