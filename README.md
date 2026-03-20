@@ -193,6 +193,7 @@ python lib/sproject.py --help
 | --------------- | ---- | ------- |
 | `successors` | FS | Finish→Start: successor starts after predecessor finishes (default) |
 | `successors_aa` | SS | Start→Start: successor starts at the same time as predecessor |
+| `successors_ae` | SF | Start→Finish: successor finishes when predecessor starts |
 | `successors_ee` | FF | Finish→Finish: successor finishes at the same time as predecessor |
 
 Example (from `hausbau.json`):
@@ -328,6 +329,9 @@ ID      Name                           Duration  ES     EF     LS     LF     TF 
 | `erdaushub.json`       | Excavation                   | Parallel activities               |
 | `fassadenbau.json`     | Facade construction          | Section-by-section assembly       |
 | `software_simple.json` | Software development         | Persons, resources, costs         |
+
+
+ Here an example for an ouptut as [markdown with mermaid diagramm](doc/result_examples/software_simple.md) or as [html](doc/result_examples/software_simple.html)
 
 ## Tests
 

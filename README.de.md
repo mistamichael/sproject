@@ -192,6 +192,7 @@ python lib/sproject.py --help
 | ---- | --- | --------- |
 | `successors` | EA | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard) |
 | `successors_aa` | AA | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger |
+| `successors_ae` | AE | Anfang→Ende: Nachfolger enden wenn Vorgänger beginnt |
 | `successors_ee` | EE | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger |
 
 Beispiel (aus `hausbau.json`):
@@ -329,6 +330,8 @@ ID      Name                           Dauer    FAZ    FEZ    SAZ    SEZ    GP  
 | `erdaushub.json`       | Erdaushub                  | Parallel laufende Tätigkeiten     |
 | `fassadenbau.json`     | Fassadenbau                | Abschnittweise Montage            |
 | `software_simple.json` | Software-Entwicklung       | Personen, Ressourcen, Kosten      |
+
+Hier ein Beispiel für die Ausgabedatei als [markdown mit mermaid diagramm](doc/result_examples/software_simple.md) oder als [html](doc/result_examples/software_simple.html)
 
 ## Tests
 
