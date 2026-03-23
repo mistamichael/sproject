@@ -13,5 +13,8 @@ requests>=2.31.0
 # Markdown → HTML conversion (HTML export)
 markdown>=3.0
 
+# GUI (Dear PyGui-basierter Editor)
+dearpygui>=1.11.0
+
 # Testing
 pytest>=9.0.0
