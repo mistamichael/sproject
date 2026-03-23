@@ -9,7 +9,6 @@ Berechnet echte Datumsangaben unter Berücksichtigung von:
 - Verfügbarkeit von Ressourcen
 """
 
-from datetime import datetime, timedelta
 from typing import Dict, List, Set
 from dataclasses import dataclass, field
 
@@ -34,15 +33,3 @@ class WorkingHours:
 
     def __repr__(self) -> str:
         return f"{self.start}-{self.end}"
-
-
-@dataclass
-class PersonCalendar:
-    """Kalender für eine Person mit Urlaub, Pausen und Arbeitszeiten"""
-    person_id: str
-    person_name: str
-    working_days: Set[str] = field(default_factory=lambda: {'mon', 'tue', 'wed', 'thu', 'fri'})
-    working_hours: Dict[str, List[WorkingHours]] = field(default_factory=dict)  # {weekday: [hours]}
-    vacation_dates: Set[str] = field(default_factory=set)  # {YYYY-MM-DD}
-    rest_intervals: List[RestInterval] = field(default_factory=list)
-

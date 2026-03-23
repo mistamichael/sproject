@@ -2,6 +2,8 @@
 
 **sproject.py** berechnet den kritischen Pfad (CPM – Critical Path Method) aus einfachen JSON-Projektdateien und exportiert die Ergebnisse in verschiedene Formate.
 
+ ![svg Beispiel](doc/de/img/software_simple_gantt.svg)
+
 ## Zweck
 
 - **CPM-Berechnung**: Frühester/spätester Start und Ende, Gesamtpuffer, freier Puffer, kritischer Pfad
@@ -67,33 +69,34 @@ sproject/
 
 ### Abhängigkeiten
 
-```bash
-pip install -r requirements.txt
+
+Erzeugen der virtual Environment und Installation der pip Abhängikeiten: 
+
+#### Windows
+Doppelklick auf 
+
+```dos
+bin/install_py.bat
 ```
+#### Linux/Mac
 
-Oder einzeln:
-
-```bash
-pip install pydantic          # Pflicht
-pip install openpyxl          # Für XLSX-Export
-pip install requests          # Für SVG/ZIP-Export (via kroki.io)
-pip install markdown          # Für HTML-Export
-```
-
-Oder mit virtueller Umgebung:
+Aufruf von 
 
 ```bash
-python -m venv venv
-venv\Scripts\activate.bat     # Windows
-pip install -r requirements.txt
+bash bin/install_py.sh
 ```
 
 ## Verwendung
 
 ### Einzelnes Projekt verarbeiten
 
+Lege deine newproject.json Datei in den Ordner sproject/data. 
+
+dann rufe das Skript create_reports.bat/.sh im bin Ordner auf. Oder direkt
+
 ```bash
-python lib/sproject.py --project examples/pizza.json
+python lib/sproject.py --project newproject.json
+
 ```
 
 ### Exportformat wählen
@@ -192,7 +195,7 @@ python lib/sproject.py --help
 | ---- | --- | --------- |
 | `successors` | EA | Ende→Anfang: Nachfolger startet nach Ende des Vorgängers (Standard) |
 | `successors_aa` | AA | Anfang→Anfang: Nachfolger startet gleichzeitig mit Vorgänger |
-| `successors_ae` | AE | Anfang→Ende: Nachfolger enden wenn Vorgänger beginnt |
+| `successors_ae` | AE | Anfang→Ende: Nachfolger endet wenn Vorgänger beginnt |
 | `successors_ee` | EE | Ende→Ende: Nachfolger endet gleichzeitig mit Vorgänger |
 
 Beispiel (aus `hausbau.json`):

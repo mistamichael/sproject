@@ -2,6 +2,8 @@
 
 **sproject.py** calculates the critical path (CPM – Critical Path Method) from simple JSON project files and exports the results in various formats.
 
+ ![svg example](doc/de/img/software_simple_gantt.svg)
+
 > Deutsche Dokumentation: [README.de.md](README.de.md)
 
 ## Purpose
@@ -66,33 +68,32 @@ sproject/
 
 ### Dependencies
 
-```bash
-pip install -r requirements.txt
+create a virtual environment and install pip dependencies: 
+
+#### Windows
+double click on 
+
+```dos
+bin/install_py.bat
 ```
+#### Linux/Mac
 
-Or individually:
-
-```bash
-pip install pydantic          # Required
-pip install openpyxl          # For XLSX export
-pip install requests          # For SVG/ZIP export (via kroki.io)
-pip install markdown          # For HTML export
-```
-
-With a virtual environment:
+call 
 
 ```bash
-python -m venv venv
-venv\Scripts\activate.bat     # Windows
-pip install -r requirements.txt
+bash bin/install_py.sh
 ```
 
 ## Usage
 
 ### Process a single project
 
+put your new newproj.json file in the sproject/data folder. Then call
+call the create_reports.bat/.sh in the bin folder
+or call direct
+
 ```bash
-python lib/sproject.py --project examples/pizza.json
+python lib/sproject.py --project newproj.json
 ```
 
 ### Choose export format
