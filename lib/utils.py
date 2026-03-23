@@ -23,7 +23,7 @@ def get_cfg_dir() -> Path:
     env_cfg = os.environ.get('PV_CFG')
     if env_cfg:
         return Path(env_cfg)
-    return get_cfg_dir()
+    return Path(__file__).parent.parent / "cfg"
 
 
 # =============================================================================
