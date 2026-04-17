@@ -10,6 +10,7 @@ import dearpygui.dearpygui as dpg
 from pathlib import Path
 
 from gui.gui_config import load_gui_config
+from gui.i18n import t
 
 _CFG = load_gui_config()
 _COL = _CFG.section("colors")
@@ -17,11 +18,11 @@ _COL = _CFG.section("colors")
 
 # (section_id, Anzeige-Label, immer_aktiv)
 SECTIONS = [
-    ("stammdaten",    "1. Stammdaten",  True),
-    ("tasks",         "2. Aufgaben",    True),
-    ("resources",     "3. Ressourcen",  False),
-    ("persons",       "4. Personen",    False),
-    ("resting_times", "5. Ruhezeiten",  False),
+    ("stammdaten",    t("section.stammdaten"), True),
+    ("tasks",         t("section.tasks"),    True),
+    ("resources",     t("section.resources"),  False),
+    ("persons",       t("section.persons"),    False),
+    ("resting_times", t("section.resting_times"),  False),
 ]
 
 # Toggle-Tag-Map für die drei optionalen Abschnitte

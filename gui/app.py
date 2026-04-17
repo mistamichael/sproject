@@ -135,8 +135,12 @@ def _update_ui_language() -> None:
         "mi_close":         "menu.file.close",
         "mi_about":         "menu.help.about",
         # Sektions-Header
-        "section_stammdaten":   "section.stammdaten",
-        "section_tasks_header": "section.tasks",
+        "section_stammdaten":           "section.stammdaten",
+        "section_tasks_header":         "section.tasks",
+        "section_resources_header":     "section.resources",
+        "section_persons_header":       "section.persons",
+        "section_resting_times_header": "section.resting_times",
+        "section_result_header":        "section.result",
     }
     for tag, key in _label_map.items():
         if dpg.does_item_exist(tag):
@@ -155,7 +159,7 @@ def _update_ui_language() -> None:
         "lbl_unit":         "label.unit",
         "lbl_total_hours":  "label.total_hours",
         "lbl_total_volume": "label.total_volume",
-        "lbl_order_volume": "label.order_volume",
+        "lbl_order_volume": "label.order_volume"
     }
     for tag, key in _text_map.items():
         if dpg.does_item_exist(tag):
@@ -543,7 +547,11 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
 
 def _build_resources_section(_app) -> None:
     with dpg.group(tag="section_resources", show=False):
-        with dpg.collapsing_header(label="3. Ressourcen", default_open=True):
+        with dpg.collapsing_header(
+            label=t("section.resources"), 
+            tag="section_resources_header",
+            default_open=True
+        ):
             with dpg.group(tag="resources_content"):
                 dpg.add_text("Keine Ressourcen geladen.")
         dpg.add_spacer(height=4)
@@ -551,7 +559,11 @@ def _build_resources_section(_app) -> None:
 
 def _build_persons_section(_app) -> None:
     with dpg.group(tag="section_persons", show=False):
-        with dpg.collapsing_header(label="4. Personen", default_open=True):
+        with dpg.collapsing_header(
+            label=t("section.persons"),
+            tag="section_persons_header", 
+            default_open=True
+        ):
             with dpg.group(tag="persons_content"):
                 dpg.add_text("Keine Personen geladen.")
         dpg.add_spacer(height=4)
@@ -559,7 +571,11 @@ def _build_persons_section(_app) -> None:
 
 def _build_resting_times_section(_app) -> None:
     with dpg.group(tag="section_resting_times", show=False):
-        with dpg.collapsing_header(label="5. Ruhezeiten", default_open=True):
+        with dpg.collapsing_header(
+                label=t("section.resting_times"),
+                tag="section_resting_times_header", 
+                default_open=True
+            ):
             with dpg.group(tag="resting_times_content"):
                 dpg.add_text("Keine Ruhezeitregeln definiert.")
         dpg.add_spacer(height=4)

@@ -17,6 +17,7 @@ Besonderheiten:
 import dearpygui.dearpygui as dpg
 
 from gui.gui_config import load_gui_config
+from gui.i18n import t
 
 _CFG = load_gui_config()
 _COLORS = _CFG.section("colors")
@@ -70,11 +71,12 @@ def _format_successors(items: list) -> str:
 # Abschnitts-Aufbau
 # ---------------------------------------------------------------------------
 
+
 def build_task_section(app) -> None:
     """Erstellt den Aufgaben-Abschnitt mit Toolbar und Tabellen-Container."""
     with dpg.collapsing_header(
-        label="2. Aufgaben",
-        tag="section_tasks",
+        label=t("section.tasks"),
+        tag="section_tasks_header",
         default_open=True,
     ):
         with dpg.group(horizontal=True):
