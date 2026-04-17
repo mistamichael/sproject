@@ -721,12 +721,25 @@ class ProjectEditorApp:
         if not self.last_cpm_result or not self.project:
             raise RuntimeError("Kein Berechnungsergebnis. Bitte erst berechnen.")
         from openpyxl import Workbook
-        from lib.excel_reports import create_gantt_chart
+        from lib.excel_reports import create_gantt_chart, load_excel_export_config
+        from lib.models.reports import GanttReport
         d = target_dir or Path.cwd()
         project_name = self.project.project or "project"
         out = d / f"{project_name.replace(' ', '_')}.xlsx"
+
+        cfg_dir = Path(__file__).resolve().parent.parent / "cfg"
+        full_config = load_excel_export_config(cfg_dir) if cfg_dir.exists() else {}
+        report = GanttReport(
+            id='gantt_chart',
+            name='Gantt Chart',
+            headline='Gantt Chart',
+            type='gantt',
+            columns=['ID', 'Name', 'Start', 'Ende', 'Aufwand', 'Diagramm'],
+            loadunit=self.last_cpm_result.time_unit,
+        )
+
         wb = Workbook()
-        create_gantt_chart(wb, self.project, self.last_cpm_result)
+        create_gantt_chart(wb, self.project, self.last_cpm_result, report, full_config)
         wb.save(out)
         return out
 
@@ -763,9 +776,16 @@ class ProjectEditorApp:
     def _export_markdown(self) -> None: self._wrap_export(self.export_markdown)
     def _export_excel(self)    -> None: self._wrap_export(self.export_excel)
 
+    def _get_export_dir(self) -> Path:
+        """Gibt das Standard-Exportverzeichnis (PV_RESULTS) zurück und erstellt es bei Bedarf."""
+        import os
+        d = Path(os.environ.get("PV_RESULTS", "")) if os.environ.get("PV_RESULTS") else Path(__file__).resolve().parent.parent / "results"
+        d.mkdir(exist_ok=True)
+        return d
+
     def _wrap_export(self, fn) -> None:
         try:
-            out = fn()
+            out = fn(self._get_export_dir())
             self._set_status(f"Gespeichert: {out}")
         except Exception as e:
             self._set_status(f"Export fehlgeschlagen: {e}")

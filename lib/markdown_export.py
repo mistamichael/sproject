@@ -7,11 +7,14 @@ Sektionsreihenfolge und Überschriften werden aus cfg/markdown_export.cfg gelese
 """
 
 import configparser
+import logging
 import tempfile
 import zipfile
 from pathlib import Path
 from typing import Optional, Dict, List
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 # Import models and utilities
 try:
@@ -669,7 +672,7 @@ def _generate_md_content(
 
     for i, section_name in enumerate(section_order):
         if section_name not in generators:
-            print(f"WARNUNG: Unbekannte Sektion '{section_name}' – wird übersprungen.")
+            logger.warning("Unbekannte Sektion '%s' – wird übersprungen.", section_name)
             continue
         lines.append(generators[section_name]())
         if i < len(section_order) - 1:
@@ -708,10 +711,10 @@ def export_cpm_to_markdown(
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(content)
-        print(f"INFO: Markdown erfolgreich exportiert nach: {output_path}")
+        logger.info("Markdown erfolgreich exportiert nach: %s", output_path)
         return True
     except Exception as e:
-        print(f"FEHLER: Markdown-Export fehlgeschlagen: {e}")
+        logger.error("Markdown-Export fehlgeschlagen: %s", e)
         return False
 
 
@@ -743,7 +746,7 @@ def export_cpm_to_html(
     try:
         import markdown as md_lib
     except ImportError:
-        print("FEHLER: Python-Paket 'markdown' nicht installiert (pip install markdown).")
+        logger.error("Python-Paket 'markdown' nicht installiert (pip install markdown).")
         return False
 
     try:
@@ -799,11 +802,11 @@ def export_cpm_to_html(
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_doc)
 
-        print(f"INFO: HTML erfolgreich exportiert nach: {output_path}")
+        logger.info("HTML erfolgreich exportiert nach: %s", output_path)
         return True
 
     except Exception as e:
-        print(f"FEHLER: HTML-Export fehlgeschlagen: {e}")
+        logger.error("HTML-Export fehlgeschlagen: %s", e)
         return False
 
 
@@ -848,7 +851,7 @@ def export_cpm_to_svg_zip(
             if export_mermaid_to_svg(gantt_diagram, gantt_path):
                 svg_files.append(gantt_path)
             else:
-                print("WARNUNG: Gantt-SVG konnte nicht erzeugt werden.")
+                logger.warning("Gantt-SVG konnte nicht erzeugt werden.")
 
             # Netzplan
             netplan_diagram = _build_mermaid_network(result, mermaid_cfg)
@@ -856,7 +859,7 @@ def export_cpm_to_svg_zip(
             if export_mermaid_to_svg(netplan_diagram, netplan_path):
                 svg_files.append(netplan_path)
             else:
-                print("WARNUNG: Netzplan-SVG konnte nicht erzeugt werden.")
+                logger.warning("Netzplan-SVG konnte nicht erzeugt werden.")
 
             # Ressourcen-Gantts
             rd = collect_resource_data(project)
@@ -884,10 +887,10 @@ def export_cpm_to_svg_zip(
                     if export_mermaid_to_svg(res_diagram, res_path):
                         svg_files.append(res_path)
                     else:
-                        print(f"WARNUNG: Ressourcen-SVG für '{res_id}' konnte nicht erzeugt werden.")
+                        logger.warning("Ressourcen-SVG für '%s' konnte nicht erzeugt werden.", res_id)
 
             if not svg_files:
-                print("FEHLER: Keine SVG-Dateien erzeugt.")
+                logger.error("Keine SVG-Dateien erzeugt.")
                 return False
 
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -895,9 +898,9 @@ def export_cpm_to_svg_zip(
                 for svg_file in svg_files:
                     zf.write(svg_file, svg_file.name)
 
-        print(f"INFO: SVG-ZIP erfolgreich exportiert nach: {output_path} ({len(svg_files)} Dateien)")
+        logger.info("SVG-ZIP erfolgreich exportiert nach: %s (%d Dateien)", output_path, len(svg_files))
         return True
 
     except Exception as e:
-        print(f"FEHLER: SVG-ZIP-Export fehlgeschlagen: {e}")
+        logger.error("SVG-ZIP-Export fehlgeschlagen: %s", e)
         return False

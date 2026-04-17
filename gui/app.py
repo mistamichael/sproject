@@ -115,6 +115,128 @@ def _open_save_dialog(app: ProjectEditorApp) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Verzeichnis-Autocomplete für Export-Dialog
+# ---------------------------------------------------------------------------
+
+TAG_AC_POPUP    = "exp_ac_popup"
+TAG_AC_LIST     = "exp_ac_list"
+TAG_AC_HANDLERS = "exp_ac_handlers"
+
+
+def _get_dir_completions(text: str) -> list[str]:
+    p = Path(text)
+    if text.endswith(("/", "\\")):
+        parent, prefix = p, ""
+    else:
+        parent, prefix = p.parent, p.name.lower()
+    try:
+        return [
+            str(parent / d.name)
+            for d in sorted(parent.iterdir())
+            if d.is_dir() and d.name.lower().startswith(prefix)
+        ]
+    except OSError:
+        return []
+
+
+def _close_ac_popup() -> None:
+    if dpg.does_item_exist(TAG_AC_POPUP):
+        dpg.delete_item(TAG_AC_POPUP)
+
+
+def _ac_select(app: ProjectEditorApp, value: str) -> None:
+    _close_ac_popup()
+    if dpg.does_item_exist("exp_dir_input"):
+        dpg.set_value("exp_dir_input", value)
+        dpg.focus_item("exp_dir_input")
+
+
+def _show_ac_popup(app: ProjectEditorApp, matches: list[str]) -> None:
+    if not dpg.does_item_exist("exp_dir_input"):
+        return
+    _close_ac_popup()
+
+    rect_min  = dpg.get_item_rect_min("exp_dir_input")
+    rect_size = dpg.get_item_rect_size("exp_dir_input")
+    pos   = [int(rect_min[0]), int(rect_min[1] + rect_size[1])]
+    width = max(int(rect_size[0]), 260)
+    n     = min(len(matches), 8)
+
+    with dpg.window(
+        tag=TAG_AC_POPUP,
+        no_title_bar=True,
+        no_move=True,
+        no_resize=True,
+        pos=pos,
+        width=width,
+        height=n * 22 + 14,
+        no_scrollbar=True,
+    ):
+        dpg.add_listbox(
+            tag=TAG_AC_LIST,
+            items=matches,
+            num_items=n,
+            width=-1,
+            callback=lambda s, a: _ac_select(app, a),
+        )
+
+
+def _ac_tab_handler(sender, app_data, user_data: ProjectEditorApp) -> None:
+    if not dpg.does_item_exist("exp_dir_input"):
+        return
+    if dpg.is_item_focused("exp_dir_input"):
+        # \t durch tab_input=True entfernen
+        text = dpg.get_value("exp_dir_input").replace("\t", "")
+        dpg.set_value("exp_dir_input", text)
+        matches = _get_dir_completions(text)
+        if not matches:
+            return
+        if len(matches) == 1:
+            _close_ac_popup()
+            dpg.set_value("exp_dir_input", matches[0])
+        else:
+            _show_ac_popup(user_data, matches)
+    elif dpg.does_item_exist(TAG_AC_POPUP) and dpg.does_item_exist(TAG_AC_LIST):
+        val = dpg.get_value(TAG_AC_LIST)
+        if val:
+            _ac_select(user_data, val)
+
+
+def _ac_enter_handler(sender, app_data, user_data: ProjectEditorApp) -> None:
+    if dpg.does_item_exist(TAG_AC_POPUP) and dpg.does_item_exist(TAG_AC_LIST):
+        val = dpg.get_value(TAG_AC_LIST)
+        if val:
+            _ac_select(user_data, val)
+
+
+def _setup_ac_handlers(app: ProjectEditorApp) -> None:
+    if dpg.does_item_exist(TAG_AC_HANDLERS):
+        dpg.delete_item(TAG_AC_HANDLERS)
+    with dpg.handler_registry(tag=TAG_AC_HANDLERS):
+        dpg.add_key_press_handler(
+            dpg.mvKey_Tab, callback=_ac_tab_handler, user_data=app
+        )
+        dpg.add_key_press_handler(
+            dpg.mvKey_Return, callback=_ac_enter_handler, user_data=app
+        )
+        dpg.add_key_press_handler(
+            dpg.mvKey_Escape, callback=lambda s, a, u: _close_ac_popup()
+        )
+
+
+def _teardown_ac() -> None:
+    _close_ac_popup()
+    if dpg.does_item_exist(TAG_AC_HANDLERS):
+        dpg.delete_item(TAG_AC_HANDLERS)
+
+
+def _close_export_dialog() -> None:
+    _teardown_ac()
+    if dpg.does_item_exist(TAG_EXP_DLG):
+        dpg.delete_item(TAG_EXP_DLG)
+
+
+# ---------------------------------------------------------------------------
 # Export-Dialog
 # ---------------------------------------------------------------------------
 
@@ -126,9 +248,10 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
         dpg.delete_item(TAG_EXP_DLG)
 
     name = (app.project.project or "project").replace(" ", "_")
-    default_dir = str(
-        app._last_save_path.parent if app._last_save_path else Path.cwd()
-    )
+    import os
+    results_dir = Path(os.environ.get("PV_RESULTS", "")) if os.environ.get("PV_RESULTS") else Path(__file__).resolve().parent.parent / "results"
+    results_dir.mkdir(exist_ok=True)
+    default_dir = str(results_dir)
 
     needs_calc = not app.last_cpm_result  # MD/Excel/TXT brauchen Ergebnis
 
@@ -180,6 +303,9 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
                 default_value=default_dir,
                 width=-1,
                 hint="Zielverzeichnis",
+                tab_input=True,
+                on_enter=False,
+                callback=lambda: _close_ac_popup(),
             )
 
         dpg.add_spacer(height=8)
@@ -190,14 +316,15 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
             )
             dpg.add_button(
                 label="Abbrechen",
-                callback=lambda: dpg.delete_item(TAG_EXP_DLG),
+                callback=lambda: _close_export_dialog(),
             )
+
+    _setup_ac_handlers(app)
 
 
 def _do_export(app: ProjectEditorApp) -> None:
     target_dir = Path(dpg.get_value("exp_dir_input") or ".")
-    if dpg.does_item_exist(TAG_EXP_DLG):
-        dpg.delete_item(TAG_EXP_DLG)
+    _close_export_dialog()
 
     if not target_dir.exists():
         app._set_status(f"Verzeichnis nicht gefunden: {target_dir}")
@@ -253,21 +380,21 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
             with dpg.table_row():
                 dpg.add_text("Projektname:")
                 dpg.add_input_text(tag="inp_project_name", default_value="",
-                                   width=-1, hint="Mein Projekt")
+                                   hint="Mein Projekt")
                 dpg.add_text("Startdatum:")
                 dpg.add_input_text(tag="inp_project_start", default_value="",
                                    width=-1, hint="2026-01-01 08:00:00")
             with dpg.table_row():
                 dpg.add_text("Zeiteinheit:")
                 dpg.add_combo(tag="inp_unit", items=["days", "hours", "minutes"],
-                              default_value="days", width=-1)
+                              default_value="days")
                 dpg.add_text("Gesamtstunden:")
                 dpg.add_input_text(tag="inp_total_hours", default_value="",
                                    width=-1, hint="160")
             with dpg.table_row():
                 dpg.add_text("Gesamtvolumen:")
                 dpg.add_input_text(tag="inp_total_volume", default_value="",
-                                   width=-1, hint="1000")
+                                   hint="1000")
                 dpg.add_text("Auftragsvolumen:")
                 dpg.add_input_text(tag="inp_order_volume", default_value="",
                                    width=-1, hint="12")
