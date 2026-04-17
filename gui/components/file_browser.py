@@ -14,12 +14,19 @@ from pathlib import Path
 from typing import Callable, Optional
 import dearpygui.dearpygui as dpg
 
+from gui.gui_config import load_gui_config
+
+_CFG = load_gui_config()
+_COL = _CFG.section("colors")
+_FB_SEC = "dialog.file_browser"
+_FB  = _CFG.section(_FB_SEC)
+
 _WIN_TAG     = "fb_window"
 _LIST_TAG    = "fb_list"
 _PATH_TAG    = "fb_path_input"
 _NAME_TAG    = "fb_filename_input"
-_BTN_H       = 38   # ~doppelte Standard-Höhe
-_BTN_W       = 160
+_BTN_H       = _FB.get("button_height", 38)
+_BTN_W       = _FB.get("button_width", 160)
 
 
 class _FileBrowser:
@@ -117,7 +124,7 @@ class _FileBrowser:
             dpg.add_text(
                 "(Verzeichnis ist leer)",
                 parent=_LIST_TAG,
-                color=(140, 140, 150),
+                color=_COL.get("empty_text", (140, 140, 150)),
             )
 
     # ------------------------------------------------------------------
@@ -173,14 +180,14 @@ class _FileBrowser:
             label=self.title,
             tag=_WIN_TAG,
             modal=True,
-            width=660,
-            height=500,
-            pos=[280, 120],
+            width=_CFG.resolve(_FB_SEC, "width", 660),
+            height=_CFG.resolve(_FB_SEC, "height", 500),
+            pos=[_CFG.resolve(_FB_SEC, "pos_x", 280), _CFG.resolve(_FB_SEC, "pos_y", 120)],
             no_resize=False,
         ):
             # ── Pfad-Zeile ──────────────────────────────────────────────
             with dpg.group(horizontal=True):
-                dpg.add_text("Pfad:", color=(180, 180, 200))
+                dpg.add_text("Pfad:", color=_COL.get("path_label", (180, 180, 200)))
                 dpg.add_input_text(
                     tag=_PATH_TAG,
                     default_value=str(self.current_dir),
@@ -198,14 +205,14 @@ class _FileBrowser:
             dpg.add_spacer(height=4)
 
             # ── Datei-Liste ─────────────────────────────────────────────
-            with dpg.child_window(tag=_LIST_TAG, height=340, border=True):
+            with dpg.child_window(tag=_LIST_TAG, height=_CFG.resolve(_FB_SEC, "list_height", 340), border=True):
                 pass  # wird durch _rebuild_list() befüllt
 
             dpg.add_spacer(height=6)
 
             # ── Dateiname-Eingabe ────────────────────────────────────────
             with dpg.group(horizontal=True):
-                dpg.add_text("Dateiname:", color=(180, 180, 200))
+                dpg.add_text("Dateiname:", color=_COL.get("path_label", (180, 180, 200)))
                 dpg.add_input_text(
                     tag=_NAME_TAG,
                     default_value="",

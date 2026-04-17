@@ -13,11 +13,11 @@ Layout:
     ├─ Icon-Toolbar: [🗁][💾][📄][⬇] | [▶] ─────────────┤
     │  Status …                                         │
     ├───────────────────────────────────────────────────┤
-    │  SIDEBAR  │  ① Stammdaten                         │
-    │           │  ② Aufgaben                           │
-    │           │  ③ Ressourcen (opt.)                  │
-    │           │  ④ Personen   (opt.)                  │
-    │           │  ⑤ Ruhezeiten (opt.)                  │
+    │  SIDEBAR  │  1 Stammdaten                         │
+    │           │  2 Aufgaben                           │
+    │           │  3 Ressourcen (opt.)                  │
+    │           │  4 Personen   (opt.)                  │
+    │           │  5 Ruhezeiten (opt.)                  │
     │           │  CPM-Ergebnis (nach Berechnung)       │
     └───────────┴───────────────────────────────────────┘
 """
@@ -34,6 +34,7 @@ from gui.icons import setup_icon_textures, add_icon_button
 from gui.components.sidebar import build_sidebar
 from gui.components.task_table import build_task_section
 from gui.components.file_browser import open_file_browser
+from gui.gui_config import load_gui_config
 
 # ---------------------------------------------------------------------------
 # Konstanten
@@ -43,9 +44,12 @@ TAG_SAVE_DLG  = "save_dialog"
 TAG_EXP_DLG   = "export_dialog"
 TAG_ABOUT_WIN = "about_window"
 
-VIEWPORT_W = 1280
-VIEWPORT_H = 860
-SIDEBAR_W  = 210
+# Config laden (Singleton)
+CFG = load_gui_config()
+
+VIEWPORT_W = CFG.base_width
+VIEWPORT_H = CFG.base_height
+SIDEBAR_W  = CFG.resolve("layout", "sidebar_width", 210)
 
 
 # ---------------------------------------------------------------------------
@@ -83,13 +87,14 @@ def _open_save_dialog(app: ProjectEditorApp) -> None:
         (app._last_save_path or Path.cwd() / default_name)
     )
 
+    _s = "dialog.save"
     with dpg.window(
         label="Speichern unter …",
         tag=TAG_SAVE_DLG,
         modal=True,
-        width=520,
-        height=110,
-        pos=[380, 360],
+        width=CFG.resolve(_s, "width", 520),
+        height=CFG.resolve(_s, "height", 110),
+        pos=[CFG.resolve(_s, "pos_x", 380), CFG.resolve(_s, "pos_y", 360)],
         no_resize=True,
     ):
         dpg.add_input_text(
@@ -159,8 +164,9 @@ def _show_ac_popup(app: ProjectEditorApp, matches: list[str]) -> None:
     rect_min  = dpg.get_item_rect_min("exp_dir_input")
     rect_size = dpg.get_item_rect_size("exp_dir_input")
     pos   = [int(rect_min[0]), int(rect_min[1] + rect_size[1])]
-    width = max(int(rect_size[0]), 260)
-    n     = min(len(matches), 8)
+    _ac = CFG.section("autocomplete")
+    width = max(int(rect_size[0]), _ac.get("min_width", 260))
+    n     = min(len(matches), _ac.get("max_items", 8))
 
     with dpg.window(
         tag=TAG_AC_POPUP,
@@ -169,7 +175,7 @@ def _show_ac_popup(app: ProjectEditorApp, matches: list[str]) -> None:
         no_resize=True,
         pos=pos,
         width=width,
-        height=n * 22 + 14,
+        height=n * _ac.get("item_height", 22) + _ac.get("padding", 14),
         no_scrollbar=True,
     ):
         dpg.add_listbox(
@@ -255,16 +261,18 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
 
     needs_calc = not app.last_cpm_result  # MD/Excel/TXT brauchen Ergebnis
 
+    _s = "dialog.export"
+    _col = CFG.section("colors")
     with dpg.window(
         label="Export",
         tag=TAG_EXP_DLG,
         modal=True,
-        width=420,
-        height=240,
-        pos=[430, 260],
+        width=CFG.resolve(_s, "width", 420),
+        height=CFG.resolve(_s, "height", 240),
+        pos=[CFG.resolve(_s, "pos_x", 430), CFG.resolve(_s, "pos_y", 260)],
         no_resize=True,
     ):
-        dpg.add_text("Formate auswählen:", color=(180, 180, 210))
+        dpg.add_text("Formate auswählen:", color=_col.get("dialog_label", (180, 180, 210)))
         dpg.add_spacer(height=5)
 
         # JSON ist immer möglich
@@ -289,7 +297,7 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
         if needs_calc:
             dpg.add_text(
                 "  ⚠ Markdown / Excel / TXT benötigen eine Berechnung (▶).",
-                color=(220, 180, 60),
+                color=_col.get("warning_text", (220, 180, 60)),
             )
 
         dpg.add_spacer(height=8)
@@ -361,7 +369,7 @@ def _do_export(app: ProjectEditorApp) -> None:
 
 def _build_stammdaten(app: ProjectEditorApp) -> None:
     with dpg.collapsing_header(
-        label="① Projekt-Stammdaten",
+        label="1. Projekt-Stammdaten",
         tag="section_stammdaten",
         default_open=True,
     ):
@@ -372,9 +380,10 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
             borders_outerV=False,
             policy=dpg.mvTable_SizingStretchProp,
         ):
-            dpg.add_table_column(width_fixed=True,  init_width_or_weight=130)
+            _st = CFG.section("stammdaten_table")
+            dpg.add_table_column(width_fixed=True,  init_width_or_weight=_st.get("col_label_width", 130))
             dpg.add_table_column(width_stretch=True)
-            dpg.add_table_column(width_fixed=True,  init_width_or_weight=120)
+            dpg.add_table_column(width_fixed=True,  init_width_or_weight=_st.get("col_label2_width", 120))
             dpg.add_table_column(width_stretch=True)
 
             with dpg.table_row():
@@ -407,7 +416,7 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
 
 def _build_resources_section(_app) -> None:
     with dpg.group(tag="section_resources", show=False):
-        with dpg.collapsing_header(label="③ Ressourcen", default_open=True):
+        with dpg.collapsing_header(label="3. Ressourcen", default_open=True):
             with dpg.group(tag="resources_content"):
                 dpg.add_text("Keine Ressourcen geladen.")
         dpg.add_spacer(height=4)
@@ -415,7 +424,7 @@ def _build_resources_section(_app) -> None:
 
 def _build_persons_section(_app) -> None:
     with dpg.group(tag="section_persons", show=False):
-        with dpg.collapsing_header(label="④ Personen", default_open=True):
+        with dpg.collapsing_header(label="4. Personen", default_open=True):
             with dpg.group(tag="persons_content"):
                 dpg.add_text("Keine Personen geladen.")
         dpg.add_spacer(height=4)
@@ -423,7 +432,7 @@ def _build_persons_section(_app) -> None:
 
 def _build_resting_times_section(_app) -> None:
     with dpg.group(tag="section_resting_times", show=False):
-        with dpg.collapsing_header(label="⑤ Ruhezeiten", default_open=True):
+        with dpg.collapsing_header(label="5. Ruhezeiten", default_open=True):
             with dpg.group(tag="resting_times_content"):
                 dpg.add_text("Keine Ruhezeitregeln definiert.")
         dpg.add_spacer(height=4)
@@ -438,17 +447,19 @@ def create_app() -> ProjectEditorApp:
     editor = ProjectEditorApp()
 
     # --- About-Fenster ---
+    _s = "dialog.about"
+    _col = CFG.section("colors")
     with dpg.window(
         label="Über sproject Editor",
         tag=TAG_ABOUT_WIN,
         show=False,
         modal=True,
-        width=400,
-        height=150,
-        pos=[440, 300],
+        width=CFG.resolve(_s, "width", 400),
+        height=CFG.resolve(_s, "height", 150),
+        pos=[CFG.resolve(_s, "pos_x", 440), CFG.resolve(_s, "pos_y", 300)],
         no_resize=True,
     ):
-        dpg.add_text("sproject Editor", color=(180, 210, 255))
+        dpg.add_text("sproject Editor", color=_col.get("about_title", (180, 210, 255)))
         dpg.add_text("Einfache PyGui-Oberfläche für sproject-JSON-Dateien.")
         dpg.add_spacer(height=6)
         dpg.add_text("Beispiele: examples")
@@ -526,7 +537,7 @@ def create_app() -> ProjectEditorApp:
                 tag="tb_export",
             )
 
-            dpg.add_text(" | ", color=(100, 100, 110))
+            dpg.add_text(" | ", color=_col.get("toolbar_sep", (100, 100, 110)))
 
             add_icon_button(
                 "calculate", "Berechnen & Anzeigen",
@@ -538,7 +549,7 @@ def create_app() -> ProjectEditorApp:
         dpg.add_text(
             "Bereit – Datei öffnen oder links ein Beispiel wählen.",
             tag="statusbar_text",
-            color=(150, 160, 170),
+            color=_col.get("status_text", (150, 160, 170)),
         )
         dpg.add_separator()
         dpg.add_spacer(height=2)
@@ -604,34 +615,55 @@ def main() -> None:
     # Icons laden (vor Widget-Erstellung)
     setup_icon_textures()
 
-    # Dunkles Theme
+    # Theme aus Config laden
+    tc = CFG.theme_colors()
+    _sty = CFG.section("style")
+    _COLOR_MAP = {
+        "window_bg":       dpg.mvThemeCol_WindowBg,
+        "child_bg":        dpg.mvThemeCol_ChildBg,
+        "frame_bg":        dpg.mvThemeCol_FrameBg,
+        "button":          dpg.mvThemeCol_Button,
+        "button_hovered":  dpg.mvThemeCol_ButtonHovered,
+        "header":          dpg.mvThemeCol_Header,
+        "header_hovered":  dpg.mvThemeCol_HeaderHovered,
+        "table_header_bg": dpg.mvThemeCol_TableHeaderBg,
+        "table_row_bg":    dpg.mvThemeCol_TableRowBg,
+        "table_row_bg_alt":dpg.mvThemeCol_TableRowBgAlt,
+        "menu_bar_bg":     dpg.mvThemeCol_MenuBarBg,
+    }
     with dpg.theme() as global_theme:
         with dpg.theme_component(dpg.mvAll):
-            dpg.add_theme_color(dpg.mvThemeCol_WindowBg,      (30,  32,  38),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_ChildBg,       (34,  36,  43),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_FrameBg,       (45,  48,  58),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_Button,        (55,  90, 140),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (70, 110, 170),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_Header,        (55,  90, 140),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_HeaderHovered, (70, 110, 170),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_TableHeaderBg, (40,  55,  75),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_TableRowBg,    (32,  34,  40),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_TableRowBgAlt, (38,  40,  48),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_color(dpg.mvThemeCol_MenuBarBg,     (25,  27,  35),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 4,               category=dpg.mvThemeCat_Core)
-            dpg.add_theme_style(dpg.mvStyleVar_WindowRounding,4,               category=dpg.mvThemeCat_Core)
-            dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing,   6, 4,            category=dpg.mvThemeCat_Core)
+            for cfg_key, dpg_const in _COLOR_MAP.items():
+                if cfg_key in tc:
+                    dpg.add_theme_color(dpg_const, tc[cfg_key], category=dpg.mvThemeCat_Core)
+            dpg.add_theme_style(dpg.mvStyleVar_FrameRounding,  _sty.get("frame_rounding", 4),  category=dpg.mvThemeCat_Core)
+            dpg.add_theme_style(dpg.mvStyleVar_WindowRounding, _sty.get("window_rounding", 4), category=dpg.mvThemeCat_Core)
+            dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing,    _sty.get("item_spacing_x", 6), _sty.get("item_spacing_y", 4), category=dpg.mvThemeCat_Core)
 
     dpg.bind_theme(global_theme)
+
+    # Font aus Config laden
+    import os
+    _font_cfg = CFG.section("font")
+    font_path = _font_cfg.get("path", "")
+    if font_path and os.path.exists(font_path):
+        font_size = _font_cfg.get("size", 15)
+        font_ranges = _font_cfg.get("ranges", [])
+        with dpg.font_registry():
+            with dpg.font(font_path, font_size) as default_font:
+                dpg.add_font_range_hint(dpg.mvFontRangeHint_Default)
+                for start, end in font_ranges:
+                    dpg.add_font_range(start, end)
+        dpg.bind_font(default_font)
 
     create_app()
 
     dpg.create_viewport(
-        title="sproject Editor",
+        title=CFG.get("viewport", "title", "sproject Editor"),
         width=VIEWPORT_W,
         height=VIEWPORT_H,
-        min_width=900,
-        min_height=600,
+        min_width=CFG.resolve("viewport", "min_width", 900),
+        min_height=CFG.resolve("viewport", "min_height", 600),
     )
     dpg.setup_dearpygui()
     dpg.set_primary_window(TAG_MAIN_WIN, True)

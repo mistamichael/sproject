@@ -9,14 +9,19 @@ per Checkbox ein- und ausgeschaltet werden.
 import dearpygui.dearpygui as dpg
 from pathlib import Path
 
+from gui.gui_config import load_gui_config
+
+_CFG = load_gui_config()
+_COL = _CFG.section("colors")
+
 
 # (section_id, Anzeige-Label, immer_aktiv)
 SECTIONS = [
-    ("stammdaten",    "① Stammdaten",  True),
-    ("tasks",         "② Aufgaben",    True),
-    ("resources",     "③ Ressourcen",  False),
-    ("persons",       "④ Personen",    False),
-    ("resting_times", "⑤ Ruhezeiten",  False),
+    ("stammdaten",    "1. Stammdaten",  True),
+    ("tasks",         "2. Aufgaben",    True),
+    ("resources",     "3. Ressourcen",  False),
+    ("persons",       "4. Personen",    False),
+    ("resting_times", "5. Ruhezeiten",  False),
 ]
 
 # Toggle-Tag-Map für die drei optionalen Abschnitte
@@ -29,7 +34,7 @@ _TOGGLE_TAGS = {
 
 def build_sidebar(app) -> None:
     """Baut die Wizard-Navigations-Sidebar auf."""
-    dpg.add_text("WIZARD", color=(160, 160, 180))
+    dpg.add_text("WIZARD", color=_COL.get("sidebar_wizard", (160, 160, 180)))
     dpg.add_separator()
     dpg.add_spacer(height=4)
 
@@ -52,7 +57,7 @@ def build_sidebar(app) -> None:
                     callback=lambda s, v, u: _on_toggle(s, v, u),
                     user_data=(app, section_id),
                 )
-                dpg.add_text(label, color=(180, 180, 200) if not is_active else (220, 220, 255))
+                dpg.add_text(label, color=_COL.get("sidebar_inactive", (180, 180, 200)) if not is_active else _COL.get("sidebar_active", (220, 220, 255)))
 
         dpg.add_spacer(height=2)
 
@@ -60,7 +65,7 @@ def build_sidebar(app) -> None:
     dpg.add_spacer(height=6)
 
     # Beispieldateien
-    dpg.add_text("Beispiele:", color=(140, 140, 160))
+    dpg.add_text("Beispiele:", color=_COL.get("sidebar_examples", (140, 140, 160)))
     dpg.add_spacer(height=2)
 
     examples_dir = Path(__file__).parent.parent.parent / "examples"

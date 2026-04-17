@@ -22,6 +22,10 @@ from lib.models import (
     CPMResult,
 )
 from lib.models.tasks import SimpleTask, LoopTask, SubTask
+from gui.gui_config import load_gui_config
+
+_CFG = load_gui_config()
+_COLORS = _CFG.section("colors")
 
 
 # ---------------------------------------------------------------------------
@@ -545,10 +549,11 @@ class ProjectEditorApp:
             borders_outerV=True,
             row_background=True,
         ):
-            dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=100)
+            _rt = _CFG.section("resources_table")
+            dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=_rt.get("col_id_width", 100))
             dpg.add_table_column(label="Name", width_stretch=True)
-            dpg.add_table_column(label="Typ", width_fixed=True, init_width_or_weight=90)
-            dpg.add_table_column(label="Farbe", width_fixed=True, init_width_or_weight=80)
+            dpg.add_table_column(label="Typ", width_fixed=True, init_width_or_weight=_rt.get("col_type_width", 90))
+            dpg.add_table_column(label="Farbe", width_fixed=True, init_width_or_weight=_rt.get("col_color_width", 80))
             for r in self.project.resources:
                 with dpg.table_row():
                     dpg.add_text(r.id)
@@ -574,10 +579,11 @@ class ProjectEditorApp:
             borders_outerV=True,
             row_background=True,
         ):
-            dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=90)
+            _pt = _CFG.section("persons_table")
+            dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=_pt.get("col_id_width", 90))
             dpg.add_table_column(label="Name", width_stretch=True)
             dpg.add_table_column(label="Rolle", width_stretch=True)
-            dpg.add_table_column(label="€/h", width_fixed=True, init_width_or_weight=70)
+            dpg.add_table_column(label="EUR/h", width_fixed=True, init_width_or_weight=_pt.get("col_rate_width", 70))
             dpg.add_table_column(label="Info", width_stretch=True)
             for p in self.project.persons:
                 with dpg.table_row():
@@ -610,8 +616,9 @@ class ProjectEditorApp:
             borders_innerV=True,
             borders_outerV=True,
         ):
-            dpg.add_table_column(label="Nach (h)", width_fixed=True, init_width_or_weight=90)
-            dpg.add_table_column(label="Pause", width_fixed=True, init_width_or_weight=80)
+            _rtt = _CFG.section("resting_times_table")
+            dpg.add_table_column(label="Nach (h)", width_fixed=True, init_width_or_weight=_rtt.get("col_hours_width", 90))
+            dpg.add_table_column(label="Pause", width_fixed=True, init_width_or_weight=_rtt.get("col_pause_width", 80))
             dpg.add_table_column(label="Hinweis", width_stretch=True)
             for ri in self.project.resting_times:
                 with dpg.table_row():
@@ -633,13 +640,13 @@ class ProjectEditorApp:
         dpg.add_text(
             f"Projektdauer: {result.project_duration}",
             parent="result_container",
-            color=(100, 180, 255),
+            color=_COLORS.get("result_duration", (100, 180, 255)),
         )
-        crit_str = " → ".join(str(t) for t in result.critical_path)
+        crit_str = " -> ".join(str(t) for t in result.critical_path)
         dpg.add_text(
             f"Kritischer Pfad: {crit_str}",
             parent="result_container",
-            color=(220, 80, 80),
+            color=_COLORS.get("result_critical_path", (220, 80, 80)),
         )
         dpg.add_spacer(parent="result_container", height=4)
 
@@ -656,14 +663,15 @@ class ProjectEditorApp:
             borders_outerV=True,
             row_background=True,
         ):
-            dpg.add_table_column(label="#", width_fixed=True, init_width_or_weight=60)
+            _rest = _CFG.section("result_table")
+            dpg.add_table_column(label="#", width_fixed=True, init_width_or_weight=_rest.get("col_id_width", 60))
             dpg.add_table_column(label="Name", width_stretch=True)
-            dpg.add_table_column(label="FAZ", width_fixed=True, init_width_or_weight=70)
-            dpg.add_table_column(label="FEZ", width_fixed=True, init_width_or_weight=70)
-            dpg.add_table_column(label="SAZ", width_fixed=True, init_width_or_weight=70)
-            dpg.add_table_column(label="SEZ", width_fixed=True, init_width_or_weight=70)
-            dpg.add_table_column(label="Puffer", width_fixed=True, init_width_or_weight=70)
-            dpg.add_table_column(label="Krit.", width_fixed=True, init_width_or_weight=45)
+            dpg.add_table_column(label="FAZ", width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
+            dpg.add_table_column(label="FEZ", width_fixed=True, init_width_or_weight=_rest.get("col_fez_width", 70))
+            dpg.add_table_column(label="SAZ", width_fixed=True, init_width_or_weight=_rest.get("col_saz_width", 70))
+            dpg.add_table_column(label="SEZ", width_fixed=True, init_width_or_weight=_rest.get("col_sez_width", 70))
+            dpg.add_table_column(label="Puffer", width_fixed=True, init_width_or_weight=_rest.get("col_puffer_width", 70))
+            dpg.add_table_column(label="Krit.", width_fixed=True, init_width_or_weight=_rest.get("col_krit_width", 45))
 
             for tid, t in result.tasks.items():
                 if t.is_break:
@@ -682,7 +690,7 @@ class ProjectEditorApp:
                 visible_idx += 1
 
         for idx in crit_indices:
-            dpg.highlight_table_row("result_table", idx, [220, 80, 80, 80])
+            dpg.highlight_table_row("result_table", idx, list(_COLORS.get("critical_row", (220, 80, 80, 80))))
 
         # Export-Buttons
         dpg.add_spacer(parent="result_container", height=4)

@@ -9,6 +9,11 @@ Das Fenster wird bei jedem Öffnen frisch erstellt und beim Schließen gelöscht
 from typing import Callable
 import dearpygui.dearpygui as dpg
 
+from gui.gui_config import load_gui_config
+
+_CFG = load_gui_config()
+_COL = _CFG.section("colors")
+
 _PICKER_TAG = "resource_picker_modal"
 
 
@@ -27,13 +32,14 @@ def open_resource_picker(app, current_resources: str, on_confirm: Callable) -> N
 
     if not app.project or not app.project.resources:
         # Kein Projekt oder keine Ressourcen – kurze Info-Meldung
+        _se = "dialog.resource_picker_empty"
         with dpg.window(
             label="Ressourcen",
             tag=_PICKER_TAG,
             modal=True,
-            width=320,
-            height=80,
-            pos=[400, 300],
+            width=_CFG.resolve(_se, "width", 320),
+            height=_CFG.resolve(_se, "height", 80),
+            pos=[_CFG.resolve(_se, "pos_x", 400), _CFG.resolve(_se, "pos_y", 300)],
             no_resize=True,
         ):
             dpg.add_text("Keine Ressourcen definiert.")
@@ -50,15 +56,20 @@ def open_resource_picker(app, current_resources: str, on_confirm: Callable) -> N
     # Zeilen-Tags für Typ-Filter: {res_id: (row_group_tag, res_type)}
     row_tags: dict = {}
 
-    height = min(120 + len(app.project.resources) * 26, 500)
+    _sr = "dialog.resource_picker"
+    _dlg = _CFG.section(_sr)
+    height = min(
+        _dlg.get("base_height", 120) + len(app.project.resources) * _dlg.get("row_height", 26),
+        _dlg.get("max_height", 500),
+    )
 
     with dpg.window(
         label="Ressourcen zuweisen",
         tag=_PICKER_TAG,
         modal=True,
-        width=460,
+        width=_CFG.resolve(_sr, "width", 460),
         height=height,
-        pos=[350, 180],
+        pos=[_CFG.resolve(_sr, "pos_x", 350), _CFG.resolve(_sr, "pos_y", 180)],
         no_resize=False,
     ):
         # Typ-Filter
@@ -95,12 +106,12 @@ def open_resource_picker(app, current_resources: str, on_confirm: Callable) -> N
                     b_int = int(color_hex[4:6], 16)
                     dot_color = (r_int, g_int, b_int, 220)
                 except (ValueError, IndexError):
-                    dot_color = (150, 150, 150, 200)
-                dpg.add_text("●", color=dot_color)
+                    dot_color = _COL.get("picker_dot_fallback", (150, 150, 150, 200))
+                dpg.add_text("*", color=dot_color)
 
-                dpg.add_text(res.id, color=(220, 220, 255))
-                dpg.add_text(res_name, color=(200, 200, 200))
-                dpg.add_text(f"[{res_type}]", color=(150, 150, 170))
+                dpg.add_text(res.id, color=_COL.get("picker_id", (220, 220, 255)))
+                dpg.add_text(res_name, color=_COL.get("picker_name", (200, 200, 200)))
+                dpg.add_text(f"[{res_type}]", color=_COL.get("picker_type", (150, 150, 170)))
 
             row_tags[res.id] = (row_group_tag, res_type)
             dpg.add_spacer(height=1)

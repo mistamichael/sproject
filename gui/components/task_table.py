@@ -16,10 +16,15 @@ Besonderheiten:
 
 import dearpygui.dearpygui as dpg
 
-# Amber-Farbe für Loop-Zeilen
-_COLOR_LOOP = (254, 243, 199, 110)
-# Hellgrau für Subtask-Zeilen
-_COLOR_SUBTASK = (240, 240, 245, 90)
+from gui.gui_config import load_gui_config
+
+_CFG = load_gui_config()
+_COLORS = _CFG.section("colors")
+_TT = _CFG.section("task_table")
+
+# Zeilen-Highlights
+_COLOR_LOOP = _COLORS.get("loop_row", (254, 243, 199, 110))
+_COLOR_SUBTASK = _COLORS.get("subtask_row", (240, 240, 245, 90))
 
 _SUCC_ADD_TAG = "succ_add_modal"
 _SUCC_REM_TAG = "succ_rem_modal"
@@ -68,7 +73,7 @@ def _format_successors(items: list) -> str:
 def build_task_section(app) -> None:
     """Erstellt den Aufgaben-Abschnitt mit Toolbar und Tabellen-Container."""
     with dpg.collapsing_header(
-        label="② Aufgaben",
+        label="2. Aufgaben",
         tag="section_tasks",
         default_open=True,
     ):
@@ -78,21 +83,21 @@ def build_task_section(app) -> None:
                 callback=lambda: app.add_task_row(False),
             )
             dpg.add_button(
-                label="↺ Loop-Task",
+                label="+ Loop-Task",
                 callback=lambda: app.add_task_row(True),
             )
 
         dpg.add_spacer(height=3)
         dpg.add_text(
             "Nachfolger über + / - Buttons bearbeiten  ·  Ressourcen: Komma-getrennte IDs",
-            color=(140, 140, 150),
+            color=_COLORS.get("hint_text", (140, 140, 150)),
         )
         dpg.add_spacer(height=3)
 
         with dpg.group(tag="task_table_container"):
             dpg.add_text(
                 "Keine Aufgaben – bitte eine Projektdatei laden.",
-                color=(160, 160, 170),
+                color=_COLORS.get("empty_text", (160, 160, 170)),
             )
 
 
@@ -114,7 +119,7 @@ def rebuild_task_table(app) -> None:
         dpg.add_text(
             "Keine Aufgaben – bitte eine Projektdatei laden.",
             parent="task_table_container",
-            color=(160, 160, 170),
+            color=_COLORS.get("empty_text", (160, 160, 170)),
         )
         return
 
@@ -133,15 +138,15 @@ def rebuild_task_table(app) -> None:
         scrollX=False,
         policy=dpg.mvTable_SizingStretchProp,
     ):
-        dpg.add_table_column(label="#",          width_fixed=True,   init_width_or_weight=60)
-        dpg.add_table_column(label="Name",       width_stretch=True, init_width_or_weight=0.28)
-        dpg.add_table_column(label="Dauer",      width_fixed=True,   init_width_or_weight=85)
-        dpg.add_table_column(label="Nachfolger", width_stretch=True, init_width_or_weight=0.20)
-        dpg.add_table_column(label="+",          width_fixed=True,   init_width_or_weight=32)
-        dpg.add_table_column(label="-",          width_fixed=True,   init_width_or_weight=32)
-        dpg.add_table_column(label="Ressourcen", width_stretch=True, init_width_or_weight=0.20)
-        dpg.add_table_column(label="Kosten",     width_fixed=True,   init_width_or_weight=75)
-        dpg.add_table_column(label="Aktionen",   width_fixed=True,   init_width_or_weight=95)
+        dpg.add_table_column(label="#",          width_fixed=True,   init_width_or_weight=_TT.get("col_id_width", 60))
+        dpg.add_table_column(label="Name",       width_stretch=True, init_width_or_weight=_TT.get("col_name_weight", 0.28))
+        dpg.add_table_column(label="Dauer",      width_fixed=True,   init_width_or_weight=_TT.get("col_duration_width", 85))
+        dpg.add_table_column(label="Nachfolger", width_stretch=True, init_width_or_weight=_TT.get("col_successor_weight", 0.20))
+        dpg.add_table_column(label="+",          width_fixed=True,   init_width_or_weight=_TT.get("col_succ_add_width", 32))
+        dpg.add_table_column(label="-",          width_fixed=True,   init_width_or_weight=_TT.get("col_succ_rem_width", 32))
+        dpg.add_table_column(label="Ressourcen", width_stretch=True, init_width_or_weight=_TT.get("col_resource_weight", 0.20))
+        dpg.add_table_column(label="Kosten",     width_fixed=True,   init_width_or_weight=_TT.get("col_cost_width", 75))
+        dpg.add_table_column(label="Aktionen",   width_fixed=True,   init_width_or_weight=_TT.get("col_actions_width", 95))
 
         for i, row in enumerate(app._task_rows):
             is_subtask = row.get("row_type") == "subtask"
@@ -161,7 +166,7 @@ def rebuild_task_table(app) -> None:
                     tag=f"task_{i}_name",
                     default_value=row.get("name", ""),
                     width=-1,
-                    hint="🔁 Loop-Task" if is_loop else "Task-Name",
+                    hint="Loop-Task" if is_loop else "Task-Name",
                 )
 
                 # Spalte: Dauer
@@ -205,12 +210,12 @@ def rebuild_task_table(app) -> None:
                     dpg.add_input_text(
                         tag=f"task_{i}_resources",
                         default_value=row.get("resources", ""),
-                        width=-30,
+                        width=_TT.get("resource_input_offset", -30),
                         hint="R1, R2",
                     )
                     dpg.add_button(
-                        label="🔍",
-                        width=25,
+                        label="...",
+                        width=_TT.get("resource_picker_btn_width", 25),
                         callback=_open_resource_picker,
                         user_data=(app, i),
                     )
@@ -226,15 +231,15 @@ def rebuild_task_table(app) -> None:
                 # Spalte: Aktionen
                 with dpg.group(horizontal=True):
                     dpg.add_button(
-                        label="🗑",
-                        width=28,
+                        label="X",
+                        width=_TT.get("delete_btn_width", 28),
                         callback=_delete_row,
                         user_data=(app, i),
                     )
                     if is_loop:
                         dpg.add_button(
                             label="+Sub",
-                            width=40,
+                            width=_TT.get("subtask_btn_width", 40),
                             callback=_add_subtask,
                             user_data=(app, i),
                         )
@@ -273,32 +278,35 @@ def _open_add_successor(sender, app_data, user_data) -> None:
     seen = set()
     unique_ids = [x for x in all_ids if not (x in seen or seen.add(x))]
 
+    _se = "dialog.successor_add_empty"
     if not unique_ids:
         with dpg.window(
             label="Nachfolger hinzufügen",
             tag=_SUCC_ADD_TAG,
             modal=True,
-            width=300,
-            height=80,
-            pos=[450, 320],
+            width=_CFG.resolve(_se, "width", 300),
+            height=_CFG.resolve(_se, "height", 80),
+            pos=[_CFG.resolve(_se, "pos_x", 450), _CFG.resolve(_se, "pos_y", 320)],
             no_resize=True,
         ):
             dpg.add_text("Keine anderen Tasks vorhanden.")
             dpg.add_button(label="Schließen", callback=lambda: dpg.delete_item(_SUCC_ADD_TAG))
         return
 
+    _sa = "dialog.successor_add"
+    _sdt = _CFG.section("successor_dialog_table")
     with dpg.window(
         label="Nachfolger hinzufügen",
         tag=_SUCC_ADD_TAG,
         modal=True,
-        width=320,
-        height=130,
-        pos=[450, 300],
+        width=_CFG.resolve(_sa, "width", 320),
+        height=_CFG.resolve(_sa, "height", 130),
+        pos=[_CFG.resolve(_sa, "pos_x", 450), _CFG.resolve(_sa, "pos_y", 300)],
         no_resize=True,
     ):
         with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
                        borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
-            dpg.add_table_column(width_fixed=True, init_width_or_weight=90)
+            dpg.add_table_column(width_fixed=True, init_width_or_weight=_sdt.get("col_label_width", 90))
             dpg.add_table_column(width_stretch=True)
 
             with dpg.table_row():
@@ -373,14 +381,15 @@ def _open_remove_successor(sender, app_data, user_data) -> None:
     current  = dpg.get_value(succ_tag) if dpg.does_item_exist(succ_tag) else ""
     items    = _parse_successors(current)
 
+    _sre = "dialog.successor_remove_empty"
     if not items:
         with dpg.window(
             label="Nachfolger entfernen",
             tag=_SUCC_REM_TAG,
             modal=True,
-            width=280,
-            height=80,
-            pos=[450, 320],
+            width=_CFG.resolve(_sre, "width", 280),
+            height=_CFG.resolve(_sre, "height", 80),
+            pos=[_CFG.resolve(_sre, "pos_x", 450), _CFG.resolve(_sre, "pos_y", 320)],
             no_resize=True,
         ):
             dpg.add_text("Keine Nachfolger vorhanden.")
@@ -389,18 +398,23 @@ def _open_remove_successor(sender, app_data, user_data) -> None:
 
     # Checkboxen für jeden Eintrag; Tag-Map: cb_tags[idx] = checkbox_tag
     cb_tags: dict = {}
-    height = min(80 + len(items) * 26, 400)
+    _sr = "dialog.successor_remove"
+    _sr_s = _CFG.section(_sr)
+    height = min(
+        _sr_s.get("base_height", 80) + len(items) * _sr_s.get("row_height", 26),
+        _sr_s.get("max_height", 400),
+    )
 
     with dpg.window(
         label="Nachfolger entfernen",
         tag=_SUCC_REM_TAG,
         modal=True,
-        width=300,
+        width=_CFG.resolve(_sr, "width", 300),
         height=height,
-        pos=[450, 300],
+        pos=[_CFG.resolve(_sr, "pos_x", 450), _CFG.resolve(_sr, "pos_y", 300)],
         no_resize=False,
     ):
-        dpg.add_text("Zu entfernende Einträge auswählen:", color=(180, 180, 200))
+        dpg.add_text("Zu entfernende Einträge auswählen:", color=_COLORS.get("dialog_prompt", (180, 180, 200)))
         dpg.add_spacer(height=4)
 
         for k, (id_, typ) in enumerate(items):
