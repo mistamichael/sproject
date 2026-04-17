@@ -35,17 +35,144 @@ from gui.components.sidebar import build_sidebar
 from gui.components.task_table import build_task_section
 from gui.components.file_browser import open_file_browser
 from gui.gui_config import load_gui_config
+from gui.i18n import t, set_language, get_language
 
 # ---------------------------------------------------------------------------
 # Konstanten
 # ---------------------------------------------------------------------------
-TAG_MAIN_WIN  = "main_window"
-TAG_SAVE_DLG  = "save_dialog"
-TAG_EXP_DLG   = "export_dialog"
-TAG_ABOUT_WIN = "about_window"
+TAG_MAIN_WIN     = "main_window"
+TAG_SAVE_DLG     = "save_dialog"
+TAG_EXP_DLG      = "export_dialog"
+TAG_ABOUT_WIN    = "about_window"
+TAG_GLOBAL_THEME = "global_theme"
 
 # Config laden (Singleton)
 CFG = load_gui_config()
+
+# Sprache aus Config initialisieren
+set_language(CFG.active_language)
+
+# DPG-Farb-Mapping: cfg-Key → DPG-Konstante
+_THEME_COLOR_MAP = {
+    "window_bg":        "mvThemeCol_WindowBg",
+    "child_bg":         "mvThemeCol_ChildBg",
+    "frame_bg":         "mvThemeCol_FrameBg",
+    "button":           "mvThemeCol_Button",
+    "button_hovered":   "mvThemeCol_ButtonHovered",
+    "header":           "mvThemeCol_Header",
+    "header_hovered":   "mvThemeCol_HeaderHovered",
+    "table_header_bg":  "mvThemeCol_TableHeaderBg",
+    "table_row_bg":     "mvThemeCol_TableRowBg",
+    "table_row_bg_alt": "mvThemeCol_TableRowBgAlt",
+    "menu_bar_bg":      "mvThemeCol_MenuBarBg",
+    "popup_bg":         "mvThemeCol_PopupBg",
+    "text":             "mvThemeCol_Text",
+}
+
+
+def _create_and_bind_theme() -> None:
+    """Erstellt das globale DPG-Theme aus der aktiven Config und bindet es."""
+    if dpg.does_item_exist(TAG_GLOBAL_THEME):
+        dpg.delete_item(TAG_GLOBAL_THEME)
+
+    tc = CFG.theme_colors()
+    _sty = CFG.section("style")
+
+    with dpg.theme(tag=TAG_GLOBAL_THEME):
+        with dpg.theme_component(dpg.mvAll):
+            for cfg_key, dpg_name in _THEME_COLOR_MAP.items():
+                if cfg_key in tc:
+                    dpg.add_theme_color(
+                        getattr(dpg, dpg_name), tc[cfg_key],
+                        category=dpg.mvThemeCat_Core,
+                    )
+            dpg.add_theme_style(
+                dpg.mvStyleVar_FrameRounding,
+                _sty.get("frame_rounding", 4),
+                category=dpg.mvThemeCat_Core,
+            )
+            dpg.add_theme_style(
+                dpg.mvStyleVar_WindowRounding,
+                _sty.get("window_rounding", 4),
+                category=dpg.mvThemeCat_Core,
+            )
+            dpg.add_theme_style(
+                dpg.mvStyleVar_ItemSpacing,
+                _sty.get("item_spacing_x", 6),
+                _sty.get("item_spacing_y", 4),
+                category=dpg.mvThemeCat_Core,
+            )
+    dpg.bind_theme(TAG_GLOBAL_THEME)
+
+
+def _apply_theme(editor: ProjectEditorApp, theme_name: str) -> None:
+    """Wechselt das Farb-Theme live."""
+    CFG.set_active_theme(theme_name)
+    _create_and_bind_theme()
+    # Checkmarks aktualisieren
+    for name in CFG.available_themes():
+        tag = f"mi_theme_{name}"
+        if dpg.does_item_exist(tag):
+            dpg.set_value(tag, name == theme_name)
+    editor._set_status(t("status.theme_changed", theme=t(f"theme.{theme_name}")))
+
+
+def _update_ui_language() -> None:
+    """Aktualisiert alle getaggten UI-Elemente auf die aktive Sprache."""
+    # Elemente die configure_item(label=...) verwenden (Menues, Buttons, Header)
+    _label_map = {
+        # Menues
+        "menu_file":        "menu.file",
+        "menu_settings":    "menu.settings",
+        "menu_help":        "menu.help",
+        "menu_theme":       "menu.settings.theme",
+        "menu_language":    "menu.settings.language",
+        # Menuepunkte
+        "mi_open":          "menu.file.open",
+        "mi_save":          "menu.file.save",
+        "mi_save_as":       "menu.file.save_as",
+        "mi_export":        "menu.file.export",
+        "mi_close":         "menu.file.close",
+        "mi_about":         "menu.help.about",
+        # Sektions-Header
+        "section_stammdaten":   "section.stammdaten",
+        "section_tasks_header": "section.tasks",
+    }
+    for tag, key in _label_map.items():
+        if dpg.does_item_exist(tag):
+            dpg.configure_item(tag, label=t(key))
+
+    # Theme-Menuepunkte (dynamisch aus verfuegbaren Themes)
+    for name in CFG.available_themes():
+        tag = f"mi_theme_{name}"
+        if dpg.does_item_exist(tag):
+            dpg.configure_item(tag, label=t(f"theme.{name}"))
+
+    # Text-Elemente die set_value() verwenden (dpg.add_text)
+    _text_map = {
+        "lbl_project_name": "label.project_name",
+        "lbl_start_date":   "label.start_date",
+        "lbl_unit":         "label.unit",
+        "lbl_total_hours":  "label.total_hours",
+        "lbl_total_volume": "label.total_volume",
+        "lbl_order_volume": "label.order_volume",
+    }
+    for tag, key in _text_map.items():
+        if dpg.does_item_exist(tag):
+            dpg.set_value(tag, t(key))
+
+
+def _switch_language(editor: ProjectEditorApp, lang: str) -> None:
+    """Wechselt die UI-Sprache live."""
+    set_language(lang)
+    CFG.set_active_language(lang)
+    # Checkmarks aktualisieren
+    for code in ("de", "en"):
+        tag = f"mi_lang_{code}"
+        if dpg.does_item_exist(tag):
+            dpg.set_value(tag, code == lang)
+    _update_ui_language()
+    editor._set_status(t("status.language_changed", lang=lang))
 
 VIEWPORT_W = CFG.base_width
 VIEWPORT_H = CFG.base_height
@@ -369,7 +496,7 @@ def _do_export(app: ProjectEditorApp) -> None:
 
 def _build_stammdaten(app: ProjectEditorApp) -> None:
     with dpg.collapsing_header(
-        label="1. Projekt-Stammdaten",
+        label=t("section.stammdaten"),
         tag="section_stammdaten",
         default_open=True,
     ):
@@ -387,24 +514,24 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
             dpg.add_table_column(width_stretch=True)
 
             with dpg.table_row():
-                dpg.add_text("Projektname:")
+                dpg.add_text(t("label.project_name"), tag="lbl_project_name")
                 dpg.add_input_text(tag="inp_project_name", default_value="",
                                    hint="Mein Projekt")
-                dpg.add_text("Startdatum:")
+                dpg.add_text(t("label.start_date"), tag="lbl_start_date")
                 dpg.add_input_text(tag="inp_project_start", default_value="",
                                    width=-1, hint="2026-01-01 08:00:00")
             with dpg.table_row():
-                dpg.add_text("Zeiteinheit:")
+                dpg.add_text(t("label.unit"), tag="lbl_unit")
                 dpg.add_combo(tag="inp_unit", items=["days", "hours", "minutes"],
                               default_value="days")
-                dpg.add_text("Gesamtstunden:")
+                dpg.add_text(t("label.total_hours"), tag="lbl_total_hours")
                 dpg.add_input_text(tag="inp_total_hours", default_value="",
                                    width=-1, hint="160")
             with dpg.table_row():
-                dpg.add_text("Gesamtvolumen:")
+                dpg.add_text(t("label.total_volume"), tag="lbl_total_volume")
                 dpg.add_input_text(tag="inp_total_volume", default_value="",
                                    hint="1000")
-                dpg.add_text("Auftragsvolumen:")
+                dpg.add_text(t("label.order_volume"), tag="lbl_order_volume")
                 dpg.add_input_text(tag="inp_order_volume", default_value="",
                                    width=-1, hint="12")
         dpg.add_spacer(height=2)
@@ -480,37 +607,65 @@ def create_app() -> ProjectEditorApp:
     ):
         # ── Menüleiste ──────────────────────────────────────────────────
         with dpg.menu_bar():
-            with dpg.menu(label="Datei"):
+            with dpg.menu(label=t("menu.file"), tag="menu_file"):
                 dpg.add_menu_item(
-                    label="Öffnen …",
+                    label=t("menu.file.open"),
+                    tag="mi_open",
                     shortcut="Ctrl+O",
                     callback=lambda: _show_open_browser(editor),
                 )
                 dpg.add_separator()
                 dpg.add_menu_item(
-                    label="Speichern",
+                    label=t("menu.file.save"),
+                    tag="mi_save",
                     shortcut="Ctrl+S",
                     callback=lambda: editor.save_quick(),
                 )
                 dpg.add_menu_item(
-                    label="Speichern unter …",
+                    label=t("menu.file.save_as"),
+                    tag="mi_save_as",
                     shortcut="Ctrl+Shift+S",
                     callback=lambda: _open_save_dialog(editor),
                 )
                 dpg.add_separator()
                 dpg.add_menu_item(
-                    label="Export …",
+                    label=t("menu.file.export"),
+                    tag="mi_export",
                     callback=lambda: _open_export_dialog(editor),
                 )
                 dpg.add_separator()
                 dpg.add_menu_item(
-                    label="Schließen",
+                    label=t("menu.file.close"),
+                    tag="mi_close",
                     callback=lambda: dpg.stop_dearpygui(),
                 )
 
-            with dpg.menu(label="Hilfe"):
+            with dpg.menu(label=t("menu.settings"), tag="menu_settings"):
+                with dpg.menu(label=t("menu.settings.theme"), tag="menu_theme"):
+                    for theme_name in CFG.available_themes():
+                        dpg.add_menu_item(
+                            label=t(f"theme.{theme_name}"),
+                            tag=f"mi_theme_{theme_name}",
+                            check=True,
+                            default_value=(CFG.active_theme == theme_name),
+                            callback=lambda s, a, u: _apply_theme(editor, u),
+                            user_data=theme_name,
+                        )
+                with dpg.menu(label=t("menu.settings.language"), tag="menu_language"):
+                    for lang_code, lang_label in [("de", "Deutsch"), ("en", "English")]:
+                        dpg.add_menu_item(
+                            label=lang_label,
+                            tag=f"mi_lang_{lang_code}",
+                            check=True,
+                            default_value=(get_language() == lang_code),
+                            callback=lambda s, a, u: _switch_language(editor, u),
+                            user_data=lang_code,
+                        )
+
+            with dpg.menu(label=t("menu.help"), tag="menu_help"):
                 dpg.add_menu_item(
-                    label="Über …",
+                    label=t("menu.help.about"),
+                    tag="mi_about",
                     callback=lambda: dpg.configure_item(TAG_ABOUT_WIN, show=True),
                 )
 
@@ -615,32 +770,8 @@ def main() -> None:
     # Icons laden (vor Widget-Erstellung)
     setup_icon_textures()
 
-    # Theme aus Config laden
-    tc = CFG.theme_colors()
-    _sty = CFG.section("style")
-    _COLOR_MAP = {
-        "window_bg":       dpg.mvThemeCol_WindowBg,
-        "child_bg":        dpg.mvThemeCol_ChildBg,
-        "frame_bg":        dpg.mvThemeCol_FrameBg,
-        "button":          dpg.mvThemeCol_Button,
-        "button_hovered":  dpg.mvThemeCol_ButtonHovered,
-        "header":          dpg.mvThemeCol_Header,
-        "header_hovered":  dpg.mvThemeCol_HeaderHovered,
-        "table_header_bg": dpg.mvThemeCol_TableHeaderBg,
-        "table_row_bg":    dpg.mvThemeCol_TableRowBg,
-        "table_row_bg_alt":dpg.mvThemeCol_TableRowBgAlt,
-        "menu_bar_bg":     dpg.mvThemeCol_MenuBarBg,
-    }
-    with dpg.theme() as global_theme:
-        with dpg.theme_component(dpg.mvAll):
-            for cfg_key, dpg_const in _COLOR_MAP.items():
-                if cfg_key in tc:
-                    dpg.add_theme_color(dpg_const, tc[cfg_key], category=dpg.mvThemeCat_Core)
-            dpg.add_theme_style(dpg.mvStyleVar_FrameRounding,  _sty.get("frame_rounding", 4),  category=dpg.mvThemeCat_Core)
-            dpg.add_theme_style(dpg.mvStyleVar_WindowRounding, _sty.get("window_rounding", 4), category=dpg.mvThemeCat_Core)
-            dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing,    _sty.get("item_spacing_x", 6), _sty.get("item_spacing_y", 4), category=dpg.mvThemeCat_Core)
-
-    dpg.bind_theme(global_theme)
+    # Theme aus Config laden und binden
+    _create_and_bind_theme()
 
     # Font aus Config laden
     import os

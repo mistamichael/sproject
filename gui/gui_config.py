@@ -5,6 +5,9 @@ GUI-Konfiguration laden (cfg/gui.cfg)
 Liest cfg/gui.cfg (ConfigParser-Format) und stellt die Werte als
 einfaches dict-artiges Objekt bereit.  Farbwerte werden als Tupel
 geparst, numerische Werte als int/float.
+
+Theme-Dateien werden aus dem Verzeichnis PV_THEMES (bzw. cfg/themes/)
+als einzelne .cfg-Dateien geladen.
 """
 
 import configparser
@@ -34,7 +37,7 @@ def _parse_font_ranges(value: str) -> list:
 
 
 # Sections deren Werte komplett als Farb-Tupel gelesen werden
-_COLOR_SECTIONS = {"dark_theme", "light_theme", "solarized_theme", "colors"}
+_COLOR_SECTIONS = {"colors"}
 
 # Sections deren Werte als int/float gelesen werden
 _NUMERIC_SECTIONS = {
@@ -63,11 +66,19 @@ class GuiConfig:
             else:
                 cfg_path = Path(__file__).resolve().parent.parent / "cfg" / "gui.cfg"
 
+        self._cfg_path: Path = cfg_path
+
         if cfg_path.exists():
             self._cp.read(str(cfg_path), encoding="utf-8")
 
         self._data: dict = {}
+        self._themes: dict[str, dict] = {}
         self._parse_all()
+        self._load_themes()
+
+    # ------------------------------------------------------------------
+    # Parsing
+    # ------------------------------------------------------------------
 
     def _parse_all(self) -> None:
         for section in self._cp.sections():
@@ -91,6 +102,36 @@ class GuiConfig:
                             self._data[section][key] = raw.strip()
                 else:
                     self._data[section][key] = raw.strip()
+
+    # ------------------------------------------------------------------
+    # Themes aus Einzeldateien laden
+    # ------------------------------------------------------------------
+
+    @property
+    def _themes_dir(self) -> Path:
+        """Verzeichnis mit Theme-Dateien (PV_THEMES oder cfg/themes/)."""
+        pv_themes = os.environ.get("PV_THEMES", "")
+        if pv_themes:
+            return Path(pv_themes)
+        return self._cfg_path.parent / "themes"
+
+    def _load_themes(self) -> None:
+        """Laedt alle .cfg-Dateien aus dem Themes-Verzeichnis."""
+        themes_dir = self._themes_dir
+        if not themes_dir.exists():
+            return
+        for cfg_file in sorted(themes_dir.glob("*.cfg")):
+            name = cfg_file.stem  # z.B. "dark", "light", "solarized_dark"
+            cp = configparser.ConfigParser()
+            cp.read(str(cfg_file), encoding="utf-8")
+            if cp.has_section("theme"):
+                self._themes[name] = {
+                    k: _parse_color(v) for k, v in cp.items("theme")
+                }
+
+    # ------------------------------------------------------------------
+    # Basis-Properties
+    # ------------------------------------------------------------------
 
     @property
     def base_width(self) -> int:
@@ -132,13 +173,77 @@ class GuiConfig:
         """Gibt die gesamte Sektion als dict zurueck."""
         return self._data.get(name, {})
 
+    # ------------------------------------------------------------------
+    # Theme-API
+    # ------------------------------------------------------------------
+
     @property
     def active_theme(self) -> str:
-        return self.get("theme", "active", "dark_theme")
+        """Name des aktiven Themes (Dateiname ohne .cfg)."""
+        return self.get("theme", "active", "default")
 
     def theme_colors(self) -> dict:
         """Gibt die Farben des aktiven Themes zurueck."""
-        return self.section(self.active_theme)
+        name = self.active_theme
+        if name in self._themes:
+            return self._themes[name]
+        # Fallback auf 'default'
+        return self._themes.get("default", {})
+
+    def available_themes(self) -> list[str]:
+        """Gibt die Namen aller verfuegbaren Themes zurueck (sortiert)."""
+        return sorted(self._themes.keys())
+
+    def set_active_theme(self, theme_name: str) -> None:
+        """Setzt das aktive Theme in-memory und speichert in gui.cfg."""
+        self._data.setdefault("theme", {})["active"] = theme_name
+        self._save_setting("theme", "active", theme_name)
+
+    # ------------------------------------------------------------------
+    # Sprache
+    # ------------------------------------------------------------------
+
+    @property
+    def active_language(self) -> str:
+        """Aktive Sprache aus [language]."""
+        return self.get("language", "active", "de")
+
+    def set_active_language(self, lang: str) -> None:
+        """Setzt die aktive Sprache in-memory und speichert in gui.cfg."""
+        self._data.setdefault("language", {})["active"] = lang
+        self._save_setting("language", "active", lang)
+
+    # ------------------------------------------------------------------
+    # Persistenz
+    # ------------------------------------------------------------------
+
+    def _save_setting(self, section: str, key: str, value: str) -> None:
+        """Aktualisiert einen einzelnen Wert in gui.cfg auf der Festplatte."""
+        if not self._cfg_path or not self._cfg_path.exists():
+            return
+        lines = self._cfg_path.read_text(encoding="utf-8").splitlines(keepends=True)
+        in_section = False
+        key_found = False
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                if in_section and not key_found:
+                    lines.insert(i, f"{key} = {value}\n")
+                    key_found = True
+                    break
+                in_section = stripped == f"[{section}]"
+            elif in_section and not stripped.startswith("#") and "=" in stripped:
+                k = stripped.split("=", 1)[0].strip()
+                if k == key:
+                    lines[i] = f"{key} = {value}\n"
+                    key_found = True
+                    break
+        if not key_found:
+            if in_section:
+                lines.append(f"{key} = {value}\n")
+            else:
+                lines.append(f"\n[{section}]\n{key} = {value}\n")
+        self._cfg_path.write_text("".join(lines), encoding="utf-8")
 
 
 # Singleton – wird beim ersten Import erzeugt
