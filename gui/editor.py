@@ -311,7 +311,7 @@ class ProjectEditorApp:
         """Liest aktuelle Eingabewerte der Task-Tabelle in _task_rows zurück."""
         import dearpygui.dearpygui as dpg
         for i, row in enumerate(self._task_rows):
-            for field in ("id", "name", "duration", "successors_str", "resources", "cost"):
+            for field in ("id", "name", "duration", "successors_str", "cost"):
                 tag = f"task_{i}_{field}"
                 if dpg.does_item_exist(tag):
                     row[field] = dpg.get_value(tag) or ""
@@ -534,12 +534,14 @@ class ProjectEditorApp:
 
     def _refresh_resources(self) -> None:
         import dearpygui.dearpygui as dpg
+        from gui.components.task_table import _build_resource_color_map
         if not dpg.does_item_exist("resources_content"):
             return
         dpg.delete_item("resources_content", children_only=True)
         if not self.project or not self.project.resources:
             dpg.add_text("Keine Ressourcen definiert.", parent="resources_content")
             return
+        color_map = _build_resource_color_map(self)
         with dpg.table(
             parent="resources_content",
             header_row=True,
@@ -555,9 +557,10 @@ class ProjectEditorApp:
             dpg.add_table_column(label="Typ", width_fixed=True, init_width_or_weight=_rt.get("col_type_width", 90))
             dpg.add_table_column(label="Farbe", width_fixed=True, init_width_or_weight=_rt.get("col_color_width", 80))
             for r in self.project.resources:
+                rid_color = color_map.get(r.id)
                 with dpg.table_row():
-                    dpg.add_text(r.id)
-                    dpg.add_text(r.name or "")
+                    dpg.add_text(r.id, color=rid_color) if rid_color else dpg.add_text(r.id)
+                    dpg.add_text(r.name or "", color=rid_color) if rid_color else dpg.add_text(r.name or "")
                     dpg.add_text(r.type or "")
                     color = r.color or ""
                     dpg.add_text(f"#{color}" if color else "–")

@@ -14,10 +14,13 @@ Besonderheiten:
 - Ressourcen: Komma-Liste + 🔍-Button öffnet Ressourcen-Picker
 """
 
+import configparser
+
 import dearpygui.dearpygui as dpg
 
 from gui.gui_config import load_gui_config
 from gui.i18n import t
+from lib.utils import get_cfg_dir, interpolate_color, hex_to_rgb
 
 _CFG = load_gui_config()
 _COLORS = _CFG.section("colors")
@@ -31,6 +34,64 @@ _SUCC_ADD_TAG = "succ_add_modal"
 _SUCC_REM_TAG = "succ_rem_modal"
 
 SUCC_TYPES = ["EA", "AA", "EE", "AE"]
+
+
+_DEFAULT_PALETTE = ["9B59B6", "3498DB", "27AE60", "F1C40F", "E67E22"]
+
+
+def _interpolate_palette(palette: list, position: float) -> str:
+    """Interpoliert entlang einer Multi-Stop-Palette (Liste von Hex-Farben).
+
+    position: 0.0 bis 1.0 ueber das gesamte Spektrum.
+    Gibt Hex-Farbe ohne # zurueck.
+    """
+    if len(palette) < 2:
+        return palette[0] if palette else "888888"
+    # Position auf Segmente abbilden
+    n_segments = len(palette) - 1
+    scaled = position * n_segments
+    idx = min(int(scaled), n_segments - 1)
+    local_pos = scaled - idx
+    return interpolate_color(palette[idx], palette[idx + 1], local_pos)
+
+
+def _build_resource_color_map(app) -> dict:
+    """Berechnet resource_id -> (R, G, B) aus gui.cfg [resources_colours] palette.
+
+    Die palette ist eine kommagetrennte Liste von Hex-Stuetzfarben.
+    Fallback: color_start/color_end (2-Farben) oder defaults.cfg [ResourceAutoColor].
+    """
+    if not app.project or not app.project.resources:
+        return {}
+
+    cfg = configparser.ConfigParser()
+    cfg_dir = get_cfg_dir()
+    cfg.read([str(cfg_dir / "gui.cfg"), str(cfg_dir / "defaults.cfg")], encoding="utf-8")
+
+    palette = list(_DEFAULT_PALETTE)
+    if cfg.has_section("resources_colours"):
+        raw = cfg.get("resources_colours", "palette", fallback="").strip()
+        if raw:
+            palette = [c.strip() for c in raw.split(",") if c.strip()]
+        else:
+            # Fallback auf altes color_start/color_end Format
+            cs = cfg.get("resources_colours", "color_start", fallback="").strip()
+            ce = cfg.get("resources_colours", "color_end", fallback="").strip()
+            if cs and ce:
+                palette = [cs, ce]
+    elif cfg.has_section("ResourceAutoColor"):
+        cs = cfg.get("ResourceAutoColor", "color_start", fallback="4472C4").strip()
+        ce = cfg.get("ResourceAutoColor", "color_end", fallback="8B7AB8").strip()
+        palette = [cs, ce]
+
+    res_ids = sorted(r.id for r in app.project.resources)
+    n = len(res_ids)
+    color_map = {}
+    for i, rid in enumerate(res_ids):
+        pos = i / max(n - 1, 1) if n > 1 else 0.0
+        hex_color = _interpolate_palette(palette, pos)
+        color_map[rid] = hex_to_rgb(hex_color)
+    return color_map
 
 
 # ---------------------------------------------------------------------------
@@ -125,6 +186,8 @@ def rebuild_task_table(app) -> None:
         )
         return
 
+    resource_color_map = _build_resource_color_map(app)
+
     loop_indices: list = []
     subtask_indices: list = []
 
@@ -207,14 +270,22 @@ def rebuild_task_table(app) -> None:
                     user_data=(app, i),
                 )
 
-                # Spalte: Ressourcen (Input + Picker-Button)
+                # Spalte: Ressourcen (farbige IDs + Picker-Button)
                 with dpg.group(horizontal=True):
-                    dpg.add_input_text(
-                        tag=f"task_{i}_resources",
-                        default_value=row.get("resources", ""),
-                        width=_TT.get("resource_input_offset", -30),
-                        hint="R1, R2",
-                    )
+                    res_str = row.get("resources", "")
+                    res_ids = [r.strip() for r in res_str.split(",") if r.strip()]
+                    if res_ids and resource_color_map:
+                        for k, rid in enumerate(res_ids):
+                            label = rid if k == len(res_ids) - 1 else f"{rid},"
+                            color = resource_color_map.get(rid)
+                            if color:
+                                dpg.add_text(label, color=color)
+                            else:
+                                dpg.add_text(label)
+                    elif res_str.strip():
+                        dpg.add_text(res_str)
+                    else:
+                        dpg.add_text("", color=(160, 160, 170))
                     dpg.add_button(
                         label="...",
                         width=_TT.get("resource_picker_btn_width", 25),
@@ -478,15 +549,13 @@ def _add_subtask(sender, app_data, user_data) -> None:
 
 def _open_resource_picker(sender, app_data, user_data) -> None:
     app, row_idx = user_data
-    tag = f"task_{row_idx}_resources"
-    current = dpg.get_value(tag) if dpg.does_item_exist(tag) else ""
+    current = app._task_rows[row_idx].get("resources", "") if row_idx < len(app._task_rows) else ""
 
     def on_confirm(new_resources: str) -> None:
-        if dpg.does_item_exist(tag):
-            dpg.set_value(tag, new_resources)
         if row_idx < len(app._task_rows):
             app._task_rows[row_idx]["resources"] = new_resources
         app.dirty = True
+        rebuild_task_table(app)
 
     from gui.components.resource_picker import open_resource_picker
     open_resource_picker(app, current, on_confirm)
