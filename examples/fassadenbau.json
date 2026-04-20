@@ -37,6 +37,27 @@
     }
   ],
   "resources": [
+        {
+      "id": "R_PERS_ERD",
+      "name": "LKW-Fahrer Max",
+      "type": "person",
+      "person_id": "PERS_ERD",
+      "color": "5B9BD5"
+    },
+    {
+      "id": "R_PERS_ZIM",
+      "name": "LKW-Fahrer Heinz",
+      "type": "person",
+      "person_id": "PERS_ZIM",
+      "color": "4472C4"
+    },
+    {
+      "id": "R_PERS_ISO",
+      "name": "Baggerführer Bodo",
+      "type": "person",
+      "person_id": "PERS_ISO",
+      "color": "2F5597"
+    },
     {
       "id": "MB1",
       "name": "Minibagger 3.5t",
