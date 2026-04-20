@@ -38,6 +38,12 @@ _RES_REM_TAG = "res_rem_modal"
 SUCC_TYPES = ["EA", "AA", "EE", "AE"]
 
 
+def _on_enter_focus_next(sender, app_data, user_data) -> None:
+    """Bei Enter: Fokus auf das gleichnamige Feld der nächsten Zeile."""
+    if user_data and dpg.does_item_exist(user_data):
+        dpg.focus_item(user_data)
+
+
 _DEFAULT_PALETTE = ["9B59B6", "3498DB", "27AE60", "F1C40F", "E67E22"]
 
 
@@ -251,9 +257,11 @@ def rebuild_task_table(app) -> None:
         dpg.add_table_column(label="Kosten",     width_fixed=True,   init_width_or_weight=_TT.get("col_cost_width", 75))
         dpg.add_table_column(label="Aktionen",   width_fixed=True,   init_width_or_weight=_TT.get("col_actions_width", 95))
 
+        n_rows = len(app._task_rows)
         for i, row in enumerate(app._task_rows):
             is_subtask = row.get("row_type") == "subtask"
             is_loop    = row.get("row_type") == "loop"
+            next_i = (i + 1) if (i + 1) < n_rows else None
 
             with dpg.table_row():
                 # Spalte: ID
@@ -262,6 +270,9 @@ def rebuild_task_table(app) -> None:
                     default_value=str(row.get("id", "")),
                     width=-1,
                     no_spaces=True,
+                    on_enter=True,
+                    callback=_on_enter_focus_next,
+                    user_data=f"task_{next_i}_id" if next_i is not None else None,
                 )
 
                 # Spalte: Name
@@ -270,6 +281,9 @@ def rebuild_task_table(app) -> None:
                     default_value=row.get("name", ""),
                     width=-1,
                     hint="Loop-Task" if is_loop else "Task-Name",
+                    on_enter=True,
+                    callback=_on_enter_focus_next,
+                    user_data=f"task_{next_i}_name" if next_i is not None else None,
                 )
 
                 # Spalte: Dauer
@@ -279,6 +293,9 @@ def rebuild_task_table(app) -> None:
                     width=-1,
                     hint="10d / 4h / 30m",
                     enabled=not is_loop,
+                    on_enter=True,
+                    callback=_on_enter_focus_next,
+                    user_data=f"task_{next_i}_duration" if next_i is not None else None,
                 )
 
                 # Spalte: Nachfolger  (schreibgeschützt – Bearbeitung via + / -)
@@ -344,6 +361,9 @@ def rebuild_task_table(app) -> None:
                     default_value=row.get("cost", ""),
                     width=-1,
                     hint="0.0",
+                    on_enter=True,
+                    callback=_on_enter_focus_next,
+                    user_data=f"task_{next_i}_cost" if next_i is not None else None,
                 )
 
                 # Spalte: Aktionen

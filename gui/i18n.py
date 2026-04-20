@@ -33,7 +33,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "section.tasks": "2. Aufgaben",
         "section.resources": "3. Ressourcen",
         "section.persons": "4. Personen",
-        "section.resting_times": "5. Ruhezeiten",
+        "section.resting_times": "5. Ruhezeiten und Urlaub",
         "section.result": "CPM-Ergebnis",
 
         # ── Labels (Stammdaten) ───────────────────────────────────────────
@@ -138,7 +138,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "section.tasks": "2. Tasks",
         "section.resources": "3. Resources",
         "section.persons": "4. Persons",
-        "section.resting_times": "5. Rest Periods",
+        "section.resting_times": "5. Rest Periods & Vacation",
         "section.result": "CPM Result",
 
         # ── Labels (Master Data) ──────────────────────────────────────────

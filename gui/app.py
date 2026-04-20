@@ -548,10 +548,15 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
 def _build_resources_section(_app) -> None:
     with dpg.group(tag="section_resources", show=False):
         with dpg.collapsing_header(
-            label=t("section.resources"), 
+            label=t("section.resources"),
             tag="section_resources_header",
             default_open=True
         ):
+            dpg.add_button(
+                label="+ Ressource",
+                callback=lambda: _app._cb_add_resource(),
+            )
+            dpg.add_spacer(height=3)
             with dpg.group(tag="resources_content"):
                 dpg.add_text("Keine Ressourcen geladen.")
         dpg.add_spacer(height=4)
@@ -561,9 +566,14 @@ def _build_persons_section(_app) -> None:
     with dpg.group(tag="section_persons", show=False):
         with dpg.collapsing_header(
             label=t("section.persons"),
-            tag="section_persons_header", 
+            tag="section_persons_header",
             default_open=True
         ):
+            dpg.add_button(
+                label="+ Person",
+                callback=lambda: _app._cb_add_person(),
+            )
+            dpg.add_spacer(height=3)
             with dpg.group(tag="persons_content"):
                 dpg.add_text("Keine Personen geladen.")
         dpg.add_spacer(height=4)
@@ -573,11 +583,31 @@ def _build_resting_times_section(_app) -> None:
     with dpg.group(tag="section_resting_times", show=False):
         with dpg.collapsing_header(
                 label=t("section.resting_times"),
-                tag="section_resting_times_header", 
+                tag="section_resting_times_header",
                 default_open=True
             ):
+            with dpg.group(horizontal=True):
+                dpg.add_button(
+                    label="+ Ruhezeit",
+                    callback=lambda: _app._cb_add_resting_time(),
+                )
+                dpg.add_button(
+                    label="+ Urlaub",
+                    callback=lambda: _app._cb_add_vacation(),
+                )
+                dpg.add_button(
+                    label="+ Teilzeit",
+                    callback=lambda: _app._cb_add_workinghours(),
+                )
+            dpg.add_spacer(height=3)
             with dpg.group(tag="resting_times_content"):
                 dpg.add_text("Keine Ruhezeitregeln definiert.")
+            dpg.add_spacer(height=4)
+            with dpg.group(tag="vacation_content"):
+                dpg.add_text("Kein Urlaub definiert.")
+            dpg.add_spacer(height=4)
+            with dpg.group(tag="workinghours_content"):
+                dpg.add_text("Keine Teilzeitregelungen definiert.")
         dpg.add_spacer(height=4)
 
 
