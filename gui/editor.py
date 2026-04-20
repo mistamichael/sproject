@@ -303,9 +303,10 @@ class ProjectEditorApp:
     def _detect_active_sections(self) -> None:
         if self.project is None:
             return
-        self.active_sections["resources"] = bool(self.project.resources)
-        self.active_sections["persons"] = bool(self.project.persons)
-        self.active_sections["resting_times"] = bool(self.project.resting_times)
+        # Sektionen immer anzeigen – leere Sektionen zeigen eine Beispielzeile
+        self.active_sections["resources"] = True
+        self.active_sections["persons"] = True
+        self.active_sections["resting_times"] = True
 
     def _read_rows_from_ui(self) -> None:
         """Liest aktuelle Eingabewerte der Task-Tabelle in _task_rows zurück."""
@@ -538,10 +539,11 @@ class ProjectEditorApp:
         if not dpg.does_item_exist("resources_content"):
             return
         dpg.delete_item("resources_content", children_only=True)
-        if not self.project or not self.project.resources:
-            dpg.add_text("Keine Ressourcen definiert.", parent="resources_content")
-            return
+
         color_map = _build_resource_color_map(self)
+        _rt = _CFG.section("resources_table")
+        _EMPTY_COLOR = (160, 160, 170)
+
         with dpg.table(
             parent="resources_content",
             header_row=True,
@@ -551,28 +553,43 @@ class ProjectEditorApp:
             borders_outerV=True,
             row_background=True,
         ):
-            _rt = _CFG.section("resources_table")
             dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=_rt.get("col_id_width", 100))
             dpg.add_table_column(label="Name", width_stretch=True)
             dpg.add_table_column(label="Typ", width_fixed=True, init_width_or_weight=_rt.get("col_type_width", 90))
             dpg.add_table_column(label="Farbe", width_fixed=True, init_width_or_weight=_rt.get("col_color_width", 80))
-            for r in self.project.resources:
-                rid_color = color_map.get(r.id)
+            dpg.add_table_column(label="+", width_fixed=True, init_width_or_weight=32)
+            dpg.add_table_column(label="-", width_fixed=True, init_width_or_weight=32)
+
+            if self.project and self.project.resources:
+                for r in self.project.resources:
+                    rid_color = color_map.get(r.id)
+                    with dpg.table_row():
+                        dpg.add_text(r.id, color=rid_color) if rid_color else dpg.add_text(r.id)
+                        dpg.add_text(r.name or "", color=rid_color) if rid_color else dpg.add_text(r.name or "")
+                        dpg.add_text(r.type or "")
+                        color = r.color or ""
+                        dpg.add_text(f"#{color}" if color else "–")
+                        dpg.add_button(label="+", width=-1, callback=self._cb_add_resource)
+                        dpg.add_button(label="-", width=-1, callback=lambda s, a, u: self._cb_remove_resource(u), user_data=r.id)
+            else:
+                # Leere Beispielzeile in Grau
+                default_color = self._get_next_resource_color()
                 with dpg.table_row():
-                    dpg.add_text(r.id, color=rid_color) if rid_color else dpg.add_text(r.id)
-                    dpg.add_text(r.name or "", color=rid_color) if rid_color else dpg.add_text(r.name or "")
-                    dpg.add_text(r.type or "")
-                    color = r.color or ""
-                    dpg.add_text(f"#{color}" if color else "–")
+                    dpg.add_text("R_ID", color=_EMPTY_COLOR)
+                    dpg.add_text("Ressourcenname", color=_EMPTY_COLOR)
+                    dpg.add_text("person", color=_EMPTY_COLOR)
+                    dpg.add_text(f"#{default_color}", color=_EMPTY_COLOR)
+                    dpg.add_button(label="+", width=-1, callback=self._cb_add_resource)
+                    dpg.add_text("")  # kein - bei leerer Zeile
 
     def _refresh_persons(self) -> None:
         import dearpygui.dearpygui as dpg
         if not dpg.does_item_exist("persons_content"):
             return
         dpg.delete_item("persons_content", children_only=True)
-        if not self.project or not self.project.persons:
-            dpg.add_text("Keine Personen definiert.", parent="persons_content")
-            return
+
+        _EMPTY_COLOR = (160, 160, 170)
+
         with dpg.table(
             parent="persons_content",
             header_row=True,
@@ -588,29 +605,37 @@ class ProjectEditorApp:
             dpg.add_table_column(label="Rolle", width_stretch=True)
             dpg.add_table_column(label="EUR/h", width_fixed=True, init_width_or_weight=_pt.get("col_rate_width", 70))
             dpg.add_table_column(label="Info", width_stretch=True)
-            for p in self.project.persons:
+
+            if self.project and self.project.persons:
+                for p in self.project.persons:
+                    with dpg.table_row():
+                        dpg.add_text(p.id)
+                        dpg.add_text(p.name)
+                        dpg.add_text(p.role)
+                        dpg.add_text(str(p.hourly_rate))
+                        info = []
+                        if p.vacation:
+                            info.append(f"Urlaub: {len(p.vacation)}")
+                        if p.workinghours_override:
+                            info.append("Teilzeit")
+                        dpg.add_text(", ".join(info) if info else "–")
+            else:
+                # Leere Beispielzeile in Grau
                 with dpg.table_row():
-                    dpg.add_text(p.id)
-                    dpg.add_text(p.name)
-                    dpg.add_text(p.role)
-                    dpg.add_text(str(p.hourly_rate))
-                    info = []
-                    if p.vacation:
-                        info.append(f"Urlaub: {len(p.vacation)}")
-                    if p.workinghours_override:
-                        info.append("Teilzeit")
-                    dpg.add_text(", ".join(info) if info else "–")
+                    dpg.add_text("PERS1", color=_EMPTY_COLOR)
+                    dpg.add_text("Max Mustermann", color=_EMPTY_COLOR)
+                    dpg.add_text("Arbeiter", color=_EMPTY_COLOR)
+                    dpg.add_text("50", color=_EMPTY_COLOR)
+                    dpg.add_text("–", color=_EMPTY_COLOR)
 
     def _refresh_resting_times(self) -> None:
         import dearpygui.dearpygui as dpg
         if not dpg.does_item_exist("resting_times_content"):
             return
         dpg.delete_item("resting_times_content", children_only=True)
-        if not self.project or not self.project.resting_times:
-            dpg.add_text(
-                "Keine Ruhezeitregeln definiert.", parent="resting_times_content"
-            )
-            return
+
+        _EMPTY_COLOR = (160, 160, 170)
+
         with dpg.table(
             parent="resting_times_content",
             header_row=True,
@@ -623,11 +648,169 @@ class ProjectEditorApp:
             dpg.add_table_column(label="Nach (h)", width_fixed=True, init_width_or_weight=_rtt.get("col_hours_width", 90))
             dpg.add_table_column(label="Pause", width_fixed=True, init_width_or_weight=_rtt.get("col_pause_width", 80))
             dpg.add_table_column(label="Hinweis", width_stretch=True)
-            for ri in self.project.resting_times:
+
+            if self.project and self.project.resting_times:
+                for ri in self.project.resting_times:
+                    with dpg.table_row():
+                        dpg.add_text(str(ri.after_hours))
+                        dpg.add_text(ri.duration)
+                        dpg.add_text(ri.note or "–")
+            else:
+                # Leere Beispielzeile in Grau
                 with dpg.table_row():
-                    dpg.add_text(str(ri.after_hours))
-                    dpg.add_text(ri.duration)
-                    dpg.add_text(ri.note or "–")
+                    dpg.add_text("4.5", color=_EMPTY_COLOR)
+                    dpg.add_text("45m", color=_EMPTY_COLOR)
+                    dpg.add_text("–", color=_EMPTY_COLOR)
+
+    # ------------------------------------------------------------------
+    # Ressourcen hinzufügen / entfernen
+    # ------------------------------------------------------------------
+
+    _RES_TYPES = ["person", "machine", "truck", "material"]
+    _ADD_RES_TAG = "add_resource_dialog"
+
+    def _get_next_resource_color(self) -> str:
+        """Berechnet eine Default-Farbe für die nächste Ressource aus der Palette."""
+        import configparser
+        from lib.utils import get_cfg_dir
+        from gui.components.task_table import _interpolate_palette, _DEFAULT_PALETTE
+
+        cfg = configparser.ConfigParser()
+        cfg_dir = get_cfg_dir()
+        cfg.read([str(cfg_dir / "gui.cfg"), str(cfg_dir / "defaults.cfg")], encoding="utf-8")
+
+        palette = list(_DEFAULT_PALETTE)
+        if cfg.has_section("ResourceAutoColor"):
+            cs = cfg.get("ResourceAutoColor", "color_start", fallback="4472C4").strip()
+            ce = cfg.get("ResourceAutoColor", "color_end", fallback="8B7AB8").strip()
+            palette = [cs, ce]
+
+        n_existing = len(self.project.resources) if self.project and self.project.resources else 0
+        pos = n_existing / max(n_existing, 1)
+        return _interpolate_palette(palette, pos)
+
+    def _get_existing_resource_ids(self) -> set:
+        if self.project and self.project.resources:
+            return {r.id for r in self.project.resources}
+        return set()
+
+    def _cb_add_resource(self, sender=None, app_data=None, user_data=None) -> None:
+        """Öffnet Dialog zum Hinzufügen einer neuen Ressource."""
+        import dearpygui.dearpygui as dpg
+
+        if dpg.does_item_exist(self._ADD_RES_TAG):
+            dpg.delete_item(self._ADD_RES_TAG)
+
+        default_color = self._get_next_resource_color()
+
+        with dpg.window(
+            label="Ressource hinzufügen",
+            tag=self._ADD_RES_TAG,
+            modal=True,
+            width=360,
+            height=200,
+            pos=[450, 300],
+            no_resize=True,
+        ):
+            with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
+                           borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
+                dpg.add_table_column(width_fixed=True, init_width_or_weight=70)
+                dpg.add_table_column(width_stretch=True)
+
+                with dpg.table_row():
+                    dpg.add_text("ID:")
+                    dpg.add_input_text(tag="res_new_id", default_value="R_NEW", width=-1, no_spaces=True)
+                with dpg.table_row():
+                    dpg.add_text("Name:")
+                    dpg.add_input_text(tag="res_new_name", default_value="", width=-1, hint="Ressourcenname")
+                with dpg.table_row():
+                    dpg.add_text("Typ:")
+                    dpg.add_combo(tag="res_new_type", items=self._RES_TYPES, default_value="person", width=-1)
+                with dpg.table_row():
+                    dpg.add_text("Farbe:")
+                    dpg.add_input_text(tag="res_new_color", default_value=default_color, width=-1, hint="Hex ohne #")
+
+            dpg.add_spacer(height=6)
+            with dpg.group(horizontal=True):
+                dpg.add_button(label="Hinzufügen", callback=self._confirm_add_resource)
+                dpg.add_button(label="Abbrechen", callback=lambda: dpg.delete_item(self._ADD_RES_TAG))
+
+    def _confirm_add_resource(self, sender=None, app_data=None, user_data=None) -> None:
+        """Bestätigt das Hinzufügen einer Ressource und aktualisiert das Modell."""
+        import dearpygui.dearpygui as dpg
+        from lib.models.resources import PersonResource, MachineResource, TruckResource, ResourceBase, Person
+
+        res_id = dpg.get_value("res_new_id").strip() if dpg.does_item_exist("res_new_id") else ""
+        res_name = dpg.get_value("res_new_name").strip() if dpg.does_item_exist("res_new_name") else ""
+        res_type = dpg.get_value("res_new_type") if dpg.does_item_exist("res_new_type") else "person"
+        res_color = dpg.get_value("res_new_color").strip() if dpg.does_item_exist("res_new_color") else ""
+
+        if dpg.does_item_exist(self._ADD_RES_TAG):
+            dpg.delete_item(self._ADD_RES_TAG)
+
+        if not res_id:
+            return
+
+        # Eindeutigkeitsprüfung
+        existing_ids = self._get_existing_resource_ids()
+        if res_id in existing_ids:
+            dpg.add_text(
+                f"ID '{res_id}' existiert bereits!",
+                parent="resources_content",
+                color=(255, 80, 80),
+            )
+            return
+
+        if not self.project:
+            return
+
+        # Ressourcen-Liste initialisieren falls nötig
+        if self.project.resources is None:
+            self.project.resources = []
+
+        # Ressource erstellen
+        if res_type == "person":
+            new_res = PersonResource(id=res_id, name=res_name or None, type="person", color=res_color or None)
+            # Automatisch Person anlegen
+            if self.project.persons is None:
+                self.project.persons = []
+            # Default-Person-ID ableiten
+            person_id = res_id.replace("R_", "") if res_id.startswith("R_") else f"P_{res_id}"
+            # Prüfen ob Person-ID schon existiert
+            existing_person_ids = {p.id for p in self.project.persons}
+            if person_id not in existing_person_ids:
+                new_person = Person(
+                    id=person_id,
+                    name=res_name or "Max Mustermann",
+                    role="Arbeiter",
+                    hourly_rate=50.0,
+                )
+                self.project.persons.append(new_person)
+            new_res.person_id = person_id
+        elif res_type == "truck":
+            new_res = TruckResource(id=res_id, name=res_name or "", type="truck", color=res_color or None, capacity=12)
+        elif res_type == "machine":
+            new_res = MachineResource(id=res_id, name=res_name or "", type="machine", color=res_color or None)
+        else:
+            new_res = ResourceBase(id=res_id, name=res_name or "", type=res_type, color=res_color or None)
+
+        self.project.resources.append(new_res)
+        self.dirty = True
+
+        # Sektionen aktualisieren
+        self._refresh_resources()
+        self._refresh_persons()
+
+    def _cb_remove_resource(self, res_id: str) -> None:
+        """Entfernt eine Ressource anhand der ID."""
+        import dearpygui.dearpygui as dpg
+
+        if not self.project or not self.project.resources:
+            return
+
+        self.project.resources = [r for r in self.project.resources if r.id != res_id]
+        self.dirty = True
+        self._refresh_resources()
 
     # ------------------------------------------------------------------
     # Ergebnis-Panel

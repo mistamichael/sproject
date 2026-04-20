@@ -32,6 +32,8 @@ _COLOR_SUBTASK = _COLORS.get("subtask_row", (240, 240, 245, 90))
 
 _SUCC_ADD_TAG = "succ_add_modal"
 _SUCC_REM_TAG = "succ_rem_modal"
+_RES_ADD_TAG = "res_add_modal"
+_RES_REM_TAG = "res_rem_modal"
 
 SUCC_TYPES = ["EA", "AA", "EE", "AE"]
 
@@ -53,6 +55,40 @@ def _interpolate_palette(palette: list, position: float) -> str:
     idx = min(int(scaled), n_segments - 1)
     local_pos = scaled - idx
     return interpolate_color(palette[idx], palette[idx + 1], local_pos)
+
+
+import re
+
+_RE_RESOURCE_TOKENS = re.compile(r'([A-Za-z_]\w*)')
+
+
+def _render_resource_colored(rid: str, suffix: str, color_map: dict) -> None:
+    """Rendert einen (ggf. zusammengesetzten) Ressourcen-String farbig.
+
+    Unterstützt einfache IDs (R_DEV1), zusammengesetzte (R_PERS3&B1)
+    und Alternativen (R_PERS1&L1 | R_PERS2&L2).
+    Jeder erkannte Ressourcen-Name wird in seiner Farbe dargestellt,
+    Trennzeichen (&, |, Leerzeichen) werden neutral angezeigt.
+    """
+    # Tokenisiere: abwechselnd Bezeichner und Trennzeichen
+    parts = _RE_RESOURCE_TOKENS.split(rid)
+    # parts = ['', 'R_PERS3', '&', 'B1', ''] oder aehnlich
+    rendered_any = False
+    for part in parts:
+        if not part:
+            continue
+        color = color_map.get(part)
+        if color:
+            dpg.add_text(part, color=color)
+            rendered_any = True
+        else:
+            # Trennzeichen (&, |, Leerzeichen) oder unbekannte ID
+            dpg.add_text(part)
+            rendered_any = True
+    if suffix:
+        dpg.add_text(suffix)
+    if not rendered_any:
+        dpg.add_text(rid + suffix)
 
 
 def _build_resource_color_map(app) -> dict:
@@ -152,7 +188,7 @@ def build_task_section(app) -> None:
 
         dpg.add_spacer(height=3)
         dpg.add_text(
-            "Nachfolger über + / - Buttons bearbeiten  ·  Ressourcen: Komma-getrennte IDs",
+            "Nachfolger und Ressourcen über + / - Buttons bearbeiten",
             color=_COLORS.get("hint_text", (140, 140, 150)),
         )
         dpg.add_spacer(height=3)
@@ -210,6 +246,8 @@ def rebuild_task_table(app) -> None:
         dpg.add_table_column(label="+",          width_fixed=True,   init_width_or_weight=_TT.get("col_succ_add_width", 32))
         dpg.add_table_column(label="-",          width_fixed=True,   init_width_or_weight=_TT.get("col_succ_rem_width", 32))
         dpg.add_table_column(label="Ressourcen", width_stretch=True, init_width_or_weight=_TT.get("col_resource_weight", 0.20))
+        dpg.add_table_column(label="+",          width_fixed=True,   init_width_or_weight=_TT.get("col_res_add_width", 32))
+        dpg.add_table_column(label="-",          width_fixed=True,   init_width_or_weight=_TT.get("col_res_rem_width", 32))
         dpg.add_table_column(label="Kosten",     width_fixed=True,   init_width_or_weight=_TT.get("col_cost_width", 75))
         dpg.add_table_column(label="Aktionen",   width_fixed=True,   init_width_or_weight=_TT.get("col_actions_width", 95))
 
@@ -270,28 +308,35 @@ def rebuild_task_table(app) -> None:
                     user_data=(app, i),
                 )
 
-                # Spalte: Ressourcen (farbige IDs + Picker-Button)
+                # Spalte: Ressourcen (farbige IDs, schreibgeschützt)
                 with dpg.group(horizontal=True):
                     res_str = row.get("resources", "")
                     res_ids = [r.strip() for r in res_str.split(",") if r.strip()]
                     if res_ids and resource_color_map:
                         for k, rid in enumerate(res_ids):
-                            label = rid if k == len(res_ids) - 1 else f"{rid},"
-                            color = resource_color_map.get(rid)
-                            if color:
-                                dpg.add_text(label, color=color)
-                            else:
-                                dpg.add_text(label)
+                            suffix = "" if k == len(res_ids) - 1 else ", "
+                            _render_resource_colored(rid, suffix, resource_color_map)
                     elif res_str.strip():
                         dpg.add_text(res_str)
                     else:
                         dpg.add_text("", color=(160, 160, 170))
-                    dpg.add_button(
-                        label="...",
-                        width=_TT.get("resource_picker_btn_width", 25),
-                        callback=_open_resource_picker,
-                        user_data=(app, i),
-                    )
+
+                # Spalte: + (Ressource hinzufügen)
+                dpg.add_button(
+                    label="+",
+                    width=-1,
+                    callback=_open_add_resource,
+                    user_data=(app, i),
+                )
+
+                # Spalte: - (Ressource entfernen)
+                dpg.add_button(
+                    label="-",
+                    width=-1,
+                    enabled=bool(res_ids),
+                    callback=_open_remove_resource,
+                    user_data=(app, i),
+                )
 
                 # Spalte: Kosten
                 dpg.add_input_text(
@@ -547,15 +592,180 @@ def _add_subtask(sender, app_data, user_data) -> None:
     app.add_subtask_to_loop(loop_row_idx)
 
 
-def _open_resource_picker(sender, app_data, user_data) -> None:
+def _open_add_resource(sender, app_data, user_data) -> None:
+    """Öffnet einen Dialog zum Hinzufügen einer Ressource (Checkbox-Liste der noch nicht verwendeten)."""
     app, row_idx = user_data
-    current = app._task_rows[row_idx].get("resources", "") if row_idx < len(app._task_rows) else ""
 
-    def on_confirm(new_resources: str) -> None:
-        if row_idx < len(app._task_rows):
-            app._task_rows[row_idx]["resources"] = new_resources
-        app.dirty = True
-        rebuild_task_table(app)
+    if dpg.does_item_exist(_RES_ADD_TAG):
+        dpg.delete_item(_RES_ADD_TAG)
 
-    from gui.components.resource_picker import open_resource_picker
-    open_resource_picker(app, current, on_confirm)
+    if row_idx >= len(app._task_rows):
+        return
+
+    # Aktuell zugewiesene Ressourcen
+    current_str = app._task_rows[row_idx].get("resources", "")
+    current_ids = {r.strip() for r in current_str.split(",") if r.strip()}
+
+    # Alle verfügbaren Ressourcen aus dem Projekt
+    all_res_ids = sorted(r.id for r in app.project.resources) if app.project and app.project.resources else []
+
+    # Noch nicht verwendete
+    available = [rid for rid in all_res_ids if rid not in current_ids]
+
+    _rae = "dialog.resource_add_empty"
+    if not available:
+        with dpg.window(
+            label="Ressource hinzufügen",
+            tag=_RES_ADD_TAG,
+            modal=True,
+            width=_CFG.resolve(_rae, "width", 300),
+            height=_CFG.resolve(_rae, "height", 80),
+            pos=[_CFG.resolve(_rae, "pos_x", 450), _CFG.resolve(_rae, "pos_y", 320)],
+            no_resize=True,
+        ):
+            dpg.add_text("Alle Ressourcen bereits zugewiesen.")
+            dpg.add_button(label="Schließen", callback=lambda: dpg.delete_item(_RES_ADD_TAG))
+        return
+
+    cb_tags: dict = {}
+    _ra = "dialog.resource_add"
+    _ra_s = _CFG.section(_ra)
+    height = min(
+        _ra_s.get("base_height", 80) + len(available) * _ra_s.get("row_height", 26),
+        _ra_s.get("max_height", 400),
+    )
+
+    with dpg.window(
+        label="Ressource hinzufügen",
+        tag=_RES_ADD_TAG,
+        modal=True,
+        width=_CFG.resolve(_ra, "width", 320),
+        height=height,
+        pos=[_CFG.resolve(_ra, "pos_x", 450), _CFG.resolve(_ra, "pos_y", 300)],
+        no_resize=False,
+    ):
+        dpg.add_text("Ressourcen zum Hinzufügen auswählen:", color=_COLORS.get("dialog_prompt", (180, 180, 200)))
+        dpg.add_spacer(height=4)
+
+        for k, rid in enumerate(available):
+            cb_tag = f"res_add_cb_{k}"
+            dpg.add_checkbox(tag=cb_tag, label=rid, default_value=False)
+            cb_tags[k] = cb_tag
+
+        dpg.add_spacer(height=6)
+        with dpg.group(horizontal=True):
+            dpg.add_button(
+                label="Hinzufügen",
+                callback=lambda: _confirm_add_resource(app, row_idx, available, cb_tags),
+            )
+            dpg.add_button(
+                label="Abbrechen",
+                callback=lambda: dpg.delete_item(_RES_ADD_TAG),
+            )
+
+
+def _confirm_add_resource(app, row_idx: int, available: list, cb_tags: dict) -> None:
+    """Fügt die ausgewählten Ressourcen hinzu."""
+    selected = [
+        available[k] for k in sorted(cb_tags.keys())
+        if dpg.does_item_exist(cb_tags[k]) and dpg.get_value(cb_tags[k])
+    ]
+
+    if dpg.does_item_exist(_RES_ADD_TAG):
+        dpg.delete_item(_RES_ADD_TAG)
+
+    if not selected or row_idx >= len(app._task_rows):
+        return
+
+    current_str = app._task_rows[row_idx].get("resources", "")
+    current_ids = [r.strip() for r in current_str.split(",") if r.strip()]
+    current_ids.extend(selected)
+
+    new_str = ", ".join(current_ids)
+    app._task_rows[row_idx]["resources"] = new_str
+    app.dirty = True
+    rebuild_task_table(app)
+
+
+def _open_remove_resource(sender, app_data, user_data) -> None:
+    """Öffnet einen Dialog zum Entfernen von Ressourcen (Checkbox-Liste der aktuell vorhandenen)."""
+    app, row_idx = user_data
+
+    if dpg.does_item_exist(_RES_REM_TAG):
+        dpg.delete_item(_RES_REM_TAG)
+
+    if row_idx >= len(app._task_rows):
+        return
+
+    current_str = app._task_rows[row_idx].get("resources", "")
+    current_ids = [r.strip() for r in current_str.split(",") if r.strip()]
+
+    _rre = "dialog.resource_remove_empty"
+    if not current_ids:
+        with dpg.window(
+            label="Ressource entfernen",
+            tag=_RES_REM_TAG,
+            modal=True,
+            width=_CFG.resolve(_rre, "width", 280),
+            height=_CFG.resolve(_rre, "height", 80),
+            pos=[_CFG.resolve(_rre, "pos_x", 450), _CFG.resolve(_rre, "pos_y", 320)],
+            no_resize=True,
+        ):
+            dpg.add_text("Keine Ressourcen vorhanden.")
+            dpg.add_button(label="Schließen", callback=lambda: dpg.delete_item(_RES_REM_TAG))
+        return
+
+    cb_tags: dict = {}
+    _rr = "dialog.resource_remove"
+    _rr_s = _CFG.section(_rr)
+    height = min(
+        _rr_s.get("base_height", 80) + len(current_ids) * _rr_s.get("row_height", 26),
+        _rr_s.get("max_height", 400),
+    )
+
+    with dpg.window(
+        label="Ressource entfernen",
+        tag=_RES_REM_TAG,
+        modal=True,
+        width=_CFG.resolve(_rr, "width", 300),
+        height=height,
+        pos=[_CFG.resolve(_rr, "pos_x", 450), _CFG.resolve(_rr, "pos_y", 300)],
+        no_resize=False,
+    ):
+        dpg.add_text("Zu entfernende Ressourcen auswählen:", color=_COLORS.get("dialog_prompt", (180, 180, 200)))
+        dpg.add_spacer(height=4)
+
+        for k, rid in enumerate(current_ids):
+            cb_tag = f"res_rem_cb_{k}"
+            dpg.add_checkbox(tag=cb_tag, label=rid, default_value=False)
+            cb_tags[k] = cb_tag
+
+        dpg.add_spacer(height=6)
+        with dpg.group(horizontal=True):
+            dpg.add_button(
+                label="Entfernen",
+                callback=lambda: _confirm_remove_resource(app, row_idx, current_ids, cb_tags),
+            )
+            dpg.add_button(
+                label="Abbrechen",
+                callback=lambda: dpg.delete_item(_RES_REM_TAG),
+            )
+
+
+def _confirm_remove_resource(app, row_idx: int, current_ids: list, cb_tags: dict) -> None:
+    """Entfernt die markierten Ressourcen."""
+    remaining = [
+        rid for k, rid in enumerate(current_ids)
+        if not (dpg.does_item_exist(cb_tags.get(k, "")) and dpg.get_value(cb_tags[k]))
+    ]
+
+    if dpg.does_item_exist(_RES_REM_TAG):
+        dpg.delete_item(_RES_REM_TAG)
+
+    if row_idx >= len(app._task_rows):
+        return
+
+    new_str = ", ".join(remaining)
+    app._task_rows[row_idx]["resources"] = new_str
+    app.dirty = True
+    rebuild_task_table(app)
