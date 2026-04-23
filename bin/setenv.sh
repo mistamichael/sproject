@@ -22,6 +22,7 @@ export PV_TESTS="$PROJECT/tests"
 export PV_RESULTS="$PROJECT/results"
 export PV_EXAMPLES="$PROJECT/examples"
 export PV_EXAMPLE_RESULTS="$PV_EXAMPLES/results"
+export PV_WORK="$PROJECT/work"
 
 # Python-Pfad erweitern (nur wenn noch nicht vorhanden)
 if [[ ":$PYTHONPATH:" != *":$PV_LIB:"* ]]; then
@@ -29,7 +30,7 @@ if [[ ":$PYTHONPATH:" != *":$PV_LIB:"* ]]; then
 fi
 
 # Ordner erstellen falls sie nicht existieren
-mkdir -p "$PV_BIN" "$PV_CFG" "$PV_LIB" "$PV_DATA" "$PV_LOG" "$PV_RESULTS" "$PV_EXAMPLES"
+mkdir -p "$PV_BIN" "$PV_CFG" "$PV_LIB" "$PV_DATA" "$PV_LOG" "$PV_RESULTS" "$PV_EXAMPLES" "$PV_WORK"
 
 echo ""
 echo "================================================================"
@@ -43,6 +44,7 @@ echo "PV_DATA         = $PV_DATA"
 echo "PV_RESULTS      = $PV_RESULTS"
 echo "PV_LOG          = $PV_LOG"
 echo "PV_EXAMPLES     = $PV_EXAMPLES"
+echo "PV_WORK         = $PV_WORK"
 echo "PYTHONPATH      = $PYTHONPATH"
 echo "================================================================"
 echo ""

@@ -21,6 +21,7 @@ set "PV_LOG=%PROJECT%\log"
 set "PV_TESTS=%PROJECT%\tests"
 set "PV_RESULTS=%PROJECT%\results"
 set "PV_EXAMPLES=%PROJECT%\examples"
+set "PV_WORK=%PROJECT%\work"
 set "PV_EXAMPLE_RESULTS=%PV_EXAMPLES%\results"
 
 REM Python-Pfad erweitern (nur wenn noch nicht vorhanden)
@@ -39,6 +40,7 @@ if not exist "%PV_DATA%" mkdir "%PV_DATA%"
 if not exist "%PV_LOG%" mkdir "%PV_LOG%"
 if not exist "%PV_RESULTS%" mkdir "%PV_RESULTS%"
 if not exist "%PV_EXAMPLES%" mkdir "%PV_EXAMPLES%"
+if not exist "%PV_WORK%" mkdir "%PV_WORK%"
 
 REM Umgebungsvariablen anzeigen
 echo.
