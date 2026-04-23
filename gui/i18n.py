@@ -12,6 +12,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "menu.file": "Datei",
         "menu.settings": "Einstellungen",
         "menu.help": "Hilfe",
+        "menu.file.new": "Neu",
         "menu.file.open": "Öffnen …",
         "menu.file.save": "Speichern",
         "menu.file.save_as": "Speichern unter …",
@@ -67,6 +68,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "dialog.open_title": "Projekt öffnen",
 
         # ── Status ────────────────────────────────────────────────────────
+        "status.new_project": "Neues Projekt erstellt: {name}",
         "status.ready": "Bereit – Datei öffnen oder links ein Beispiel wählen.",
         "status.no_project": "Kein Projekt geladen.",
         "status.loaded": "Projekt geladen: {name}",
@@ -117,6 +119,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "menu.file": "File",
         "menu.settings": "Settings",
         "menu.help": "Help",
+        "menu.file.new": "New",
         "menu.file.open": "Open …",
         "menu.file.save": "Save",
         "menu.file.save_as": "Save as …",
@@ -172,6 +175,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "dialog.open_title": "Open project",
 
         # ── Status ────────────────────────────────────────────────────────
+        "status.new_project": "New project created: {name}",
         "status.ready": "Ready – open a file or choose an example on the left.",
         "status.no_project": "No project loaded.",
         "status.loaded": "Project loaded: {name}",

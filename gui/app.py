@@ -520,21 +520,21 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
             with dpg.table_row():
                 dpg.add_text(t("label.project_name"), tag="lbl_project_name")
                 dpg.add_input_text(tag="inp_project_name", default_value="",
-                                   hint="Mein Projekt")
+                                   width=-1, hint="Mein Projekt")
                 dpg.add_text(t("label.start_date"), tag="lbl_start_date")
                 dpg.add_input_text(tag="inp_project_start", default_value="",
                                    width=-1, hint="2026-01-01 08:00:00")
             with dpg.table_row():
                 dpg.add_text(t("label.unit"), tag="lbl_unit")
                 dpg.add_combo(tag="inp_unit", items=["days", "hours", "minutes"],
-                              default_value="days")
+                              default_value="days", width=-1)
                 dpg.add_text(t("label.total_hours"), tag="lbl_total_hours")
                 dpg.add_input_text(tag="inp_total_hours", default_value="",
                                    width=-1, hint="160")
             with dpg.table_row():
                 dpg.add_text(t("label.total_volume"), tag="lbl_total_volume")
                 dpg.add_input_text(tag="inp_total_volume", default_value="",
-                                   hint="1000")
+                                   width=-1, hint="1000")
                 dpg.add_text(t("label.order_volume"), tag="lbl_order_volume")
                 dpg.add_input_text(tag="inp_order_volume", default_value="",
                                    width=-1, hint="12")
@@ -654,6 +654,13 @@ def create_app() -> ProjectEditorApp:
         # ── Menüleiste ──────────────────────────────────────────────────
         with dpg.menu_bar():
             with dpg.menu(label=t("menu.file"), tag="menu_file"):
+                dpg.add_menu_item(
+                    label=t("menu.file.new"),
+                    tag="mi_new",
+                    shortcut="Ctrl+N",
+                    callback=lambda: editor.new_project(),
+                )
+                dpg.add_separator()
                 dpg.add_menu_item(
                     label=t("menu.file.open"),
                     tag="mi_open",

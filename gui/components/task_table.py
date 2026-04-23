@@ -79,22 +79,19 @@ def _render_resource_colored(rid: str, suffix: str, color_map: dict) -> None:
     # Tokenisiere: abwechselnd Bezeichner und Trennzeichen
     parts = _RE_RESOURCE_TOKENS.split(rid)
     # parts = ['', 'R_PERS3', '&', 'B1', ''] oder aehnlich
-    rendered_any = False
+    # Leere Teile filtern
+    parts = [p for p in parts if p]
+    if not parts:
+        dpg.add_text(rid + suffix)
+        return
+    # Suffix an letztes Teil anhängen, damit kein DPG-Spacing entsteht
+    parts[-1] = parts[-1] + suffix
     for part in parts:
-        if not part:
-            continue
-        color = color_map.get(part)
+        color = color_map.get(part.rstrip(", "))
         if color:
             dpg.add_text(part, color=color)
-            rendered_any = True
         else:
-            # Trennzeichen (&, |, Leerzeichen) oder unbekannte ID
             dpg.add_text(part)
-            rendered_any = True
-    if suffix:
-        dpg.add_text(suffix)
-    if not rendered_any:
-        dpg.add_text(rid + suffix)
 
 
 def _build_resource_color_map(app) -> dict:

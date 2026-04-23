@@ -7,8 +7,10 @@ GUI-Events mit den lib/-Funktionen.  Keine lib/-Logik wird dupliziert.
 """
 
 import json
+import os
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Optional
 
@@ -41,10 +43,13 @@ def _parse_id(val: str):
 
 
 def _successors_to_str(task) -> str:
-    """Kodiert alle Nachfolger-Listen als 'id[TYP], ...' String."""
+    """Kodiert alle Nachfolger-Listen als 'id[TYP], ...' String.
+
+    EA ist der Default und wird ohne Suffix angezeigt.
+    """
     parts = []
     for s in task.successors or []:
-        parts.append(f"{s}[EA]")
+        parts.append(str(s))
     for s in task.successors_aa or []:
         parts.append(f"{s}[AA]")
     for s in task.successors_ee or []:
@@ -222,6 +227,30 @@ class ProjectEditorApp:
     # ------------------------------------------------------------------
     # Datei-Operationen
     # ------------------------------------------------------------------
+
+    def new_project(self) -> None:
+        """Erstellt ein neues, leeres Projekt und setzt die Oberfläche zurück."""
+        from gui.i18n import t
+
+        default_name = f"{date.today().isoformat()}-projekt.json"
+        work_dir = os.environ.get("PV_WORK", "")
+        if work_dir:
+            default_path = Path(work_dir) / default_name
+        else:
+            default_path = Path.cwd() / default_name
+
+        self.project = Project(project="Neues Projekt", tasks=[])
+        self._task_rows = []
+        self.active_sections = {
+            "resources": False,
+            "persons": False,
+            "resting_times": False,
+        }
+        self.last_cpm_result = None
+        self.dirty = False
+        self._last_save_path = default_path
+        self.refresh_all()
+        self._set_status(t("status.new_project", name=default_path.name))
 
     def load_from_file(self, file_path: Path) -> None:
         try:
@@ -1528,7 +1557,7 @@ class ProjectEditorApp:
                     dpg.add_text(f"{t.saz:.1f}")
                     dpg.add_text(f"{t.sez:.1f}")
                     dpg.add_text(f"{t.puffer:.1f}")
-                    dpg.add_text("★" if t.is_critical else "")
+                    dpg.add_text("*" if t.is_critical else "")
                 if t.is_critical:
                     crit_indices.append(visible_idx)
                 visible_idx += 1
@@ -1615,7 +1644,7 @@ class ProjectEditorApp:
         for tid, t in result.tasks.items():
             if t.is_break:
                 continue
-            krit = "★" if t.is_critical else ""
+            krit = "*" if t.is_critical else ""
             lines.append(
                 f"{str(tid):<6} {t.name:<30} {t.faz:>7.1f} {t.fez:>7.1f}"
                 f" {t.saz:>7.1f} {t.sez:>7.1f} {t.puffer:>7.1f}  {krit}"
