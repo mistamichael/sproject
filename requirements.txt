@@ -13,6 +13,10 @@ requests>=2.31.0
 # Markdown → HTML conversion (HTML export)
 markdown>=3.0
 
+# Charts (Gantt-Diagramm, Ressourcenauslastung)
+matplotlib>=3.7.0
+Pillow>=10.0.0
+
 # GUI (Dear PyGui-basierter Editor)
 dearpygui>=1.11.0
 

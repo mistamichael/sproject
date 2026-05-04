@@ -141,6 +141,8 @@ def _update_ui_language() -> None:
         "section_persons_header":       "section.persons",
         "section_resting_times_header": "section.resting_times",
         "section_result_header":        "section.result",
+        "tab_input":                    "result.tab.input",
+        "tab_result":                   "result.tab.result",
     }
     for tag, key in _label_map.items():
         if dpg.does_item_exist(tag):
@@ -780,24 +782,27 @@ def create_app() -> ProjectEditorApp:
                 height=-1,
                 border=False,
             ):
-                _build_stammdaten(editor)
-                dpg.add_spacer(height=4)
+                with dpg.tab_bar(tag="main_tab_bar"):
+                    # ── Tab 1: Eingabe ──
+                    with dpg.tab(label=t("result.tab.input"), tag="tab_input"):
+                        _build_stammdaten(editor)
+                        dpg.add_spacer(height=4)
 
-                build_task_section(editor)
-                dpg.add_spacer(height=4)
+                        build_task_section(editor)
+                        dpg.add_spacer(height=4)
 
-                _build_resources_section(editor)
-                _build_persons_section(editor)
-                _build_resting_times_section(editor)
+                        _build_resources_section(editor)
+                        _build_persons_section(editor)
+                        _build_resting_times_section(editor)
 
-                # Ergebnis-Container
-                dpg.add_spacer(height=4)
-                with dpg.group(tag="result_container", show=False):
-                    with dpg.collapsing_header(
-                        label="CPM-Ergebnis",
-                        default_open=True,
+                    # ── Tab 2: Ergebnis (initial unsichtbar) ──
+                    with dpg.tab(
+                        label=t("result.tab.result"),
+                        tag="tab_result",
+                        show=False,
                     ):
-                        pass
+                        with dpg.group(tag="result_container"):
+                            pass
 
     return editor
 

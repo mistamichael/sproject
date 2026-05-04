@@ -220,9 +220,19 @@ class ProjectEditorApp:
             "resting_times": False,
         }
         self.last_cpm_result: Optional[CPMResult] = None
-        self.dirty: bool = False
+        self._dirty: bool = False
         self._task_rows: list = []
         self._last_save_path: Optional[Path] = None
+
+    @property
+    def dirty(self) -> bool:
+        return self._dirty
+
+    @dirty.setter
+    def dirty(self, value: bool) -> None:
+        self._dirty = value
+        if value and self.last_cpm_result is not None:
+            self._invalidate_result()
 
     # ------------------------------------------------------------------
     # Datei-Operationen
@@ -432,13 +442,8 @@ class ProjectEditorApp:
         self._update_section_visibility()
         self._update_sidebar()
 
-        # Ergebnis-Panel beim Laden immer ausblenden und leeren
-        try:
-            if dpg.does_item_exist("result_container"):
-                dpg.configure_item("result_container", show=False)
-                dpg.delete_item("result_container", children_only=True)
-        except Exception:
-            pass
+        # Ergebnis-Tab ausblenden und leeren
+        self._hide_result_tab()
 
     def _update_section_visibility(self) -> None:
         import dearpygui.dearpygui as dpg
@@ -1500,77 +1505,290 @@ class ProjectEditorApp:
         self._refresh_resting_times()
 
     # ------------------------------------------------------------------
-    # Ergebnis-Panel
+    # Ergebnis-Tab
     # ------------------------------------------------------------------
+
+    def _hide_result_tab(self) -> None:
+        """Blendet den Ergebnis-Tab aus und leert seinen Inhalt."""
+        import dearpygui.dearpygui as dpg
+        try:
+            if dpg.does_item_exist("tab_result"):
+                dpg.configure_item("tab_result", show=False)
+            if dpg.does_item_exist("result_container"):
+                dpg.delete_item("result_container", children_only=True)
+            # Zum Eingabe-Tab wechseln
+            if dpg.does_item_exist("main_tab_bar"):
+                dpg.set_value("main_tab_bar", "tab_input")
+        except Exception:
+            pass
+
+    def _invalidate_result(self) -> None:
+        """Wird bei Eingabeänderungen aufgerufen – entfernt den Ergebnis-Tab."""
+        self.last_cpm_result = None
+        self._hide_result_tab()
 
     def _show_result(self, result: CPMResult) -> None:
         import dearpygui.dearpygui as dpg
+        from gui.i18n import t as tr
+
         if not dpg.does_item_exist("result_container"):
             return
-        dpg.configure_item("result_container", show=True)
+
+        # Ergebnis-Tab sichtbar machen, Inhalt leeren
+        if dpg.does_item_exist("tab_result"):
+            dpg.configure_item("tab_result", show=True)
         dpg.delete_item("result_container", children_only=True)
 
+        _rest = _CFG.section("result_table")
+        _p = "result_container"
+
+        # ── Projektdauer ──
         dpg.add_text(
-            f"Projektdauer: {result.project_duration}",
-            parent="result_container",
+            tr("result.duration", duration=result.project_duration),
+            parent=_p,
             color=_COLORS.get("result_duration", (100, 180, 255)),
         )
-        crit_str = " -> ".join(str(t) for t in result.critical_path)
-        dpg.add_text(
-            f"Kritischer Pfad: {crit_str}",
-            parent="result_container",
-            color=_COLORS.get("result_critical_path", (220, 80, 80)),
-        )
-        dpg.add_spacer(parent="result_container", height=4)
+        dpg.add_spacer(parent=_p, height=6)
 
-        # Ergebnis-Tabelle
-        crit_indices = []
-        visible_idx = 0
-        with dpg.table(
-            parent="result_container",
-            tag="result_table",
-            header_row=True,
-            resizable=True,
-            borders_outerH=True,
-            borders_innerV=True,
-            borders_outerV=True,
-            row_background=True,
+        # ── 1. Kritischer Pfad ──
+        with dpg.collapsing_header(
+            label=tr("result.header.critical_path"),
+            parent=_p,
+            default_open=True,
         ):
-            _rest = _CFG.section("result_table")
-            dpg.add_table_column(label="#", width_fixed=True, init_width_or_weight=_rest.get("col_id_width", 60))
-            dpg.add_table_column(label="Name", width_stretch=True)
-            dpg.add_table_column(label="FAZ", width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
-            dpg.add_table_column(label="FEZ", width_fixed=True, init_width_or_weight=_rest.get("col_fez_width", 70))
-            dpg.add_table_column(label="SAZ", width_fixed=True, init_width_or_weight=_rest.get("col_saz_width", 70))
-            dpg.add_table_column(label="SEZ", width_fixed=True, init_width_or_weight=_rest.get("col_sez_width", 70))
-            dpg.add_table_column(label="Puffer", width_fixed=True, init_width_or_weight=_rest.get("col_puffer_width", 70))
-            dpg.add_table_column(label="Krit.", width_fixed=True, init_width_or_weight=_rest.get("col_krit_width", 45))
+            crit_str = " -> ".join(str(tid) for tid in result.critical_path)
+            dpg.add_text(
+                crit_str,
+                color=_COLORS.get("result_critical_path", (220, 80, 80)),
+                wrap=0,
+            )
+            dpg.add_spacer(height=4)
 
-            for tid, t in result.tasks.items():
-                if t.is_break:
-                    continue
-                with dpg.table_row():
-                    dpg.add_text(str(tid))
-                    dpg.add_text(t.name)
-                    dpg.add_text(f"{t.faz:.1f}")
-                    dpg.add_text(f"{t.fez:.1f}")
-                    dpg.add_text(f"{t.saz:.1f}")
-                    dpg.add_text(f"{t.sez:.1f}")
-                    dpg.add_text(f"{t.puffer:.1f}")
-                    dpg.add_text("*" if t.is_critical else "")
-                if t.is_critical:
-                    crit_indices.append(visible_idx)
-                visible_idx += 1
+            # Kritischer-Pfad-Tabelle (nur kritische Tasks)
+            with dpg.table(
+                tag="result_crit_table",
+                header_row=True,
+                resizable=True,
+                borders_outerH=True,
+                borders_innerV=True,
+                borders_outerV=True,
+                row_background=True,
+            ):
+                dpg.add_table_column(label=tr("result.col.id"), width_fixed=True, init_width_or_weight=_rest.get("col_id_width", 60))
+                dpg.add_table_column(label=tr("result.col.name"), width_stretch=True)
+                dpg.add_table_column(label=tr("result.col.duration"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
+                dpg.add_table_column(label=tr("result.col.faz"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
+                dpg.add_table_column(label=tr("result.col.fez"), width_fixed=True, init_width_or_weight=_rest.get("col_fez_width", 70))
 
-        for idx in crit_indices:
-            dpg.highlight_table_row("result_table", idx, list(_COLORS.get("critical_row", (220, 80, 80, 80))))
+                for tid in result.critical_path:
+                    task = result.tasks.get(tid)
+                    if not task or task.is_break:
+                        continue
+                    with dpg.table_row():
+                        dpg.add_text(str(tid))
+                        dpg.add_text(task.name)
+                        dpg.add_text(f"{task.duration:.1f}")
+                        dpg.add_text(f"{task.faz:.1f}")
+                        dpg.add_text(f"{task.fez:.1f}")
 
-        # Export-Buttons
-        dpg.add_spacer(parent="result_container", height=4)
-        with dpg.group(horizontal=True, parent="result_container"):
+        dpg.add_spacer(parent=_p, height=6)
+
+        # ── 2. Alle Aufgaben ──
+        with dpg.collapsing_header(
+            label=tr("result.header.all_tasks"),
+            parent=_p,
+            default_open=True,
+        ):
+            crit_indices = []
+            visible_idx = 0
+            with dpg.table(
+                tag="result_table",
+                header_row=True,
+                resizable=True,
+                borders_outerH=True,
+                borders_innerV=True,
+                borders_outerV=True,
+                row_background=True,
+            ):
+                dpg.add_table_column(label=tr("result.col.id"), width_fixed=True, init_width_or_weight=_rest.get("col_id_width", 60))
+                dpg.add_table_column(label=tr("result.col.name"), width_stretch=True)
+                dpg.add_table_column(label=tr("result.col.duration"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
+                dpg.add_table_column(label=tr("result.col.faz"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
+                dpg.add_table_column(label=tr("result.col.fez"), width_fixed=True, init_width_or_weight=_rest.get("col_fez_width", 70))
+                dpg.add_table_column(label=tr("result.col.saz"), width_fixed=True, init_width_or_weight=_rest.get("col_saz_width", 70))
+                dpg.add_table_column(label=tr("result.col.sez"), width_fixed=True, init_width_or_weight=_rest.get("col_sez_width", 70))
+                dpg.add_table_column(label=tr("result.col.buffer"), width_fixed=True, init_width_or_weight=_rest.get("col_puffer_width", 70))
+                dpg.add_table_column(label=tr("result.col.critical"), width_fixed=True, init_width_or_weight=_rest.get("col_krit_width", 45))
+
+                for tid, task in result.tasks.items():
+                    if task.is_break:
+                        continue
+                    with dpg.table_row():
+                        dpg.add_text(str(tid))
+                        dpg.add_text(task.name)
+                        dpg.add_text(f"{task.duration:.1f}")
+                        dpg.add_text(f"{task.faz:.1f}")
+                        dpg.add_text(f"{task.fez:.1f}")
+                        dpg.add_text(f"{task.saz:.1f}")
+                        dpg.add_text(f"{task.sez:.1f}")
+                        dpg.add_text(f"{task.puffer:.1f}")
+                        dpg.add_text("*" if task.is_critical else "")
+                    if task.is_critical:
+                        crit_indices.append(visible_idx)
+                    visible_idx += 1
+
+            for idx in crit_indices:
+                dpg.highlight_table_row("result_table", idx, list(_COLORS.get("critical_row", (220, 80, 80, 80))))
+
+        dpg.add_spacer(parent=_p, height=6)
+
+        # ── 3. Ressourcen & Kosten (nur wenn vorhanden) ──
+        self._show_result_costs(result, _p)
+
+        # ── 4. Gantt-Diagramm ──
+        self._show_result_gantt(result, _p)
+
+        # ── 5. Ressourcenauslastung ──
+        self._show_result_resource_chart(result, _p)
+
+        # ── Export-Buttons ──
+        dpg.add_spacer(parent=_p, height=8)
+        with dpg.group(horizontal=True, parent=_p):
             dpg.add_button(label="↓ Markdown", callback=self._export_markdown)
             dpg.add_button(label="↓ Excel", callback=self._export_excel)
             dpg.add_button(label="↓ JSON", callback=self._export_json)
+
+        # Zum Ergebnis-Tab wechseln
+        if dpg.does_item_exist("main_tab_bar"):
+            dpg.set_value("main_tab_bar", "tab_result")
+
+    def _show_result_costs(self, result: CPMResult, parent: str) -> None:
+        """Zeigt Ressourcen & Kosten im Ergebnis-Tab (falls vorhanden)."""
+        import dearpygui.dearpygui as dpg
+        from gui.i18n import t as tr
+
+        if not self.project:
+            return
+
+        try:
+            from lib.cost_calculator import calculate_project_costs
+        except ImportError:
+            return
+
+        costs = calculate_project_costs(self.project, result)
+        if not costs or not costs.entries:
+            return
+
+        with dpg.collapsing_header(
+            label=tr("result.header.resources_costs"),
+            parent=parent,
+            default_open=True,
+        ):
+            with dpg.table(
+                header_row=True,
+                resizable=True,
+                borders_outerH=True,
+                borders_innerV=True,
+                borders_outerV=True,
+                row_background=True,
+            ):
+                dpg.add_table_column(label=tr("result.cost.col.resource"), width_stretch=True)
+                dpg.add_table_column(label=tr("result.cost.col.type"), width_fixed=True, init_width_or_weight=90)
+                dpg.add_table_column(label=tr("result.cost.col.hours"), width_fixed=True, init_width_or_weight=80)
+                dpg.add_table_column(label=tr("result.cost.col.rate"), width_fixed=True, init_width_or_weight=90)
+                dpg.add_table_column(label=tr("result.cost.col.provisioning"), width_fixed=True, init_width_or_weight=110)
+                dpg.add_table_column(label=tr("result.cost.col.labor"), width_fixed=True, init_width_or_weight=100)
+                dpg.add_table_column(label=tr("result.cost.col.total"), width_fixed=True, init_width_or_weight=100)
+
+                for e in costs.entries:
+                    with dpg.table_row():
+                        dpg.add_text(e.resource_name)
+                        dpg.add_text(e.resource_type)
+                        dpg.add_text(f"{e.hours_worked:.1f}")
+                        dpg.add_text(f"{e.hourly_rate:.2f}")
+                        dpg.add_text(f"{e.provisioning_costs:.2f}" if e.provisioning_costs else "—")
+                        dpg.add_text(f"{e.labor_costs:.2f}")
+                        dpg.add_text(f"{e.total_costs:.2f}")
+
+            dpg.add_spacer(height=6)
+
+            # Summenzeilen
+            _sum_color = _COLORS.get("result_duration", (100, 180, 255))
+            if costs.total_person_costs > 0:
+                dpg.add_text(f"{tr('result.cost.person_costs')}: {costs.total_person_costs:.2f} €", color=_sum_color)
+            if costs.total_machine_costs > 0:
+                dpg.add_text(f"{tr('result.cost.machine_costs')}: {costs.total_machine_costs:.2f} €", color=_sum_color)
+            if costs.total_provisioning_costs > 0:
+                dpg.add_text(f"{tr('result.cost.provisioning_costs')}: {costs.total_provisioning_costs:.2f} €", color=_sum_color)
+            dpg.add_text(
+                f"{tr('result.cost.total_costs')}: {costs.total_costs:.2f} €",
+                color=_COLORS.get("result_critical_path", (220, 80, 80)),
+            )
+
+    # ------------------------------------------------------------------
+    # Diagramme (matplotlib → PNG → DPG Texture)
+    # ------------------------------------------------------------------
+
+    def _show_result_gantt(self, result: CPMResult, parent: str) -> None:
+        """Rendert das Gantt-Diagramm als Bild im Ergebnis-Tab."""
+        import dearpygui.dearpygui as dpg
+        from gui.i18n import t as tr
+
+        try:
+            from gui.gantt_chart import render_gantt_png, load_png_as_dpg_texture
+        except ImportError:
+            return
+
+        from gui.components.task_table import _build_resource_color_map
+        res_colors = _build_resource_color_map(self)
+
+        png = render_gantt_png(result, resource_colors=res_colors)
+        if not png:
+            return
+
+        tex_tag = "_gantt_chart_tex"
+        if not load_png_as_dpg_texture(png, tex_tag):
+            return
+
+        with dpg.collapsing_header(
+            label=tr("result.header.gantt"),
+            parent=parent,
+            default_open=True,
+        ):
+            dpg.add_image(tex_tag)
+
+    def _show_result_resource_chart(self, result: CPMResult, parent: str) -> None:
+        """Rendert das Ressourcenauslastungs-Diagramm als Bild im Ergebnis-Tab."""
+        import dearpygui.dearpygui as dpg
+        from gui.i18n import t as tr
+
+        if not self.project or not self.project.resources:
+            return
+
+        try:
+            from gui.gantt_chart import render_resource_chart_png, load_png_as_dpg_texture
+        except ImportError:
+            return
+
+        from gui.components.task_table import _build_resource_color_map
+        res_colors = _build_resource_color_map(self)
+
+        png = render_resource_chart_png(
+            result, project=self.project, resource_colors=res_colors,
+        )
+        if not png:
+            return
+
+        tex_tag = "_resource_chart_tex"
+        if not load_png_as_dpg_texture(png, tex_tag):
+            return
+
+        with dpg.collapsing_header(
+            label=tr("result.header.resource_chart"),
+            parent=parent,
+            default_open=True,
+        ):
+            dpg.add_image(tex_tag)
 
     # ------------------------------------------------------------------
     # Export-Aktionen
