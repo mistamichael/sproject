@@ -26,10 +26,11 @@ if __package__ in (None, ""):
 from .durations import format_time_value_auto
 from .export_config import load_labels
 from .exporters import EXPORTERS, ExportOptions, export_schedule
-from .models import load_project
+from .baseline import create_baseline
+from .models import load_project, save_project
 from .models.cpm import CPMResult
 from .paths import get_results_dir
-from .report_data import deadline_warning_lines
+from .report_data import deadline_warning_lines, tracking_summary
 from .schedule import build_schedule
 
 
@@ -78,6 +79,8 @@ def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
     if result.project_start:
         print(f"{label('label_start', 'Startdatum')}: {result.project_start.strftime('%Y-%m-%d')}")
         print(f"{label('label_end', 'Enddatum (geschätzt)')}: {result.date_at(project_duration).strftime('%Y-%m-%d')}")
+    for label_text, value in tracking_summary(result):
+        print(f"{label_text}: {value}")
     for warning in deadline_warning_lines(result):
         print(f"WARNUNG – Deadline verfehlt: {warning}")
     print("=" * 70)
@@ -128,6 +131,8 @@ Beispiele:
                         help="Projektstart (YYYY-MM-DD), überschreibt project_start")
     parser.add_argument("--export", type=str, default="json",
                         help=f"Exportformate, kommagetrennt: {', '.join(EXPORTERS)} (Standard: json)")
+    parser.add_argument("--save-baseline", action="store_true",
+                        help="Berechneten Plan als Baseline in die Projektdatei schreiben (Plan/Ist-Vergleich)")
     parser.add_argument("--lang", type=str, default="de", choices=["de", "en"],
                         help="Sprache der Report-Beschriftungen (Standard: de)")
     return parser.parse_args(argv)
@@ -141,6 +146,11 @@ def _process(project_file: Path, args: argparse.Namespace, formats: List[str], l
         logger.info(f"  -> {len(schedule.project.tasks)} Tasks nach Expansion")
 
     print_cpm_summary(schedule.cpm, labels=load_labels(args.cfg_dir, lang=args.lang))
+
+    if args.save_baseline:
+        project.baseline = create_baseline(schedule)
+        save_project(project, project_file)
+        logger.info(f"Baseline gespeichert in: {project_file}")
 
     options = ExportOptions(
         out_dir=args.output_dir or get_results_dir(),

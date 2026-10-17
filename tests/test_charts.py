@@ -27,7 +27,8 @@ def _schedule(name: str):
 def test_every_task_has_a_visible_bar(example):
     schedule = _schedule(example.stem)
     fig = build_gantt_figure(schedule)
-    task_bars = [(y, x) for trace in fig.data if trace.name != "Puffer" for y, x in zip(trace.y, trace.x)]
+    task_traces = [tr for tr in fig.data if tr.name in ("Kritisch", "Normal", "Pause")]
+    task_bars = [(y, x) for trace in task_traces for y, x in zip(trace.y, trace.x)]
     expected = [t for t in schedule.cpm.tasks.values() if not t.is_blocker]
     assert len(task_bars) == len(expected)
     assert all(x > 0 for _, x in task_bars)

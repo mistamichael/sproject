@@ -118,6 +118,14 @@ def render_gantt_png(
                 color=buffer_color, alpha=0.6,
             )
 
+        # Plan gegen Ist: Baseline (dünn, darunter) und erledigter Anteil (grün)
+        if t.baseline_start is not None and t.baseline_finish is not None:
+            ax.barh(y - bar_height * 0.55, t.baseline_finish - t.baseline_start, left=t.baseline_start,
+                    height=bar_height * 0.15, color="#9E9E9E")
+        if t.status:
+            done_until = t.fez if t.status == "done" else min(t.fez, result.status_date or t.fez)
+            ax.barh(y, max(done_until - t.faz, 0.0), left=t.faz, height=bar_height * 0.35, color="#2E7D32")
+
         # Dauer als Text im Balken (nur wenn der Balken breit genug ist)
         bar_width = t.fez - t.faz
         if bar_width > _label_min_width(result):
@@ -130,6 +138,8 @@ def render_gantt_png(
     ax.set_yticks(y_positions)
     ax.set_yticklabels(labels, fontsize=8)
     _apply_time_axis(ax, result)
+    if result.status_date is not None:
+        ax.axvline(result.status_date, color="#2E7D32", linestyle="--", linewidth=1.5)
     ax.set_title("Gantt-Diagramm", fontsize=11, fontweight="bold")
 
     # Legende
@@ -138,6 +148,10 @@ def render_gantt_png(
         mpatches.Patch(color=normal_color, label="Normal"),
         mpatches.Patch(color=buffer_color, label="Puffer"),
     ]
+    if result.baseline_end is not None:
+        legend_patches.append(mpatches.Patch(color="#9E9E9E", label="Baseline"))
+    if result.status_date is not None:
+        legend_patches.append(mpatches.Patch(color="#2E7D32", label="Erledigt / Stichtag"))
     ax.legend(handles=legend_patches, loc="upper right", fontsize=7, framealpha=0.7)
 
     fig.tight_layout()

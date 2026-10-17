@@ -54,6 +54,18 @@ class CPMTaskResult(BaseModel):
     deadline: Optional[float] = None
     leveling_delay: float = 0.0                      # Verschiebung durch Ressourcen/Urlaub/Teilzeit
     resource_predecessors: List[TaskId] = Field(default_factory=list)  # auf deren Ressource gewartet wurde
+    # Plan gegen Ist
+    status: Optional[Literal['done', 'in_progress']] = None
+    actual_start: Optional[float] = None
+    actual_finish: Optional[float] = None
+    remaining: Optional[float] = None               # Restarbeit ab Stichtag (laufende Tasks)
+    baseline_start: Optional[float] = None
+    baseline_finish: Optional[float] = None
+
+    @property
+    def baseline_variance(self) -> Optional[float]:
+        """Verschiebung des Endes gegenüber der Baseline (positiv = später)."""
+        return None if self.baseline_finish is None else self.fez - self.baseline_finish
 
     @property
     def span(self) -> float:
@@ -128,6 +140,13 @@ class CPMResult(BaseModel):
     holidays: Optional[Dict[str, str]] = None
     skip_weekends: bool = True
     skip_holidays: bool = False
+    status_date: Optional[float] = None       # Stichtag in Arbeitstagen
+    baseline_end: Optional[float] = None      # Projektende laut Baseline
+
+    @property
+    def slip(self) -> Optional[float]:
+        """Verzug des Prognose-Endes gegenüber der Baseline (positiv = später)."""
+        return None if self.baseline_end is None else self.project_end_days - self.baseline_end
 
     @cached_property
     def calendar(self) -> WorkCalendar:
@@ -298,6 +317,10 @@ class CPMCalculator:
         self.start_date = explicit_start or calendar.next_work_start(datetime.now())
         # None = Feiertage deaktiviert, {} = aktiviert, aber keine gefunden
         self.holidays = holidays
+        # Stichtag: ab hier wird neu geplant (Ende des angegebenen Tages)
+        self.status: Optional[float] = self._offset(project.status_date, end_of_day=True)
+        if self.status is None and project.actuals:
+            self.status = self.calendar.workday_offset(self.start_date, datetime.now(), hours_per_day())
 
         self.cpm_tasks: Dict[TaskId, CPMTaskResult] = {}
 
@@ -327,7 +350,38 @@ class CPMCalculator:
             holidays=self.holidays,
             skip_weekends=self.calendar.skip_weekends,
             skip_holidays=self.holidays is not None,
+            status_date=self.status,
+            baseline_end=self._baseline_end(),
         )
+
+    def _baseline_end(self) -> Optional[float]:
+        baseline = self.project.baseline
+        if baseline is None:
+            return None
+        if baseline.project_end:
+            return self._offset(baseline.project_end, end_of_day=True)
+        ends = [t.baseline_finish for t in self.cpm_tasks.values() if t.baseline_finish is not None]
+        return max(ends) if ends else None
+
+    def _apply_tracking(self, task: CPMTaskResult) -> None:
+        """Ist-Stand und Baseline aus dem Projekt an den Task hängen."""
+        key = str(task.id)
+        actual = (self.project.actuals or {}).get(key)
+        if actual is not None and actual.is_started:
+            task.actual_start = self._offset(actual.start)
+            if actual.is_done:
+                task.status = 'done'
+                task.actual_finish = self._offset(actual.finish, end_of_day=True)
+                if task.actual_start is None:
+                    task.actual_start = task.actual_finish - task.duration   # type: ignore[operator]
+            else:
+                task.status = 'in_progress'
+                task.remaining = (parse_duration_to_days(actual.remaining) if actual.remaining
+                                  else task.duration * (1.0 - (actual.progress or 0.0)))
+        planned = self.project.baseline.tasks.get(key) if self.project.baseline else None
+        if planned is not None:
+            task.baseline_start = self._offset(planned.start)
+            task.baseline_finish = self._offset(planned.finish, end_of_day=True)
 
     def _initialize_cpm_data(self) -> None:
         """Legt je Task ein Ergebnis an und leitet die Vorgänger aus den Nachfolgern ab."""
@@ -346,6 +400,7 @@ class CPMCalculator:
             )
 
         for task_id, task in self.cpm_tasks.items():
+            self._apply_tracking(task)
             for dep in task.successor_deps:
                 if dep.target in self.cpm_tasks:
                     self.cpm_tasks[dep.target].predecessor_deps.append(Dependency(task_id, dep.type))
@@ -359,9 +414,23 @@ class CPMCalculator:
         return self.calendar.workday_offset(self.start_date, moment, hours_per_day(), end_of_day)
 
     def _earliest_start(self, task: CPMTaskResult) -> float:
-        """Frühester Start aus Abhängigkeiten (EA/AA/AE) und not_before."""
+        """
+        Frühester Start: begonnene Tasks starten zum Ist-Start, alle anderen nach
+        Abhängigkeiten (EA/AA/AE), not_before und frühestens am Stichtag.
+        """
+        if task.actual_start is not None:
+            return task.actual_start
         preds = [(self.cpm_tasks[d.target], d.type) for d in task.predecessor_deps]
-        return max([0.0, task.not_before or 0.0] + [_FORWARD[t](p, task) for p, t in preds if t in _FORWARD])
+        return max([0.0, task.not_before or 0.0, self.status or 0.0]
+                   + [_FORWARD[t](p, task) for p, t in preds if t in _FORWARD])
+
+    def _tracked_finish(self, task: CPMTaskResult) -> Optional[float]:
+        """Ende eines erledigten bzw. laufenden Tasks (ohne Ressourcenplanung), sonst None."""
+        if task.status == 'done':
+            return task.actual_finish
+        if task.status == 'in_progress':
+            return max(self.status or 0.0, task.faz) + (task.remaining or 0.0)
+        return None
 
     def _topological_order(self) -> List[TaskId]:
         """Topologische Reihenfolge; ValueError bei Selbstreferenz oder Zyklus."""
@@ -390,6 +459,10 @@ class CPMCalculator:
             preds = [(self.cpm_tasks[d.target], d.type) for d in task.predecessor_deps]
 
             task.faz = self._earliest_start(task)
+            tracked = self._tracked_finish(task)
+            if tracked is not None:
+                task.fez = tracked
+                continue
             task.fez = task.faz + task.duration
 
             # EE: Nachfolger darf nicht vor dem Vorgänger enden → ggf. nach hinten schieben
@@ -420,10 +493,10 @@ class CPMCalculator:
     def _calculate_slack(self) -> None:
         """Gesamt-/freier Puffer; Pausen und Blocker sind fix (GP = 0, kritisch)."""
         for task in self.cpm_tasks.values():
-            if task.is_system:
+            if task.is_system or task.status == 'done':
                 task.saz, task.sez = task.faz, task.fez
                 task.puffer = task.free_puffer = 0.0
-                task.is_critical = True
+                task.is_critical = task.is_system
                 continue
 
             task.puffer = task.saz - task.faz
@@ -452,7 +525,7 @@ class CPMCalculator:
             for tid, (faz, fez) in initial.items():
                 self.cpm_tasks[tid].faz, self.cpm_tasks[tid].fez = faz, fez
             links = ResourceScheduler(self.project, self.cpm_tasks, availability,
-                                      self._earliest_start).schedule(priority)
+                                      self._earliest_start, status=self.status).schedule(priority)
             makespan = max((t.fez for t in self.cpm_tasks.values()), default=0.0)
             if best is None or makespan < best[0] - 1e-9:
                 plan = {tid: (t.faz, t.fez, t.leveling_delay) for tid, t in self.cpm_tasks.items()}

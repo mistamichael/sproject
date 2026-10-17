@@ -177,7 +177,8 @@ class ResourceScheduler:
     """
 
     def __init__(self, project, tasks: Dict[TaskId, "CPMTaskResult"], availability: Availability,
-                 earliest_start: Callable[["CPMTaskResult"], float]):
+                 earliest_start: Callable[["CPMTaskResult"], float], status: Optional[float] = None):
+        self.status = status          # Stichtag: laufende Tasks arbeiten ab hier weiter
         self.tasks = tasks
         self.availability = availability
         self.earliest_start = earliest_start
@@ -220,6 +221,11 @@ class ResourceScheduler:
     def _find_slot(self, task: "CPMTaskResult") -> Tuple[float, float]:
         """Frühester (Start, Ende), an dem Abhängigkeiten, Verfügbarkeit und Kapazität passen."""
         resources = self.resources.get(task.id, [])
+        if task.status == 'done' and task.actual_start is not None and task.actual_finish is not None:
+            return task.actual_start, task.actual_finish             # Ist-Daten liegen fest
+        if task.status == 'in_progress' and task.actual_start is not None:
+            resume = self.availability.first_start(resources, max(self.status or 0.0, task.actual_start))
+            return task.actual_start, self.availability.finish(resources, resume, task.remaining or 0.0)
         limited = [r for r in resources if r in self.limits]
         min_finish = max([self.tasks[d.target].fez for d in task.predecessor_deps
                           if d.type == DepType.EE], default=0.0)

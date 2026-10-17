@@ -56,6 +56,7 @@ sproject/
 5. **Berechnung:** `lib.schedule.build_schedule(project)` → `Schedule` (expandiertes Projekt, CPM, Gantt, Kosten) – GUI und CLI identisch
    - CPM rechnet in Arbeitstagen; danach plant `lib/models/leveling.py` mit Ressourcen (eine Person/ein LKW = eine Aufgabe zugleich, `Resource.slots`), Urlaub und Teilzeit (strecken Tasks) sowie `not_before`/`deadline`. Mehrere Prioritätsregeln, der kürzeste Plan gewinnt.
    - Ruhepausen werden nach dem berechneten Zeitplan eingefügt (zweiter CPM-Lauf).
+   - Plan gegen Ist: `status_date`, `actuals`, `baseline` im Projekt (`lib/models/tracking.py`, `lib/baseline.py`); Doku: `doc/de/termine-und-ist.md`.
 6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
 7. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 

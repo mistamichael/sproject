@@ -44,6 +44,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "label.total_hours": "Gesamtstunden:",
         "label.total_volume": "Gesamtvolumen:",
         "label.order_volume": "Auftragsvolumen:",
+        "label.status_date": "Stichtag (Ist):",
 
         # ── Toolbar-Tooltips ──────────────────────────────────────────────
         "tooltip.open": "Öffnen  (Ctrl+O)",
@@ -117,6 +118,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "result.cost.provisioning_costs": "Bereitstellungskosten",
         "result.cost.fixed_costs": "Feste Task-Kosten",
         "result.open_charts": "Charts im Browser",
+        "result.save_baseline": "Baseline speichern",
+        "status.baseline_saved": "Baseline übernommen (Ende {end}) – Projekt speichern nicht vergessen",
         "result.deadline_missed": "⚠ Deadline verfehlt – Task {task}: Deadline {deadline}, geplantes Ende {end} (+{late})",
         "result.cost.total_costs": "GESAMTKOSTEN",
         "result.cost.col.resource": "Ressource",
@@ -237,6 +240,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "label.total_hours": "Total hours:",
         "label.total_volume": "Total volume:",
         "label.order_volume": "Order volume:",
+        "label.status_date": "Status date:",
 
         # ── Toolbar tooltips ──────────────────────────────────────────────
         "tooltip.open": "Open  (Ctrl+O)",
@@ -310,6 +314,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "result.cost.provisioning_costs": "Provisioning Costs",
         "result.cost.fixed_costs": "Fixed task costs",
         "result.open_charts": "Charts in browser",
+        "result.save_baseline": "Save baseline",
+        "status.baseline_saved": "Baseline taken (end {end}) – remember to save the project",
         "result.deadline_missed": "⚠ Deadline missed – task {task}: deadline {deadline}, planned end {end} (+{late})",
         "result.cost.total_costs": "TOTAL COSTS",
         "result.cost.col.resource": "Resource",

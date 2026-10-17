@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any, List
 from .durations import format_time_value
 from .export_config import load_export_config
 from .models.cpm import CPMResult
-from .report_data import collect_deadline_violations, collect_resource_data
+from .report_data import collect_deadline_violations, collect_resource_data, tracking_summary
 
 
 # ---------------------------------------------------------------------------
@@ -58,6 +58,9 @@ def _build_summary(result: CPMResult, project_name: str) -> Dict[str, Any]:
         data['project_end'] = result.date_at(project_duration).strftime('%Y-%m-%d')
     if base.get('calculation_date'):
         data['calculation_date'] = base['calculation_date']
+    tracking = tracking_summary(result)
+    if tracking:
+        data['tracking'] = dict(tracking)
     violations = collect_deadline_violations(result)
     if violations:
         data['deadline_violations'] = [vars(v) for v in violations]
@@ -111,6 +114,12 @@ def _build_tasks(result: CPMResult) -> List[Dict[str, Any]]:
         if task.deadline is not None:
             entry['deadline'] = format_time_value(task.deadline, result.time_unit)
             entry['deadline_missed'] = task.deadline_missed
+        if task.status:
+            entry['status'] = task.status
+            if task.remaining is not None:
+                entry['remaining'] = format_time_value(task.remaining, result.time_unit)
+        if task.baseline_variance is not None:
+            entry['baseline_variance'] = format_time_value(task.baseline_variance, result.time_unit)
         if task.leveling_delay > 1e-9:
             entry['leveling_delay'] = format_time_value(task.leveling_delay, result.time_unit)
             if task.resource_predecessors:

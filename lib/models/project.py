@@ -8,13 +8,14 @@ Validierung; Expansion und Berechnung liegen in expander.py und cpm.py.
 
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
 from ..durations import detect_time_unit, TimeUnit
 from .resources import Person, Resource, RestInterval
 from .tasks import InstanceTask, LoopTask, SimpleTask
+from .tracking import Actual, Baseline
 
 if TYPE_CHECKING:
     from .cpm import CPMResult
@@ -58,6 +59,11 @@ class Project(BaseModel):
     resources: Optional[List[Resource]] = None
     persons: Optional[List[Person]] = None
     resting_times: Optional[List[RestInterval]] = None
+
+    # Plan gegen Ist
+    status_date: Optional[str] = None                 # Stichtag des Ist-Stands
+    actuals: Optional[Dict[str, Actual]] = None       # Task-ID → Ist-Stand
+    baseline: Optional[Baseline] = None               # eingefrorener Plan
 
     # Alle Task-Typen in einem Union (spezifischere zuerst)
     tasks: List[Union[LoopTask, InstanceTask, SimpleTask]] = []

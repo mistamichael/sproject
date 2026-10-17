@@ -8,7 +8,7 @@ Aufbereitung von Projekt- und CPM-Daten, die mehrere Exporte gemeinsam nutzen
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .durations import TimeUnit, format_time_value
 
@@ -219,3 +219,28 @@ def deadline_warning_lines(result: Any) -> List[str]:
     """'Task 5 (Abnahme): Deadline 2026-05-01, geplantes Ende 2026-05-06 (+3.0d)'."""
     return [f"Task {v.task_id} ({v.name}): Deadline {v.deadline}, geplantes Ende {v.end} (+{v.late})"
             for v in collect_deadline_violations(result)]
+
+
+# =============================================================================
+# Plan gegen Ist
+# =============================================================================
+
+def tracking_summary(result: Any) -> List[Tuple[str, str]]:
+    """(Label, Wert) für Stichtag, Baseline-Ende, Prognose-Ende und Verzug – leer ohne Tracking."""
+    from .time_axis import point_in_time
+
+    if result.project_start is None or (result.status_date is None and result.baseline_end is None):
+        return []
+    fmt = '%Y-%m-%d %H:%M' if result.time_unit != 'days' else '%Y-%m-%d'
+    rows: List[Tuple[str, str]] = []
+    if result.status_date is not None:
+        rows.append(("Stichtag", point_in_time(result, result.status_date, is_end=True).strftime(fmt)))
+        done = sum(1 for t in result.tasks.values() if t.status == 'done')
+        running = sum(1 for t in result.tasks.values() if t.status == 'in_progress')
+        rows.append(("Erledigt / laufend", f"{done} / {running}"))
+    rows.append(("Prognose-Ende", point_in_time(result, result.project_end_days, is_end=True).strftime(fmt)))
+    if result.baseline_end is not None:
+        rows.append(("Baseline-Ende", point_in_time(result, result.baseline_end, is_end=True).strftime(fmt)))
+        slip = result.slip
+        rows.append(("Verzug", ("+" if slip > 1e-9 else "") + format_time_value(slip, result.time_unit)))
+    return rows

@@ -40,6 +40,8 @@ _LABELS = {
         'start': 'Start', 'end': 'Ende', 'res': 'Ressourcen',
         'delay': 'Verschoben um', 'waits': 'wartet auf', 'span': 'Belegt (Urlaub/Teilzeit)',
         'missed': 'VERFEHLT', 'deadline': 'Deadline',
+        'baseline': 'Baseline', 'done': 'Erledigt', 'status_date': 'Stichtag',
+        'variance': 'Abweichung zur Baseline', 'remaining': 'Restarbeit',
     },
     'en': {
         'critical': 'Critical', 'normal': 'Normal', 'break': 'Break', 'float': 'Float',
@@ -47,6 +49,8 @@ _LABELS = {
         'start': 'Start', 'end': 'End', 'res': 'Resources',
         'delay': 'Delayed by', 'waits': 'waits for', 'span': 'Occupied (vacation/part-time)',
         'missed': 'MISSED', 'deadline': 'Deadline',
+        'baseline': 'Baseline', 'done': 'Done', 'status_date': 'Status date',
+        'variance': 'Variance to baseline', 'remaining': 'Remaining work',
     },
 }
 
@@ -108,6 +112,11 @@ def _hover(bar: _Bar, unit, lb: Dict[str, str]) -> str:
         lines.append(f"{lb['delay']}: {fmt(t.leveling_delay)}{reason}")
     if t.span > t.duration + 1e-9:
         lines.append(f"{lb['span']}: {fmt(t.span)}")
+    if t.remaining is not None:
+        lines.append(f"{lb['remaining']}: {fmt(t.remaining)}")
+    if t.baseline_variance is not None:
+        sign = "+" if t.baseline_variance > 1e-9 else ""
+        lines.append(f"{lb['variance']}: {sign}{fmt(t.baseline_variance)}")
     if t.deadline is not None:
         status = f" – {lb['missed']}" if t.deadline_missed else ""
         lines.append(f"Deadline: {fmt(t.deadline)}{status}")
@@ -121,7 +130,7 @@ def _bar_trace(bars: Sequence[_Bar], name: str, color: str, unit, lb, *, show_fl
         hover = [f"{lb['float']}: {format_time_value(b.task.puffer, unit)}" for b in bars]
     else:
         base = [b.task.faz for b in bars]
-        length = [max(b.task.duration, _MIN_WIDTH) for b in bars]   # Nulldauer sichtbar machen
+        length = [max(b.task.span, _MIN_WIDTH) for b in bars]   # Nulldauer sichtbar machen
         hover = [_hover(b, unit, lb) for b in bars]
     return go.Bar(
         name=name, orientation="h", y=[b.label for b in bars], base=base, x=length,
@@ -148,6 +157,7 @@ def build_gantt_figure(schedule: Schedule, lang: str = 'de') -> go.Figure:
     for name, color, group in groups:
         if group:
             fig.add_trace(_bar_trace(group, name, color, unit, lb))
+    _add_tracking(fig, result, bars, lb)
     deadlines = [(b, b.task.deadline) for b in bars if b.task.deadline is not None]
     with_deadline = [b for b, _ in deadlines]
     if deadlines:
@@ -170,6 +180,30 @@ def build_gantt_figure(schedule: Schedule, lang: str = 'de') -> go.Figure:
     fig.update_yaxes(categoryorder="array", categoryarray=[b.label for b in bars], autorange="reversed")
     fig.update_xaxes(**_axis(result, lang))
     return fig
+
+
+def _add_tracking(fig: go.Figure, result: CPMResult, bars: Sequence[_Bar], lb: Dict[str, str]) -> None:
+    """Baseline (dünner grauer Balken unter dem Task), erledigter Anteil und Stichtag-Linie."""
+    planned = [b for b in bars if b.task.baseline_start is not None and b.task.baseline_finish is not None]
+    if planned:
+        fig.add_trace(go.Bar(
+            name=lb['baseline'], orientation="h", y=[b.label for b in planned],
+            base=[b.task.baseline_start for b in planned],
+            x=[max(b.task.baseline_finish - b.task.baseline_start, _MIN_WIDTH) for b in planned],  # type: ignore[operator]
+            width=0.2, offset=0.25, marker=dict(color="#7F7F7F"), hoverinfo="skip",
+        ))
+    status = result.status_date
+    started = [b for b in bars if b.task.status]
+    if started:
+        ends = [b.task.fez if b.task.status == 'done' else min(b.task.fez, status or b.task.fez) for b in started]
+        fig.add_trace(go.Bar(
+            name=lb['done'], orientation="h", y=[b.label for b in started], base=[b.task.faz for b in started],
+            x=[max(e - b.task.faz, 0.0) for e, b in zip(ends, started)],
+            width=0.3, marker=dict(color="#2E7D32"), hoverinfo="skip",
+        ))
+    if status is not None:
+        fig.add_vline(x=status, line=dict(color="#2E7D32", dash="dash", width=2),
+                      annotation_text=lb['status_date'], annotation_position="top")
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +241,7 @@ def build_resource_figure(schedule: Schedule, lang: str = 'de') -> Optional[go.F
         rows.append(row)
         fig.add_trace(go.Bar(
             name=row, orientation="h", y=[row] * len(bars), base=[b.task.faz for b in bars],
-            x=[max(b.task.duration, _MIN_WIDTH) for b in bars],
+            x=[max(b.task.span, _MIN_WIDTH) for b in bars],
             marker=dict(color=colors.get(res_id, _COLOR_NORMAL), line=dict(width=1, color="white")),
             hovertext=[_hover(b, result.time_unit, lb) for b in bars], hoverinfo="text",
         ))

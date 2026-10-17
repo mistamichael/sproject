@@ -24,7 +24,7 @@ from .mermaid_export import export_mermaid_to_svg, generate_mermaid_gantt
 from .models.cpm import CPMResult
 from .paths import get_cfg_dir
 from .report_data import (collect_person_entries, collect_resource_data, deadline_warning_lines,
-                          format_task_field)
+                          format_task_field, tracking_summary)
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +153,8 @@ def _generate_summary_section(result: CPMResult, project_name: str, heading: str
 
     critical_tasks = [t for t in result.tasks.values() if t.is_critical]
     lines.append(f"- **Kritische Tasks:** {len(critical_tasks)}")
+    for label, value in tracking_summary(result):
+        lines.append(f"- **{label}:** {value}")
     warnings = deadline_warning_lines(result)
     if warnings:
         lines.append("")

@@ -511,6 +511,10 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
                 dpg.add_text(t("label.order_volume"), tag="lbl_order_volume")
                 dpg.add_input_text(tag="inp_order_volume", default_value="",
                                    width=-1, hint="12")
+            with dpg.table_row():
+                dpg.add_text(t("label.status_date"), tag="lbl_status_date")
+                dpg.add_input_text(tag="inp_status_date", default_value="",
+                                   width=-1, hint="2026-03-18")
         dpg.add_spacer(height=2)
 
 

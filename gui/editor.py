@@ -24,6 +24,7 @@ from gui.components.sections import OptionalSections
 from gui.components.task_table import rebuild_task_table
 from gui.i18n import get_language, t
 from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
+from lib.baseline import create_baseline
 from lib.exporters import ExportOptions, export_schedule
 from lib.models import Project, load_project, load_project_from_dict, save_project
 from lib.paths import get_cfg_dir, get_results_dir, get_work_dir
@@ -49,6 +50,7 @@ _MASTER_FIELDS: Dict[str, tuple] = {
     "inp_total_volume":  ("total_volume", float),
     "inp_total_hours":   ("total_hours", int),
     "inp_order_volume":  ("order_volume", int),
+    "inp_status_date":   ("status_date", str),
 }
 
 
@@ -305,7 +307,20 @@ class ProjectEditorApp:
         actions = {f"↓ {REPORT_FORMATS[fmt]}": report(fmt) for fmt in ("md", "xlsx", "txt")}
         actions["↓ JSON"] = lambda: self._wrap_export(lambda: self.export_project_json(get_results_dir()))
         actions[f"↗ {t('result.open_charts')}"] = self.open_charts_in_browser
+        actions[t("result.save_baseline")] = self.save_baseline
         return actions
+
+    def save_baseline(self) -> None:
+        """Aktuellen Plan als Baseline ins Projekt übernehmen (wird mit dem Projekt gespeichert)."""
+        if self.schedule is None or self.project is None:
+            self._set_status(t("error.no_result"))
+            return
+        try:
+            self.project.baseline = create_baseline(self.schedule)
+            self._dirty = True
+            self._set_status(t("status.baseline_saved", end=self.project.baseline.project_end))
+        except Exception as e:
+            self._set_status(t("status.export_failed", error=e))
 
     def open_charts_in_browser(self) -> None:
         """Interaktive Plotly-Charts erzeugen und im Standardbrowser öffnen."""
