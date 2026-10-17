@@ -50,11 +50,14 @@ class Availability:
             r.id: persons[r.person_id] for r in (project.resources or [])
             if r.person_id in persons and _has_restrictions(persons[r.person_id])
         }
-        self._vacation: Dict[str, Set[date]] = {pid: _vacation_days(p) for pid, p in persons.items()}
+        self._vacation: Dict[str, Set[date]] = {pid: _vacation_days(p.vacation) for pid, p in persons.items()}
+        self._outage: Dict[str, Set[date]] = {
+            r.id: _vacation_days(r.unavailable) for r in (project.resources or []) if r.unavailable
+        }
 
     @property
     def has_restrictions(self) -> bool:
-        return bool(self._person_of)
+        return bool(self._person_of or self._outage)
 
     def _date(self, day_index: int) -> date:
         while len(self._dates) <= day_index:
@@ -62,8 +65,13 @@ class Availability:
         return self._dates[day_index]
 
     def rate(self, resource_id: str, day_index: int) -> float:
+        if day_index < 0:
+            return 1.0
+        outage = self._outage.get(resource_id)
+        if outage and self._date(day_index) in outage:
+            return 0.0
         person = self._person_of.get(resource_id)
-        if person is None or day_index < 0:
+        if person is None:
             return 1.0
         day = self._date(day_index)
         if day in self._vacation[person.id]:
@@ -108,10 +116,10 @@ def _has_restrictions(person: Person) -> bool:
     return bool(person.vacation or person.workinghours_override)
 
 
-def _vacation_days(person: Person) -> Set[date]:
+def _vacation_days(entries) -> Set[date]:
     from .project import parse_start_date
     days: Set[date] = set()
-    for entry in person.vacation or []:
+    for entry in entries or []:
         if entry.date:
             days.add(parse_start_date(entry.date).date())       # type: ignore[union-attr]
         elif entry.from_ and entry.to:

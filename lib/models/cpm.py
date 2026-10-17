@@ -52,6 +52,7 @@ class CPMTaskResult(BaseModel):
     # Termine (in Arbeitstagen) und Ergebnis der Ressourcenplanung
     not_before: Optional[float] = None
     deadline: Optional[float] = None
+    delay: float = 0.0                               # Wartezeit vor dem Start (Arbeitstage)
     leveling_delay: float = 0.0                      # Verschiebung durch Ressourcen/Urlaub/Teilzeit
     resource_predecessors: List[TaskId] = Field(default_factory=list)  # auf deren Ressource gewartet wurde
     # Plan gegen Ist
@@ -397,6 +398,7 @@ class CPMCalculator:
                 is_blocker=is_blocker,
                 not_before=self._offset(task.not_before),
                 deadline=self._offset(task.deadline, end_of_day=True),
+                delay=parse_duration_to_days(task.delay) if task.delay else 0.0,
             )
 
         for task_id, task in self.cpm_tasks.items():
@@ -421,8 +423,8 @@ class CPMCalculator:
         if task.actual_start is not None:
             return task.actual_start
         preds = [(self.cpm_tasks[d.target], d.type) for d in task.predecessor_deps]
-        return max([0.0, task.not_before or 0.0, self.status or 0.0]
-                   + [_FORWARD[t](p, task) for p, t in preds if t in _FORWARD])
+        ready = max([0.0] + [_FORWARD[t](p, task) for p, t in preds if t in _FORWARD]) + task.delay
+        return max(ready, task.not_before or 0.0, self.status or 0.0)
 
     def _tracked_finish(self, task: CPMTaskResult) -> Optional[float]:
         """Ende eines erledigten bzw. laufenden Tasks (ohne Ressourcenplanung), sonst None."""

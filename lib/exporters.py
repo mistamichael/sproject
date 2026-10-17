@@ -83,6 +83,16 @@ def _plotly_svg(s: Schedule, o: ExportOptions) -> Path:
     return paths[0]
 
 
+def _scenarios(s: Schedule, o: ExportOptions) -> Path:
+    from .charts import build_scenario_figures, write_html
+    from .scenarios import compare_scenarios
+    source = s.source or s.project
+    if not source.scenarios:
+        raise ValueError("Das Projekt enthält keine Szenarien")
+    outcomes = compare_scenarios(source, start_date=s.cpm.project_start, cfg_dir=o.cfg_dir)
+    return write_html(build_scenario_figures(outcomes, s.name), o.out_dir / f"{o.file_stem}_scenarios.html", s.name)
+
+
 EXPORTERS: Dict[str, Callable[[Schedule, ExportOptions], Path]] = {
     'json': _json,
     'txt':  _txt,
@@ -92,6 +102,7 @@ EXPORTERS: Dict[str, Callable[[Schedule, ExportOptions], Path]] = {
     'xlsx': _xlsx,
     'plotly': _plotly_html,       # interaktives HTML (Gantt + Ressourcen)
     'plotly_svg': _plotly_svg,   # SVG-Bilder (kaleido + lokaler Chrome)
+    'scenarios': _scenarios,     # Szenario-Vergleich als HTML
 }
 
 

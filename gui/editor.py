@@ -28,6 +28,7 @@ from lib.baseline import create_baseline
 from lib.exporters import ExportOptions, export_schedule
 from lib.models import Project, load_project, load_project_from_dict, save_project
 from lib.paths import get_cfg_dir, get_results_dir, get_work_dir
+from lib.scenarios import compare_scenarios
 from lib.schedule import Schedule, build_schedule
 
 SECTIONS = ("resources", "persons", "resting_times")
@@ -40,6 +41,7 @@ REPORT_FORMATS: Dict[str, str] = {
     "html": "HTML",
     "json": "Netzplan-JSON",
     "plotly": "Charts (HTML)",
+    "scenarios": "Szenarien (HTML)",
 }
 
 # Stammdaten: Widget-Tag → (Projektfeld, Umwandlung Text → Wert)
@@ -169,7 +171,8 @@ class ProjectEditorApp:
         try:
             self.sync_to_model()
             self.schedule = build_schedule(self.project, cfg_dir=get_cfg_dir())
-            result_panel.show_result(self.schedule, self._quick_export_actions())
+            outcomes = compare_scenarios(self.project, cfg_dir=get_cfg_dir()) if self.project.scenarios else []
+            result_panel.show_result(self.schedule, self._quick_export_actions(), outcomes)
             self._set_status(t("status.calc_done", duration=self.schedule.cpm.project_duration))
         except Exception as e:
             self._set_status(t("status.calc_error", error=e))

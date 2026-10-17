@@ -10,6 +10,7 @@ Berechnet Projektdateien (CPM, Kalender, Kosten) und exportiert Reports.
 """
 
 import argparse
+import re
 import logging
 import os
 import sys
@@ -31,6 +32,7 @@ from .models import load_project, save_project
 from .models.cpm import CPMResult
 from .paths import get_results_dir
 from .report_data import deadline_warning_lines, tracking_summary
+from .scenarios import apply_scenario, compare_scenarios, comparison_rows, find_scenario
 from .schedule import build_schedule
 
 
@@ -108,6 +110,17 @@ def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
     print("=" * 70)
 
 
+def _print_scenarios(outcomes) -> None:
+    rows = comparison_rows(outcomes)
+    widths = [max(len(r[i]) for r in rows) for i in range(len(rows[0]))]
+    print("=" * 70)
+    for n, row in enumerate(rows):
+        print("  ".join(cell.ljust(w) for cell, w in zip(row, widths)))
+        if n == 0:
+            print("-" * (sum(widths) + 2 * (len(widths) - 1)))
+    print("=" * 70)
+
+
 def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="sproject - Projektplanung mit CPM, Ressourcen, Kalender und Reports",
@@ -131,6 +144,10 @@ Beispiele:
                         help="Projektstart (YYYY-MM-DD), überschreibt project_start")
     parser.add_argument("--export", type=str, default="json",
                         help=f"Exportformate, kommagetrennt: {', '.join(EXPORTERS)} (Standard: json)")
+    parser.add_argument("--scenarios", action="store_true",
+                        help="Alle Szenarien der Projektdatei mit dem Basisplan vergleichen")
+    parser.add_argument("--scenario", type=str,
+                        help="Ein Szenario (Name) statt des Basisplans rechnen und exportieren")
     parser.add_argument("--save-baseline", action="store_true",
                         help="Berechneten Plan als Baseline in die Projektdatei schreiben (Plan/Ist-Vergleich)")
     parser.add_argument("--lang", type=str, default="de", choices=["de", "en"],
@@ -141,20 +158,30 @@ Beispiele:
 def _process(project_file: Path, args: argparse.Namespace, formats: List[str], logger: logging.Logger) -> bool:
     """Berechnet und exportiert eine Projektdatei. False, wenn ein Export fehlschlägt."""
     project = load_project(project_file)
+    stem = project_file.stem
+    if args.scenarios:
+        _print_scenarios(compare_scenarios(project, start_date=args.start_date, cfg_dir=args.cfg_dir))
+    if args.scenario:
+        scenario = find_scenario(project, args.scenario)
+        logger.info(f"Szenario: {scenario.name}")
+        project = apply_scenario(project, scenario)
+        stem = f"{stem}_{re.sub(r'[^A-Za-z0-9]+', '_', scenario.name).strip('_')}"
     schedule = build_schedule(project, start_date=args.start_date, cfg_dir=args.cfg_dir)
     if len(schedule.project.tasks) != len(project.tasks):
         logger.info(f"  -> {len(schedule.project.tasks)} Tasks nach Expansion")
 
     print_cpm_summary(schedule.cpm, labels=load_labels(args.cfg_dir, lang=args.lang))
 
-    if args.save_baseline:
+    if args.save_baseline and args.scenario:
+        logger.warning("--save-baseline wird bei --scenario ignoriert")
+    elif args.save_baseline:
         project.baseline = create_baseline(schedule)
         save_project(project, project_file)
         logger.info(f"Baseline gespeichert in: {project_file}")
 
     options = ExportOptions(
         out_dir=args.output_dir or get_results_dir(),
-        file_stem=project_file.stem,
+        file_stem=stem,
         cfg_dir=args.cfg_dir,
         lang=args.lang,
     )

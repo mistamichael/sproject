@@ -44,6 +44,7 @@ class Resource(BaseModel):
     role: Optional[str] = None
     hourly_rate: Optional[float] = None
     provisioning_costs: Optional[float] = None
+    unavailable: Optional[List["VacationEntry"]] = None   # Ausfallzeiten (Wartung, Defekt)
 
     model_config = {
         'extra': 'allow',
@@ -152,3 +153,6 @@ class Person(BaseModel):
     workinghours_override: Optional[WorkHoursOverride] = None
     vacation: Optional[List[VacationEntry]] = None
     rest_intervals: Optional[Union[str, List[RestInterval]]] = None  # Kann Verweis ("resting_times") oder direkte Liste sein
+
+
+Resource.model_rebuild()

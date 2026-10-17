@@ -6,7 +6,7 @@ Zeigt einen berechneten Schedule im Tab "Ergebnis": Projektdauer, kritischer
 Pfad, alle Aufgaben, Kosten sowie Gantt- und Ressourcen-Diagramm.
 """
 
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 
 import dearpygui.dearpygui as dpg
 
@@ -14,6 +14,7 @@ from gui.colors import resource_color_map
 from gui.gui_config import load_gui_config
 from gui.i18n import t
 from lib.report_data import collect_deadline_violations, tracking_summary
+from lib.scenarios import comparison_rows
 from lib.schedule import Schedule
 
 _CFG = load_gui_config()
@@ -31,7 +32,8 @@ def hide_result() -> None:
         dpg.set_value("main_tab_bar", "tab_input")
 
 
-def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]]) -> None:
+def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]],
+                scenario_outcomes: Optional[list] = None) -> None:
     """
     Füllt den Ergebnis-Tab und wechselt dorthin.
 
@@ -61,6 +63,7 @@ def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]
     _all_tasks(schedule)
     dpg.add_spacer(parent=_PARENT, height=6)
     _costs(schedule)
+    _scenarios(scenario_outcomes or [])
     _charts(schedule)
 
     dpg.add_spacer(parent=_PARENT, height=8)
@@ -162,6 +165,22 @@ def _costs(schedule: Schedule) -> None:
                 dpg.add_text(f"{t('result.cost.' + key)}: {amount:.2f} €", color=sum_color)
         dpg.add_text(f"{t('result.cost.total_costs')}: {costs.total_costs:.2f} €",
                      color=_COLORS.get("result_critical_path", (220, 80, 80)))
+
+
+def _scenarios(outcomes: list) -> None:
+    """Vergleich Basisplan ↔ Szenarien (nur wenn das Projekt Szenarien enthält)."""
+    if len(outcomes) < 2:
+        return
+    rows = comparison_rows(outcomes)
+    with dpg.collapsing_header(label=t("result.header.scenarios"), parent=_PARENT, default_open=True):
+        with _table():
+            for title in rows[0]:
+                dpg.add_table_column(label=title)
+            for row in rows[1:]:
+                with dpg.table_row():
+                    for cell in row:
+                        dpg.add_text(cell)
+        dpg.add_spacer(height=6)
 
 
 def _charts(schedule: Schedule) -> None:

@@ -46,6 +46,7 @@ class TaskBase(BaseModel):
     cost: Optional[float] = None  # Explizite Kosten (0.0 = kostenlos, None = normal berechnen)
     not_before: Optional[str] = None  # Frühester Start, "YYYY-MM-DD[ HH:MM]" (z. B. Materiallieferung)
     deadline: Optional[str] = None    # Spätestes Ende, "YYYY-MM-DD[ HH:MM]" (Datum ohne Uhrzeit = Tagesende)
+    delay: Optional[str] = None       # Wartezeit vor dem Start (z. B. "2d" Trocknung, Lieferverzug)
 
     @field_validator('not_before', 'deadline')
     @classmethod

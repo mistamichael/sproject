@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from ..durations import detect_time_unit, TimeUnit
 from .resources import Person, Resource, RestInterval
 from .tasks import InstanceTask, LoopTask, SimpleTask
+from .scenario import Scenario
 from .tracking import Actual, Baseline
 
 if TYPE_CHECKING:
@@ -64,6 +65,9 @@ class Project(BaseModel):
     status_date: Optional[str] = None                 # Stichtag des Ist-Stands
     actuals: Optional[Dict[str, Actual]] = None       # Task-ID → Ist-Stand
     baseline: Optional[Baseline] = None               # eingefrorener Plan
+
+    # Was-wäre-wenn-Varianten des Plans (lib/scenarios.py)
+    scenarios: Optional[List[Scenario]] = None
 
     # Alle Task-Typen in einem Union (spezifischere zuerst)
     tasks: List[Union[LoopTask, InstanceTask, SimpleTask]] = []

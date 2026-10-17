@@ -128,5 +128,11 @@
         }
       ]
     }
+  ],
+  "scenarios": [
+    { "name": "Stau: Transporte 20 % langsamer",
+      "changes": [ { "task": "2-F*.2", "duration_factor": 1.2 } ] },
+    { "name": "Bagger langsamer (harter Boden)", "description": "Beladen dauert 50 % länger",
+      "changes": [ { "task": "2-F*.1", "duration_factor": 1.5 } ] }
   ]
 }

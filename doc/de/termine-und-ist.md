@@ -85,3 +85,37 @@ oder in der GUI im Ergebnis-Tab „Baseline speichern“ und danach das Projekt 
 Ausgaben: Stichtag, erledigte/laufende Tasks, Prognose-Ende, Baseline-Ende und Verzug in allen
 Reports; im Gantt ein grauer Baseline-Balken unter jedem Task, der erledigte Anteil in Grün und eine
 Stichtag-Linie. Beispiel: [examples/software_simple_ist.json](../../examples/software_simple_ist.json).
+
+## Szenarien (Was wäre wenn?)
+
+Benannte Varianten des Plans auf Projektebene. Der Basisplan bleibt unverändert.
+
+```json
+"scenarios": [
+  { "name": "Alice eine Woche krank",
+    "changes": [ { "person": "DEV1", "vacation": [ { "from": "2026-03-09", "to": "2026-03-13", "description": "krank" } ] } ] },
+  { "name": "Stau: Transporte 20 % langsamer",
+    "changes": [ { "task": "2-F*.2", "duration_factor": 1.2 } ] },
+  { "name": "LKW L1 defekt",
+    "changes": [ { "resource": "L1", "unavailable": [ { "from": "2026-03-04", "to": "2026-03-05", "description": "Defekt" } ] } ] },
+  { "name": "Lieferung 3 Tage später",
+    "changes": [ { "task": 3, "delay": "3d" } ] }
+]
+```
+
+| Änderung | Wirkung |
+| --- | --- |
+| `task` | Task-ID oder Muster (`2-F*.2` = alle Transporte, auch expandierte Zyklen). `duration_factor` multipliziert die Dauer; jedes weitere Feld (`duration`, `delay`, `resources`, `deadline`, `not_before` …) wird gesetzt. |
+| `resource` + `unavailable` | zusätzliche Ausfallzeiten der Ressource |
+| `person` + `vacation` | zusätzliche Abwesenheiten der Person |
+
+`delay` (Wartezeit vor dem Start) und `unavailable` (Ausfallzeiten einer Ressource, z. B. Wartung)
+lassen sich auch direkt im Basisplan verwenden.
+
+```bash
+python lib/sproject.py --project mein_projekt.json --scenarios                   # Vergleichstabelle
+python lib/sproject.py --project mein_projekt.json --export scenarios            # Vergleich als HTML
+python lib/sproject.py --project mein_projekt.json --scenario "LKW L1 defekt" --export txt,plotly
+```
+
+In der GUI erscheint der Vergleich im Ergebnis-Tab (Abschnitt „Szenarien“).

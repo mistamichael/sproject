@@ -28,6 +28,7 @@ class Schedule:
     cpm: CPMResult
     gantt: GanttResult
     costs: Optional[CostBreakdown]
+    source: Optional[Project] = None   # Projekt wie übergeben (z. B. für Szenario-Vergleiche)
 
     @property
     def name(self) -> str:
@@ -57,4 +58,4 @@ def build_schedule(project: Project,
             cpm = expanded.calculate_cpm(start_date=start_date, cfg_dir=cfg_dir)
     gantt = GanttCalculator(cpm).calculate()
     costs = calculate_project_costs(expanded, cpm)
-    return Schedule(project=expanded, cpm=cpm, gantt=gantt, costs=costs)
+    return Schedule(project=expanded, cpm=cpm, gantt=gantt, costs=costs, source=project)

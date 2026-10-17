@@ -292,3 +292,38 @@ def write_image(fig: go.Figure, path: Path, width: int = 1400) -> Path:
     """SVG/PNG/PDF je nach Dateiendung (kaleido + lokaler Chrome)."""
     fig.write_image(str(path), width=width, height=fig.layout.height)
     return path
+
+
+# ---------------------------------------------------------------------------
+# Szenarien
+# ---------------------------------------------------------------------------
+
+def build_scenario_figures(outcomes, title: str) -> List[go.Figure]:
+    """Vergleichsbalken (Projektdauer je Szenario) und Tabelle mit allen Kennzahlen."""
+    from .scenarios import comparison_rows
+
+    unit = outcomes[0].schedule.cpm.time_unit
+    names = [o.name for o in outcomes]
+    def color(i: int, o) -> str:
+        if i == 0:
+            return "#4472C4"                                   # Basisplan
+        worse = o.delta_days > 1e-9 or o.deadline_violations > outcomes[0].deadline_violations
+        return "#C0392B" if worse else "#2E7D32"
+
+    colors = [color(i, o) for i, o in enumerate(outcomes)]
+    bars = go.Figure(go.Bar(
+        orientation="h", y=names, x=[o.duration_days for o in outcomes], marker=dict(color=colors),
+        text=[f"{format_time_value(o.duration_days, unit)}  ({o.delta_text(unit)})" for o in outcomes],
+        textposition="auto", hovertext=[o.description for o in outcomes], hoverinfo="text+x",
+    ))
+    bars.update_layout(title=f"{title} – Szenarien", height=max(250, 110 + 45 * len(outcomes)),
+                       margin=dict(l=10, r=10, t=60, b=40), xaxis_title="Arbeitstage")
+    bars.update_yaxes(autorange="reversed")
+
+    rows = comparison_rows(outcomes)
+    table = go.Figure(go.Table(
+        header=dict(values=rows[0], fill_color="#4472C4", font=dict(color="white"), align="left"),
+        cells=dict(values=[list(col) for col in zip(*rows[1:])], align="left"),
+    ))
+    table.update_layout(height=max(200, 80 + 30 * len(outcomes)), margin=dict(l=10, r=10, t=10, b=10))
+    return [bars, table]
