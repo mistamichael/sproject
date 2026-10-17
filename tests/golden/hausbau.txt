@@ -10,7 +10,7 @@ Projekt:            Einfamilienhaus-Bau
 Projektdauer:       31.0d
 Zeiteinheit:        days
 Startdatum:         2026-04-01
-Enddatum:           2026-05-20
+Enddatum:           2026-05-19
 Anzahl Tasks:       10
 Kritische Tasks:    8
 

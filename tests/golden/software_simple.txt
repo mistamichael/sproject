@@ -10,7 +10,7 @@ Projekt:            Software Entwicklung Projekt
 Projektdauer:       24.0d
 Zeiteinheit:        hours
 Startdatum:         2026-03-03
-Enddatum:           2026-04-08
+Enddatum:           2026-04-07
 Anzahl Tasks:       8
 Kritische Tasks:    7
 

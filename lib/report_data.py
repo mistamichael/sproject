@@ -110,7 +110,7 @@ def collect_person_entries(persons: List[Any], result: Any) -> List[PersonEntry]
     proj_start = result.project_start
     proj_end = proj_end_buffer = None
     if proj_start and result.tasks:
-        proj_end = result.date_at(max(t.fez for t in result.tasks.values()))
+        proj_end = result.date_at(max(t.fez for t in result.tasks.values()), is_end=True)
         proj_end_buffer = result.calendar.add_workdays(proj_end, min(len(persons) * 3, 30))
 
     entries: List[PersonEntry] = []

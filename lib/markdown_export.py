@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 # Import models and utilities
 from .colors import interpolate_color, load_auto_color_range
-from .durations import convert_cpm_time_to_datetime, format_time_value
+from .durations import format_time_value
 from .export_config import load_export_config
-from .mermaid_export import export_mermaid_to_svg, generate_mermaid_gantt
+from .mermaid_export import export_mermaid_to_svg, generate_mermaid_gantt, mermaid_span
 from .models.cpm import CPMResult
 from .paths import get_cfg_dir
 from .report_data import (collect_person_entries, collect_resource_data, deadline_warning_lines,
@@ -145,7 +145,7 @@ def _generate_summary_section(result: CPMResult, project_name: str, heading: str
         lines.append(f"- **Startdatum:** {start_str}")
 
         if result.tasks:
-            estimated_end = result.date_at(result.project_end_days)
+            estimated_end = result.date_at(result.project_end_days, is_end=True)
             lines.append(f"- **Enddatum (geschätzt):** {estimated_end.strftime('%Y-%m-%d %H:%M')}")
 
     lines.append(f"- **Zeiteinheit:** {result.time_unit}")
@@ -456,11 +456,7 @@ def _generate_resource_gantt_chart(
         short_name = task_name if len(task_name) <= 25 else task_name[:22] + "..."
 
         if start_date:
-            task_start = convert_cpm_time_to_datetime(faz, start_date, time_unit)
-            task_end   = convert_cpm_time_to_datetime(fez, start_date, time_unit)
-            fmt = '%Y-%m-%d %H:%M' if time_unit in ('minutes', 'hours') else '%Y-%m-%d'
-            start_str = task_start.strftime(fmt)
-            end_str   = task_end.strftime(fmt)
+            start_str, end_str = mermaid_span(result, faz, fez)
             lines.append(f"    {short_name:<27} :t{idx}, {start_str}, {end_str}")
         else:
             duration = int(fez - faz)

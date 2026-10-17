@@ -81,7 +81,7 @@ def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
     print(f"{label('label_duration', 'Projektdauer')}: {format_time_value_auto(project_duration)}")
     if result.project_start:
         print(f"{label('label_start', 'Startdatum')}: {result.project_start.strftime('%Y-%m-%d')}")
-        print(f"{label('label_end', 'Enddatum (geschätzt)')}: {result.date_at(project_duration).strftime('%Y-%m-%d')}")
+        print(f"{label('label_end', 'Enddatum (geschätzt)')}: {result.date_at(project_duration, is_end=True).strftime('%Y-%m-%d')}")
     for label_text, value in tracking_summary(result):
         print(f"{label_text}: {value}")
     for warning in deadline_warning_lines(result):

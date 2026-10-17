@@ -8,7 +8,7 @@
 - **Projekt:** Tank Design Project
 - **Projektdauer:** 50.0d
 - **Startdatum:** 2026-03-03 07:00
-- **Enddatum (geschätzt):** 2026-05-18 07:00
+- **Enddatum (geschätzt):** 2026-05-15 15:00
 - **Zeiteinheit:** days
 - **Anzahl Tasks:** 8
 - **Kritische Tasks:** 4
@@ -87,18 +87,24 @@ gantt
     WE 04.04 :crit, 2026-04-04, 2026-04-05
     WE 11.04 :crit, 2026-04-11, 2026-04-12
     WE 18.04 :crit, 2026-04-18, 2026-04-19
+    WE 25.04 :crit, 2026-04-25, 2026-04-26
+    WE 02.05 :crit, 2026-05-02, 2026-05-03
+    WE 09.05 :crit, 2026-05-09, 2026-05-10
+    WE 16.05 :crit, 2026-05-16, 2026-05-15
     section Feiertage
     03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
     06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
+    01.05 Tag der Arbeit :crit, 2026-05-01, 2026-05-01
+    14.05 Christi Himmelfahrt :crit, 2026-05-14, 2026-05-14
     section Tasks
-    [1] design tank projekt (KRIT) :crit, 2026-03-03, 2026-03-13
-    [2] Select Tank supplyer :2026-03-13, 2026-03-21
-    [3] construct tank foundation (KRIT) :crit, 2026-03-13, 2026-04-07
-    [4] manufacture tank components :2026-03-21, 2026-03-31
-    [5] prepare Installation drawings :2026-03-21, 2026-03-24
-    [6] Deliver tank components :2026-03-31, 2026-04-04
-    [7] assemble tank (KRIT) :crit, 2026-04-07, 2026-04-22
-    [8] test commisions tank (KRIT) :crit, 2026-04-22, 2026-04-22
+    [1] design tank projekt (KRIT) :crit, 2026-03-03, 2026-03-17
+    [2] Select Tank supplyer :2026-03-17, 2026-03-27
+    [3] construct tank foundation (KRIT) :crit, 2026-03-17, 2026-04-23
+    [4] manufacture tank components :2026-03-27, 2026-04-14
+    [5] prepare Installation drawings :2026-03-27, 2026-04-01
+    [6] Deliver tank components :2026-04-14, 2026-04-18
+    [7] assemble tank (KRIT) :crit, 2026-04-23, 2026-05-16
+    [8] test commisions tank (KRIT) :crit, 2026-05-18, 2026-05-19
 ```
 
 ---

@@ -10,7 +10,7 @@ Projekt:            Tank Design Project
 Projektdauer:       50.0d
 Zeiteinheit:        days
 Startdatum:         2026-03-03
-Enddatum:           2026-05-18
+Enddatum:           2026-05-15
 Anzahl Tasks:       8
 Kritische Tasks:    4
 

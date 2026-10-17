@@ -7,8 +7,8 @@
 
 - **Projekt:** Einfamilienhaus-Bau
 - **Projektdauer:** 31.0d
-- **Startdatum:** 2026-04-01 00:00
-- **Enddatum (geschätzt):** 2026-05-20 00:00
+- **Startdatum:** 2026-04-01 09:00
+- **Enddatum (geschätzt):** 2026-05-19 17:00
 - **Zeiteinheit:** days
 - **Anzahl Tasks:** 10
 - **Kritische Tasks:** 8
@@ -95,22 +95,25 @@ gantt
     WE 11.04 :crit, 2026-04-11, 2026-04-12
     WE 18.04 :crit, 2026-04-18, 2026-04-19
     WE 25.04 :crit, 2026-04-25, 2026-04-26
-    WE 02.05 :crit, 2026-05-02, 2026-05-02
+    WE 02.05 :crit, 2026-05-02, 2026-05-03
+    WE 09.05 :crit, 2026-05-09, 2026-05-10
+    WE 16.05 :crit, 2026-05-16, 2026-05-17
     section Feiertage
     03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
     06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
     01.05 Tag der Arbeit :crit, 2026-05-01, 2026-05-01
+    14.05 Christi Himmelfahrt :crit, 2026-05-14, 2026-05-14
     section Tasks
-    [1] Grube ausheben (KRIT) :crit, 2026-04-01, 2026-04-04
-    [2] Erde abtransportieren :2026-04-01, 2026-04-05
-    [3] Fundament gießen (KRIT) :crit, 2026-04-04, 2026-04-06
-    [4] Fundament trocknen (KRIT) :crit, 2026-04-06, 2026-04-13
-    [5] Mauerwerk errichten (KRIT) :crit, 2026-04-13, 2026-04-23
-    [6] Elektroinstallation :2026-04-13, 2026-04-18
-    [7] Sanitärinstallation (KRIT) :crit, 2026-04-13, 2026-04-19
-    [8] Innenausbau (Trockenbau/Böden) (KRIT) :crit, 2026-04-19, 2026-05-01
-    [9] Laufende Bauschuttreinigung (KRIT) :crit, 2026-04-17, 2026-05-01
-    [10] Abnahme (KRIT) :crit, 2026-05-01, 2026-05-02
+    [1] Grube ausheben (KRIT) :crit, 2026-04-01, 2026-04-08
+    [2] Erde abtransportieren :2026-04-01, 2026-04-09
+    [3] Fundament gießen (KRIT) :crit, 2026-04-08, 2026-04-10
+    [4] Fundament trocknen (KRIT) :crit, 2026-04-10, 2026-04-21
+    [5] Mauerwerk errichten (KRIT) :crit, 2026-04-21, 2026-05-06
+    [6] Elektroinstallation :2026-04-21, 2026-04-28
+    [7] Sanitärinstallation (KRIT) :crit, 2026-04-21, 2026-04-29
+    [8] Innenausbau (Trockenbau/Böden) (KRIT) :crit, 2026-04-29, 2026-05-19
+    [9] Laufende Bauschuttreinigung (KRIT) :crit, 2026-04-27, 2026-05-19
+    [10] Abnahme (KRIT) :crit, 2026-05-19, 2026-05-20
 ```
 
 ---

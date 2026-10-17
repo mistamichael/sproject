@@ -6,7 +6,7 @@
     "num_tasks": 10,
     "num_critical": 8,
     "project_start": "2026-04-01",
-    "project_end": "2026-05-20",
+    "project_end": "2026-05-19",
   },
   "critical_path": [
     {
@@ -58,16 +58,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-01",
-        "fez": "2026-04-08",
+        "fez": "2026-04-07",
         "saz": "2026-04-01",
-        "sez": "2026-04-08",
+        "sez": "2026-04-07",
         "gp": "0.0d",
         "fp": "-3.0d",
         "dates": {
           "faz_date": "2026-04-01",
-          "fez_date": "2026-04-08",
+          "fez_date": "2026-04-07",
           "saz_date": "2026-04-01",
-          "sez_date": "2026-04-08"
+          "sez_date": "2026-04-07"
         }
       }
     },
@@ -78,16 +78,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-04-01",
-        "fez": "2026-04-09",
+        "fez": "2026-04-08",
         "saz": "2026-05-13",
-        "sez": "2026-05-20",
+        "sez": "2026-05-19",
         "gp": "27.0d",
         "fp": "27.0d",
         "dates": {
           "faz_date": "2026-04-01",
-          "fez_date": "2026-04-09",
+          "fez_date": "2026-04-08",
           "saz_date": "2026-05-13",
-          "sez_date": "2026-05-20"
+          "sez_date": "2026-05-19"
         }
       }
     },
@@ -98,16 +98,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-08",
-        "fez": "2026-04-10",
+        "fez": "2026-04-09",
         "saz": "2026-04-08",
-        "sez": "2026-04-10",
+        "sez": "2026-04-09",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-04-08",
-          "fez_date": "2026-04-10",
+          "fez_date": "2026-04-09",
           "saz_date": "2026-04-08",
-          "sez_date": "2026-04-10"
+          "sez_date": "2026-04-09"
         }
       }
     },
@@ -118,16 +118,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-10",
-        "fez": "2026-04-21",
+        "fez": "2026-04-20",
         "saz": "2026-04-10",
-        "sez": "2026-04-21",
+        "sez": "2026-04-20",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-04-10",
-          "fez_date": "2026-04-21",
+          "fez_date": "2026-04-20",
           "saz_date": "2026-04-10",
-          "sez_date": "2026-04-21"
+          "sez_date": "2026-04-20"
         }
       }
     },
@@ -138,16 +138,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-21",
-        "fez": "2026-05-06",
+        "fez": "2026-05-05",
         "saz": "2026-04-21",
-        "sez": "2026-05-06",
+        "sez": "2026-05-05",
         "gp": "0.0d",
         "fp": "-10.0d",
         "dates": {
           "faz_date": "2026-04-21",
-          "fez_date": "2026-05-06",
+          "fez_date": "2026-05-05",
           "saz_date": "2026-04-21",
-          "sez_date": "2026-05-06"
+          "sez_date": "2026-05-05"
         }
       }
     },
@@ -158,16 +158,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-04-21",
-        "fez": "2026-04-28",
+        "fez": "2026-04-27",
         "saz": "2026-04-22",
-        "sez": "2026-04-29",
+        "sez": "2026-04-28",
         "gp": "1.0d",
         "fp": "1.0d",
         "dates": {
           "faz_date": "2026-04-21",
-          "fez_date": "2026-04-28",
+          "fez_date": "2026-04-27",
           "saz_date": "2026-04-22",
-          "sez_date": "2026-04-29"
+          "sez_date": "2026-04-28"
         }
       }
     },
@@ -178,16 +178,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-21",
-        "fez": "2026-04-29",
+        "fez": "2026-04-28",
         "saz": "2026-04-21",
-        "sez": "2026-04-29",
+        "sez": "2026-04-28",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-04-21",
-          "fez_date": "2026-04-29",
+          "fez_date": "2026-04-28",
           "saz_date": "2026-04-21",
-          "sez_date": "2026-04-29"
+          "sez_date": "2026-04-28"
         }
       }
     },
@@ -198,16 +198,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-29",
-        "fez": "2026-05-19",
+        "fez": "2026-05-18",
         "saz": "2026-04-29",
-        "sez": "2026-05-19",
+        "sez": "2026-05-18",
         "gp": "0.0d",
         "fp": "-14.0d",
         "dates": {
           "faz_date": "2026-04-29",
-          "fez_date": "2026-05-19",
+          "fez_date": "2026-05-18",
           "saz_date": "2026-04-29",
-          "sez_date": "2026-05-19"
+          "sez_date": "2026-05-18"
         }
       }
     },
@@ -218,16 +218,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-27",
-        "fez": "2026-05-19",
+        "fez": "2026-05-18",
         "saz": "2026-04-27",
-        "sez": "2026-05-19",
+        "sez": "2026-05-18",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-04-27",
-          "fez_date": "2026-05-19",
+          "fez_date": "2026-05-18",
           "saz_date": "2026-04-27",
-          "sez_date": "2026-05-19"
+          "sez_date": "2026-05-18"
         }
       }
     },
@@ -238,23 +238,23 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-05-19",
-        "fez": "2026-05-20",
+        "fez": "2026-05-19",
         "saz": "2026-05-19",
-        "sez": "2026-05-20",
+        "sez": "2026-05-19",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-05-19",
-          "fez_date": "2026-05-20",
+          "fez_date": "2026-05-19",
           "saz_date": "2026-05-19",
-          "sez_date": "2026-05-20"
+          "sez_date": "2026-05-19"
         }
       }
     }
   ],
   "gantt_chart": {
     "project_name": "Einfamilienhaus-Bau",
-    "project_start_date": "2026-04-01T00:00:00",
+    "project_start_date": "2026-04-01T09:00:00",
     "time_unit": "days",
     "skip_weekends": true,
     "skip_holidays": true,
@@ -263,8 +263,8 @@
         "id": "1",
         "name": "Grube ausheben",
         "network_duration_days": 3.0,
-        "calendar_start_date": "2026-04-01T00:00:00",
-        "calendar_end_date": "2026-04-07T00:00:00",
+        "calendar_start_date": "2026-04-01T09:00:00",
+        "calendar_end_date": "2026-04-07T17:00:00",
         "working_days": 3.0,
         "calendar_days": 7,
         "is_critical": true,
@@ -274,8 +274,8 @@
         "id": "2",
         "name": "Erde abtransportieren",
         "network_duration_days": 4.0,
-        "calendar_start_date": "2026-04-01T00:00:00",
-        "calendar_end_date": "2026-04-08T00:00:00",
+        "calendar_start_date": "2026-04-01T09:00:00",
+        "calendar_end_date": "2026-04-08T17:00:00",
         "working_days": 4.0,
         "calendar_days": 8,
         "is_critical": false,
@@ -285,8 +285,8 @@
         "id": "3",
         "name": "Fundament gießen",
         "network_duration_days": 2.0,
-        "calendar_start_date": "2026-04-08T00:00:00",
-        "calendar_end_date": "2026-04-09T00:00:00",
+        "calendar_start_date": "2026-04-08T09:00:00",
+        "calendar_end_date": "2026-04-09T17:00:00",
         "working_days": 2.0,
         "calendar_days": 2,
         "is_critical": true,
@@ -296,8 +296,8 @@
         "id": "4",
         "name": "Fundament trocknen",
         "network_duration_days": 7.0,
-        "calendar_start_date": "2026-04-10T00:00:00",
-        "calendar_end_date": "2026-04-20T00:00:00",
+        "calendar_start_date": "2026-04-10T09:00:00",
+        "calendar_end_date": "2026-04-20T17:00:00",
         "working_days": 7.0,
         "calendar_days": 11,
         "is_critical": true,
@@ -307,8 +307,8 @@
         "id": "5",
         "name": "Mauerwerk errichten",
         "network_duration_days": 10.0,
-        "calendar_start_date": "2026-04-21T00:00:00",
-        "calendar_end_date": "2026-05-05T00:00:00",
+        "calendar_start_date": "2026-04-21T09:00:00",
+        "calendar_end_date": "2026-05-05T17:00:00",
         "working_days": 10.0,
         "calendar_days": 15,
         "is_critical": true,
@@ -318,8 +318,8 @@
         "id": "6",
         "name": "Elektroinstallation",
         "network_duration_days": 5.0,
-        "calendar_start_date": "2026-04-21T00:00:00",
-        "calendar_end_date": "2026-04-27T00:00:00",
+        "calendar_start_date": "2026-04-21T09:00:00",
+        "calendar_end_date": "2026-04-27T17:00:00",
         "working_days": 5.0,
         "calendar_days": 7,
         "is_critical": false,
@@ -329,8 +329,8 @@
         "id": "7",
         "name": "Sanitärinstallation",
         "network_duration_days": 6.0,
-        "calendar_start_date": "2026-04-21T00:00:00",
-        "calendar_end_date": "2026-04-28T00:00:00",
+        "calendar_start_date": "2026-04-21T09:00:00",
+        "calendar_end_date": "2026-04-28T17:00:00",
         "working_days": 6.0,
         "calendar_days": 8,
         "is_critical": true,
@@ -340,8 +340,8 @@
         "id": "8",
         "name": "Innenausbau (Trockenbau/Böden)",
         "network_duration_days": 12.0,
-        "calendar_start_date": "2026-04-29T00:00:00",
-        "calendar_end_date": "2026-05-18T00:00:00",
+        "calendar_start_date": "2026-04-29T09:00:00",
+        "calendar_end_date": "2026-05-18T17:00:00",
         "working_days": 12.0,
         "calendar_days": 20,
         "is_critical": true,
@@ -351,8 +351,8 @@
         "id": "9",
         "name": "Laufende Bauschuttreinigung",
         "network_duration_days": 14.0,
-        "calendar_start_date": "2026-04-27T00:00:00",
-        "calendar_end_date": "2026-05-18T00:00:00",
+        "calendar_start_date": "2026-04-27T09:00:00",
+        "calendar_end_date": "2026-05-18T17:00:00",
         "working_days": 14.0,
         "calendar_days": 22,
         "is_critical": true,
@@ -362,8 +362,8 @@
         "id": "10",
         "name": "Abnahme",
         "network_duration_days": 1.0,
-        "calendar_start_date": "2026-05-19T00:00:00",
-        "calendar_end_date": "2026-05-19T00:00:00",
+        "calendar_start_date": "2026-05-19T09:00:00",
+        "calendar_end_date": "2026-05-19T17:00:00",
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": true,

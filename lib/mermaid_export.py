@@ -8,7 +8,7 @@ Generiert Gantt-Charts und Diagramme im SVG-Format über Mermaid und kroki-API.
 import base64
 import zlib
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 try:
     import requests
@@ -17,7 +17,6 @@ except ImportError:
     REQUESTS_AVAILABLE = False
 
 # Import models - try relative import first, then absolute
-from .durations import convert_cpm_time_to_datetime
 from .models.cpm import CPMResult
 
 
@@ -71,18 +70,19 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
 
     lines.append("")
 
-    # Bestimme Zeitspanne für Wochenenden/Feiertage
-    start_date = result.project_start if hasattr(result, 'project_start') and result.project_start else datetime.now()
-    min_faz = min(task.faz for task in result.tasks.values()) if result.tasks else 0
-    max_fez = max(task.fez for task in result.tasks.values()) if result.tasks else 1
+    # Zeitspanne des Projekts (gleiche Umrechnung wie alle Ausgaben: CPMResult.date_at)
+    if result.project_start is None or not result.tasks:
+        return "\n".join(lines)
+    first_day = result.date_at(min(task.faz for task in result.tasks.values()))
+    last_day = result.date_at(result.project_end_days, is_end=True)
 
     # Zeige Wochenenden als Sektion
     if result.skip_weekends and time_unit == 'days':
         lines.append("    section Wochenenden")
 
         # Iteriere über alle Tage und markiere Wochenenden
-        current_date = start_date + timedelta(days=int(min_faz))
-        end_check_date = start_date + timedelta(days=int(max_fez) + 1)
+        current_date = first_day.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_check_date = last_day.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
         weekend_start = None
 
         while current_date <= end_check_date:
@@ -113,7 +113,7 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
             try:
                 holiday_date = datetime.strptime(holiday_str, '%Y-%m-%d')
                 # Prüfe ob Feiertag im Projektbereich liegt
-                if start_date + timedelta(days=int(min_faz)) <= holiday_date <= start_date + timedelta(days=int(max_fez) + 1):
+                if first_day.date() <= holiday_date.date() <= last_day.date():
                     name = result.holidays[holiday_str] if isinstance(result.holidays, dict) else ''
                     holiday_label = f"{holiday_date.strftime('%d.%m')} {name}".strip()
                     lines.append(f"    {holiday_label} :crit, {holiday_str}, {holiday_str}")
@@ -141,11 +141,7 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
             task_status = ""
 
         # Berechne Start- und Enddatum für den Task basierend auf Zeit-Einheit
-        task_start = convert_cpm_time_to_datetime(task.faz, start_date, time_unit)
-        task_end   = convert_cpm_time_to_datetime(task.fez, start_date, time_unit)
-        fmt = '%Y-%m-%d %H:%M' if time_unit in ('minutes', 'hours') else '%Y-%m-%d'
-        start_str = task_start.strftime(fmt)
-        end_str   = task_end.strftime(fmt)
+        start_str, end_str = mermaid_span(result, task.faz, task.fez)
 
         # Mermaid-Syntax: task_id, task_status, start, duration/end
         if task_status:
@@ -154,6 +150,18 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
             lines.append(f"    {task_label} :{start_str}, {end_str}")
 
     return "\n".join(lines)
+
+
+def mermaid_span(result: CPMResult, faz: float, fez: float) -> tuple:
+    """
+    (Start, Ende) eines Balkens im Mermaid-Format. Mit reinem Datum ist das Mermaid-Ende
+    exklusiv – daher der Tag nach dem letzten Arbeitstag.
+    """
+    start = result.date_at(faz)
+    end = result.date_at(fez, is_end=True) if fez > faz else start
+    if result.time_unit in ('minutes', 'hours'):
+        return start.strftime('%Y-%m-%d %H:%M'), end.strftime('%Y-%m-%d %H:%M')
+    return start.strftime('%Y-%m-%d'), (end + timedelta(days=1)).strftime('%Y-%m-%d')
 
 
 def export_mermaid_to_svg(mermaid_diagram: str, output_path: Path,

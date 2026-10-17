@@ -8,7 +8,7 @@
 - **Projekt:** Pizza Service Express
 - **Projektdauer:** 108.5m
 - **Startdatum:** 2026-03-03 09:00
-- **Enddatum (geschätzt):** 2026-03-03 14:25
+- **Enddatum (geschätzt):** 2026-03-03 10:48
 - **Zeiteinheit:** minutes
 - **Anzahl Tasks:** 51
 - **Kritische Tasks:** 20

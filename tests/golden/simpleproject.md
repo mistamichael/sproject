@@ -8,7 +8,7 @@
 - **Projekt:** Montage Gesamtsystem
 - **Projektdauer:** 30.0d
 - **Startdatum:** 2026-03-09 08:00
-- **Enddatum (geschätzt):** 2026-04-22 08:00
+- **Enddatum (geschätzt):** 2026-04-21 16:00
 - **Zeiteinheit:** days
 - **Anzahl Tasks:** 8
 - **Kritische Tasks:** 5
@@ -86,18 +86,20 @@ gantt
     WE 21.03 :crit, 2026-03-21, 2026-03-22
     WE 28.03 :crit, 2026-03-28, 2026-03-29
     WE 04.04 :crit, 2026-04-04, 2026-04-05
+    WE 11.04 :crit, 2026-04-11, 2026-04-12
+    WE 18.04 :crit, 2026-04-18, 2026-04-19
     section Feiertage
     03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
     06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
     section Tasks
     [1] Transport/Anlieferung (KRIT) :crit, 2026-03-09, 2026-03-12
-    [2] Vormontage Prozessstationen (KRIT) :crit, 2026-03-12, 2026-03-22
-    [3] Vormontage Transportband :2026-03-12, 2026-03-19
+    [2] Vormontage Prozessstationen (KRIT) :crit, 2026-03-12, 2026-03-26
+    [3] Vormontage Transportband :2026-03-12, 2026-03-21
     [4] Anpassung Steuereinheiten :2026-03-12, 2026-03-14
-    [5] Programmierung Steuereinheiten :2026-03-14, 2026-03-22
-    [6] Montage Gesamtsystem (KRIT) :crit, 2026-03-22, 2026-04-01
-    [7] Test Gesamtsystem (KRIT) :crit, 2026-04-01, 2026-04-06
-    [8] Einweisung der Produktionsmitarbeiter (KRIT) :crit, 2026-04-06, 2026-04-08
+    [5] Programmierung Steuereinheiten :2026-03-16, 2026-03-26
+    [6] Montage Gesamtsystem (KRIT) :crit, 2026-03-26, 2026-04-11
+    [7] Test Gesamtsystem (KRIT) :crit, 2026-04-13, 2026-04-18
+    [8] Einweisung der Produktionsmitarbeiter (KRIT) :crit, 2026-04-20, 2026-04-22
 ```
 
 ---

@@ -11,7 +11,6 @@ und wird hier genau einmal gelesen.
 
 import configparser
 import math
-from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import Literal, Sequence, Tuple, Union
 
@@ -183,21 +182,3 @@ def format_time_value_auto(days: float) -> str:
     if days < 1.0:
         return format_time_value(days, 'hours')
     return format_time_value(days, 'days')
-
-
-def convert_cpm_time_to_datetime(cpm_time: float, start_date: datetime, time_unit: str) -> datetime:
-    """
-    Rechnet einen CPM-Zeitwert (Arbeitstage) für Diagramme in einen Zeitpunkt um.
-
-    Bei 'minutes'/'hours' zählt jeder volle Arbeitstag als Kalendertag, der Rest
-    als Uhrzeit-Offset; bei 'days' werden Kalendertage addiert.
-    """
-    if time_unit == 'minutes':
-        total = cpm_time * minutes_per_day()
-        return start_date + timedelta(days=int(total // minutes_per_day()),
-                                      minutes=int(total % minutes_per_day()))
-    if time_unit == 'hours':
-        total = cpm_time * hours_per_day()
-        return start_date + timedelta(days=int(total // hours_per_day()),
-                                      hours=int(total % hours_per_day()))
-    return start_date + timedelta(days=cpm_time)

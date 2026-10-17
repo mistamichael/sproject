@@ -8,7 +8,7 @@ GanttCalculator (Phase 2).
 """
 
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import cached_property
 from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
@@ -156,11 +156,24 @@ class CPMResult(BaseModel):
         holidays = frozenset(self.holidays or {}) if self.skip_holidays else frozenset()
         return WorkCalendar(skip_weekends=self.skip_weekends, holidays=holidays)
 
-    def date_at(self, workdays: float) -> datetime:
-        """Kalenderdatum nach workdays Arbeitstagen ab Projektstart."""
+    def date_at(self, workdays: float, is_end: bool = False) -> datetime:
+        """
+        Zeitpunkt nach workdays Arbeitstagen ab Projektstart – die einzige Umrechnung
+        CPM-Zeit → Kalender für alle Ausgaben.
+
+        - Ein Arbeitstag beginnt zur Uhrzeit des Projektstarts; Bruchteile sind Arbeitsstunden
+          (0.5 d = 4 h bei 8 h/Tag), Wochenenden/Feiertage werden übersprungen.
+        - is_end=True: ein Ende genau auf einer Tagesgrenze liegt am Ende des letzten
+          Arbeitstags (Fr 17:00), nicht am Beginn des nächsten (Mo 09:00).
+        """
         if self.project_start is None:
             raise ValueError("Projekt hat kein Startdatum")
-        return self.calendar.add_workdays(self.project_start, workdays)
+        whole = math.floor(workdays + 1e-9)
+        fraction = workdays - whole
+        if is_end and fraction < 1e-9 and whole > 0:
+            whole, fraction = whole - 1, 1.0
+        day = self.calendar.add_workdays(self.project_start, whole)
+        return day + timedelta(hours=fraction * hours_per_day())
 
     @property
     def project_end_days(self) -> float:
@@ -180,7 +193,7 @@ class CPMResult(BaseModel):
     # Export-Hilfen
     # ------------------------------------------------------------------
 
-    def _format_point(self, days: float) -> str:
+    def _format_point(self, days: float, is_end: bool = False) -> str:
         """Zeitpunkt als Dauer (unter 24 h) oder Datum/Uhrzeit."""
         if math.isinf(days):
             return "inf"
@@ -190,8 +203,8 @@ class CPMResult(BaseModel):
             hours = days * hours_per_day()
             if hours < 24:
                 return f"{hours:.2f}h"
-            return self.date_at(days).strftime('%Y-%m-%d %H:%M')
-        return self.date_at(days).strftime('%Y-%m-%d')
+            return self.date_at(days, is_end).strftime('%Y-%m-%d %H:%M')
+        return self.date_at(days, is_end).strftime('%Y-%m-%d')
 
     def export_to_dict(self, include_dates: bool = True) -> dict:
         """Ergebnis als Dictionary (für JSON-Export)."""
@@ -217,20 +230,20 @@ class CPMResult(BaseModel):
             cpm = {
                 'D': fmt(task.duration),
                 'FB': self._format_point(task.faz),
-                'FE': self._format_point(task.fez),
+                'FE': self._format_point(task.fez, is_end=True),
                 'SB': self._format_point(task.saz),
-                'SE': self._format_point(task.sez),
+                'SE': self._format_point(task.sez, is_end=True),
                 'GP': fmt(task.puffer),
                 'FP': fmt(task.free_puffer),
                 'is_critical': task.is_critical,
             }
             if include_dates and self.project_start:
-                faz_date, fez_date = self.date_at(task.faz), self.date_at(task.fez)
+                faz_date, fez_date = self.date_at(task.faz), self.date_at(task.fez, is_end=True)
                 dates: dict = {
                     'fb_date': faz_date.strftime('%Y-%m-%d'),
                     'fe_date': fez_date.strftime('%Y-%m-%d'),
                     'sb_date': self.date_at(task.saz).strftime('%Y-%m-%d'),
-                    'se_date': self.date_at(task.sez).strftime('%Y-%m-%d'),
+                    'se_date': self.date_at(task.sez, is_end=True).strftime('%Y-%m-%d'),
                 }
                 weekend_days = self.calendar.count_weekend_days(faz_date, fez_date)
                 if weekend_days:
@@ -317,7 +330,10 @@ class CPMCalculator:
         elif holidays is None and calendar.holidays:
             holidays = {d: '' for d in calendar.holidays}
         self.calendar = calendar
-        # Ohne Startdatum: heute bzw. nächster Arbeitstag zum Arbeitsbeginn (nicht "jetzt")
+        # Ohne Startdatum: heute bzw. nächster Arbeitstag zum Arbeitsbeginn (nicht "jetzt");
+        # ein Datum ohne Uhrzeit meint den Arbeitsbeginn ([WorkingHours] morning_shift)
+        if explicit_start is not None and explicit_start.hour == explicit_start.minute == 0:
+            explicit_start = explicit_start + timedelta(hours=calendar.day_start_hour)
         self.start_date = explicit_start or calendar.next_work_start(datetime.now())
         # None = Feiertage deaktiviert, {} = aktiviert, aber keine gefunden
         self.holidays = holidays

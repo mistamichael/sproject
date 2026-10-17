@@ -8,7 +8,7 @@
 - **Projekt:** Pizza Project
 - **Projektdauer:** 84.0m
 - **Startdatum:** 2026-03-03 09:00
-- **Enddatum (geschätzt):** 2026-03-03 13:12
+- **Enddatum (geschätzt):** 2026-03-03 10:24
 - **Zeiteinheit:** minutes
 - **Anzahl Tasks:** 10
 - **Kritische Tasks:** 7

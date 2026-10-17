@@ -10,7 +10,7 @@ Projekt:            Montage Gesamtsystem
 Projektdauer:       30.0d
 Zeiteinheit:        days
 Startdatum:         2026-03-09
-Enddatum:           2026-04-22
+Enddatum:           2026-04-21
 Anzahl Tasks:       8
 Kritische Tasks:    5
 

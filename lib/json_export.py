@@ -55,7 +55,7 @@ def _build_summary(result: CPMResult, project_name: str) -> Dict[str, Any]:
     if base.get('project_start'):
         data['project_start'] = base['project_start']
         project_duration = max(task.fez for task in result.tasks.values())
-        data['project_end'] = result.date_at(project_duration).strftime('%Y-%m-%d')
+        data['project_end'] = result.date_at(project_duration, is_end=True).strftime('%Y-%m-%d')
     if base.get('calculation_date'):
         data['calculation_date'] = base['calculation_date']
     tracking = tracking_summary(result)

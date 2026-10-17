@@ -199,7 +199,7 @@ def get_timeline_range(result: CPMResult, loadunit: str, resolution_config: Dict
     # Berechne Projektende
     project_duration = max(task.fez for task in result.tasks.values())
     start_date = result.project_start
-    end_date = result.calendar.add_workdays(start_date, project_duration)
+    end_date = result.date_at(project_duration, is_end=True)
 
     # Finde minimale Task-Dauer (ignoriere Pausen)
     min_task_duration_days = float('inf')
@@ -1077,7 +1077,7 @@ def create_summary_sheet(wb: Workbook, result: CPMResult, project_name: str,
     ]
 
     if result.project_start:
-        end_date = result.date_at(project_duration)
+        end_date = result.date_at(project_duration, is_end=True)
         rows.insert(2, ("Startdatum:", result.project_start.strftime('%Y-%m-%d')))
         rows.insert(3, ("Enddatum:",   end_date.strftime('%Y-%m-%d')))
 

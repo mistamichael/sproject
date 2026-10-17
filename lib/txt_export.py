@@ -87,7 +87,7 @@ def _generate_summary(result: CPMResult, project_name: str, heading: str) -> Lis
     lines.append(f"Projektdauer:       {format_time_value_auto(project_duration)}")
     lines.append(f"Zeiteinheit:        {result.time_unit}")
     if result.project_start:
-        end_date = result.date_at(project_duration)
+        end_date = result.date_at(project_duration, is_end=True)
         lines.append(f"Startdatum:         {result.project_start.strftime('%Y-%m-%d')}")
         lines.append(f"Enddatum:           {end_date.strftime('%Y-%m-%d')}")
     non_break = [t for t in result.tasks.values()

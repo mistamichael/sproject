@@ -54,6 +54,7 @@ sproject/
 3. **UI → Modell:** `sync_to_model()` liest Stammdaten, Task-Tabelle (`TaskRow`) und alle `ListSection`s
 4. **Modell → UI:** `refresh_all()` aktualisiert alle DPG-Widgets aus dem Pydantic-Objekt
 5. **Berechnung:** `lib.schedule.build_schedule(project)` → `Schedule` (expandiertes Projekt, CPM, Gantt, Kosten) – GUI und CLI identisch
+   - Zeitumrechnung CPM-Arbeitstage → Kalender **nur** über `CPMResult.date_at(workdays, is_end)` (Bruchteile = Arbeitsstunden, Enden = Ende des letzten Arbeitstags; Datum ohne Uhrzeit = Arbeitsbeginn aus `morning_shift`).
    - CPM rechnet in Arbeitstagen; danach plant `lib/models/leveling.py` mit Ressourcen (eine Person/ein LKW = eine Aufgabe zugleich, `Resource.slots`), Urlaub und Teilzeit (strecken Tasks) sowie `not_before`/`deadline`. Mehrere Prioritätsregeln, der kürzeste Plan gewinnt.
    - Ruhepausen werden nach dem berechneten Zeitplan eingefügt (zweiter CPM-Lauf).
    - Plan gegen Ist: `status_date`, `actuals`, `baseline` im Projekt (`lib/models/tracking.py`, `lib/baseline.py`); Doku: `doc/de/termine-und-ist.md`.

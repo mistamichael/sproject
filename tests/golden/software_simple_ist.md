@@ -8,7 +8,7 @@
 - **Projekt:** Software Entwicklung Projekt (Ist-Stand)
 - **Projektdauer:** 220.0h
 - **Startdatum:** 2026-03-03 09:00
-- **Enddatum (geschätzt):** 2026-04-13 21:00
+- **Enddatum (geschätzt):** 2026-04-13 13:00
 - **Zeiteinheit:** hours
 - **Anzahl Tasks:** 8
 - **Kritische Tasks:** 5
@@ -85,15 +85,17 @@ gantt
     axisFormat  %d.%m
 
     section Feiertage
+    03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
+    06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
     section Tasks
     [1] Projektinitialisierung :2026-03-03 09:00, 2026-03-03 13:00
-    [2] Requirements Analyse :2026-03-03 13:00, 2026-03-06 09:00
-    [3] UI/UX Design :2026-03-06 09:00, 2026-03-10 09:00
-    [4] Backend Entwicklung (KRIT) :crit, 2026-03-06 09:00, 2026-03-14 09:00
-    [5] Frontend Entwicklung (KRIT) :crit, 2026-03-14 09:00, 2026-03-22 09:00
-    [6] Testing & QA (KRIT) :crit, 2026-03-22 09:00, 2026-03-29 09:00
-    [7] Deployment (KRIT) :crit, 2026-03-29 09:00, 2026-03-30 09:00
-    [8] Projektabschluss (KRIT) :crit, 2026-03-30 09:00, 2026-03-30 13:00
+    [2] Requirements Analyse :2026-03-03 13:00, 2026-03-05 17:00
+    [3] UI/UX Design :2026-03-06 09:00, 2026-03-11 17:00
+    [4] Backend Entwicklung (KRIT) :crit, 2026-03-06 09:00, 2026-03-17 17:00
+    [5] Frontend Entwicklung (KRIT) :crit, 2026-03-18 09:00, 2026-03-27 17:00
+    [6] Testing & QA (KRIT) :crit, 2026-03-30 09:00, 2026-04-09 17:00
+    [7] Deployment (KRIT) :crit, 2026-04-10 09:00, 2026-04-10 17:00
+    [8] Projektabschluss (KRIT) :crit, 2026-04-13 09:00, 2026-04-13 13:00
 ```
 
 ---
@@ -121,7 +123,7 @@ gantt
 
     section UI/UX Designer
 
-    UI/UX Design                :t0, 2026-03-06 09:00, 2026-03-10 09:00
+    UI/UX Design                :t0, 2026-03-06 09:00, 2026-03-11 17:00
 ```
 
 ```mermaid
@@ -134,10 +136,10 @@ gantt
 
     section Senior Developer
 
-    Requirements Analyse        :t0, 2026-03-03 13:00, 2026-03-06 09:00
-    Backend Entwicklung         :t1, 2026-03-06 09:00, 2026-03-14 09:00
-    Testing & QA                :t2, 2026-03-22 09:00, 2026-03-29 09:00
-    Deployment                  :t3, 2026-03-29 09:00, 2026-03-30 09:00
+    Requirements Analyse        :t0, 2026-03-03 13:00, 2026-03-05 17:00
+    Backend Entwicklung         :t1, 2026-03-06 09:00, 2026-03-17 17:00
+    Testing & QA                :t2, 2026-03-30 09:00, 2026-04-09 17:00
+    Deployment                  :t3, 2026-04-10 09:00, 2026-04-10 17:00
 ```
 
 ```mermaid
@@ -150,8 +152,8 @@ gantt
 
     section Junior Developer
 
-    Frontend Entwicklung        :t0, 2026-03-14 09:00, 2026-03-22 09:00
-    Testing & QA                :t1, 2026-03-22 09:00, 2026-03-29 09:00
+    Frontend Entwicklung        :t0, 2026-03-18 09:00, 2026-03-27 17:00
+    Testing & QA                :t1, 2026-03-30 09:00, 2026-04-09 17:00
 ```
 
 ```mermaid
@@ -165,8 +167,8 @@ gantt
     section Project Manager
 
     Projektinitialisierung      :t0, 2026-03-03 09:00, 2026-03-03 13:00
-    Requirements Analyse        :t1, 2026-03-03 13:00, 2026-03-06 09:00
-    Projektabschluss            :t2, 2026-03-30 09:00, 2026-03-30 13:00
+    Requirements Analyse        :t1, 2026-03-03 13:00, 2026-03-05 17:00
+    Projektabschluss            :t2, 2026-04-13 09:00, 2026-04-13 13:00
 ```
 
 #### Personen

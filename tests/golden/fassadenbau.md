@@ -7,8 +7,8 @@
 
 - **Projekt:** Fassadensanierung & Kellerisolierung
 - **Projektdauer:** 2280.0m
-- **Startdatum:** 2026-03-02 00:00
-- **Enddatum (geschätzt):** 2026-03-06 18:00
+- **Startdatum:** 2026-03-02 09:00
+- **Enddatum (geschätzt):** 2026-03-06 15:00
 - **Zeiteinheit:** minutes
 - **Anzahl Tasks:** 11
 - **Kritische Tasks:** 11
@@ -95,17 +95,17 @@ gantt
 
     section Feiertage
     section Tasks
-    [1] Erdarbeiten & Freilegung (KRIT) :crit, 2026-03-02 00:00, 2026-03-03 00:00
-    [1-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 00:45
-    [1-BRK-P_ERD-2] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 00:30
-    [2] Kellerisolierung (Perimeter) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 06:00
-    [2-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 06:00, 2026-03-03 06:45
-    [2-BRK-P_ERD-2] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 06:00, 2026-03-03 06:30
-    [3] Holzständerwerk & Holzfaserplatten (KRIT) :crit, 2026-03-03 06:00, 2026-03-05 06:00
-    [3-BRK-P_ZIM] Pause Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-05 06:00, 2026-03-05 06:45
-    [3-BRK-P_ZIM-2] Pause Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-05 06:00, 2026-03-05 06:30
-    [4] Zellulose Einblasdämmung (KRIT) :crit, 2026-03-05 06:00, 2026-03-06 02:00
-    [5] Verfüllen & Abschluss (KRIT) :crit, 2026-03-06 02:00, 2026-03-06 06:00
+    [1] Erdarbeiten & Freilegung (KRIT) :crit, 2026-03-02 09:00, 2026-03-02 17:00
+    [1-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 09:00, 2026-03-03 09:45
+    [1-BRK-P_ERD-2] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 09:00, 2026-03-03 09:30
+    [2] Kellerisolierung (Perimeter) (KRIT) :crit, 2026-03-03 09:00, 2026-03-03 15:00
+    [2-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 15:00, 2026-03-03 15:45
+    [2-BRK-P_ERD-2] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 15:00, 2026-03-03 15:30
+    [3] Holzständerwerk & Holzfaserplatten (KRIT) :crit, 2026-03-03 15:00, 2026-03-05 15:00
+    [3-BRK-P_ZIM] Pause Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-05 15:00, 2026-03-05 15:45
+    [3-BRK-P_ZIM-2] Pause Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-05 15:00, 2026-03-05 15:30
+    [4] Zellulose Einblasdämmung (KRIT) :crit, 2026-03-05 15:00, 2026-03-06 11:00
+    [5] Verfüllen & Abschluss (KRIT) :crit, 2026-03-06 11:00, 2026-03-06 15:00
 ```
 
 ---
@@ -136,7 +136,7 @@ gantt
 
     section Zellulose-Einblasmaschine
 
-    Zellulose Einblasdämmung    :t0, 2026-03-05 06:00, 2026-03-06 02:00
+    Zellulose Einblasdämmung    :t0, 2026-03-05 15:00, 2026-03-06 11:00
 ```
 
 ```mermaid
@@ -149,7 +149,7 @@ gantt
 
     section Holzfaserplatten & Ständerwerk
 
-    Holzständerwerk & Holz...   :t0, 2026-03-03 06:00, 2026-03-05 06:00
+    Holzständerwerk & Holz...   :t0, 2026-03-03 15:00, 2026-03-05 15:00
 ```
 
 ```mermaid
@@ -162,7 +162,7 @@ gantt
 
     section Perimeterdämmung XPS
 
-    Kellerisolierung (Peri...   :t0, 2026-03-03 00:00, 2026-03-03 06:00
+    Kellerisolierung (Peri...   :t0, 2026-03-03 09:00, 2026-03-03 15:00
 ```
 
 ```mermaid
@@ -175,8 +175,8 @@ gantt
 
     section Minibagger 3.5t
 
-    Erdarbeiten & Freilegung    :t0, 2026-03-02 00:00, 2026-03-03 00:00
-    Verfüllen & Abschluss       :t1, 2026-03-06 02:00, 2026-03-06 06:00
+    Erdarbeiten & Freilegung    :t0, 2026-03-02 09:00, 2026-03-02 17:00
+    Verfüllen & Abschluss       :t1, 2026-03-06 11:00, 2026-03-06 15:00
 ```
 
 ```mermaid
@@ -189,9 +189,9 @@ gantt
 
     section LKW-Fahrer Max
 
-    Erdarbeiten & Freilegung    :t0, 2026-03-02 00:00, 2026-03-03 00:00
-    Kellerisolierung (Peri...   :t1, 2026-03-03 00:00, 2026-03-03 06:00
-    Verfüllen & Abschluss       :t2, 2026-03-06 02:00, 2026-03-06 06:00
+    Erdarbeiten & Freilegung    :t0, 2026-03-02 09:00, 2026-03-02 17:00
+    Kellerisolierung (Peri...   :t1, 2026-03-03 09:00, 2026-03-03 15:00
+    Verfüllen & Abschluss       :t2, 2026-03-06 11:00, 2026-03-06 15:00
 ```
 
 ```mermaid
@@ -204,7 +204,7 @@ gantt
 
     section Baggerführer Bodo
 
-    Zellulose Einblasdämmung    :t0, 2026-03-05 06:00, 2026-03-06 02:00
+    Zellulose Einblasdämmung    :t0, 2026-03-05 15:00, 2026-03-06 11:00
 ```
 
 ```mermaid
@@ -217,7 +217,7 @@ gantt
 
     section LKW-Fahrer Heinz
 
-    Holzständerwerk & Holz...   :t0, 2026-03-03 06:00, 2026-03-05 06:00
+    Holzständerwerk & Holz...   :t0, 2026-03-03 15:00, 2026-03-05 15:00
 ```
 
 #### Personen

@@ -24,6 +24,7 @@ Layout:
 
 import sys
 from pathlib import Path
+from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -467,9 +468,12 @@ def _do_export(app: ProjectEditorApp) -> None:
         app._set_status(t("status.dir_not_found", path=target_dir))
         return
 
-    jobs = [("Projekt-JSON", "exp_chk_project", lambda: app.export_project_json(target_dir))]
-    jobs += [(label, f"exp_chk_{fmt}", lambda f=fmt: app.export_report(f, target_dir))
-             for fmt, label in REPORT_FORMATS.items()]
+    def report(fmt: str) -> Callable[[], Path]:
+        return lambda: app.export_report(fmt, target_dir)
+
+    jobs: list[tuple[str, str, Callable[[], Path]]] = [
+        ("Projekt-JSON", "exp_chk_project", lambda: app.export_project_json(target_dir))]
+    jobs += [(label, f"exp_chk_{fmt}", report(fmt)) for fmt, label in REPORT_FORMATS.items()]
 
     exported: list[str] = []
     errors: list[str] = []

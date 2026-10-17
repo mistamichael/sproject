@@ -11,8 +11,7 @@ WorkCalendar beschriftet – Wochenenden, Feiertage und die Zeit außerhalb des
 Arbeitstags kommen auf der Achse nicht vor.
 """
 
-import math
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional, Tuple
 
 from .durations import format_time_value, hours_per_day
@@ -25,18 +24,8 @@ _WEEKDAYS = {'de': ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
 
 
 def point_in_time(result: CPMResult, workdays: float, is_end: bool = False) -> datetime:
-    """
-    Zeitpunkt nach workdays Arbeitstagen. Bruchteile eines Tages sind Arbeitsstunden
-    (0.5 d = 4 h bei 8 h/Tag). Ein Ende genau auf einer Tagesgrenze liegt am Ende des
-    vorherigen Arbeitstags, nicht am Beginn des nächsten.
-    """
-    assert result.project_start is not None
-    whole = math.floor(workdays + 1e-9)
-    fraction = workdays - whole
-    if is_end and fraction < 1e-9 and whole > 0:
-        whole, fraction = whole - 1, 1.0
-    day = result.calendar.add_workdays(result.project_start, whole)
-    return day + timedelta(hours=fraction * hours_per_day())
+    """Kurzform für result.date_at (siehe dort)."""
+    return result.date_at(workdays, is_end)
 
 
 def axis_ticks(result: CPMResult, lang: str = 'de',

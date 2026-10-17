@@ -12,7 +12,7 @@ Diese Komponente berücksichtigt:
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -144,44 +144,22 @@ class GanttCalculator:
         )
 
     def _convert_task(self, task_id: Union[int, str], cpm_task: CPMTaskResult) -> GanttTaskResult:
-        start_date = self.calendar.add_workdays(self.start_date, cpm_task.faz)
-        end_date, working_days, interruptions = self._calculate_end_date(start_date, cpm_task.duration)
+        start = self.cpm_result.date_at(cpm_task.faz)
+        end = self.cpm_result.date_at(cpm_task.fez, is_end=True) if cpm_task.fez > cpm_task.faz else start
+        days = [start.date() + timedelta(days=i) for i in range((end.date() - start.date()).days + 1)]
+        interruptions: List[Dict[str, Any]] = [
+            {'date': datetime.combine(d, datetime.min.time()), 'type': reason, 'description': f'Unterbrechung: {reason}'}
+            for d in days if (reason := self.calendar.interruption_reason(d))
+        ]
         return GanttTaskResult(
             id=task_id,
             name=cpm_task.name,
             network_duration_days=cpm_task.duration,
-            calendar_start_date=start_date,
-            calendar_end_date=end_date,
-            working_days=working_days,
-            calendar_days=(end_date.date() - start_date.date()).days + 1,
+            calendar_start_date=start,
+            calendar_end_date=end,
+            working_days=float(len(days) - len(interruptions)),
+            calendar_days=len(days),
             interruptions=interruptions,
             is_critical=cpm_task.is_critical,
             puffer_days=cpm_task.puffer,
         )
-
-    def _calculate_end_date(self, start_date: datetime,
-                            working_days: float) -> Tuple[datetime, float, List[Dict[str, Any]]]:
-        """
-        Zählt ab start_date ganze Arbeitstage ab, bis working_days aufgebraucht sind
-        (angefangene Tage zählen voll), und protokolliert übersprungene Tage.
-
-        Returns:
-            (Enddatum, gezählte Arbeitstage, Unterbrechungen)
-        """
-        interruptions: List[Dict[str, Any]] = []
-        current = start_date
-        remaining = working_days
-        counted = 0.0
-        for _ in range(int(working_days * 10) + 100):   # Sicherheitslimit
-            if remaining <= 0:
-                break
-            reason = self.calendar.interruption_reason(current)
-            if reason is None:
-                counted += 1.0
-                remaining -= 1.0
-            else:
-                interruptions.append({
-                    'date': current, 'type': reason, 'description': f'Unterbrechung: {reason}',
-                })
-            current += timedelta(days=1)
-        return current - timedelta(days=1), counted, interruptions

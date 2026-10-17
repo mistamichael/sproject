@@ -6,7 +6,7 @@
     "num_tasks": 8,
     "num_critical": 4,
     "project_start": "2026-03-03",
-    "project_end": "2026-05-18",
+    "project_end": "2026-05-15",
   },
   "critical_path": [
     {
@@ -38,16 +38,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-03",
-        "fez": "2026-03-17",
+        "fez": "2026-03-16",
         "saz": "2026-03-03",
-        "sez": "2026-03-17",
+        "sez": "2026-03-16",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-03",
-          "fez_date": "2026-03-17",
+          "fez_date": "2026-03-16",
           "saz_date": "2026-03-03",
-          "sez_date": "2026-03-17"
+          "sez_date": "2026-03-16"
         }
       }
     },
@@ -58,16 +58,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-03-17",
-        "fez": "2026-03-27",
+        "fez": "2026-03-26",
         "saz": "2026-03-20",
-        "sez": "2026-04-01",
+        "sez": "2026-03-31",
         "gp": "3.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-17",
-          "fez_date": "2026-03-27",
+          "fez_date": "2026-03-26",
           "saz_date": "2026-03-20",
-          "sez_date": "2026-04-01"
+          "sez_date": "2026-03-31"
         }
       }
     },
@@ -78,16 +78,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-17",
-        "fez": "2026-04-23",
+        "fez": "2026-04-22",
         "saz": "2026-03-17",
-        "sez": "2026-04-23",
+        "sez": "2026-04-22",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-17",
-          "fez_date": "2026-04-23",
+          "fez_date": "2026-04-22",
           "saz_date": "2026-03-17",
-          "sez_date": "2026-04-23"
+          "sez_date": "2026-04-22"
         }
       }
     },
@@ -98,16 +98,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-03-27",
-        "fez": "2026-04-14",
+        "fez": "2026-04-13",
         "saz": "2026-04-01",
-        "sez": "2026-04-17",
+        "sez": "2026-04-16",
         "gp": "3.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-27",
-          "fez_date": "2026-04-14",
+          "fez_date": "2026-04-13",
           "saz_date": "2026-04-01",
-          "sez_date": "2026-04-17"
+          "sez_date": "2026-04-16"
         }
       }
     },
@@ -118,16 +118,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-03-27",
-        "fez": "2026-04-01",
+        "fez": "2026-03-31",
         "saz": "2026-04-20",
-        "sez": "2026-04-23",
+        "sez": "2026-04-22",
         "gp": "14.0d",
         "fp": "14.0d",
         "dates": {
           "faz_date": "2026-03-27",
-          "fez_date": "2026-04-01",
+          "fez_date": "2026-03-31",
           "saz_date": "2026-04-20",
-          "sez_date": "2026-04-23"
+          "sez_date": "2026-04-22"
         }
       }
     },
@@ -138,16 +138,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-04-14",
-        "fez": "2026-04-20",
+        "fez": "2026-04-17",
         "saz": "2026-04-17",
-        "sez": "2026-04-23",
+        "sez": "2026-04-22",
         "gp": "3.0d",
         "fp": "3.0d",
         "dates": {
           "faz_date": "2026-04-14",
-          "fez_date": "2026-04-20",
+          "fez_date": "2026-04-17",
           "saz_date": "2026-04-17",
-          "sez_date": "2026-04-23"
+          "sez_date": "2026-04-22"
         }
       }
     },
@@ -158,16 +158,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-04-23",
-        "fez": "2026-05-18",
+        "fez": "2026-05-15",
         "saz": "2026-04-23",
-        "sez": "2026-05-18",
+        "sez": "2026-05-15",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-04-23",
-          "fez_date": "2026-05-18",
+          "fez_date": "2026-05-15",
           "saz_date": "2026-04-23",
-          "sez_date": "2026-05-18"
+          "sez_date": "2026-05-15"
         }
       }
     },
@@ -178,16 +178,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-05-18",
-        "fez": "2026-05-18",
+        "fez": "2026-05-15",
         "saz": "2026-05-18",
-        "sez": "2026-05-18",
+        "sez": "2026-05-15",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-05-18",
-          "fez_date": "2026-05-18",
+          "fez_date": "2026-05-15",
           "saz_date": "2026-05-18",
-          "sez_date": "2026-05-18"
+          "sez_date": "2026-05-15"
         }
       }
     }
@@ -204,7 +204,7 @@
         "name": "design tank projekt",
         "network_duration_days": 10.0,
         "calendar_start_date": "2026-03-03T07:00:00",
-        "calendar_end_date": "2026-03-16T07:00:00",
+        "calendar_end_date": "2026-03-16T15:00:00",
         "working_days": 10.0,
         "calendar_days": 14,
         "is_critical": true,
@@ -215,7 +215,7 @@
         "name": "Select Tank supplyer",
         "network_duration_days": 8.0,
         "calendar_start_date": "2026-03-17T07:00:00",
-        "calendar_end_date": "2026-03-26T07:00:00",
+        "calendar_end_date": "2026-03-26T15:00:00",
         "working_days": 8.0,
         "calendar_days": 10,
         "is_critical": false,
@@ -226,7 +226,7 @@
         "name": "construct tank foundation",
         "network_duration_days": 25.0,
         "calendar_start_date": "2026-03-17T07:00:00",
-        "calendar_end_date": "2026-04-22T07:00:00",
+        "calendar_end_date": "2026-04-22T15:00:00",
         "working_days": 25.0,
         "calendar_days": 37,
         "is_critical": true,
@@ -237,7 +237,7 @@
         "name": "manufacture tank components",
         "network_duration_days": 10.0,
         "calendar_start_date": "2026-03-27T07:00:00",
-        "calendar_end_date": "2026-04-13T07:00:00",
+        "calendar_end_date": "2026-04-13T15:00:00",
         "working_days": 10.0,
         "calendar_days": 18,
         "is_critical": false,
@@ -248,7 +248,7 @@
         "name": "prepare Installation drawings",
         "network_duration_days": 3.0,
         "calendar_start_date": "2026-03-27T07:00:00",
-        "calendar_end_date": "2026-03-31T07:00:00",
+        "calendar_end_date": "2026-03-31T15:00:00",
         "working_days": 3.0,
         "calendar_days": 5,
         "is_critical": false,
@@ -259,7 +259,7 @@
         "name": "Deliver tank components",
         "network_duration_days": 4.0,
         "calendar_start_date": "2026-04-14T07:00:00",
-        "calendar_end_date": "2026-04-17T07:00:00",
+        "calendar_end_date": "2026-04-17T15:00:00",
         "working_days": 4.0,
         "calendar_days": 4,
         "is_critical": false,
@@ -270,7 +270,7 @@
         "name": "assemble tank",
         "network_duration_days": 15.0,
         "calendar_start_date": "2026-04-23T07:00:00",
-        "calendar_end_date": "2026-05-15T07:00:00",
+        "calendar_end_date": "2026-05-15T15:00:00",
         "working_days": 15.0,
         "calendar_days": 23,
         "is_critical": true,
@@ -281,9 +281,9 @@
         "name": "test commisions tank",
         "network_duration_days": 0.0,
         "calendar_start_date": "2026-05-18T07:00:00",
-        "calendar_end_date": "2026-05-17T07:00:00",
-        "working_days": 0.0,
-        "calendar_days": 0,
+        "calendar_end_date": "2026-05-18T07:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
         "is_critical": true,
         "puffer_days": 0.0
       }
