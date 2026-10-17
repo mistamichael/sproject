@@ -17,20 +17,13 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 # Import models and utilities
-try:
-    from .models.cpm import CPMResult
-    from .utils import (format_time_value, interpolate_color,
-                        is_system_task, format_task_field,
-                        convert_cpm_time_to_datetime, load_export_config,
-                        get_cfg_dir, collect_resource_data, collect_person_entries)
-    from .mermaid_export import generate_mermaid_gantt, export_mermaid_to_svg
-except (ImportError, ValueError):
-    from models.cpm import CPMResult
-    from utils import (format_time_value, interpolate_color,
-                       is_system_task, format_task_field,
-                       convert_cpm_time_to_datetime, load_export_config,
-                       get_cfg_dir, collect_resource_data, collect_person_entries)
-    from mermaid_export import generate_mermaid_gantt, export_mermaid_to_svg
+from .colors import interpolate_color, load_auto_color_range
+from .durations import convert_cpm_time_to_datetime, format_time_value
+from .export_config import load_export_config
+from .mermaid_export import export_mermaid_to_svg, generate_mermaid_gantt
+from .models.cpm import CPMResult
+from .paths import get_cfg_dir
+from .report_data import collect_person_entries, collect_resource_data, format_task_field
 
 
 # ---------------------------------------------------------------------------
@@ -77,19 +70,6 @@ _DEFAULT_NODE_ROWS = [
     ['saz', 'gp', 'sez'],
     ['fp'],
 ]
-
-
-def _load_auto_color_config(cfg_dir: Optional[Path] = None) -> tuple:
-    """Liest color_start/color_end aus defaults.cfg [ResourceAutoColor]."""
-    if cfg_dir is None:
-        cfg_dir = get_cfg_dir()
-    cfg_file = cfg_dir / "defaults.cfg"
-    config = configparser.ConfigParser()
-    if cfg_file.exists():
-        config.read(cfg_file, encoding='utf-8')
-    color_start = config.get('ResourceAutoColor', 'color_start', fallback='4472C4').strip()
-    color_end   = config.get('ResourceAutoColor', 'color_end',   fallback='8B7AB8').strip()
-    return color_start, color_end
 
 
 def _load_md_config(cfg_dir: Optional[Path] = None, lang: str = 'de') -> tuple:
@@ -223,7 +203,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
 
     lines = [f"### {heading}", ""]
 
-    task_ids = [tid for tid in result.tasks if not is_system_task(tid)]
+    task_ids = [tid for tid in result.tasks if not result.is_blocker(tid)]
     node_rows = mermaid_cfg.get('node_rows', _DEFAULT_NODE_ROWS)
     tu = result.time_unit
 
@@ -236,7 +216,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
         if tid in levels:
             return levels[tid]
         task = result.tasks[tid]
-        preds = [p for p in task.predecessors if p in result.tasks and not is_system_task(p)]
+        preds = [p for p in task.predecessors if p in result.tasks and not result.is_blocker(p)]
         levels[tid] = 0 if not preds else max(get_level(p) for p in preds) + 1
         return levels[tid]
 
@@ -288,7 +268,7 @@ def _generate_netplan_ascii_section(result: CPMResult, heading: str, mermaid_cfg
             task = result.tasks[tid]
             ascii_lines.extend(render_box(tid, task))
 
-            succs = [s for s in task.successors if s in result.tasks and not is_system_task(s)]
+            succs = [s for s in task.successors if s in result.tasks and not result.is_blocker(s)]
             if succs:
                 ascii_lines.append("  |")
                 for succ_id in succs:
@@ -336,7 +316,7 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
 
     # Knoten
     for task_id, task in result.tasks.items():
-        if isinstance(task_id, str) and task_id.startswith('WE-'):
+        if result.is_blocker(task_id):
             continue
 
         label = _build_label(task, task_id)
@@ -355,7 +335,7 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
     #   EE: A --o B          (solid, Kreis)
     #   AE: A -.-> B         (gestrichelt, Pfeilspitze)
     for task_id, task in result.tasks.items():
-        if is_system_task(task_id):
+        if result.is_blocker(task_id):
             continue
 
         edges = [
@@ -366,7 +346,7 @@ def _build_mermaid_network(result: CPMResult, mermaid_cfg: dict) -> str:
         ]
         for succ_list, arrow in edges:
             for succ_id in succ_list:
-                if is_system_task(succ_id) or succ_id not in result.tasks:
+                if succ_id not in result.tasks or result.is_blocker(succ_id):
                     continue
                 lines.append(f'    N{task_id} {arrow} N{succ_id}')
 
@@ -496,15 +476,7 @@ def _generate_cost_overview_section(
     """Kostenübersicht als Markdown-Tabelle."""
     lines = [f"### {heading}", ""]
 
-    try:
-        from cost_calculator import calculate_project_costs
-    except ImportError:
-        try:
-            from .cost_calculator import calculate_project_costs
-        except ImportError:
-            lines.append("*Kostenberechnung nicht verfügbar.*")
-            lines.append("")
-            return "\n".join(lines)
+    from .cost_calculator import calculate_project_costs
 
     costs = calculate_project_costs(project, result)
     if not costs:
@@ -562,7 +534,7 @@ def _generate_resource_list_section(
             resource_person_names[res.id] = person_lookup[res.person_id].name
 
     # Auto-Farbzuweisung für Ressourcen ohne explizite Farbe
-    color_start, color_end = _load_auto_color_config()
+    color_start, color_end = load_auto_color_range()
     sorted_res_ids = sorted(resource_usage.keys())
     uncolored = [rid for rid in sorted_res_ids if rid not in resource_colors]
     n = len(uncolored)
@@ -868,7 +840,7 @@ def export_cpm_to_svg_zip(
                 for res in rd.resources:
                     if hasattr(res, 'color') and res.color:
                         resource_colors[res.id] = res.color
-                color_start, color_end = _load_auto_color_config()
+                color_start, color_end = load_auto_color_range()
                 sorted_res_ids = sorted(rd.resource_usage.keys())
                 uncolored = [rid for rid in sorted_res_ids if rid not in resource_colors]
                 n = len(uncolored)

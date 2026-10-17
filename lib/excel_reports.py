@@ -6,6 +6,7 @@ Generates Excel worksheets with Gantt charts and resource allocation diagrams.
 """
 import csv
 import io
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Any
@@ -19,17 +20,15 @@ try:
 except ImportError:
     OPENPYXL_AVAILABLE = False
 
-# Import models - try relative import first, then absolute
-try:
-    from .models import Project
-    from .models.reports import GanttReport, ResourceListReport
-    from .models.cpm import CPMResult
-    from .utils import format_time_value_auto, add_workdays, interpolate_color, collect_person_entries, collect_resource_details
-except (ImportError, ValueError):
-    from models import Project
-    from models.reports import GanttReport, ResourceListReport
-    from models.cpm import CPMResult
-    from utils import format_time_value_auto, add_workdays, interpolate_color, collect_person_entries, collect_resource_details
+from .colors import interpolate_color
+from .durations import format_time_value_auto
+from .models import Project
+from .models.cpm import CPMResult
+from .models.reports import GanttReport, ResourceListReport
+from .paths import get_cfg_dir
+from .report_data import collect_person_entries, collect_resource_details
+
+logger = logging.getLogger(__name__)
 
 
 def load_excel_export_config(cfg_dir: Path, lang: str = 'de') -> Dict[str, Any]:
@@ -200,13 +199,13 @@ def get_timeline_range(result: CPMResult, loadunit: str, resolution_config: Dict
     # Berechne Projektende
     project_duration = max(task.fez for task in result.tasks.values())
     start_date = result.project_start
-    end_date = add_workdays(start_date, project_duration)
+    end_date = result.calendar.add_workdays(start_date, project_duration)
 
     # Finde minimale Task-Dauer (ignoriere Pausen)
     min_task_duration_days = float('inf')
     for task in result.tasks.values():
         # Überspringe Pausen-Tasks
-        is_break = hasattr(task, 'is_break') and task.is_break
+        is_break = task.is_break
         if not is_break and task.duration > 0:
             min_task_duration_days = min(min_task_duration_days, task.duration)
 
@@ -755,7 +754,7 @@ def create_gantt_chart(wb: Workbook, project: Project, result: CPMResult,
         task = result.tasks[task_id]
 
         # Prüfe ob Task eine Pause ist
-        is_break = hasattr(task, 'is_break') and task.is_break
+        is_break = task.is_break
 
         # Interpoliere Farbe (Pausen werden grau)
         if is_break:
@@ -938,7 +937,7 @@ def create_resource_list(wb: Workbook, project: Project, result: CPMResult,
             duration_cols = max(1, int(task.duration * cols_per_workday))
 
             # Prüfe ob Task eine Pause ist
-            is_break = hasattr(task, 'is_break') and task.is_break
+            is_break = task.is_break
 
             # Zeichne Balken (ohne Puffer, nur Dauer)
             for col_offset in range(faz_offset, faz_offset + duration_cols):
@@ -1067,7 +1066,7 @@ def create_summary_sheet(wb: Workbook, result: CPMResult, project_name: str,
     project_duration = max(task.fez for task in result.tasks.values())
     critical_tasks = [t for t in result.tasks.values() if t.is_critical]
     non_break_tasks = [t for t in result.tasks.values()
-                       if not t.is_break and not (isinstance(t.id, str) and t.id.startswith('WE-'))]
+                       if not t.is_system]
 
     rows = [
         ("Projekt:",         project_name),
@@ -1078,7 +1077,7 @@ def create_summary_sheet(wb: Workbook, result: CPMResult, project_name: str,
     ]
 
     if result.project_start:
-        end_date = add_workdays(result.project_start, project_duration)
+        end_date = result.date_at(project_duration)
         rows.insert(2, ("Startdatum:", result.project_start.strftime('%Y-%m-%d')))
         rows.insert(3, ("Enddatum:",   end_date.strftime('%Y-%m-%d')))
 
@@ -1163,8 +1162,7 @@ def create_critical_path_sheet(wb: Workbook, result: CPMResult,
     row = 4
     critical_ids = [tid for tid in result.critical_path
                     if tid in result.tasks
-                    and not (isinstance(tid, str) and tid.startswith('WE-'))
-                    and not result.tasks[tid].is_break]
+                    and not result.tasks[tid].is_system]
 
     for tid in critical_ids:
         task = result.tasks[tid]
@@ -1232,8 +1230,7 @@ def create_tasklist_sheet(wb: Workbook, result: CPMResult,
 
     sorted_ids = sorted(
         [tid for tid in result.tasks
-         if not (isinstance(tid, str) and tid.startswith('WE-'))
-         and not result.tasks[tid].is_break],
+         if not result.tasks[tid].is_system],
         key=lambda x: result.tasks[x].faz
     )
 
@@ -1318,10 +1315,7 @@ def create_cost_sheet(wb: 'Workbook', project: Any, result: CPMResult,
         result:   CPM-Berechnungsergebnis
         tab_name: Reiter-Bezeichnung
     """
-    try:
-        from cost_calculator import calculate_project_costs
-    except ImportError:
-        from .cost_calculator import calculate_project_costs
+    from .cost_calculator import calculate_project_costs
 
     ws = wb.create_sheet(title=tab_name)
 
@@ -1404,3 +1398,52 @@ def create_cost_sheet(wb: 'Workbook', project: Any, result: CPMResult,
     for i, w in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = w
 
+
+
+def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project: Optional[Project] = None,
+                       cfg_dir: Optional[Path] = None, lang: str = 'de') -> None:
+    """
+    Excel-Report mit den Tabs aus cfg/excel_export.cfg [sections] section_order.
+
+    Verfügbare Sektionen: summary, critical_path, netplan, tasklist, gantt_chart,
+    resource_list, cost_overview
+    """
+    if not OPENPYXL_AVAILABLE:
+        raise ImportError("openpyxl ist nicht installiert. Installieren Sie es mit: pip install openpyxl")
+
+    full_config = load_excel_export_config(cfg_dir or get_cfg_dir(), lang=lang)
+    tab_names = full_config['tab_names']
+
+    def _report(cls, section: str, default: str, columns):
+        name = tab_names.get(section, default)
+        return cls(id=section, name=name, headline=name, columns=columns, loadunit=result.time_unit)
+
+    wb = Workbook()
+    wb.remove(wb.active)
+    for section in full_config['sections']['section_order']:
+        if section == 'summary':
+            create_summary_sheet(wb, result, result.project_name,
+                                 tab_name=tab_names.get('summary', 'Projektzusammenfassung'))
+        elif section == 'critical_path':
+            create_critical_path_sheet(wb, result, tab_name=tab_names.get('critical_path', 'Kritischer Pfad'),
+                                       labels=tab_names)
+        elif section == 'tasklist':
+            create_tasklist_sheet(wb, result, tab_name=tab_names.get('tasklist', 'Alle Tasks'), labels=tab_names)
+        elif section == 'netplan':
+            create_netplan_table_sheet(wb, result, tab_name=tab_names.get('netplan', 'Netzplan'))
+        elif section == 'cost_overview':
+            if project:
+                create_cost_sheet(wb, project, result, tab_name=tab_names.get('cost_overview', 'Kosten'))
+        elif section == 'gantt_chart':
+            if project:
+                create_gantt_chart(wb, project, result, _report(
+                    GanttReport, 'gantt_chart', 'Gantt Chart',
+                    ['ID', 'Name', 'Start', 'Ende', 'Aufwand', 'Diagramm']), full_config)
+        elif section == 'resource_list':
+            if project and project.persons:
+                create_resource_list(wb, project, result, _report(
+                    ResourceListReport, 'resource_list', 'Ressourcen',
+                    ['Ressource', 'Vorgang', 'Start', 'Ende', 'Diagramm']), full_config)
+        else:
+            logger.warning("Unbekannte Excel-Sektion '%s' – wird übersprungen.", section)
+    wb.save(output_file)

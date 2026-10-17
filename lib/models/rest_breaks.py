@@ -5,8 +5,14 @@ Rest Break Management for Person Resources
 Verwaltet Ruhepausen für Personen basierend auf Arbeitszeit-Regeln.
 """
 
-from typing import List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from ..durations import parse_duration_to_minutes
 from .resources import Person, RestInterval
+from .tasks import SimpleTask
+
+if TYPE_CHECKING:
+    from .project import Project
 
 
 def resolve_rest_intervals(person: Person, project_resting_times: Optional[List[RestInterval]] = None) -> List[RestInterval]:
@@ -82,3 +88,54 @@ class PersonWorkTracker:
             self.taken_breaks.append(interval.after_hours)
             self.last_break_at = self.worked_hours
 
+
+
+def insert_rest_breaks(tasks: List[SimpleTask], project: "Project") -> List[SimpleTask]:
+    """
+    Fügt nach Tasks Pausen-Tasks ein, sobald eine Person die Arbeitszeit-Schwelle
+    einer Ruhepausen-Regel erreicht.
+
+    Die Pause wird als Nachfolger des auslösenden Tasks eingehängt.
+    """
+    persons = {p.id: p for p in (project.persons or [])}
+    trackers: Dict[str, PersonWorkTracker] = {}
+    for person in persons.values():
+        intervals = resolve_rest_intervals(person, project.resting_times)
+        if intervals:
+            trackers[person.id] = PersonWorkTracker(person.id, intervals)
+    if not trackers:
+        return tasks
+
+    res_to_person = {r.id: r.person_id for r in (project.resources or []) if r.person_id}
+
+    result: List[SimpleTask] = []
+    for task in tasks:
+        result.append(task)
+        if not task.resources or task.is_break:
+            continue
+
+        task_hours = parse_duration_to_minutes(task.duration or 0) / 60.0
+        working = dict.fromkeys(
+            res_to_person[r] for r in task.resources
+            if res_to_person.get(r) in trackers
+        )
+        required = {}
+        for person_id in working:
+            rest_interval = trackers[person_id].add_work_time(task_hours)
+            if rest_interval:
+                required[person_id] = rest_interval
+
+        for person_id, rest_interval in required.items():
+            person = persons[person_id]
+            break_id = f"{task.id}-BRK-{person_id.replace('PERS', 'P')}"
+            result.append(SimpleTask(
+                id=break_id,
+                name=f"Pause: {person.name} ({rest_interval.note or rest_interval.duration})",
+                duration=rest_interval.duration,
+                cost=0.0,
+                is_break=True,
+            ))
+            task.successors.append(break_id)
+            trackers[person_id].take_break(rest_interval)
+
+    return result

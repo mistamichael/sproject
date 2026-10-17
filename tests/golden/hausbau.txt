@@ -1,0 +1,77 @@
+======================================================================
+Einfamilienhaus-Bau - CPM REPORT
+======================================================================
+
+======================================================================
+PROJEKTZUSAMMENFASSUNG
+======================================================================
+
+Projekt:            Einfamilienhaus-Bau
+Projektdauer:       31.0d
+Zeiteinheit:        days
+Startdatum:         2026-04-01
+Enddatum:           2026-05-20
+Anzahl Tasks:       10
+Kritische Tasks:    9
+
+======================================================================
+KRITISCHER PFAD
+======================================================================
+
+  [1] Grube ausheben                      Dauer: 3.0d
+  [2] Erde abtransportieren               Dauer: 4.0d
+  [3] Fundament gießen                    Dauer: 2.0d
+  [4] Fundament trocknen                  Dauer: 7.0d
+  [5] Mauerwerk errichten                 Dauer: 10.0d
+  [7] Sanitärinstallation                 Dauer: 6.0d
+  [9] Laufende Bauschuttreinigung         Dauer: 14.0d
+  [8] Innenausbau (Trockenbau/Böden)      Dauer: 12.0d
+  [10] Abnahme                             Dauer: 1.0d
+
+======================================================================
+NETZPLAN TABELLE
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
+----------------------------------------------------------------------
+1       Grube ausheben                 3.0      0.0      3.0      0.0      3.0      0.0      -3.0     3, 2                 JA
+2       Erde abtransportieren          4.0      0.0      4.0      0.0      4.0      0.0      0.0                           JA
+3       Fundament gießen               2.0      3.0      5.0      3.0      5.0      0.0      0.0      4                    JA
+4       Fundament trocknen             7.0      5.0      12.0     5.0      12.0     0.0      0.0      5                    JA
+5       Mauerwerk errichten            10.0     12.0     22.0     12.0     22.0     0.0      -10.0    10, 6, 7             JA
+6       Elektroinstallation            5.0      12.0     17.0     13.0     18.0     1.0      1.0      8                    
+7       Sanitärinstallation            6.0      12.0     18.0     12.0     18.0     0.0      0.0      8                    JA
+9       Laufende Bauschuttreinigung    14.0     16.0     30.0     16.0     30.0     0.0      0.0      10                   JA
+8       Innenausbau (Trockenbau/Böden) 12.0     18.0     30.0     18.0     30.0     0.0      -14.0    10, 9                JA
+10      Abnahme                        1.0      30.0     31.0     30.0     31.0     0.0      0.0                           JA
+----------------------------------------------------------------------
+
+======================================================================
+ALLE TASKS
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Krit.
+----------------------------------------------------------------------
+1       Grube ausheben                 3.0d     0.0d     3.0d     0.0d     3.0d     0.0d     -3.0d    JA
+2       Erde abtransportieren          4.0d     0.0d     4.0d     0.0d     4.0d     0.0d     0.0d     JA
+3       Fundament gießen               2.0d     3.0d     5.0d     3.0d     5.0d     0.0d     0.0d     JA
+4       Fundament trocknen             7.0d     5.0d     12.0d    5.0d     12.0d    0.0d     0.0d     JA
+5       Mauerwerk errichten            10.0d    12.0d    22.0d    12.0d    22.0d    0.0d     -10.0d   JA
+6       Elektroinstallation            5.0d     12.0d    17.0d    13.0d    18.0d    1.0d     1.0d     
+7       Sanitärinstallation            6.0d     12.0d    18.0d    12.0d    18.0d    0.0d     0.0d     JA
+9       Laufende Bauschuttreinigung    14.0d    16.0d    30.0d    16.0d    30.0d    0.0d     0.0d     JA
+8       Innenausbau (Trockenbau/Böden) 12.0d    18.0d    30.0d    18.0d    30.0d    0.0d     -14.0d   JA
+10      Abnahme                        1.0d     30.0d    31.0d    30.0d    31.0d    0.0d     0.0d     JA
+----------------------------------------------------------------------
+
+======================================================================
+VERANTWORTLICHE
+======================================================================
+
+  (keine Ressourcen-Informationen verfügbar)
+
+======================================================================
+KOSTENÜBERSICHT
+======================================================================
+
+  (keine Kostendaten – Stundensätze fehlen)

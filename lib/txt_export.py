@@ -12,12 +12,10 @@ from pathlib import Path
 from typing import Optional, Dict, List, Any
 from datetime import datetime
 
-try:
-    from .models.cpm import CPMResult
-    from .utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data, collect_person_entries
-except (ImportError, ValueError):
-    from models.cpm import CPMResult  # type: ignore[no-redef]
-    from utils import format_time_value, format_time_value_auto, add_workdays, is_system_task, load_export_config, collect_resource_data, collect_person_entries  # type: ignore[no-redef]
+from .durations import format_time_value, format_time_value_auto
+from .export_config import load_export_config
+from .models.cpm import CPMResult
+from .report_data import collect_person_entries, collect_resource_data
 
 
 # ---------------------------------------------------------------------------
@@ -89,11 +87,11 @@ def _generate_summary(result: CPMResult, project_name: str, heading: str) -> Lis
     lines.append(f"Projektdauer:       {format_time_value_auto(project_duration)}")
     lines.append(f"Zeiteinheit:        {result.time_unit}")
     if result.project_start:
-        end_date = add_workdays(result.project_start, project_duration)
+        end_date = result.date_at(project_duration)
         lines.append(f"Startdatum:         {result.project_start.strftime('%Y-%m-%d')}")
         lines.append(f"Enddatum:           {end_date.strftime('%Y-%m-%d')}")
     non_break = [t for t in result.tasks.values()
-                 if not t.is_break and not is_system_task(t.id)]
+                 if not t.is_system]
     lines.append(f"Anzahl Tasks:       {len(non_break)}")
     lines.append(f"Kritische Tasks:    {len([t for t in non_break if t.is_critical])}")
     if result.calculation_date:
@@ -107,8 +105,7 @@ def _generate_critical_path(result: CPMResult, heading: str) -> List[str]:
     if result.critical_path:
         cp_tasks = [result.tasks[tid] for tid in result.critical_path
                     if tid in result.tasks
-                    and not is_system_task(tid)
-                    and not result.tasks[tid].is_break]
+                    and not result.tasks[tid].is_system]
         if cp_tasks:
             for task in cp_tasks:
                 dur = format_time_value(task.duration, result.time_unit)
@@ -213,8 +210,7 @@ def _generate_tasklist(result: CPMResult, heading: str, headings: dict) -> List[
 
     task_ids = sorted(
         [tid for tid in result.tasks
-         if not is_system_task(tid)
-         and not result.tasks[tid].is_break],
+         if not result.tasks[tid].is_system],
         key=lambda x: result.tasks[x].faz
     )
 
@@ -243,15 +239,7 @@ def _generate_cost_overview(result: CPMResult, heading: str,
     """Kostenübersicht auf Basis von Personen-/Ressourcen-Stundensätzen."""
     lines = _section_header(heading)
 
-    try:
-        from cost_calculator import calculate_project_costs
-    except ImportError:
-        try:
-            from .cost_calculator import calculate_project_costs
-        except ImportError:
-            lines.append("  (Kostenberechnung nicht verfügbar)")
-            lines.append("")
-            return lines
+    from .cost_calculator import calculate_project_costs
 
     costs = calculate_project_costs(project, result)
     if not costs:

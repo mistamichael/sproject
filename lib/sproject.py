@@ -1,518 +1,200 @@
 #!/usr/bin/env python3
 """
-Projekt Rechner
-Erzeugt aus den Angaben zu Resourcen, Urlaubstagen und Projekt-Angaben Reports,
-wie z.B. einen Resourcenplan über der Zeit, ein Gant-Diagramm mit kritischen Pfad oder einen Kostenplan
+sproject CLI
+============
+
+Berechnet Projektdateien (CPM, Kalender, Kosten) und exportiert Reports.
+
+    python -m lib.sproject --project examples/tankdesign.json --export json,txt
+    python lib/sproject.py --project examples/tankdesign.json
 """
 
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
-from pathlib import Path
 from datetime import datetime
-from typing import Optional, List
+from pathlib import Path
+from typing import List, Optional
 
-from excel_reports import (
-    load_excel_export_config,
-    create_summary_sheet,
-    create_critical_path_sheet,
-    create_tasklist_sheet,
-    create_netplan_table_sheet,
-    create_cost_sheet,
-)
-from markdown_export import export_cpm_to_markdown, export_cpm_to_html, export_cpm_to_svg_zip
-from txt_export import export_cpm_to_txt as _txt_export
-from json_export import export_cpm_to_json as _json_export
-from utils import load_labels
-from models.resources import Person
-from models.cpm import CPMResult
-from models.gantt import GanttCalculator
+if __package__ in (None, ""):
+    # Direkter Skript-Aufruf (python lib/sproject.py): Paket 'lib' bekannt machen (PEP 366)
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    import lib  # noqa: F401
+    __package__ = "lib"
+
+from .durations import format_time_value_auto
+from .export_config import load_labels
+from .exporters import EXPORTERS, ExportOptions, export_schedule
+from .models import load_project
+from .models.cpm import CPMResult
+from .paths import get_results_dir
+from .schedule import build_schedule
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
-    """
-    Richtet Logging ein mit Ausgabe in Datei und Konsole.
-
-    Args:
-        log_dir: Verzeichnis für Logdateien (nutzt %PV_LOG% falls gesetzt)
-
-    Returns:
-        Konfigurierter Logger
-    """
-    if log_dir is None:
-        log_dir_str = os.environ.get("PV_LOG", "log")
-        log_dir = Path(log_dir_str)
-
+    """Logging in Datei ($PV_LOG oder ./log) und auf die Konsole."""
+    log_dir = log_dir or Path(os.environ.get("PV_LOG", "log"))
     log_dir.mkdir(parents=True, exist_ok=True)
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = log_dir / f"sproject_{timestamp}.log"
+    log_file = log_dir / f"sproject_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 
     logger = logging.getLogger("sproject")
     logger.setLevel(logging.DEBUG)
 
-    # File Handler
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
-    file_formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    file_handler.setFormatter(file_formatter)
+    file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 
-    # Console Handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
-    console_formatter = logging.Formatter("%(levelname)s: %(message)s")
-    console_handler.setFormatter(console_formatter)
+    console_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
 
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
-
     logger.info(f"Logging initialisiert: {log_file}")
     return logger
 
 
 def find_project_files(data_dir: Path) -> List[Path]:
-    """
-    Findet alle project*.json und *.json Dateien im data Verzeichnis.
-
-    Args:
-        data_dir: Verzeichnis zum Durchsuchen
-
-    Returns:
-        Liste von Pfaden zu Projektdateien
-    """
+    """project*.json im Verzeichnis; falls keine vorhanden, alle *.json."""
     if not data_dir.exists():
         return []
-
-    # Suche zuerst nach project*.json, dann nach allen *.json
-    project_files = list(data_dir.glob("project*.json"))
-    if not project_files:
-        project_files = list(data_dir.glob("*.json"))
-
-    return project_files
+    return list(data_dir.glob("project*.json")) or list(data_dir.glob("*.json"))
 
 
 def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
-    """
-    Druckt CPM-Zusammenfassung auf die Konsole.
-
-    Args:
-        result: CPM-Berechnungsergebnis
-        labels: Beschriftungs-Dict aus load_labels() (sprachabhängig)
-    """
-    from utils import format_time_value_auto
-
+    """Druckt die CPM-Zusammenfassung auf die Konsole."""
     lb = labels or {}
-    l_project   = lb.get('label_project',   'Projekt')
-    l_duration  = lb.get('label_duration',  'Projektdauer')
-    l_start     = lb.get('label_start',     'Startdatum')
-    l_end       = lb.get('label_end',       'Enddatum (geschätzt)')
-    l_crit_path = lb.get('label_crit_path', 'Kritischer Pfad')
-    l_all_tasks = lb.get('label_all_tasks', 'Alle Tasks')
-    l_yes       = lb.get('label_yes',       'JA')
-    l_id        = lb.get('id',    'ID')
-    l_name      = lb.get('name',  'Name')
-    l_dauer     = lb.get('dauer', 'Dauer')
-    l_faz       = lb.get('faz',   'FAZ')
-    l_fez       = lb.get('fez',   'FEZ')
-    l_saz       = lb.get('saz',   'SAZ')
-    l_sez       = lb.get('sez',   'SEZ')
-    l_gp        = lb.get('gp',    'GP')
-    l_fp        = lb.get('fp',    'FP')
-    l_krit      = lb.get('krit',  'Krit.')
 
-    critical_path = result.critical_path
-    project_duration = max(task.fez for task in result.tasks.values())
+    def label(key: str, default: str) -> str:
+        return lb.get(key, default)
+
+    project_duration = result.project_end_days
 
     print("=" * 70)
-    print(f"{l_project}: {result.project_name}")
-    print(f"{l_duration}: {format_time_value_auto(project_duration)}")
+    print(f"{label('label_project', 'Projekt')}: {result.project_name}")
+    print(f"{label('label_duration', 'Projektdauer')}: {format_time_value_auto(project_duration)}")
     if result.project_start:
-        from utils import add_workdays
-        print(f"{l_start}: {result.project_start.strftime('%Y-%m-%d')}")
-        print(f"{l_end}: {add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')}")
+        print(f"{label('label_start', 'Startdatum')}: {result.project_start.strftime('%Y-%m-%d')}")
+        print(f"{label('label_end', 'Enddatum (geschätzt)')}: {result.date_at(project_duration).strftime('%Y-%m-%d')}")
     print("=" * 70)
     print()
-    print(f"{l_crit_path}:")
-    for task_id in critical_path:
+    print(f"{label('label_crit_path', 'Kritischer Pfad')}:")
+    for task_id in result.critical_path:
         task = result.tasks[task_id]
-        duration_str = format_time_value_auto(task.duration)
-        print(f"  [{task_id}] {task.name:<30} ({l_dauer}: {duration_str})")
+        print(f"  [{task_id}] {task.name:<30} ({label('dauer', 'Dauer')}: {format_time_value_auto(task.duration)})")
     print()
     print("=" * 70)
-    print(f"{l_all_tasks}:")
-    print(f"{l_id:<7} {l_name:<30} {l_dauer:<8} {l_faz:<6} {l_fez:<6} {l_saz:<6} {l_sez:<6} {l_gp:<6} {l_fp:<6} {l_krit}")
+    print(f"{label('label_all_tasks', 'Alle Tasks')}:")
+    cols = [label(k, d) for k, d in [('id', 'ID'), ('name', 'Name'), ('dauer', 'Dauer'), ('faz', 'FAZ'),
+                                     ('fez', 'FEZ'), ('saz', 'SAZ'), ('sez', 'SEZ'), ('gp', 'GP'), ('fp', 'FP')]]
+    print(f"{cols[0]:<7} {cols[1]:<30} {cols[2]:<8} {cols[3]:<6} {cols[4]:<6} {cols[5]:<6} "
+          f"{cols[6]:<6} {cols[7]:<6} {cols[8]:<6} {label('krit', 'Krit.')}")
     print("-" * 70)
-
-    sorted_task_ids = sorted(result.tasks.keys(), key=lambda x: result.tasks[x].faz)
-
-    for task_id in sorted_task_ids:
+    for task_id in sorted(result.tasks, key=lambda x: result.tasks[x].faz):
         task = result.tasks[task_id]
-        critical_marker = l_yes if task.is_critical else ""
-        duration_str = format_time_value_auto(task.duration)
-        gp_str = format_time_value_auto(task.puffer)
-        fp_str = format_time_value_auto(task.free_puffer)
-        id_str = str(task_id)
+        critical_marker = label('label_yes', 'JA') if task.is_critical else ""
         print(
-            f"{id_str:<7} {task.name:<30} {duration_str:<8} "
-            f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} "
-            f"{task.sez:<6.1f} {gp_str:<6} {fp_str:<6} {critical_marker}"
+            f"{str(task_id):<7} {task.name:<30} {format_time_value_auto(task.duration):<8} "
+            f"{task.faz:<6.1f} {task.fez:<6.1f} {task.saz:<6.1f} {task.sez:<6.1f} "
+            f"{format_time_value_auto(task.puffer):<6} {format_time_value_auto(task.free_puffer):<6} {critical_marker}"
         )
     print("=" * 70)
 
 
-def export_cpm_to_txt(result: CPMResult, output_file: Path, project=None,
-                      cfg_dir: Path = None, lang: str = 'de') -> None:
-    """
-    Exportiert CPM-Ergebnisse als strukturierte ASCII-Textdatei.
-
-    Delegiert an txt_export.export_cpm_to_txt() – Sektionen und Überschriften
-    werden aus cfg/txt_export.cfg gelesen.
-
-    Args:
-        result:      CPM-Berechnungsergebnis
-        output_file: Ausgabedatei (.txt)
-        project:     Projekt-Objekt (optional, für Ressourcen-Details)
-        cfg_dir:     Konfigurationsverzeichnis (optional)
-        lang:        Sprachkürzel ('de' oder 'en')
-    """
-    _txt_export(
-        result,
-        output_file,
-        project_name=result.project_name,
-        project=project,
-        cfg_dir=cfg_dir,
-        lang=lang,
-    )
-
-
-
-
-def export_cpm_to_xlsx(result: CPMResult, output_file: Path, project=None,
-                       cfg_dir: Path = None, lang: str = 'de') -> None:
-    """
-    Exportiert CPM-Ergebnisse in Excel-Format.
-
-    Die erzeugten Tabs werden über [sections] / section_order in cfg/excel_export.cfg gesteuert.
-    Verfügbare Sektionen: summary, critical_path, netplan, tasklist, gantt_chart, resource_list, cost_overview
-
-    Args:
-        result:      CPM-Berechnungsergebnis
-        output_file: Ausgabedatei (.xlsx)
-        project:     Optional – Projekt-Daten für Gantt/Resource-Tabs (PersonProject)
-        cfg_dir:     Optional – Verzeichnis mit Konfigurationsdateien
-    """
-    try:
-        import openpyxl
-    except ImportError:
-        raise ImportError("openpyxl ist nicht installiert. Installieren Sie es mit: pip install openpyxl")
-
-    if cfg_dir is None:
-        cfg_dir = Path(os.environ.get("PV_CFG", "cfg"))
-
-    # Konfiguration laden – enthält section_order und tab_names
-    full_config = load_excel_export_config(cfg_dir, lang=lang)
-    section_order = full_config['sections']['section_order']
-    tab_names     = full_config['tab_names']
-
-    wb = openpyxl.Workbook()
-    # Das automatisch erzeugte leere Sheet entfernen
-    wb.remove(wb.active)
-
-    project_name = result.project_name
-
-    for section in section_order:
-        if section == 'summary':
-            create_summary_sheet(wb, result, project_name,
-                                 tab_name=tab_names.get('summary', 'Projektzusammenfassung'))
-
-        elif section == 'critical_path':
-            create_critical_path_sheet(wb, result,
-                                       tab_name=tab_names.get('critical_path', 'Kritischer Pfad'),
-                                       labels=tab_names)
-
-        elif section == 'tasklist':
-            create_tasklist_sheet(wb, result,
-                                  tab_name=tab_names.get('tasklist', 'Alle Tasks'),
-                                  labels=tab_names)
-
-        elif section == 'netplan':
-            create_netplan_table_sheet(wb, result,
-                                       tab_name=tab_names.get('netplan', 'Netzplan'))
-
-        elif section == 'cost_overview' and project:
-            create_cost_sheet(wb, project, result,
-                              tab_name=tab_names.get('cost_overview', 'Kosten'))
-
-        elif section in ('gantt_chart', 'resource_list'):
-            from models.reports import GanttReport, ResourceListReport
-            from excel_reports import create_gantt_chart, create_resource_list
-            if section == 'gantt_chart' and project:
-                report = GanttReport(
-                    id='gantt_chart',
-                    name=tab_names.get('gantt_chart', 'Gantt Chart'),
-                    headline=tab_names.get('gantt_chart', 'Gantt Chart'),
-                    type='gantt',
-                    columns=['ID', 'Name', 'Start', 'Ende', 'Aufwand', 'Diagramm'],
-                    loadunit=result.time_unit,
-                )
-                create_gantt_chart(wb, project, result, report, full_config)
-            elif section == 'resource_list' and project and project.persons:
-                report = ResourceListReport(
-                    id='resource_list',
-                    name=tab_names.get('resource_list', 'Ressourcen'),
-                    headline=tab_names.get('resource_list', 'Ressourcen'),
-                    type='resource_list',
-                    columns=['Ressource', 'Vorgang', 'Start', 'Ende', 'Diagramm'],
-                    loadunit=result.time_unit,
-                )
-                create_resource_list(wb, project, result, report, full_config)
-
-        else:
-            logger.warning(f"Unbekannte Excel-Sektion '{section}' – wird übersprungen.")
-
-    wb.save(output_file)
-
-
-def main() -> int:
-    """
-    Hauptfunktion mit Argumentparsing.
-
-    Returns:
-        Exit-Code (0 = Erfolg, 1 = Fehler)
-    """
+def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="sproject.py - Einfaches Projektmanagement mit Ressourcenverwaltung, Kalender und Reports",
+        description="sproject - Projektplanung mit CPM, Ressourcen, Kalender und Reports",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Beispiele:
   %(prog)s --project examples/tankdesign.json
   %(prog)s  # Verarbeitet alle project*.json Dateien im data Ordner
-        """
+        """,
     )
+    parser.add_argument("--project", type=Path,
+                        help="Projektdatei. Ohne Angabe: alle project*.json im data-Ordner.")
+    parser.add_argument("--data-dir", type=Path, default=Path(os.environ.get("PV_DATA", "data")),
+                        help="Verzeichnis mit Projektdateien (Standard: $PV_DATA oder 'data')")
+    parser.add_argument("--cfg-dir", type=Path, default=Path(os.environ.get("PV_CFG", "cfg")),
+                        help="Konfigurationsverzeichnis (Standard: $PV_CFG oder 'cfg')")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Ausführliche Ausgabe")
+    parser.add_argument("--output-dir", type=Path,
+                        help="Ausgabeverzeichnis (Standard: $PV_RESULTS oder 'results')")
+    parser.add_argument("--start-date", type=str,
+                        help="Projektstart (YYYY-MM-DD), überschreibt project_start")
+    parser.add_argument("--export", type=str, default="json",
+                        help=f"Exportformate, kommagetrennt: {', '.join(EXPORTERS)} (Standard: json)")
+    parser.add_argument("--lang", type=str, default="de", choices=["de", "en"],
+                        help="Sprache der Report-Beschriftungen (Standard: de)")
+    return parser.parse_args(argv)
 
-    parser.add_argument(
-        "--project",
-        type=Path,
-        help="Pfad zur Projektdatei (project.json). Falls nicht angegeben, werden alle project*.json Dateien im data Ordner verwendet."
+
+def _process(project_file: Path, args: argparse.Namespace, formats: List[str], logger: logging.Logger) -> bool:
+    """Berechnet und exportiert eine Projektdatei. False, wenn ein Export fehlschlägt."""
+    project = load_project(project_file)
+    schedule = build_schedule(project, start_date=args.start_date, cfg_dir=args.cfg_dir)
+    if len(schedule.project.tasks) != len(project.tasks):
+        logger.info(f"  -> {len(schedule.project.tasks)} Tasks nach Expansion")
+
+    print_cpm_summary(schedule.cpm, labels=load_labels(args.cfg_dir, lang=args.lang))
+
+    options = ExportOptions(
+        out_dir=args.output_dir or get_results_dir(),
+        file_stem=project_file.stem,
+        cfg_dir=args.cfg_dir,
+        lang=args.lang,
     )
+    ok = True
+    for fmt in formats:
+        try:
+            for path in export_schedule(schedule, [fmt], options):
+                logger.info(f"{fmt.upper()} gespeichert in: {path}")
+        except ImportError as e:
+            logger.warning(f"{fmt.upper()}-Export übersprungen: {e}")
+        except Exception as e:
+            logger.error(f"{fmt.upper()}-Export fehlgeschlagen: {e}")
+            ok = False
+    return ok
 
-    parser.add_argument(
-        "--data-dir",
-        type=Path,
-        default=Path(os.environ.get("PV_DATA", "data")),
-        help="Verzeichnis mit Projektdateien (Standard: $PV_DATA oder 'data')"
-    )
 
-    parser.add_argument(
-        "--cfg-dir",
-        type=Path,
-        default=Path(os.environ.get("PV_CFG", "cfg")),
-        help="Verzeichnis mit Konfigurationsdateien (Standard: $PV_CFG oder 'cfg')"
-    )
+def main(argv: Optional[List[str]] = None) -> int:
+    """Exit-Code 0, wenn alle Projektdateien erfolgreich verarbeitet wurden."""
+    args = _parse_args(argv)
 
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Ausführliche Ausgabe"
-    )
+    formats = [fmt.strip().lower() for fmt in args.export.split(',') if fmt.strip()]
+    unknown = [fmt for fmt in formats if fmt not in EXPORTERS]
+    if unknown:
+        print(f"Ungültiges Exportformat: {', '.join(unknown)}. Erlaubt: {', '.join(EXPORTERS)}")
+        return 1
 
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        help="Ausgabeverzeichnis für generierte Graphen (Standard: gleiches Verzeichnis wie Projektdatei)"
-    )
-
-    parser.add_argument(
-        "--start-date",
-        type=str,
-        help="Projektstartdatum für CPM-Berechnung (YYYY-MM-DD, default: heute)"
-    )
-
-    parser.add_argument(
-        "--export",
-        type=str,
-        default="json",
-        help="Exportformate (kommagetrennt): txt, json, xlsx, svg, md (Standard: json). Beispiel: --export txt,json,xlsx,svg,md"
-    )
-
-    parser.add_argument(
-        "--lang",
-        type=str,
-        default="de",
-        choices=["de", "en"],
-        help="Ausgabesprache für Beschriftungen in Reports (Standard: de)"
-    )
-
-    args = parser.parse_args()
-
-    # Parse Export-Formate
-    export_formats = [fmt.strip().lower() for fmt in args.export.split(',')]
-    valid_formats = {'txt', 'json', 'xlsx', 'md', 'html', 'zip'}
-    for fmt in export_formats:
-        if fmt not in valid_formats:
-            print(f"Ungültiges Exportformat: {fmt}. Erlaubt: txt, json, xlsx, md, html, zip")
-            return 1
-
-    lang = args.lang
-
-    # Logging einrichten
     logger = setup_logging()
-
     if args.verbose:
-        logger.setLevel(logging.DEBUG)
         for handler in logger.handlers:
             handler.setLevel(logging.DEBUG)
-
-    logger.info("=" * 60)
-    logger.info("sproject.py gestartet")
-    logger.info("=" * 60)
-
-    # Projektdateien bestimmen
-    project_files: List[Path] = []
 
     if args.project:
         if not args.project.exists():
             logger.error(f"Projektdatei nicht gefunden: {args.project}")
             return 1
         project_files = [args.project]
-        logger.info(f"Verwende angegebene Projektdatei: {args.project}")
     else:
         project_files = find_project_files(args.data_dir)
         if not project_files:
             logger.error(f"Keine project*.json Dateien gefunden in: {args.data_dir}")
             return 1
-        logger.info(f"Gefundene Projektdateien ({len(project_files)}):")
-        for pf in project_files:
-            logger.info(f"  - {pf}")
+        logger.info(f"Gefundene Projektdateien ({len(project_files)}): {', '.join(p.name for p in project_files)}")
 
-    # Verarbeite jede Projektdatei
     success_count = 0
     for project_file in project_files:
-        logger.info("-" * 60)
         logger.info(f"Verarbeite: {project_file.name}")
-        logger.info("-" * 60)
-
         try:
-            # Lade Projekt mit Pydantic-Modellen
-            from models import load_project
-            from models.tasks import InstanceTask, LoopTask
-
-            project = load_project(project_file)
-
-            # Expandiere Cycle/Loop-Tasks falls nötig
-            has_instance_tasks = any(isinstance(t, InstanceTask) for t in project.tasks)
-            has_loop_tasks = any(isinstance(t, LoopTask) for t in project.tasks)
-
-            if has_instance_tasks:
-                logger.info(f"Expandiere Cycle-Tasks fuer {project_file.name}...")
-                project = project.expand_cycles()
-                logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
-            elif has_loop_tasks:
-                logger.info(f"Expandiere Loop-Tasks fuer {project_file.name}...")
-                project = project.expand_loops()
-                logger.info(f"  -> {len(project.tasks)} Tasks nach Expansion")
-
-            # Berechne CPM
-            start_date = None
-            if args.start_date:
-                from datetime import datetime
-                start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
-                logger.info(f"Verwende Startdatum: {args.start_date}")
-
-            result = project.calculate_cpm(start_date=start_date, cfg_dir=args.cfg_dir)
-
-            # Ausgabe auf Konsole
-            labels = load_labels(args.cfg_dir, lang=lang)
-            print_cpm_summary(result, labels=labels)
-
-            # Bestimme Ausgabeverzeichnis
-            if args.output_dir:
-                output_dir = args.output_dir
-            else:
-                # Standard: results Ordner
-                output_dir = Path(os.environ.get("PV_RESULTS", "results"))
-                output_dir.mkdir(exist_ok=True)
-
-            # Exportiere in gewünschte Formate
-            for fmt in export_formats:
-                if fmt == 'json':
-                    output_file_network = output_dir / f"{project_file.stem}_network_plan.json"
-                    # Gantt-Schedule (Phase 2) ermitteln falls möglich
-                    gantt_data = None
-                    try:
-                        gantt_calc = GanttCalculator(
-                            result,
-                            skip_weekends=result.skip_weekends,
-                            skip_holidays=result.skip_holidays,
-                            holidays=result.holidays if result.skip_holidays else None,
-                            cfg_dir=args.cfg_dir if hasattr(args, 'cfg_dir') else None
-                        )
-                        gantt_calc.calculate()
-                        gantt_data = gantt_calc.export_to_dict()
-                    except Exception as e:
-                        logger.warning(f"Gantt-Schedule für JSON nicht verfügbar: {e}")
-
-                    project_name_json = project.project if hasattr(project, 'project') else project_file.stem
-                    _json_export(
-                        result,
-                        output_file_network,
-                        project_name=project_name_json,
-                        project=project,
-                        cfg_dir=args.cfg_dir,
-                        gantt_data=gantt_data,
-                    )
-                    logger.info(f"Netzplan (JSON) gespeichert in: {output_file_network}")
-                elif fmt == 'txt':
-                    output_file = output_dir / f"{project_file.stem}.txt"
-                    export_cpm_to_txt(result, output_file, project=project, cfg_dir=args.cfg_dir, lang=lang)
-                    logger.info(f"CPM-Ergebnisse (TXT) gespeichert in: {output_file}")
-                elif fmt == 'xlsx':
-                    output_file = output_dir / f"{project_file.stem}.xlsx"
-                    try:
-                        export_cpm_to_xlsx(result, output_file, project, args.cfg_dir, lang=lang)
-                        logger.info(f"CPM-Ergebnisse (XLSX) gespeichert in: {output_file}")
-                    except ImportError as ie:
-                        logger.warning(f"XLSX-Export übersprungen: {ie}")
-                elif fmt == 'md':
-                    output_file = output_dir / f"{project_file.stem}.md"
-                    try:
-                        # Exportiere CPM-Report als Markdown
-                        project_name = project.project if hasattr(project, 'project') else project_file.stem
-                        success = export_cpm_to_markdown(result, output_file, project_name, project, lang=lang)
-                        if success:
-                            logger.info(f"CPM-Ergebnisse (Markdown) gespeichert in: {output_file}")
-                    except Exception as e:
-                        logger.error(f"Markdown-Export fehlgeschlagen: {e}")
-                elif fmt == 'html':
-                    output_file = output_dir / f"{project_file.stem}.html"
-                    try:
-                        project_name = project.project if hasattr(project, 'project') else project_file.stem
-                        success = export_cpm_to_html(result, output_file, project_name, project, lang=lang)
-                        if success:
-                            logger.info(f"CPM-Ergebnisse (HTML) gespeichert in: {output_file}")
-                    except Exception as e:
-                        logger.error(f"HTML-Export fehlgeschlagen: {e}")
-                elif fmt == 'zip':
-                    output_file = output_dir / f"{project_file.stem}_svgs.zip"
-                    try:
-                        project_name = project.project if hasattr(project, 'project') else project_file.stem
-                        success = export_cpm_to_svg_zip(result, output_file, project_name, project, args.cfg_dir, lang=lang)
-                        if success:
-                            logger.info(f"SVG-ZIP gespeichert in: {output_file}")
-                    except Exception as e:
-                        logger.error(f"ZIP-Export fehlgeschlagen: {e}")
-
-            success_count += 1
+            if _process(project_file, args, formats, logger):
+                success_count += 1
         except Exception as e:
-            logger.error(f"Fehler bei CPM-Berechnung für {project_file.name}: {e}", exc_info=True)
+            logger.error(f"Fehler bei der Berechnung für {project_file.name}: {e}", exc_info=True)
 
-    logger.info("=" * 60)
     logger.info(f"Fertig: {success_count}/{len(project_files)} Projekte erfolgreich verarbeitet")
-    logger.info("=" * 60)
-
     return 0 if success_count == len(project_files) else 1
 
 

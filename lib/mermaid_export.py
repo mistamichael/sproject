@@ -17,12 +17,8 @@ except ImportError:
     REQUESTS_AVAILABLE = False
 
 # Import models - try relative import first, then absolute
-try:
-    from .models.cpm import CPMResult
-    from .utils import is_system_task, convert_cpm_time_to_datetime
-except (ImportError, ValueError):
-    from models.cpm import CPMResult
-    from utils import is_system_task, convert_cpm_time_to_datetime
+from .durations import convert_cpm_time_to_datetime
+from .models.cpm import CPMResult
 
 
 def encode_kroki_url(diagram: str) -> str:
@@ -130,7 +126,7 @@ def generate_mermaid_gantt(result: CPMResult, project_name: str = "Project") -> 
     # tasks ist ein Dictionary: {task_id: CPMTaskResult}
     for task_id, task in result.tasks.items():
         # Skip Weekend-Blocker Tasks
-        if is_system_task(task_id):
+        if result.is_blocker(task_id):
             continue
 
         # Task-Name

@@ -1,0 +1,6946 @@
+{
+  "summary": {
+    "project": "Erdaushub 1000m3",
+    "project_duration": "727.0m",
+    "time_unit": "minutes",
+    "num_tasks": 169,
+    "num_critical": 174,
+    "project_start": "2026-03-02",
+    "project_end": "2026-03-03",
+  },
+  "critical_path": [
+    {
+      "id": "1",
+      "name": "Initialisierung und Bereitstellung",
+      "duration": "15.0m"
+    },
+    {
+      "id": "2-F1.1",
+      "name": "Beladen #1",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F1.2",
+      "name": "Transport-Umlauf #1",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F2.1",
+      "name": "Beladen #2",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F2.2",
+      "name": "Transport-Umlauf #2",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F3.1",
+      "name": "Beladen #3",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F3.2",
+      "name": "Transport-Umlauf #3",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F4.1",
+      "name": "Beladen #4",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F4.2",
+      "name": "Transport-Umlauf #4",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F5.1",
+      "name": "Beladen #5",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F5.2",
+      "name": "Transport-Umlauf #5",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F6.1",
+      "name": "Beladen #6",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F6.2",
+      "name": "Transport-Umlauf #6",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F7.1",
+      "name": "Beladen #7",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F7.2",
+      "name": "Transport-Umlauf #7",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F8.1",
+      "name": "Beladen #8",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F8.2",
+      "name": "Transport-Umlauf #8",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F9.1",
+      "name": "Beladen #9",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F9.2",
+      "name": "Transport-Umlauf #9",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F10.1",
+      "name": "Beladen #10",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F10.2",
+      "name": "Transport-Umlauf #10",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F11.1",
+      "name": "Beladen #11",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F11.2",
+      "name": "Transport-Umlauf #11",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F12.1",
+      "name": "Beladen #12",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F12.2",
+      "name": "Transport-Umlauf #12",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F13.1",
+      "name": "Beladen #13",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F13.2",
+      "name": "Transport-Umlauf #13",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F14.1",
+      "name": "Beladen #14",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F14.2",
+      "name": "Transport-Umlauf #14",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F15.1",
+      "name": "Beladen #15",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F15.2",
+      "name": "Transport-Umlauf #15",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F16.1",
+      "name": "Beladen #16",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F16.2",
+      "name": "Transport-Umlauf #16",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F17.1",
+      "name": "Beladen #17",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F17.2",
+      "name": "Transport-Umlauf #17",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F18.1",
+      "name": "Beladen #18",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F18.2",
+      "name": "Transport-Umlauf #18",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F19.1",
+      "name": "Beladen #19",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F19.2",
+      "name": "Transport-Umlauf #19",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F20.1",
+      "name": "Beladen #20",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F20.2",
+      "name": "Transport-Umlauf #20",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F21.1",
+      "name": "Beladen #21",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F21.2",
+      "name": "Transport-Umlauf #21",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F22.1",
+      "name": "Beladen #22",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F22.2",
+      "name": "Transport-Umlauf #22",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F23.1",
+      "name": "Beladen #23",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F23.2",
+      "name": "Transport-Umlauf #23",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F24.1",
+      "name": "Beladen #24",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F24.2",
+      "name": "Transport-Umlauf #24",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F25.1",
+      "name": "Beladen #25",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F25.2",
+      "name": "Transport-Umlauf #25",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F26.1",
+      "name": "Beladen #26",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F26.2",
+      "name": "Transport-Umlauf #26",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F27.1",
+      "name": "Beladen #27",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F27.2",
+      "name": "Transport-Umlauf #27",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F28.1",
+      "name": "Beladen #28",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F28.2",
+      "name": "Transport-Umlauf #28",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F29.1",
+      "name": "Beladen #29",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F29.2",
+      "name": "Transport-Umlauf #29",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F30.1",
+      "name": "Beladen #30",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F30.2",
+      "name": "Transport-Umlauf #30",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F31.1",
+      "name": "Beladen #31",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F31.2",
+      "name": "Transport-Umlauf #31",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F32.1",
+      "name": "Beladen #32",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F32.2",
+      "name": "Transport-Umlauf #32",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F33.1",
+      "name": "Beladen #33",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F33.2",
+      "name": "Transport-Umlauf #33",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F34.1",
+      "name": "Beladen #34",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F34.2",
+      "name": "Transport-Umlauf #34",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F35.1",
+      "name": "Beladen #35",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F35.2",
+      "name": "Transport-Umlauf #35",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F36.1",
+      "name": "Beladen #36",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F36.2",
+      "name": "Transport-Umlauf #36",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F37.1",
+      "name": "Beladen #37",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F37.2",
+      "name": "Transport-Umlauf #37",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F38.1",
+      "name": "Beladen #38",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F38.2",
+      "name": "Transport-Umlauf #38",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F39.1",
+      "name": "Beladen #39",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F39.2",
+      "name": "Transport-Umlauf #39",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F40.1",
+      "name": "Beladen #40",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F40.2",
+      "name": "Transport-Umlauf #40",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F41.1",
+      "name": "Beladen #41",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F41.2",
+      "name": "Transport-Umlauf #41",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F42.1",
+      "name": "Beladen #42",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F42.2",
+      "name": "Transport-Umlauf #42",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F43.1",
+      "name": "Beladen #43",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F43.2",
+      "name": "Transport-Umlauf #43",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F44.1",
+      "name": "Beladen #44",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F44.2",
+      "name": "Transport-Umlauf #44",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F45.1",
+      "name": "Beladen #45",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F45.2",
+      "name": "Transport-Umlauf #45",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F46.1",
+      "name": "Beladen #46",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F46.2",
+      "name": "Transport-Umlauf #46",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F47.1",
+      "name": "Beladen #47",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F47.2",
+      "name": "Transport-Umlauf #47",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F48.1",
+      "name": "Beladen #48",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F48.2",
+      "name": "Transport-Umlauf #48",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F49.1",
+      "name": "Beladen #49",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F49.2",
+      "name": "Transport-Umlauf #49",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F50.1",
+      "name": "Beladen #50",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F50.2",
+      "name": "Transport-Umlauf #50",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F51.1",
+      "name": "Beladen #51",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F51.2",
+      "name": "Transport-Umlauf #51",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F52.1",
+      "name": "Beladen #52",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F52.2",
+      "name": "Transport-Umlauf #52",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F53.1",
+      "name": "Beladen #53",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F53.2",
+      "name": "Transport-Umlauf #53",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F54.1",
+      "name": "Beladen #54",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F54.2",
+      "name": "Transport-Umlauf #54",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F55.1",
+      "name": "Beladen #55",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F55.2",
+      "name": "Transport-Umlauf #55",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F56.1",
+      "name": "Beladen #56",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F56.2",
+      "name": "Transport-Umlauf #56",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F57.1",
+      "name": "Beladen #57",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F57.2",
+      "name": "Transport-Umlauf #57",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F58.1",
+      "name": "Beladen #58",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F58.2",
+      "name": "Transport-Umlauf #58",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F59.1",
+      "name": "Beladen #59",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F59.2",
+      "name": "Transport-Umlauf #59",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F60.1",
+      "name": "Beladen #60",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F60.2",
+      "name": "Transport-Umlauf #60",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F61.1",
+      "name": "Beladen #61",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F61.2",
+      "name": "Transport-Umlauf #61",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F62.1",
+      "name": "Beladen #62",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F62.2",
+      "name": "Transport-Umlauf #62",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F63.1",
+      "name": "Beladen #63",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F63.2",
+      "name": "Transport-Umlauf #63",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F64.1",
+      "name": "Beladen #64",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F64.2",
+      "name": "Transport-Umlauf #64",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F65.1",
+      "name": "Beladen #65",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F65.2",
+      "name": "Transport-Umlauf #65",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F66.1",
+      "name": "Beladen #66",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F66.2",
+      "name": "Transport-Umlauf #66",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F67.1",
+      "name": "Beladen #67",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F67.2",
+      "name": "Transport-Umlauf #67",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F68.1",
+      "name": "Beladen #68",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F68.2",
+      "name": "Transport-Umlauf #68",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F69.1",
+      "name": "Beladen #69",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F69.2",
+      "name": "Transport-Umlauf #69",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F70.1",
+      "name": "Beladen #70",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F70.2",
+      "name": "Transport-Umlauf #70",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F71.1",
+      "name": "Beladen #71",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F71.2",
+      "name": "Transport-Umlauf #71",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F72.1",
+      "name": "Beladen #72",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F72.2",
+      "name": "Transport-Umlauf #72",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F73.1",
+      "name": "Beladen #73",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F73.2",
+      "name": "Transport-Umlauf #73",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F74.1",
+      "name": "Beladen #74",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F74.2",
+      "name": "Transport-Umlauf #74",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F75.1",
+      "name": "Beladen #75",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F75.2",
+      "name": "Transport-Umlauf #75",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F76.1",
+      "name": "Beladen #76",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F76.2",
+      "name": "Transport-Umlauf #76",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F77.1",
+      "name": "Beladen #77",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F77.2",
+      "name": "Transport-Umlauf #77",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F78.1",
+      "name": "Beladen #78",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F78.2",
+      "name": "Transport-Umlauf #78",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F79.1",
+      "name": "Beladen #79",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F79.2",
+      "name": "Transport-Umlauf #79",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F80.1",
+      "name": "Beladen #80",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F80.2",
+      "name": "Transport-Umlauf #80",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F81.1",
+      "name": "Beladen #81",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F81.2",
+      "name": "Transport-Umlauf #81",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F82.1",
+      "name": "Beladen #82",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F82.2",
+      "name": "Transport-Umlauf #82",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F83.1",
+      "name": "Beladen #83",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F83.2",
+      "name": "Transport-Umlauf #83",
+      "duration": "40.0m"
+    },
+    {
+      "id": "2-F84.1",
+      "name": "Beladen #84",
+      "duration": "8.0m"
+    },
+    {
+      "id": "2-F84.2",
+      "name": "Transport-Umlauf #84",
+      "duration": "40.0m"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "name": "Initialisierung und Bereitstellung",
+      "duration": "15.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.00h",
+        "fez": "0.25h",
+        "saz": "-0.00h",
+        "sez": "0.25h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F1.1",
+      "name": "Beladen #1",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.25h",
+        "fez": "0.38h",
+        "saz": "0.25h",
+        "sez": "0.38h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F1.2",
+      "name": "Transport-Umlauf #1",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.38h",
+        "fez": "1.05h",
+        "saz": "0.38h",
+        "sez": "1.05h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F2.1",
+      "name": "Beladen #2",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.38h",
+        "fez": "0.52h",
+        "saz": "0.38h",
+        "sez": "0.52h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F2.2",
+      "name": "Transport-Umlauf #2",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.52h",
+        "fez": "1.18h",
+        "saz": "0.52h",
+        "sez": "1.18h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F3.1",
+      "name": "Beladen #3",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.52h",
+        "fez": "0.65h",
+        "saz": "0.52h",
+        "sez": "0.65h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F3.2",
+      "name": "Transport-Umlauf #3",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.65h",
+        "fez": "1.32h",
+        "saz": "0.65h",
+        "sez": "1.32h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F4.1",
+      "name": "Beladen #4",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.65h",
+        "fez": "0.78h",
+        "saz": "0.65h",
+        "sez": "0.78h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F4.2",
+      "name": "Transport-Umlauf #4",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.78h",
+        "fez": "1.45h",
+        "saz": "0.78h",
+        "sez": "1.45h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F5.1",
+      "name": "Beladen #5",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.78h",
+        "fez": "0.92h",
+        "saz": "0.78h",
+        "sez": "0.92h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F5.2",
+      "name": "Transport-Umlauf #5",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.92h",
+        "fez": "1.58h",
+        "saz": "0.92h",
+        "sez": "1.58h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F6.1",
+      "name": "Beladen #6",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.92h",
+        "fez": "1.05h",
+        "saz": "0.92h",
+        "sez": "1.05h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F6.2",
+      "name": "Transport-Umlauf #6",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.05h",
+        "fez": "1.72h",
+        "saz": "1.05h",
+        "sez": "1.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F7.1",
+      "name": "Beladen #7",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.05h",
+        "fez": "1.18h",
+        "saz": "1.05h",
+        "sez": "1.18h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F7.2",
+      "name": "Transport-Umlauf #7",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.18h",
+        "fez": "1.85h",
+        "saz": "1.18h",
+        "sez": "1.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F8.1",
+      "name": "Beladen #8",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.18h",
+        "fez": "1.32h",
+        "saz": "1.18h",
+        "sez": "1.32h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F8.2",
+      "name": "Transport-Umlauf #8",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.32h",
+        "fez": "1.98h",
+        "saz": "1.32h",
+        "sez": "1.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F9.1",
+      "name": "Beladen #9",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.32h",
+        "fez": "1.45h",
+        "saz": "1.32h",
+        "sez": "1.45h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F9.2",
+      "name": "Transport-Umlauf #9",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.45h",
+        "fez": "2.12h",
+        "saz": "1.45h",
+        "sez": "2.12h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F10.1",
+      "name": "Beladen #10",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.45h",
+        "fez": "1.58h",
+        "saz": "1.45h",
+        "sez": "1.58h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F10.2",
+      "name": "Transport-Umlauf #10",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.58h",
+        "fez": "2.25h",
+        "saz": "1.58h",
+        "sez": "2.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F11.1",
+      "name": "Beladen #11",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.58h",
+        "fez": "1.72h",
+        "saz": "1.58h",
+        "sez": "1.72h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F11.2",
+      "name": "Transport-Umlauf #11",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.72h",
+        "fez": "2.38h",
+        "saz": "1.72h",
+        "sez": "2.38h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F11.2-BRK-P1",
+      "name": "Pause: Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+      "duration": "45.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.38h",
+        "fez": "3.13h",
+        "saz": "2.38h",
+        "sez": "3.13h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F12.1",
+      "name": "Beladen #12",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.72h",
+        "fez": "1.85h",
+        "saz": "1.72h",
+        "sez": "1.85h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F12.2",
+      "name": "Transport-Umlauf #12",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.85h",
+        "fez": "2.52h",
+        "saz": "1.85h",
+        "sez": "2.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F12.2-BRK-P2",
+      "name": "Pause: Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+      "duration": "45.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.52h",
+        "fez": "3.27h",
+        "saz": "2.52h",
+        "sez": "3.27h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F13.1",
+      "name": "Beladen #13",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.85h",
+        "fez": "1.98h",
+        "saz": "1.85h",
+        "sez": "1.98h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F13.2",
+      "name": "Transport-Umlauf #13",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.98h",
+        "fez": "2.65h",
+        "saz": "1.98h",
+        "sez": "2.65h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F14.1",
+      "name": "Beladen #14",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "1.98h",
+        "fez": "2.12h",
+        "saz": "1.98h",
+        "sez": "2.12h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F14.2",
+      "name": "Transport-Umlauf #14",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.12h",
+        "fez": "2.78h",
+        "saz": "2.12h",
+        "sez": "2.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F15.1",
+      "name": "Beladen #15",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.12h",
+        "fez": "2.25h",
+        "saz": "2.12h",
+        "sez": "2.25h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F15.2",
+      "name": "Transport-Umlauf #15",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.25h",
+        "fez": "2.92h",
+        "saz": "2.25h",
+        "sez": "2.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F15.2-BRK-P1",
+      "name": "Pause: Max Mustermann (Vorschrift laut Arbeitszeitgesetz)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.92h",
+        "fez": "3.42h",
+        "saz": "2.92h",
+        "sez": "3.42h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F16.1",
+      "name": "Beladen #16",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.25h",
+        "fez": "2.38h",
+        "saz": "2.25h",
+        "sez": "2.38h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F16.2",
+      "name": "Transport-Umlauf #16",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.38h",
+        "fez": "3.05h",
+        "saz": "2.38h",
+        "sez": "3.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F16.2-BRK-P2",
+      "name": "Pause: Heinz Müller (Vorschrift laut Arbeitszeitgesetz)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.05h",
+        "fez": "3.55h",
+        "saz": "3.05h",
+        "sez": "3.55h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F17.1",
+      "name": "Beladen #17",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.38h",
+        "fez": "2.52h",
+        "saz": "2.38h",
+        "sez": "2.52h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F17.2",
+      "name": "Transport-Umlauf #17",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.52h",
+        "fez": "3.18h",
+        "saz": "2.52h",
+        "sez": "3.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F18.1",
+      "name": "Beladen #18",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.52h",
+        "fez": "2.65h",
+        "saz": "2.52h",
+        "sez": "2.65h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F18.2",
+      "name": "Transport-Umlauf #18",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.65h",
+        "fez": "3.32h",
+        "saz": "2.65h",
+        "sez": "3.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F19.1",
+      "name": "Beladen #19",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.65h",
+        "fez": "2.78h",
+        "saz": "2.65h",
+        "sez": "2.78h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F19.2",
+      "name": "Transport-Umlauf #19",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.78h",
+        "fez": "3.45h",
+        "saz": "2.78h",
+        "sez": "3.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F20.1",
+      "name": "Beladen #20",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.78h",
+        "fez": "2.92h",
+        "saz": "2.78h",
+        "sez": "2.92h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F20.2",
+      "name": "Transport-Umlauf #20",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.92h",
+        "fez": "3.58h",
+        "saz": "2.92h",
+        "sez": "3.58h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F21.1",
+      "name": "Beladen #21",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2.92h",
+        "fez": "3.05h",
+        "saz": "2.92h",
+        "sez": "3.05h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F21.2",
+      "name": "Transport-Umlauf #21",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.05h",
+        "fez": "3.72h",
+        "saz": "3.05h",
+        "sez": "3.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F22.1",
+      "name": "Beladen #22",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.05h",
+        "fez": "3.18h",
+        "saz": "3.05h",
+        "sez": "3.18h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F22.2",
+      "name": "Transport-Umlauf #22",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.18h",
+        "fez": "3.85h",
+        "saz": "3.18h",
+        "sez": "3.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F23.1",
+      "name": "Beladen #23",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.18h",
+        "fez": "3.32h",
+        "saz": "3.18h",
+        "sez": "3.32h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F23.2",
+      "name": "Transport-Umlauf #23",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.32h",
+        "fez": "3.98h",
+        "saz": "3.32h",
+        "sez": "3.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F24.1",
+      "name": "Beladen #24",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.32h",
+        "fez": "3.45h",
+        "saz": "3.32h",
+        "sez": "3.45h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F24.2",
+      "name": "Transport-Umlauf #24",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.45h",
+        "fez": "4.12h",
+        "saz": "3.45h",
+        "sez": "4.12h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F25.1",
+      "name": "Beladen #25",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.45h",
+        "fez": "3.58h",
+        "saz": "3.45h",
+        "sez": "3.58h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F25.2",
+      "name": "Transport-Umlauf #25",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.58h",
+        "fez": "4.25h",
+        "saz": "3.58h",
+        "sez": "4.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F26.1",
+      "name": "Beladen #26",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.58h",
+        "fez": "3.72h",
+        "saz": "3.58h",
+        "sez": "3.72h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F26.2",
+      "name": "Transport-Umlauf #26",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.72h",
+        "fez": "4.38h",
+        "saz": "3.72h",
+        "sez": "4.38h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F27.1",
+      "name": "Beladen #27",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.72h",
+        "fez": "3.85h",
+        "saz": "3.72h",
+        "sez": "3.85h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F27.2",
+      "name": "Transport-Umlauf #27",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.85h",
+        "fez": "4.52h",
+        "saz": "3.85h",
+        "sez": "4.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F28.1",
+      "name": "Beladen #28",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.85h",
+        "fez": "3.98h",
+        "saz": "3.85h",
+        "sez": "3.98h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F28.2",
+      "name": "Transport-Umlauf #28",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.98h",
+        "fez": "4.65h",
+        "saz": "3.98h",
+        "sez": "4.65h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F29.1",
+      "name": "Beladen #29",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "3.98h",
+        "fez": "4.12h",
+        "saz": "3.98h",
+        "sez": "4.12h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F29.2",
+      "name": "Transport-Umlauf #29",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.12h",
+        "fez": "4.78h",
+        "saz": "4.12h",
+        "sez": "4.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F30.1",
+      "name": "Beladen #30",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.12h",
+        "fez": "4.25h",
+        "saz": "4.12h",
+        "sez": "4.25h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F30.2",
+      "name": "Transport-Umlauf #30",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.25h",
+        "fez": "4.92h",
+        "saz": "4.25h",
+        "sez": "4.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F31.1",
+      "name": "Beladen #31",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.25h",
+        "fez": "4.38h",
+        "saz": "4.25h",
+        "sez": "4.38h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F31.2",
+      "name": "Transport-Umlauf #31",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.38h",
+        "fez": "5.05h",
+        "saz": "4.38h",
+        "sez": "5.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F32.1",
+      "name": "Beladen #32",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.38h",
+        "fez": "4.52h",
+        "saz": "4.38h",
+        "sez": "4.52h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F32.2",
+      "name": "Transport-Umlauf #32",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.52h",
+        "fez": "5.18h",
+        "saz": "4.52h",
+        "sez": "5.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F33.1",
+      "name": "Beladen #33",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.52h",
+        "fez": "4.65h",
+        "saz": "4.52h",
+        "sez": "4.65h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F33.2",
+      "name": "Transport-Umlauf #33",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.65h",
+        "fez": "5.32h",
+        "saz": "4.65h",
+        "sez": "5.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F34.1",
+      "name": "Beladen #34",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.65h",
+        "fez": "4.78h",
+        "saz": "4.65h",
+        "sez": "4.78h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F34.2",
+      "name": "Transport-Umlauf #34",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.78h",
+        "fez": "5.45h",
+        "saz": "4.78h",
+        "sez": "5.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F35.1",
+      "name": "Beladen #35",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.78h",
+        "fez": "4.92h",
+        "saz": "4.78h",
+        "sez": "4.92h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F35.2",
+      "name": "Transport-Umlauf #35",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.92h",
+        "fez": "5.58h",
+        "saz": "4.92h",
+        "sez": "5.58h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F36.1",
+      "name": "Beladen #36",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "4.92h",
+        "fez": "5.05h",
+        "saz": "4.92h",
+        "sez": "5.05h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F36.2",
+      "name": "Transport-Umlauf #36",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.05h",
+        "fez": "5.72h",
+        "saz": "5.05h",
+        "sez": "5.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F37.1",
+      "name": "Beladen #37",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.05h",
+        "fez": "5.18h",
+        "saz": "5.05h",
+        "sez": "5.18h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F37.2",
+      "name": "Transport-Umlauf #37",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.18h",
+        "fez": "5.85h",
+        "saz": "5.18h",
+        "sez": "5.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F38.1",
+      "name": "Beladen #38",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.18h",
+        "fez": "5.32h",
+        "saz": "5.18h",
+        "sez": "5.32h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F38.2",
+      "name": "Transport-Umlauf #38",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.32h",
+        "fez": "5.98h",
+        "saz": "5.32h",
+        "sez": "5.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F39.1",
+      "name": "Beladen #39",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.32h",
+        "fez": "5.45h",
+        "saz": "5.32h",
+        "sez": "5.45h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F39.2",
+      "name": "Transport-Umlauf #39",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.45h",
+        "fez": "6.12h",
+        "saz": "5.45h",
+        "sez": "6.12h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F40.1",
+      "name": "Beladen #40",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.45h",
+        "fez": "5.58h",
+        "saz": "5.45h",
+        "sez": "5.58h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F40.2",
+      "name": "Transport-Umlauf #40",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.58h",
+        "fez": "6.25h",
+        "saz": "5.58h",
+        "sez": "6.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F41.1",
+      "name": "Beladen #41",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.58h",
+        "fez": "5.72h",
+        "saz": "5.58h",
+        "sez": "5.72h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F41.2",
+      "name": "Transport-Umlauf #41",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.72h",
+        "fez": "6.38h",
+        "saz": "5.72h",
+        "sez": "6.38h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F42.1",
+      "name": "Beladen #42",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.72h",
+        "fez": "5.85h",
+        "saz": "5.72h",
+        "sez": "5.85h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F42.2",
+      "name": "Transport-Umlauf #42",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.85h",
+        "fez": "6.52h",
+        "saz": "5.85h",
+        "sez": "6.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F43.1",
+      "name": "Beladen #43",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.85h",
+        "fez": "5.98h",
+        "saz": "5.85h",
+        "sez": "5.98h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F43.2",
+      "name": "Transport-Umlauf #43",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.98h",
+        "fez": "6.65h",
+        "saz": "5.98h",
+        "sez": "6.65h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F44.1",
+      "name": "Beladen #44",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "5.98h",
+        "fez": "6.12h",
+        "saz": "5.98h",
+        "sez": "6.12h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F44.1-BRK-P3",
+      "name": "Pause: Bodo Schmidt (Vorschrift laut Arbeitszeitgesetz)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.12h",
+        "fez": "6.62h",
+        "saz": "6.12h",
+        "sez": "6.62h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F44.2",
+      "name": "Transport-Umlauf #44",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.12h",
+        "fez": "6.78h",
+        "saz": "6.12h",
+        "sez": "6.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F45.1",
+      "name": "Beladen #45",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.12h",
+        "fez": "6.25h",
+        "saz": "6.12h",
+        "sez": "6.25h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F45.2",
+      "name": "Transport-Umlauf #45",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.25h",
+        "fez": "6.92h",
+        "saz": "6.25h",
+        "sez": "6.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F46.1",
+      "name": "Beladen #46",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.25h",
+        "fez": "6.38h",
+        "saz": "6.25h",
+        "sez": "6.38h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F46.2",
+      "name": "Transport-Umlauf #46",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.38h",
+        "fez": "7.05h",
+        "saz": "6.38h",
+        "sez": "7.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F47.1",
+      "name": "Beladen #47",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.38h",
+        "fez": "6.52h",
+        "saz": "6.38h",
+        "sez": "6.52h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F47.2",
+      "name": "Transport-Umlauf #47",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.52h",
+        "fez": "7.18h",
+        "saz": "6.52h",
+        "sez": "7.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F48.1",
+      "name": "Beladen #48",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.52h",
+        "fez": "6.65h",
+        "saz": "6.52h",
+        "sez": "6.65h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F48.2",
+      "name": "Transport-Umlauf #48",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.65h",
+        "fez": "7.32h",
+        "saz": "6.65h",
+        "sez": "7.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F49.1",
+      "name": "Beladen #49",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.65h",
+        "fez": "6.78h",
+        "saz": "6.65h",
+        "sez": "6.78h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F49.2",
+      "name": "Transport-Umlauf #49",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.78h",
+        "fez": "7.45h",
+        "saz": "6.78h",
+        "sez": "7.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F50.1",
+      "name": "Beladen #50",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.78h",
+        "fez": "6.92h",
+        "saz": "6.78h",
+        "sez": "6.92h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F50.2",
+      "name": "Transport-Umlauf #50",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.92h",
+        "fez": "7.58h",
+        "saz": "6.92h",
+        "sez": "7.58h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F51.1",
+      "name": "Beladen #51",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "6.92h",
+        "fez": "7.05h",
+        "saz": "6.92h",
+        "sez": "7.05h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F51.2",
+      "name": "Transport-Umlauf #51",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.05h",
+        "fez": "7.72h",
+        "saz": "7.05h",
+        "sez": "7.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F52.1",
+      "name": "Beladen #52",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.05h",
+        "fez": "7.18h",
+        "saz": "7.05h",
+        "sez": "7.18h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F52.2",
+      "name": "Transport-Umlauf #52",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.18h",
+        "fez": "7.85h",
+        "saz": "7.18h",
+        "sez": "7.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F53.1",
+      "name": "Beladen #53",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.18h",
+        "fez": "7.32h",
+        "saz": "7.18h",
+        "sez": "7.32h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F53.2",
+      "name": "Transport-Umlauf #53",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.32h",
+        "fez": "7.98h",
+        "saz": "7.32h",
+        "sez": "7.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F54.1",
+      "name": "Beladen #54",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.32h",
+        "fez": "7.45h",
+        "saz": "7.32h",
+        "sez": "7.45h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F54.2",
+      "name": "Transport-Umlauf #54",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.45h",
+        "fez": "8.12h",
+        "saz": "7.45h",
+        "sez": "8.12h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F55.1",
+      "name": "Beladen #55",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.45h",
+        "fez": "7.58h",
+        "saz": "7.45h",
+        "sez": "7.58h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F55.2",
+      "name": "Transport-Umlauf #55",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.58h",
+        "fez": "8.25h",
+        "saz": "7.58h",
+        "sez": "8.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F56.1",
+      "name": "Beladen #56",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.58h",
+        "fez": "7.72h",
+        "saz": "7.58h",
+        "sez": "7.72h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F56.2",
+      "name": "Transport-Umlauf #56",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.72h",
+        "fez": "8.38h",
+        "saz": "7.72h",
+        "sez": "8.38h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F57.1",
+      "name": "Beladen #57",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.72h",
+        "fez": "7.85h",
+        "saz": "7.72h",
+        "sez": "7.85h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F57.2",
+      "name": "Transport-Umlauf #57",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.85h",
+        "fez": "8.52h",
+        "saz": "7.85h",
+        "sez": "8.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F58.1",
+      "name": "Beladen #58",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.85h",
+        "fez": "7.98h",
+        "saz": "7.85h",
+        "sez": "7.98h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-02",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-02"
+        }
+      }
+    },
+    {
+      "id": "2-F58.2",
+      "name": "Transport-Umlauf #58",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.98h",
+        "fez": "8.65h",
+        "saz": "7.98h",
+        "sez": "8.65h",
+        "gp": "-0.0m",
+        "fp": "-0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F59.1",
+      "name": "Beladen #59",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "7.98h",
+        "fez": "8.12h",
+        "saz": "7.98h",
+        "sez": "8.12h",
+        "gp": "-0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F59.2",
+      "name": "Transport-Umlauf #59",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.12h",
+        "fez": "8.78h",
+        "saz": "8.12h",
+        "sez": "8.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F60.1",
+      "name": "Beladen #60",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.12h",
+        "fez": "8.25h",
+        "saz": "8.12h",
+        "sez": "8.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F60.2",
+      "name": "Transport-Umlauf #60",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.25h",
+        "fez": "8.92h",
+        "saz": "8.25h",
+        "sez": "8.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F61.1",
+      "name": "Beladen #61",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.25h",
+        "fez": "8.38h",
+        "saz": "8.25h",
+        "sez": "8.38h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F61.2",
+      "name": "Transport-Umlauf #61",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.38h",
+        "fez": "9.05h",
+        "saz": "8.38h",
+        "sez": "9.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F62.1",
+      "name": "Beladen #62",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.38h",
+        "fez": "8.52h",
+        "saz": "8.38h",
+        "sez": "8.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F62.2",
+      "name": "Transport-Umlauf #62",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.52h",
+        "fez": "9.18h",
+        "saz": "8.52h",
+        "sez": "9.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F63.1",
+      "name": "Beladen #63",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.52h",
+        "fez": "8.65h",
+        "saz": "8.52h",
+        "sez": "8.65h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F63.2",
+      "name": "Transport-Umlauf #63",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.65h",
+        "fez": "9.32h",
+        "saz": "8.65h",
+        "sez": "9.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F64.1",
+      "name": "Beladen #64",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.65h",
+        "fez": "8.78h",
+        "saz": "8.65h",
+        "sez": "8.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F64.2",
+      "name": "Transport-Umlauf #64",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.78h",
+        "fez": "9.45h",
+        "saz": "8.78h",
+        "sez": "9.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F65.1",
+      "name": "Beladen #65",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.78h",
+        "fez": "8.92h",
+        "saz": "8.78h",
+        "sez": "8.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F65.2",
+      "name": "Transport-Umlauf #65",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.92h",
+        "fez": "9.58h",
+        "saz": "8.92h",
+        "sez": "9.58h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F66.1",
+      "name": "Beladen #66",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.92h",
+        "fez": "9.05h",
+        "saz": "8.92h",
+        "sez": "9.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F66.2",
+      "name": "Transport-Umlauf #66",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.05h",
+        "fez": "9.72h",
+        "saz": "9.05h",
+        "sez": "9.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F67.1",
+      "name": "Beladen #67",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.05h",
+        "fez": "9.18h",
+        "saz": "9.05h",
+        "sez": "9.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F67.2",
+      "name": "Transport-Umlauf #67",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.18h",
+        "fez": "9.85h",
+        "saz": "9.18h",
+        "sez": "9.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F68.1",
+      "name": "Beladen #68",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.18h",
+        "fez": "9.32h",
+        "saz": "9.18h",
+        "sez": "9.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F68.2",
+      "name": "Transport-Umlauf #68",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.32h",
+        "fez": "9.98h",
+        "saz": "9.32h",
+        "sez": "9.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F69.1",
+      "name": "Beladen #69",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.32h",
+        "fez": "9.45h",
+        "saz": "9.32h",
+        "sez": "9.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F69.2",
+      "name": "Transport-Umlauf #69",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.45h",
+        "fez": "10.12h",
+        "saz": "9.45h",
+        "sez": "10.12h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F70.1",
+      "name": "Beladen #70",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.45h",
+        "fez": "9.58h",
+        "saz": "9.45h",
+        "sez": "9.58h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F70.2",
+      "name": "Transport-Umlauf #70",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.58h",
+        "fez": "10.25h",
+        "saz": "9.58h",
+        "sez": "10.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F71.1",
+      "name": "Beladen #71",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.58h",
+        "fez": "9.72h",
+        "saz": "9.58h",
+        "sez": "9.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F71.2",
+      "name": "Transport-Umlauf #71",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.72h",
+        "fez": "10.38h",
+        "saz": "9.72h",
+        "sez": "10.38h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F72.1",
+      "name": "Beladen #72",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.72h",
+        "fez": "9.85h",
+        "saz": "9.72h",
+        "sez": "9.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F72.2",
+      "name": "Transport-Umlauf #72",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.85h",
+        "fez": "10.52h",
+        "saz": "9.85h",
+        "sez": "10.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F73.1",
+      "name": "Beladen #73",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.85h",
+        "fez": "9.98h",
+        "saz": "9.85h",
+        "sez": "9.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F73.2",
+      "name": "Transport-Umlauf #73",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.98h",
+        "fez": "10.65h",
+        "saz": "9.98h",
+        "sez": "10.65h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F74.1",
+      "name": "Beladen #74",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "9.98h",
+        "fez": "10.12h",
+        "saz": "9.98h",
+        "sez": "10.12h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F74.2",
+      "name": "Transport-Umlauf #74",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.12h",
+        "fez": "10.78h",
+        "saz": "10.12h",
+        "sez": "10.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F75.1",
+      "name": "Beladen #75",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.12h",
+        "fez": "10.25h",
+        "saz": "10.12h",
+        "sez": "10.25h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F75.2",
+      "name": "Transport-Umlauf #75",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.25h",
+        "fez": "10.92h",
+        "saz": "10.25h",
+        "sez": "10.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F76.1",
+      "name": "Beladen #76",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.25h",
+        "fez": "10.38h",
+        "saz": "10.25h",
+        "sez": "10.38h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F76.2",
+      "name": "Transport-Umlauf #76",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.38h",
+        "fez": "11.05h",
+        "saz": "10.38h",
+        "sez": "11.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F77.1",
+      "name": "Beladen #77",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.38h",
+        "fez": "10.52h",
+        "saz": "10.38h",
+        "sez": "10.52h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F77.2",
+      "name": "Transport-Umlauf #77",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.52h",
+        "fez": "11.18h",
+        "saz": "10.52h",
+        "sez": "11.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F78.1",
+      "name": "Beladen #78",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.52h",
+        "fez": "10.65h",
+        "saz": "10.52h",
+        "sez": "10.65h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F78.2",
+      "name": "Transport-Umlauf #78",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.65h",
+        "fez": "11.32h",
+        "saz": "10.65h",
+        "sez": "11.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F79.1",
+      "name": "Beladen #79",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.65h",
+        "fez": "10.78h",
+        "saz": "10.65h",
+        "sez": "10.78h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F79.2",
+      "name": "Transport-Umlauf #79",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.78h",
+        "fez": "11.45h",
+        "saz": "10.78h",
+        "sez": "11.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F80.1",
+      "name": "Beladen #80",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.78h",
+        "fez": "10.92h",
+        "saz": "10.78h",
+        "sez": "10.92h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F80.2",
+      "name": "Transport-Umlauf #80",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.92h",
+        "fez": "11.58h",
+        "saz": "10.92h",
+        "sez": "11.58h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F81.1",
+      "name": "Beladen #81",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.92h",
+        "fez": "11.05h",
+        "saz": "10.92h",
+        "sez": "11.05h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F81.2",
+      "name": "Transport-Umlauf #81",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.05h",
+        "fez": "11.72h",
+        "saz": "11.05h",
+        "sez": "11.72h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F82.1",
+      "name": "Beladen #82",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.05h",
+        "fez": "11.18h",
+        "saz": "11.05h",
+        "sez": "11.18h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F82.2",
+      "name": "Transport-Umlauf #82",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.18h",
+        "fez": "11.85h",
+        "saz": "11.18h",
+        "sez": "11.85h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F83.1",
+      "name": "Beladen #83",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.18h",
+        "fez": "11.32h",
+        "saz": "11.18h",
+        "sez": "11.32h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F83.2",
+      "name": "Transport-Umlauf #83",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.32h",
+        "fez": "11.98h",
+        "saz": "11.32h",
+        "sez": "11.98h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F84.1",
+      "name": "Beladen #84",
+      "duration": "8.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.32h",
+        "fez": "11.45h",
+        "saz": "11.32h",
+        "sez": "11.45h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F84.2",
+      "name": "Transport-Umlauf #84",
+      "duration": "40.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "11.45h",
+        "fez": "12.12h",
+        "saz": "11.45h",
+        "sez": "12.12h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    }
+  ],
+  "gantt_chart": {
+    "project_name": "Erdaushub 1000m3",
+    "project_start_date": "2026-03-02T00:00:00",
+    "time_unit": "minutes",
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "tasks": {
+      "1": {
+        "id": "1",
+        "name": "Initialisierung und Bereitstellung",
+        "network_duration_days": 0.031,
+        "calendar_start_date": "2026-03-02T00:00:00",
+        "calendar_end_date": "2026-03-02T00:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F1.1": {
+        "id": "2-F1.1",
+        "name": "Beladen #1",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T00:45:00",
+        "calendar_end_date": "2026-03-02T00:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F1.2": {
+        "id": "2-F1.2",
+        "name": "Transport-Umlauf #1",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T01:09:00",
+        "calendar_end_date": "2026-03-02T01:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F2.1": {
+        "id": "2-F2.1",
+        "name": "Beladen #2",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T01:09:00",
+        "calendar_end_date": "2026-03-02T01:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F2.2": {
+        "id": "2-F2.2",
+        "name": "Transport-Umlauf #2",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T01:33:00",
+        "calendar_end_date": "2026-03-02T01:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F3.1": {
+        "id": "2-F3.1",
+        "name": "Beladen #3",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T01:33:00",
+        "calendar_end_date": "2026-03-02T01:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F3.2": {
+        "id": "2-F3.2",
+        "name": "Transport-Umlauf #3",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T01:57:00",
+        "calendar_end_date": "2026-03-02T01:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F4.1": {
+        "id": "2-F4.1",
+        "name": "Beladen #4",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T01:57:00",
+        "calendar_end_date": "2026-03-02T01:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F4.2": {
+        "id": "2-F4.2",
+        "name": "Transport-Umlauf #4",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T02:21:00",
+        "calendar_end_date": "2026-03-02T02:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F5.1": {
+        "id": "2-F5.1",
+        "name": "Beladen #5",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T02:21:00",
+        "calendar_end_date": "2026-03-02T02:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F5.2": {
+        "id": "2-F5.2",
+        "name": "Transport-Umlauf #5",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T02:45:00",
+        "calendar_end_date": "2026-03-02T02:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F6.1": {
+        "id": "2-F6.1",
+        "name": "Beladen #6",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T02:45:00",
+        "calendar_end_date": "2026-03-02T02:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F6.2": {
+        "id": "2-F6.2",
+        "name": "Transport-Umlauf #6",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T03:09:00",
+        "calendar_end_date": "2026-03-02T03:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F7.1": {
+        "id": "2-F7.1",
+        "name": "Beladen #7",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T03:09:00",
+        "calendar_end_date": "2026-03-02T03:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F7.2": {
+        "id": "2-F7.2",
+        "name": "Transport-Umlauf #7",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T03:33:00",
+        "calendar_end_date": "2026-03-02T03:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F8.1": {
+        "id": "2-F8.1",
+        "name": "Beladen #8",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T03:33:00",
+        "calendar_end_date": "2026-03-02T03:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F8.2": {
+        "id": "2-F8.2",
+        "name": "Transport-Umlauf #8",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T03:57:00",
+        "calendar_end_date": "2026-03-02T03:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F9.1": {
+        "id": "2-F9.1",
+        "name": "Beladen #9",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T03:57:00",
+        "calendar_end_date": "2026-03-02T03:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F9.2": {
+        "id": "2-F9.2",
+        "name": "Transport-Umlauf #9",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T04:21:00",
+        "calendar_end_date": "2026-03-02T04:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F10.1": {
+        "id": "2-F10.1",
+        "name": "Beladen #10",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T04:21:00",
+        "calendar_end_date": "2026-03-02T04:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F10.2": {
+        "id": "2-F10.2",
+        "name": "Transport-Umlauf #10",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T04:45:00",
+        "calendar_end_date": "2026-03-02T04:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F11.1": {
+        "id": "2-F11.1",
+        "name": "Beladen #11",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T04:45:00",
+        "calendar_end_date": "2026-03-02T04:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F11.2": {
+        "id": "2-F11.2",
+        "name": "Transport-Umlauf #11",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T05:09:00",
+        "calendar_end_date": "2026-03-02T05:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F11.2-BRK-P1": {
+        "id": "2-F11.2-BRK-P1",
+        "name": "Pause: Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+        "network_duration_days": 0.094,
+        "calendar_start_date": "2026-03-02T07:09:00",
+        "calendar_end_date": "2026-03-02T07:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F12.1": {
+        "id": "2-F12.1",
+        "name": "Beladen #12",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T05:09:00",
+        "calendar_end_date": "2026-03-02T05:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F12.2": {
+        "id": "2-F12.2",
+        "name": "Transport-Umlauf #12",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T05:33:00",
+        "calendar_end_date": "2026-03-02T05:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F12.2-BRK-P2": {
+        "id": "2-F12.2-BRK-P2",
+        "name": "Pause: Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+        "network_duration_days": 0.094,
+        "calendar_start_date": "2026-03-02T07:33:00",
+        "calendar_end_date": "2026-03-02T07:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F13.1": {
+        "id": "2-F13.1",
+        "name": "Beladen #13",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T05:33:00",
+        "calendar_end_date": "2026-03-02T05:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F13.2": {
+        "id": "2-F13.2",
+        "name": "Transport-Umlauf #13",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T05:57:00",
+        "calendar_end_date": "2026-03-02T05:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F14.1": {
+        "id": "2-F14.1",
+        "name": "Beladen #14",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T05:57:00",
+        "calendar_end_date": "2026-03-02T05:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F14.2": {
+        "id": "2-F14.2",
+        "name": "Transport-Umlauf #14",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T06:21:00",
+        "calendar_end_date": "2026-03-02T06:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F15.1": {
+        "id": "2-F15.1",
+        "name": "Beladen #15",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T06:21:00",
+        "calendar_end_date": "2026-03-02T06:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F15.2": {
+        "id": "2-F15.2",
+        "name": "Transport-Umlauf #15",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T06:45:00",
+        "calendar_end_date": "2026-03-02T06:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F15.2-BRK-P1": {
+        "id": "2-F15.2-BRK-P1",
+        "name": "Pause: Max Mustermann (Vorschrift laut Arbeitszeitgesetz)",
+        "network_duration_days": 0.062,
+        "calendar_start_date": "2026-03-02T08:45:00",
+        "calendar_end_date": "2026-03-02T08:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F16.1": {
+        "id": "2-F16.1",
+        "name": "Beladen #16",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T06:45:00",
+        "calendar_end_date": "2026-03-02T06:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F16.2": {
+        "id": "2-F16.2",
+        "name": "Transport-Umlauf #16",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T07:09:00",
+        "calendar_end_date": "2026-03-02T07:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F16.2-BRK-P2": {
+        "id": "2-F16.2-BRK-P2",
+        "name": "Pause: Heinz Müller (Vorschrift laut Arbeitszeitgesetz)",
+        "network_duration_days": 0.062,
+        "calendar_start_date": "2026-03-02T09:09:00",
+        "calendar_end_date": "2026-03-02T09:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F17.1": {
+        "id": "2-F17.1",
+        "name": "Beladen #17",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T07:09:00",
+        "calendar_end_date": "2026-03-02T07:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F17.2": {
+        "id": "2-F17.2",
+        "name": "Transport-Umlauf #17",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T07:33:00",
+        "calendar_end_date": "2026-03-02T07:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F18.1": {
+        "id": "2-F18.1",
+        "name": "Beladen #18",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T07:33:00",
+        "calendar_end_date": "2026-03-02T07:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F18.2": {
+        "id": "2-F18.2",
+        "name": "Transport-Umlauf #18",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T07:57:00",
+        "calendar_end_date": "2026-03-02T07:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F19.1": {
+        "id": "2-F19.1",
+        "name": "Beladen #19",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T07:57:00",
+        "calendar_end_date": "2026-03-02T07:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F19.2": {
+        "id": "2-F19.2",
+        "name": "Transport-Umlauf #19",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T08:21:00",
+        "calendar_end_date": "2026-03-02T08:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F20.1": {
+        "id": "2-F20.1",
+        "name": "Beladen #20",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T08:21:00",
+        "calendar_end_date": "2026-03-02T08:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F20.2": {
+        "id": "2-F20.2",
+        "name": "Transport-Umlauf #20",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T08:45:00",
+        "calendar_end_date": "2026-03-02T08:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F21.1": {
+        "id": "2-F21.1",
+        "name": "Beladen #21",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T08:45:00",
+        "calendar_end_date": "2026-03-02T08:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F21.2": {
+        "id": "2-F21.2",
+        "name": "Transport-Umlauf #21",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T09:09:00",
+        "calendar_end_date": "2026-03-02T09:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F22.1": {
+        "id": "2-F22.1",
+        "name": "Beladen #22",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T09:09:00",
+        "calendar_end_date": "2026-03-02T09:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F22.2": {
+        "id": "2-F22.2",
+        "name": "Transport-Umlauf #22",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T09:33:00",
+        "calendar_end_date": "2026-03-02T09:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F23.1": {
+        "id": "2-F23.1",
+        "name": "Beladen #23",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T09:33:00",
+        "calendar_end_date": "2026-03-02T09:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F23.2": {
+        "id": "2-F23.2",
+        "name": "Transport-Umlauf #23",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T09:57:00",
+        "calendar_end_date": "2026-03-02T09:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F24.1": {
+        "id": "2-F24.1",
+        "name": "Beladen #24",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T09:57:00",
+        "calendar_end_date": "2026-03-02T09:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F24.2": {
+        "id": "2-F24.2",
+        "name": "Transport-Umlauf #24",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T10:21:00",
+        "calendar_end_date": "2026-03-02T10:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F25.1": {
+        "id": "2-F25.1",
+        "name": "Beladen #25",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T10:21:00",
+        "calendar_end_date": "2026-03-02T10:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F25.2": {
+        "id": "2-F25.2",
+        "name": "Transport-Umlauf #25",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T10:45:00",
+        "calendar_end_date": "2026-03-02T10:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F26.1": {
+        "id": "2-F26.1",
+        "name": "Beladen #26",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T10:45:00",
+        "calendar_end_date": "2026-03-02T10:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F26.2": {
+        "id": "2-F26.2",
+        "name": "Transport-Umlauf #26",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T11:09:00",
+        "calendar_end_date": "2026-03-02T11:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F27.1": {
+        "id": "2-F27.1",
+        "name": "Beladen #27",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T11:09:00",
+        "calendar_end_date": "2026-03-02T11:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F27.2": {
+        "id": "2-F27.2",
+        "name": "Transport-Umlauf #27",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T11:33:00",
+        "calendar_end_date": "2026-03-02T11:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F28.1": {
+        "id": "2-F28.1",
+        "name": "Beladen #28",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T11:33:00",
+        "calendar_end_date": "2026-03-02T11:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F28.2": {
+        "id": "2-F28.2",
+        "name": "Transport-Umlauf #28",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T11:57:00",
+        "calendar_end_date": "2026-03-02T11:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F29.1": {
+        "id": "2-F29.1",
+        "name": "Beladen #29",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T11:57:00",
+        "calendar_end_date": "2026-03-02T11:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F29.2": {
+        "id": "2-F29.2",
+        "name": "Transport-Umlauf #29",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T12:21:00",
+        "calendar_end_date": "2026-03-02T12:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F30.1": {
+        "id": "2-F30.1",
+        "name": "Beladen #30",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T12:21:00",
+        "calendar_end_date": "2026-03-02T12:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F30.2": {
+        "id": "2-F30.2",
+        "name": "Transport-Umlauf #30",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T12:45:00",
+        "calendar_end_date": "2026-03-02T12:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F31.1": {
+        "id": "2-F31.1",
+        "name": "Beladen #31",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T12:45:00",
+        "calendar_end_date": "2026-03-02T12:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F31.2": {
+        "id": "2-F31.2",
+        "name": "Transport-Umlauf #31",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T13:09:00",
+        "calendar_end_date": "2026-03-02T13:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F32.1": {
+        "id": "2-F32.1",
+        "name": "Beladen #32",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T13:09:00",
+        "calendar_end_date": "2026-03-02T13:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F32.2": {
+        "id": "2-F32.2",
+        "name": "Transport-Umlauf #32",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T13:33:00",
+        "calendar_end_date": "2026-03-02T13:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F33.1": {
+        "id": "2-F33.1",
+        "name": "Beladen #33",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T13:33:00",
+        "calendar_end_date": "2026-03-02T13:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F33.2": {
+        "id": "2-F33.2",
+        "name": "Transport-Umlauf #33",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T13:57:00",
+        "calendar_end_date": "2026-03-02T13:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F34.1": {
+        "id": "2-F34.1",
+        "name": "Beladen #34",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T13:57:00",
+        "calendar_end_date": "2026-03-02T13:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F34.2": {
+        "id": "2-F34.2",
+        "name": "Transport-Umlauf #34",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T14:21:00",
+        "calendar_end_date": "2026-03-02T14:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F35.1": {
+        "id": "2-F35.1",
+        "name": "Beladen #35",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T14:21:00",
+        "calendar_end_date": "2026-03-02T14:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F35.2": {
+        "id": "2-F35.2",
+        "name": "Transport-Umlauf #35",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T14:45:00",
+        "calendar_end_date": "2026-03-02T14:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F36.1": {
+        "id": "2-F36.1",
+        "name": "Beladen #36",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T14:45:00",
+        "calendar_end_date": "2026-03-02T14:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F36.2": {
+        "id": "2-F36.2",
+        "name": "Transport-Umlauf #36",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T15:09:00",
+        "calendar_end_date": "2026-03-02T15:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F37.1": {
+        "id": "2-F37.1",
+        "name": "Beladen #37",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T15:09:00",
+        "calendar_end_date": "2026-03-02T15:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F37.2": {
+        "id": "2-F37.2",
+        "name": "Transport-Umlauf #37",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T15:33:00",
+        "calendar_end_date": "2026-03-02T15:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F38.1": {
+        "id": "2-F38.1",
+        "name": "Beladen #38",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T15:33:00",
+        "calendar_end_date": "2026-03-02T15:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F38.2": {
+        "id": "2-F38.2",
+        "name": "Transport-Umlauf #38",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T15:57:00",
+        "calendar_end_date": "2026-03-02T15:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F39.1": {
+        "id": "2-F39.1",
+        "name": "Beladen #39",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T15:57:00",
+        "calendar_end_date": "2026-03-02T15:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F39.2": {
+        "id": "2-F39.2",
+        "name": "Transport-Umlauf #39",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T16:21:00",
+        "calendar_end_date": "2026-03-02T16:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F40.1": {
+        "id": "2-F40.1",
+        "name": "Beladen #40",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T16:21:00",
+        "calendar_end_date": "2026-03-02T16:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F40.2": {
+        "id": "2-F40.2",
+        "name": "Transport-Umlauf #40",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T16:45:00",
+        "calendar_end_date": "2026-03-02T16:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F41.1": {
+        "id": "2-F41.1",
+        "name": "Beladen #41",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T16:45:00",
+        "calendar_end_date": "2026-03-02T16:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F41.2": {
+        "id": "2-F41.2",
+        "name": "Transport-Umlauf #41",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T17:09:00",
+        "calendar_end_date": "2026-03-02T17:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F42.1": {
+        "id": "2-F42.1",
+        "name": "Beladen #42",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T17:09:00",
+        "calendar_end_date": "2026-03-02T17:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F42.2": {
+        "id": "2-F42.2",
+        "name": "Transport-Umlauf #42",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T17:33:00",
+        "calendar_end_date": "2026-03-02T17:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F43.1": {
+        "id": "2-F43.1",
+        "name": "Beladen #43",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T17:33:00",
+        "calendar_end_date": "2026-03-02T17:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F43.2": {
+        "id": "2-F43.2",
+        "name": "Transport-Umlauf #43",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T17:57:00",
+        "calendar_end_date": "2026-03-02T17:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F44.1": {
+        "id": "2-F44.1",
+        "name": "Beladen #44",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T17:57:00",
+        "calendar_end_date": "2026-03-02T17:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F44.1-BRK-P3": {
+        "id": "2-F44.1-BRK-P3",
+        "name": "Pause: Bodo Schmidt (Vorschrift laut Arbeitszeitgesetz)",
+        "network_duration_days": 0.062,
+        "calendar_start_date": "2026-03-02T18:21:00",
+        "calendar_end_date": "2026-03-02T18:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F44.2": {
+        "id": "2-F44.2",
+        "name": "Transport-Umlauf #44",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T18:21:00",
+        "calendar_end_date": "2026-03-02T18:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F45.1": {
+        "id": "2-F45.1",
+        "name": "Beladen #45",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T18:21:00",
+        "calendar_end_date": "2026-03-02T18:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F45.2": {
+        "id": "2-F45.2",
+        "name": "Transport-Umlauf #45",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T18:45:00",
+        "calendar_end_date": "2026-03-02T18:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F46.1": {
+        "id": "2-F46.1",
+        "name": "Beladen #46",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T18:45:00",
+        "calendar_end_date": "2026-03-02T18:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F46.2": {
+        "id": "2-F46.2",
+        "name": "Transport-Umlauf #46",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T19:09:00",
+        "calendar_end_date": "2026-03-02T19:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F47.1": {
+        "id": "2-F47.1",
+        "name": "Beladen #47",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T19:09:00",
+        "calendar_end_date": "2026-03-02T19:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F47.2": {
+        "id": "2-F47.2",
+        "name": "Transport-Umlauf #47",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T19:33:00",
+        "calendar_end_date": "2026-03-02T19:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F48.1": {
+        "id": "2-F48.1",
+        "name": "Beladen #48",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T19:33:00",
+        "calendar_end_date": "2026-03-02T19:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F48.2": {
+        "id": "2-F48.2",
+        "name": "Transport-Umlauf #48",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T19:57:00",
+        "calendar_end_date": "2026-03-02T19:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F49.1": {
+        "id": "2-F49.1",
+        "name": "Beladen #49",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T19:57:00",
+        "calendar_end_date": "2026-03-02T19:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F49.2": {
+        "id": "2-F49.2",
+        "name": "Transport-Umlauf #49",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T20:21:00",
+        "calendar_end_date": "2026-03-02T20:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F50.1": {
+        "id": "2-F50.1",
+        "name": "Beladen #50",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T20:21:00",
+        "calendar_end_date": "2026-03-02T20:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F50.2": {
+        "id": "2-F50.2",
+        "name": "Transport-Umlauf #50",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T20:45:00",
+        "calendar_end_date": "2026-03-02T20:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F51.1": {
+        "id": "2-F51.1",
+        "name": "Beladen #51",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T20:45:00",
+        "calendar_end_date": "2026-03-02T20:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F51.2": {
+        "id": "2-F51.2",
+        "name": "Transport-Umlauf #51",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T21:09:00",
+        "calendar_end_date": "2026-03-02T21:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F52.1": {
+        "id": "2-F52.1",
+        "name": "Beladen #52",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T21:09:00",
+        "calendar_end_date": "2026-03-02T21:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F52.2": {
+        "id": "2-F52.2",
+        "name": "Transport-Umlauf #52",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T21:33:00",
+        "calendar_end_date": "2026-03-02T21:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F53.1": {
+        "id": "2-F53.1",
+        "name": "Beladen #53",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T21:33:00",
+        "calendar_end_date": "2026-03-02T21:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F53.2": {
+        "id": "2-F53.2",
+        "name": "Transport-Umlauf #53",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T21:57:00",
+        "calendar_end_date": "2026-03-02T21:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F54.1": {
+        "id": "2-F54.1",
+        "name": "Beladen #54",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T21:57:00",
+        "calendar_end_date": "2026-03-02T21:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F54.2": {
+        "id": "2-F54.2",
+        "name": "Transport-Umlauf #54",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T22:21:00",
+        "calendar_end_date": "2026-03-02T22:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F55.1": {
+        "id": "2-F55.1",
+        "name": "Beladen #55",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T22:21:00",
+        "calendar_end_date": "2026-03-02T22:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F55.2": {
+        "id": "2-F55.2",
+        "name": "Transport-Umlauf #55",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T22:45:00",
+        "calendar_end_date": "2026-03-02T22:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F56.1": {
+        "id": "2-F56.1",
+        "name": "Beladen #56",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T22:45:00",
+        "calendar_end_date": "2026-03-02T22:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F56.2": {
+        "id": "2-F56.2",
+        "name": "Transport-Umlauf #56",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T23:09:00",
+        "calendar_end_date": "2026-03-02T23:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F57.1": {
+        "id": "2-F57.1",
+        "name": "Beladen #57",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T23:09:00",
+        "calendar_end_date": "2026-03-02T23:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F57.2": {
+        "id": "2-F57.2",
+        "name": "Transport-Umlauf #57",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T23:33:00",
+        "calendar_end_date": "2026-03-02T23:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F58.1": {
+        "id": "2-F58.1",
+        "name": "Beladen #58",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T23:33:00",
+        "calendar_end_date": "2026-03-02T23:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F58.2": {
+        "id": "2-F58.2",
+        "name": "Transport-Umlauf #58",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-02T23:57:00",
+        "calendar_end_date": "2026-03-02T23:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F59.1": {
+        "id": "2-F59.1",
+        "name": "Beladen #59",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-02T23:57:00",
+        "calendar_end_date": "2026-03-02T23:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": -0.0
+      },
+      "2-F59.2": {
+        "id": "2-F59.2",
+        "name": "Transport-Umlauf #59",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T00:21:00",
+        "calendar_end_date": "2026-03-03T00:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F60.1": {
+        "id": "2-F60.1",
+        "name": "Beladen #60",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T00:21:00",
+        "calendar_end_date": "2026-03-03T00:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F60.2": {
+        "id": "2-F60.2",
+        "name": "Transport-Umlauf #60",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T00:45:00",
+        "calendar_end_date": "2026-03-03T00:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F61.1": {
+        "id": "2-F61.1",
+        "name": "Beladen #61",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T00:45:00",
+        "calendar_end_date": "2026-03-03T00:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F61.2": {
+        "id": "2-F61.2",
+        "name": "Transport-Umlauf #61",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T01:09:00",
+        "calendar_end_date": "2026-03-03T01:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F62.1": {
+        "id": "2-F62.1",
+        "name": "Beladen #62",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T01:09:00",
+        "calendar_end_date": "2026-03-03T01:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F62.2": {
+        "id": "2-F62.2",
+        "name": "Transport-Umlauf #62",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T01:33:00",
+        "calendar_end_date": "2026-03-03T01:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F63.1": {
+        "id": "2-F63.1",
+        "name": "Beladen #63",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T01:33:00",
+        "calendar_end_date": "2026-03-03T01:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F63.2": {
+        "id": "2-F63.2",
+        "name": "Transport-Umlauf #63",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T01:57:00",
+        "calendar_end_date": "2026-03-03T01:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F64.1": {
+        "id": "2-F64.1",
+        "name": "Beladen #64",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T01:57:00",
+        "calendar_end_date": "2026-03-03T01:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F64.2": {
+        "id": "2-F64.2",
+        "name": "Transport-Umlauf #64",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T02:21:00",
+        "calendar_end_date": "2026-03-03T02:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F65.1": {
+        "id": "2-F65.1",
+        "name": "Beladen #65",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T02:21:00",
+        "calendar_end_date": "2026-03-03T02:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F65.2": {
+        "id": "2-F65.2",
+        "name": "Transport-Umlauf #65",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T02:45:00",
+        "calendar_end_date": "2026-03-03T02:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F66.1": {
+        "id": "2-F66.1",
+        "name": "Beladen #66",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T02:45:00",
+        "calendar_end_date": "2026-03-03T02:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F66.2": {
+        "id": "2-F66.2",
+        "name": "Transport-Umlauf #66",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T03:09:00",
+        "calendar_end_date": "2026-03-03T03:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F67.1": {
+        "id": "2-F67.1",
+        "name": "Beladen #67",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T03:09:00",
+        "calendar_end_date": "2026-03-03T03:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F67.2": {
+        "id": "2-F67.2",
+        "name": "Transport-Umlauf #67",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T03:33:00",
+        "calendar_end_date": "2026-03-03T03:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F68.1": {
+        "id": "2-F68.1",
+        "name": "Beladen #68",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T03:33:00",
+        "calendar_end_date": "2026-03-03T03:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F68.2": {
+        "id": "2-F68.2",
+        "name": "Transport-Umlauf #68",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T03:57:00",
+        "calendar_end_date": "2026-03-03T03:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F69.1": {
+        "id": "2-F69.1",
+        "name": "Beladen #69",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T03:57:00",
+        "calendar_end_date": "2026-03-03T03:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F69.2": {
+        "id": "2-F69.2",
+        "name": "Transport-Umlauf #69",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T04:21:00",
+        "calendar_end_date": "2026-03-03T04:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F70.1": {
+        "id": "2-F70.1",
+        "name": "Beladen #70",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T04:21:00",
+        "calendar_end_date": "2026-03-03T04:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F70.2": {
+        "id": "2-F70.2",
+        "name": "Transport-Umlauf #70",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T04:45:00",
+        "calendar_end_date": "2026-03-03T04:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F71.1": {
+        "id": "2-F71.1",
+        "name": "Beladen #71",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T04:45:00",
+        "calendar_end_date": "2026-03-03T04:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F71.2": {
+        "id": "2-F71.2",
+        "name": "Transport-Umlauf #71",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T05:09:00",
+        "calendar_end_date": "2026-03-03T05:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F72.1": {
+        "id": "2-F72.1",
+        "name": "Beladen #72",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T05:09:00",
+        "calendar_end_date": "2026-03-03T05:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F72.2": {
+        "id": "2-F72.2",
+        "name": "Transport-Umlauf #72",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T05:33:00",
+        "calendar_end_date": "2026-03-03T05:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F73.1": {
+        "id": "2-F73.1",
+        "name": "Beladen #73",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T05:33:00",
+        "calendar_end_date": "2026-03-03T05:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F73.2": {
+        "id": "2-F73.2",
+        "name": "Transport-Umlauf #73",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T05:57:00",
+        "calendar_end_date": "2026-03-03T05:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F74.1": {
+        "id": "2-F74.1",
+        "name": "Beladen #74",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T05:57:00",
+        "calendar_end_date": "2026-03-03T05:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F74.2": {
+        "id": "2-F74.2",
+        "name": "Transport-Umlauf #74",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T06:21:00",
+        "calendar_end_date": "2026-03-03T06:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F75.1": {
+        "id": "2-F75.1",
+        "name": "Beladen #75",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T06:21:00",
+        "calendar_end_date": "2026-03-03T06:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F75.2": {
+        "id": "2-F75.2",
+        "name": "Transport-Umlauf #75",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T06:45:00",
+        "calendar_end_date": "2026-03-03T06:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F76.1": {
+        "id": "2-F76.1",
+        "name": "Beladen #76",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T06:45:00",
+        "calendar_end_date": "2026-03-03T06:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F76.2": {
+        "id": "2-F76.2",
+        "name": "Transport-Umlauf #76",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T07:09:00",
+        "calendar_end_date": "2026-03-03T07:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F77.1": {
+        "id": "2-F77.1",
+        "name": "Beladen #77",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T07:09:00",
+        "calendar_end_date": "2026-03-03T07:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F77.2": {
+        "id": "2-F77.2",
+        "name": "Transport-Umlauf #77",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T07:33:00",
+        "calendar_end_date": "2026-03-03T07:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F78.1": {
+        "id": "2-F78.1",
+        "name": "Beladen #78",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T07:33:00",
+        "calendar_end_date": "2026-03-03T07:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F78.2": {
+        "id": "2-F78.2",
+        "name": "Transport-Umlauf #78",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T07:57:00",
+        "calendar_end_date": "2026-03-03T07:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F79.1": {
+        "id": "2-F79.1",
+        "name": "Beladen #79",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T07:57:00",
+        "calendar_end_date": "2026-03-03T07:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F79.2": {
+        "id": "2-F79.2",
+        "name": "Transport-Umlauf #79",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T08:21:00",
+        "calendar_end_date": "2026-03-03T08:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F80.1": {
+        "id": "2-F80.1",
+        "name": "Beladen #80",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T08:21:00",
+        "calendar_end_date": "2026-03-03T08:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F80.2": {
+        "id": "2-F80.2",
+        "name": "Transport-Umlauf #80",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T08:45:00",
+        "calendar_end_date": "2026-03-03T08:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F81.1": {
+        "id": "2-F81.1",
+        "name": "Beladen #81",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T08:45:00",
+        "calendar_end_date": "2026-03-03T08:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F81.2": {
+        "id": "2-F81.2",
+        "name": "Transport-Umlauf #81",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T09:09:00",
+        "calendar_end_date": "2026-03-03T09:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F82.1": {
+        "id": "2-F82.1",
+        "name": "Beladen #82",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T09:09:00",
+        "calendar_end_date": "2026-03-03T09:09:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F82.2": {
+        "id": "2-F82.2",
+        "name": "Transport-Umlauf #82",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T09:33:00",
+        "calendar_end_date": "2026-03-03T09:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F83.1": {
+        "id": "2-F83.1",
+        "name": "Beladen #83",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T09:33:00",
+        "calendar_end_date": "2026-03-03T09:33:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F83.2": {
+        "id": "2-F83.2",
+        "name": "Transport-Umlauf #83",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T09:57:00",
+        "calendar_end_date": "2026-03-03T09:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F84.1": {
+        "id": "2-F84.1",
+        "name": "Beladen #84",
+        "network_duration_days": 0.017,
+        "calendar_start_date": "2026-03-03T09:57:00",
+        "calendar_end_date": "2026-03-03T09:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-F84.2": {
+        "id": "2-F84.2",
+        "name": "Transport-Umlauf #84",
+        "network_duration_days": 0.083,
+        "calendar_start_date": "2026-03-03T10:21:00",
+        "calendar_end_date": "2026-03-03T10:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      }
+    }
+  },
+  "resource_list": {
+    "assignments": [
+      {
+        "resource_id": "B1",
+        "resource_name": "Kettenbagger",
+        "task_ids": [
+          "1",
+          "2-F1.1",
+          "2-F2.1",
+          "2-F3.1",
+          "2-F4.1",
+          "2-F5.1",
+          "2-F6.1",
+          "2-F7.1",
+          "2-F8.1",
+          "2-F9.1",
+          "2-F10.1",
+          "2-F11.1",
+          "2-F12.1",
+          "2-F13.1",
+          "2-F14.1",
+          "2-F15.1",
+          "2-F16.1",
+          "2-F17.1",
+          "2-F18.1",
+          "2-F19.1",
+          "2-F20.1",
+          "2-F21.1",
+          "2-F22.1",
+          "2-F23.1",
+          "2-F24.1",
+          "2-F25.1",
+          "2-F26.1",
+          "2-F27.1",
+          "2-F28.1",
+          "2-F29.1",
+          "2-F30.1",
+          "2-F31.1",
+          "2-F32.1",
+          "2-F33.1",
+          "2-F34.1",
+          "2-F35.1",
+          "2-F36.1",
+          "2-F37.1",
+          "2-F38.1",
+          "2-F39.1",
+          "2-F40.1",
+          "2-F41.1",
+          "2-F42.1",
+          "2-F43.1",
+          "2-F44.1",
+          "2-F45.1",
+          "2-F46.1",
+          "2-F47.1",
+          "2-F48.1",
+          "2-F49.1",
+          "2-F50.1",
+          "2-F51.1",
+          "2-F52.1",
+          "2-F53.1",
+          "2-F54.1",
+          "2-F55.1",
+          "2-F56.1",
+          "2-F57.1",
+          "2-F58.1",
+          "2-F59.1",
+          "2-F60.1",
+          "2-F61.1",
+          "2-F62.1",
+          "2-F63.1",
+          "2-F64.1",
+          "2-F65.1",
+          "2-F66.1",
+          "2-F67.1",
+          "2-F68.1",
+          "2-F69.1",
+          "2-F70.1",
+          "2-F71.1",
+          "2-F72.1",
+          "2-F73.1",
+          "2-F74.1",
+          "2-F75.1",
+          "2-F76.1",
+          "2-F77.1",
+          "2-F78.1",
+          "2-F79.1",
+          "2-F80.1",
+          "2-F81.1",
+          "2-F82.1",
+          "2-F83.1",
+          "2-F84.1"
+        ]
+      },
+      {
+        "resource_id": "L1",
+        "resource_name": "LKW 1",
+        "task_ids": [
+          "1",
+          "2-F1.1",
+          "2-F1.2",
+          "2-F3.1",
+          "2-F3.2",
+          "2-F5.1",
+          "2-F5.2",
+          "2-F7.1",
+          "2-F7.2",
+          "2-F9.1",
+          "2-F9.2",
+          "2-F11.1",
+          "2-F11.2",
+          "2-F13.1",
+          "2-F13.2",
+          "2-F15.1",
+          "2-F15.2",
+          "2-F17.1",
+          "2-F17.2",
+          "2-F19.1",
+          "2-F19.2",
+          "2-F21.1",
+          "2-F21.2",
+          "2-F23.1",
+          "2-F23.2",
+          "2-F25.1",
+          "2-F25.2",
+          "2-F27.1",
+          "2-F27.2",
+          "2-F29.1",
+          "2-F29.2",
+          "2-F31.1",
+          "2-F31.2",
+          "2-F33.1",
+          "2-F33.2",
+          "2-F35.1",
+          "2-F35.2",
+          "2-F37.1",
+          "2-F37.2",
+          "2-F39.1",
+          "2-F39.2",
+          "2-F41.1",
+          "2-F41.2",
+          "2-F43.1",
+          "2-F43.2",
+          "2-F45.1",
+          "2-F45.2",
+          "2-F47.1",
+          "2-F47.2",
+          "2-F49.1",
+          "2-F49.2",
+          "2-F51.1",
+          "2-F51.2",
+          "2-F53.1",
+          "2-F53.2",
+          "2-F55.1",
+          "2-F55.2",
+          "2-F57.1",
+          "2-F57.2",
+          "2-F59.1",
+          "2-F59.2",
+          "2-F61.1",
+          "2-F61.2",
+          "2-F63.1",
+          "2-F63.2",
+          "2-F65.1",
+          "2-F65.2",
+          "2-F67.1",
+          "2-F67.2",
+          "2-F69.1",
+          "2-F69.2",
+          "2-F71.1",
+          "2-F71.2",
+          "2-F73.1",
+          "2-F73.2",
+          "2-F75.1",
+          "2-F75.2",
+          "2-F77.1",
+          "2-F77.2",
+          "2-F79.1",
+          "2-F79.2",
+          "2-F81.1",
+          "2-F81.2",
+          "2-F83.1",
+          "2-F83.2"
+        ]
+      },
+      {
+        "resource_id": "L2",
+        "resource_name": "LKW 2",
+        "task_ids": [
+          "1",
+          "2-F2.1",
+          "2-F2.2",
+          "2-F4.1",
+          "2-F4.2",
+          "2-F6.1",
+          "2-F6.2",
+          "2-F8.1",
+          "2-F8.2",
+          "2-F10.1",
+          "2-F10.2",
+          "2-F12.1",
+          "2-F12.2",
+          "2-F14.1",
+          "2-F14.2",
+          "2-F16.1",
+          "2-F16.2",
+          "2-F18.1",
+          "2-F18.2",
+          "2-F20.1",
+          "2-F20.2",
+          "2-F22.1",
+          "2-F22.2",
+          "2-F24.1",
+          "2-F24.2",
+          "2-F26.1",
+          "2-F26.2",
+          "2-F28.1",
+          "2-F28.2",
+          "2-F30.1",
+          "2-F30.2",
+          "2-F32.1",
+          "2-F32.2",
+          "2-F34.1",
+          "2-F34.2",
+          "2-F36.1",
+          "2-F36.2",
+          "2-F38.1",
+          "2-F38.2",
+          "2-F40.1",
+          "2-F40.2",
+          "2-F42.1",
+          "2-F42.2",
+          "2-F44.1",
+          "2-F44.2",
+          "2-F46.1",
+          "2-F46.2",
+          "2-F48.1",
+          "2-F48.2",
+          "2-F50.1",
+          "2-F50.2",
+          "2-F52.1",
+          "2-F52.2",
+          "2-F54.1",
+          "2-F54.2",
+          "2-F56.1",
+          "2-F56.2",
+          "2-F58.1",
+          "2-F58.2",
+          "2-F60.1",
+          "2-F60.2",
+          "2-F62.1",
+          "2-F62.2",
+          "2-F64.1",
+          "2-F64.2",
+          "2-F66.1",
+          "2-F66.2",
+          "2-F68.1",
+          "2-F68.2",
+          "2-F70.1",
+          "2-F70.2",
+          "2-F72.1",
+          "2-F72.2",
+          "2-F74.1",
+          "2-F74.2",
+          "2-F76.1",
+          "2-F76.2",
+          "2-F78.1",
+          "2-F78.2",
+          "2-F80.1",
+          "2-F80.2",
+          "2-F82.1",
+          "2-F82.2",
+          "2-F84.1",
+          "2-F84.2"
+        ]
+      },
+      {
+        "resource_id": "R_PERS1",
+        "resource_name": "LKW-Fahrer Max",
+        "task_ids": [
+          "1",
+          "2-F1.1",
+          "2-F1.2",
+          "2-F3.1",
+          "2-F3.2",
+          "2-F5.1",
+          "2-F5.2",
+          "2-F7.1",
+          "2-F7.2",
+          "2-F9.1",
+          "2-F9.2",
+          "2-F11.1",
+          "2-F11.2",
+          "2-F13.1",
+          "2-F13.2",
+          "2-F15.1",
+          "2-F15.2",
+          "2-F17.1",
+          "2-F17.2",
+          "2-F19.1",
+          "2-F19.2",
+          "2-F21.1",
+          "2-F21.2",
+          "2-F23.1",
+          "2-F23.2",
+          "2-F25.1",
+          "2-F25.2",
+          "2-F27.1",
+          "2-F27.2",
+          "2-F29.1",
+          "2-F29.2",
+          "2-F31.1",
+          "2-F31.2",
+          "2-F33.1",
+          "2-F33.2",
+          "2-F35.1",
+          "2-F35.2",
+          "2-F37.1",
+          "2-F37.2",
+          "2-F39.1",
+          "2-F39.2",
+          "2-F41.1",
+          "2-F41.2",
+          "2-F43.1",
+          "2-F43.2",
+          "2-F45.1",
+          "2-F45.2",
+          "2-F47.1",
+          "2-F47.2",
+          "2-F49.1",
+          "2-F49.2",
+          "2-F51.1",
+          "2-F51.2",
+          "2-F53.1",
+          "2-F53.2",
+          "2-F55.1",
+          "2-F55.2",
+          "2-F57.1",
+          "2-F57.2",
+          "2-F59.1",
+          "2-F59.2",
+          "2-F61.1",
+          "2-F61.2",
+          "2-F63.1",
+          "2-F63.2",
+          "2-F65.1",
+          "2-F65.2",
+          "2-F67.1",
+          "2-F67.2",
+          "2-F69.1",
+          "2-F69.2",
+          "2-F71.1",
+          "2-F71.2",
+          "2-F73.1",
+          "2-F73.2",
+          "2-F75.1",
+          "2-F75.2",
+          "2-F77.1",
+          "2-F77.2",
+          "2-F79.1",
+          "2-F79.2",
+          "2-F81.1",
+          "2-F81.2",
+          "2-F83.1",
+          "2-F83.2"
+        ]
+      },
+      {
+        "resource_id": "R_PERS2",
+        "resource_name": "LKW-Fahrer Heinz",
+        "task_ids": [
+          "1",
+          "2-F2.1",
+          "2-F2.2",
+          "2-F4.1",
+          "2-F4.2",
+          "2-F6.1",
+          "2-F6.2",
+          "2-F8.1",
+          "2-F8.2",
+          "2-F10.1",
+          "2-F10.2",
+          "2-F12.1",
+          "2-F12.2",
+          "2-F14.1",
+          "2-F14.2",
+          "2-F16.1",
+          "2-F16.2",
+          "2-F18.1",
+          "2-F18.2",
+          "2-F20.1",
+          "2-F20.2",
+          "2-F22.1",
+          "2-F22.2",
+          "2-F24.1",
+          "2-F24.2",
+          "2-F26.1",
+          "2-F26.2",
+          "2-F28.1",
+          "2-F28.2",
+          "2-F30.1",
+          "2-F30.2",
+          "2-F32.1",
+          "2-F32.2",
+          "2-F34.1",
+          "2-F34.2",
+          "2-F36.1",
+          "2-F36.2",
+          "2-F38.1",
+          "2-F38.2",
+          "2-F40.1",
+          "2-F40.2",
+          "2-F42.1",
+          "2-F42.2",
+          "2-F44.1",
+          "2-F44.2",
+          "2-F46.1",
+          "2-F46.2",
+          "2-F48.1",
+          "2-F48.2",
+          "2-F50.1",
+          "2-F50.2",
+          "2-F52.1",
+          "2-F52.2",
+          "2-F54.1",
+          "2-F54.2",
+          "2-F56.1",
+          "2-F56.2",
+          "2-F58.1",
+          "2-F58.2",
+          "2-F60.1",
+          "2-F60.2",
+          "2-F62.1",
+          "2-F62.2",
+          "2-F64.1",
+          "2-F64.2",
+          "2-F66.1",
+          "2-F66.2",
+          "2-F68.1",
+          "2-F68.2",
+          "2-F70.1",
+          "2-F70.2",
+          "2-F72.1",
+          "2-F72.2",
+          "2-F74.1",
+          "2-F74.2",
+          "2-F76.1",
+          "2-F76.2",
+          "2-F78.1",
+          "2-F78.2",
+          "2-F80.1",
+          "2-F80.2",
+          "2-F82.1",
+          "2-F82.2",
+          "2-F84.1",
+          "2-F84.2"
+        ]
+      },
+      {
+        "resource_id": "R_PERS3",
+        "resource_name": "Baggerführer Bodo",
+        "task_ids": [
+          "1",
+          "2-F1.1",
+          "2-F2.1",
+          "2-F3.1",
+          "2-F4.1",
+          "2-F5.1",
+          "2-F6.1",
+          "2-F7.1",
+          "2-F8.1",
+          "2-F9.1",
+          "2-F10.1",
+          "2-F11.1",
+          "2-F12.1",
+          "2-F13.1",
+          "2-F14.1",
+          "2-F15.1",
+          "2-F16.1",
+          "2-F17.1",
+          "2-F18.1",
+          "2-F19.1",
+          "2-F20.1",
+          "2-F21.1",
+          "2-F22.1",
+          "2-F23.1",
+          "2-F24.1",
+          "2-F25.1",
+          "2-F26.1",
+          "2-F27.1",
+          "2-F28.1",
+          "2-F29.1",
+          "2-F30.1",
+          "2-F31.1",
+          "2-F32.1",
+          "2-F33.1",
+          "2-F34.1",
+          "2-F35.1",
+          "2-F36.1",
+          "2-F37.1",
+          "2-F38.1",
+          "2-F39.1",
+          "2-F40.1",
+          "2-F41.1",
+          "2-F42.1",
+          "2-F43.1",
+          "2-F44.1",
+          "2-F45.1",
+          "2-F46.1",
+          "2-F47.1",
+          "2-F48.1",
+          "2-F49.1",
+          "2-F50.1",
+          "2-F51.1",
+          "2-F52.1",
+          "2-F53.1",
+          "2-F54.1",
+          "2-F55.1",
+          "2-F56.1",
+          "2-F57.1",
+          "2-F58.1",
+          "2-F59.1",
+          "2-F60.1",
+          "2-F61.1",
+          "2-F62.1",
+          "2-F63.1",
+          "2-F64.1",
+          "2-F65.1",
+          "2-F66.1",
+          "2-F67.1",
+          "2-F68.1",
+          "2-F69.1",
+          "2-F70.1",
+          "2-F71.1",
+          "2-F72.1",
+          "2-F73.1",
+          "2-F74.1",
+          "2-F75.1",
+          "2-F76.1",
+          "2-F77.1",
+          "2-F78.1",
+          "2-F79.1",
+          "2-F80.1",
+          "2-F81.1",
+          "2-F82.1",
+          "2-F83.1",
+          "2-F84.1"
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "name": "LKW-Fahrer Max",
+        "type": "person",
+        "person_id": "PERS1"
+      },
+      {
+        "name": "LKW-Fahrer Heinz",
+        "type": "person",
+        "person_id": "PERS2"
+      },
+      {
+        "name": "Baggerführer Bodo",
+        "type": "person",
+        "person_id": "PERS3"
+      },
+      {
+        "name": "Kettenbagger",
+        "type": "machine"
+      },
+      {
+        "name": "LKW 1",
+        "type": "truck"
+      },
+      {
+        "name": "LKW 2",
+        "type": "truck"
+      }
+    ],
+    "persons": [
+      {
+        "id": "PERS1",
+        "name": "Max Mustermann",
+        "hourly_rate": 45.0
+      },
+      {
+        "id": "PERS2",
+        "name": "Heinz Müller",
+        "hourly_rate": 45.0
+      },
+      {
+        "id": "PERS3",
+        "name": "Bodo Schmidt",
+        "hourly_rate": 65.0
+      }
+    ]
+  },
+  "cost_overview": {
+    "entries": [
+      {
+        "resource_id": "B1",
+        "resource_name": "Kettenbagger",
+        "resource_type": "machine",
+        "hours_worked": 11.45,
+        "hourly_rate": 140.0,
+        "provisioning_costs": 150.0,
+        "labor_costs": 1603.0,
+        "total_costs": 1753.0
+      },
+      {
+        "resource_id": "L1",
+        "resource_name": "LKW 1",
+        "resource_type": "truck",
+        "hours_worked": 33.85,
+        "hourly_rate": 120.0,
+        "provisioning_costs": 100.0,
+        "labor_costs": 4062.0,
+        "total_costs": 4162.0
+      },
+      {
+        "resource_id": "L2",
+        "resource_name": "LKW 2",
+        "resource_type": "truck",
+        "hours_worked": 33.85,
+        "hourly_rate": 120.0,
+        "provisioning_costs": 100.0,
+        "labor_costs": 4062.0,
+        "total_costs": 4162.0
+      },
+      {
+        "resource_id": "R_PERS1",
+        "resource_name": "LKW-Fahrer Max",
+        "resource_type": "person",
+        "hours_worked": 33.85,
+        "hourly_rate": 45.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 1523.25,
+        "total_costs": 1523.25
+      },
+      {
+        "resource_id": "R_PERS2",
+        "resource_name": "LKW-Fahrer Heinz",
+        "resource_type": "person",
+        "hours_worked": 33.85,
+        "hourly_rate": 45.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 1523.25,
+        "total_costs": 1523.25
+      },
+      {
+        "resource_id": "R_PERS3",
+        "resource_name": "Baggerführer Bodo",
+        "resource_type": "person",
+        "hours_worked": 11.45,
+        "hourly_rate": 65.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 744.25,
+        "total_costs": 744.25
+      }
+    ],
+    "total_person_costs": 3790.75,
+    "total_machine_costs": 9727.0,
+    "total_provisioning_costs": 350.0,
+    "total_costs": 13867.75
+  },
+  "settings": {
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "holidays": [
+      "2026-01-01",
+      "2026-01-06",
+      "2026-04-03",
+      "2026-04-06",
+      "2026-05-01",
+      "2026-05-14",
+      "2026-05-25",
+      "2026-06-04",
+      "2026-08-15",
+      "2026-10-03",
+      "2026-11-01",
+      "2026-12-25",
+      "2026-12-26"
+    ]
+  }
+}

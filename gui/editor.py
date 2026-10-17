@@ -3,226 +3,77 @@ ProjectEditorApp – Zentrale Applikationsklasse (Dear PyGui)
 ============================================================
 
 Hält das Pydantic-Project-Modell als Single Source of Truth und verbindet
-GUI-Events mit den lib/-Funktionen.  Keine lib/-Logik wird dupliziert.
+GUI-Events mit lib/. Berechnung und Exporte laufen über dieselben Funktionen
+wie die CLI (lib.schedule.build_schedule, lib.exporters).
+
+Datenfluss:
+    sync_to_model()  Widgets → Modell   (Stammdaten, Task-Tabelle, Sektionen)
+    refresh_all()    Modell  → Widgets
 """
 
 import json
-import os
-import sys
-import tempfile
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import Any, Callable, Dict, List, Optional
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+import dearpygui.dearpygui as dpg
 
-from lib.models import (
-    load_project,
-    load_project_from_dict,
-    save_project,
-    Project,
-    CPMResult,
-)
-from lib.models.tasks import SimpleTask, LoopTask, SubTask
-from gui.gui_config import load_gui_config
+from gui.components import result_panel
+from gui.components.sections import OptionalSections
+from gui.components.task_table import rebuild_task_table
+from gui.i18n import get_language, t
+from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
+from lib.exporters import ExportOptions, export_schedule
+from lib.models import Project, load_project, load_project_from_dict, save_project
+from lib.paths import get_cfg_dir, get_results_dir, get_work_dir
+from lib.schedule import Schedule, build_schedule
 
-_CFG = load_gui_config()
-_COLORS = _CFG.section("colors")
+SECTIONS = ("resources", "persons", "resting_times")
 
+# Report-Formate, die die GUI anbietet (Schlüssel aus lib.exporters.EXPORTERS)
+REPORT_FORMATS: Dict[str, str] = {
+    "md":   "Markdown",
+    "xlsx": "Excel",
+    "txt":  "Text",
+    "html": "HTML",
+    "json": "Netzplan-JSON",
+}
 
-# ---------------------------------------------------------------------------
-# Hilfs-Funktionen: Tasks ↔ Tabellenzeilen
-# ---------------------------------------------------------------------------
-
-def _parse_id(val: str):
-    """Konvertiert String-ID in int, wenn möglich."""
-    try:
-        return int(val)
-    except (ValueError, TypeError):
-        return val
-
-
-def _successors_to_str(task) -> str:
-    """Kodiert alle Nachfolger-Listen als 'id[TYP], ...' String.
-
-    EA ist der Default und wird ohne Suffix angezeigt.
-    """
-    parts = []
-    for s in task.successors or []:
-        parts.append(str(s))
-    for s in task.successors_aa or []:
-        parts.append(f"{s}[AA]")
-    for s in task.successors_ee or []:
-        parts.append(f"{s}[EE]")
-    for s in task.successors_ae or []:
-        parts.append(f"{s}[AE]")
-    return ", ".join(parts)
+# Stammdaten: Widget-Tag → (Projektfeld, Umwandlung Text → Wert)
+_MASTER_FIELDS: Dict[str, tuple] = {
+    "inp_project_name":  ("project", str),
+    "inp_project_start": ("project_start", str),
+    "inp_unit":          ("unit", str),
+    "inp_total_volume":  ("total_volume", float),
+    "inp_total_hours":   ("total_hours", int),
+    "inp_order_volume":  ("order_volume", int),
+}
 
 
-def _str_to_successors(s: str) -> tuple:
-    """Parst 'id[TYP], ...' String in vier Nachfolger-Listen."""
-    ea, aa, ee, ae = [], [], [], []
-    if not s.strip():
-        return ea, aa, ee, ae
-    for item in s.split(","):
-        item = item.strip()
-        if not item:
-            continue
-        if "[" in item:
-            id_part, typ = item.rsplit("[", 1)
-            typ = typ.rstrip("]").upper()
-        else:
-            id_part, typ = item, "EA"
-        id_val = _parse_id(id_part.strip())
-        if typ == "AA":
-            aa.append(id_val)
-        elif typ == "EE":
-            ee.append(id_val)
-        elif typ == "AE":
-            ae.append(id_val)
-        else:
-            ea.append(id_val)
-    return ea, aa, ee, ae
+def _set_value(tag: str, value: Any) -> None:
+    if dpg.does_item_exist(tag):
+        dpg.set_value(tag, value)
 
 
-def tasks_to_rows(tasks: list) -> list:
-    """Flacht Project.tasks (inkl. Subtasks) in Tabellenzeilen ab."""
-    rows = []
-    for task in tasks:
-        if isinstance(task, LoopTask):
-            rows.append({
-                "row_type": "loop",
-                "id": str(task.id),
-                "name": task.name,
-                "duration": "",
-                "resources": "",
-                "successors_str": _successors_to_str(task),
-                "cost": str(task.cost) if task.cost is not None else "",
-                "loop_until": task.loop_until or "",
-                "cycle_prefix": task.cycle_prefix or "F",
-                "loop_count": str(task.loop_count) if task.loop_count is not None else "",
-                "volume_per_cycle": str(task.volume_per_cycle) if task.volume_per_cycle is not None else "",
-                "parent_id": "",
-            })
-            for sub in (task.subtasks or []):
-                rows.append({
-                    "row_type": "subtask",
-                    "id": sub.id or "",
-                    "name": sub.name,
-                    "duration": sub.duration or sub.duration_formula or "",
-                    "resources": ", ".join(sub.resources or []),
-                    "successors_str": "",
-                    "cost": "",
-                    "loop_until": "",
-                    "cycle_prefix": "",
-                    "loop_count": "",
-                    "volume_per_cycle": "",
-                    "parent_id": str(task.id),
-                })
-        else:
-            rows.append({
-                "row_type": "simple",
-                "id": str(task.id),
-                "name": task.name,
-                "duration": task.duration or "",
-                "resources": ", ".join(task.resources or []),
-                "successors_str": _successors_to_str(task),
-                "cost": str(task.cost) if task.cost is not None else "",
-                "loop_until": "",
-                "cycle_prefix": "",
-                "loop_count": "",
-                "volume_per_cycle": "",
-                "parent_id": "",
-            })
-    return rows
+def _get_value(tag: str) -> str:
+    return (dpg.get_value(tag) or "") if dpg.does_item_exist(tag) else ""
 
-
-def rows_to_tasks(rows: list) -> list:
-    """Rekonstruiert Project.tasks aus flachen Tabellenzeilen."""
-    tasks = []
-    i = 0
-    while i < len(rows):
-        row = rows[i]
-        if row.get("row_type") == "loop":
-            subtasks = []
-            j = i + 1
-            while (
-                j < len(rows)
-                and rows[j].get("row_type") == "subtask"
-                and rows[j].get("parent_id") == row["id"]
-            ):
-                sr = rows[j]
-                res = [r.strip() for r in sr.get("resources", "").split(",") if r.strip()]
-                sub = SubTask(
-                    id=sr["id"] or None,
-                    name=sr["name"],
-                    resources=res or None,
-                    duration=sr.get("duration") or None,
-                )
-                subtasks.append(sub)
-                j += 1
-            ea, aa, ee, ae = _str_to_successors(row.get("successors_str", ""))
-            lc = int(row["loop_count"]) if row.get("loop_count") else None
-            vpc = float(row["volume_per_cycle"]) if row.get("volume_per_cycle") else None
-            task = LoopTask(
-                id=_parse_id(row["id"]),
-                name=row["name"],
-                loop_until=row.get("loop_until") or "total_volume <= 0",
-                successors=ea,
-                successors_aa=aa,
-                successors_ee=ee,
-                successors_ae=ae,
-                cycle_prefix=row.get("cycle_prefix") or "F",
-                subtasks=subtasks,
-                loop_count=lc,
-                volume_per_cycle=vpc,
-            )
-            tasks.append(task)
-            i = j
-        elif row.get("row_type") == "subtask":
-            i += 1  # Verwaiste Subtasks überspringen
-        else:
-            ea, aa, ee, ae = _str_to_successors(row.get("successors_str", ""))
-            cost_str = row.get("cost", "")
-            cost = float(cost_str) if cost_str else None
-            res = [r.strip() for r in row.get("resources", "").split(",") if r.strip()]
-            task = SimpleTask(
-                id=_parse_id(row["id"]),
-                name=row["name"],
-                duration=row.get("duration") or "0d",
-                successors=ea,
-                successors_aa=aa,
-                successors_ee=ee,
-                successors_ae=ae,
-                resources=res or None,
-                cost=cost,
-            )
-            tasks.append(task)
-            i += 1
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# Hauptklasse
-# ---------------------------------------------------------------------------
 
 class ProjectEditorApp:
-    """
-    Kapselt den gesamten GUI-State und alle Event-Handler.
-    Importiert lib/ direkt; keine Logik wird dupliziert.
-    """
+    """GUI-State, Datei-Operationen, Berechnung und Exporte."""
 
     def __init__(self):
         self.project: Optional[Project] = None
-        self.active_sections: dict = {
-            "resources": False,
-            "persons": False,
-            "resting_times": False,
-        }
-        self.last_cpm_result: Optional[CPMResult] = None
-        self._dirty: bool = False
-        self._task_rows: list = []
+        self.task_rows: List[TaskRow] = []
+        self.active_sections: Dict[str, bool] = dict.fromkeys(SECTIONS, False)
+        self.schedule: Optional[Schedule] = None
+        self.sections = OptionalSections(self)
+        self._dirty = False
         self._last_save_path: Optional[Path] = None
+
+    # ------------------------------------------------------------------
+    # State
+    # ------------------------------------------------------------------
 
     @property
     def dirty(self) -> bool:
@@ -231,90 +82,77 @@ class ProjectEditorApp:
     @dirty.setter
     def dirty(self, value: bool) -> None:
         self._dirty = value
-        if value and self.last_cpm_result is not None:
-            self._invalidate_result()
+        if value and self.schedule is not None:
+            self.schedule = None
+            result_panel.hide_result()
+
+    @property
+    def last_cpm_result(self):
+        return self.schedule.cpm if self.schedule else None
+
+    def _file_stem(self) -> str:
+        return ((self.project.project if self.project else "") or "project").replace(" ", "_")
+
+    def _require_project(self) -> Project:
+        if self.project is None:
+            raise RuntimeError(t("status.no_project"))
+        return self.project
+
+    def _set_project(self, project: Project, path: Optional[Path]) -> None:
+        self.project = project
+        self.task_rows = tasks_to_rows(project.tasks)
+        self._detect_active_sections()
+        self._last_save_path = path
+        self.schedule = None
+        self._dirty = False
+        self.refresh_all()
 
     # ------------------------------------------------------------------
     # Datei-Operationen
     # ------------------------------------------------------------------
 
     def new_project(self) -> None:
-        """Erstellt ein neues, leeres Projekt und setzt die Oberfläche zurück."""
-        from gui.i18n import t
-
-        default_name = f"{date.today().isoformat()}-projekt.json"
-        work_dir = os.environ.get("PV_WORK", "")
-        if work_dir:
-            default_path = Path(work_dir) / default_name
-        else:
-            default_path = Path.cwd() / default_name
-
-        self.project = Project(project="Neues Projekt", tasks=[])
-        self._task_rows = []
-        self.active_sections = {
-            "resources": False,
-            "persons": False,
-            "resting_times": False,
-        }
-        self.last_cpm_result = None
-        self.dirty = False
-        self._last_save_path = default_path
-        self.refresh_all()
-        self._set_status(t("status.new_project", name=default_path.name))
+        """Neues, leeres Projekt; Speicherort ist $PV_WORK/<datum>-projekt.json."""
+        path = get_work_dir() / f"{date.today().isoformat()}-projekt.json"
+        self._set_project(Project(project=t("default.project_name"), tasks=[]), path)
+        self._set_status(t("status.new_project", name=path.name))
 
     def load_from_file(self, file_path: Path) -> None:
         try:
-            self.project = load_project(file_path)
-            self._task_rows = tasks_to_rows(self.project.tasks)
-            self._detect_active_sections()
-            self._last_save_path = file_path
-            self.last_cpm_result = None
-            self.refresh_all()
-            self._set_status(f"Projekt geladen: {self.project.project}")
+            project = load_project(file_path)
+            self._set_project(project, file_path)
+            self._set_status(t("status.loaded", name=project.project))
         except Exception as e:
-            self._set_status(f"Fehler beim Laden: {e}")
+            self._set_status(t("status.load_error", error=e))
 
     def load_from_bytes(self, content: bytes, filename: str = "") -> None:
         try:
-            data = json.loads(content.decode("utf-8"))
-            self.project = load_project_from_dict(data)
-            self._task_rows = tasks_to_rows(self.project.tasks)
-            self._detect_active_sections()
-            self.refresh_all()
-            self._set_status(f"Projekt geladen: {self.project.project}")
+            project = load_project_from_dict(json.loads(content.decode("utf-8")))
+            self._set_project(project, None)
+            self._set_status(t("status.loaded", name=project.project))
         except Exception as e:
-            self._set_status(f"Fehler beim Laden: {e}")
+            self._set_status(t("status.load_error", error=e))
 
     def save_to_file(self, file_path: Optional[Path] = None) -> Path:
-        """Serialisiert den aktuellen State als sproject-JSON."""
-        self._sync_to_model()
-        if file_path is None:
-            name = (self.project.project or "project").replace(" ", "_")
-            file_path = Path.cwd() / f"{name}.json"
-        save_project(self.project, file_path)
+        """Speichert das Projekt als sproject-JSON."""
+        self.sync_to_model()
+        file_path = file_path or Path.cwd() / f"{self._file_stem()}.json"
+        save_project(self._require_project(), file_path)
         self._last_save_path = file_path
-        self.dirty = False
-        self._set_status(f"Gespeichert: {file_path}")
+        self._dirty = False
+        self._set_status(t("status.saved", path=file_path))
         return file_path
 
     def save_quick(self) -> None:
-        """Speichert ohne Dialog: gleicher Pfad wie beim letzten Laden/Speichern."""
+        """Speichert ohne Dialog unter dem zuletzt verwendeten Pfad."""
         if self.project is None:
-            self._set_status("Kein Projekt geladen.")
+            self._set_status(t("status.no_project"))
             return
         self.save_to_file(self._last_save_path)
 
     def get_json_bytes(self) -> bytes:
-        """Gibt das aktuelle Projekt als JSON-Bytes zurück."""
-        self._sync_to_model()
-        tmp = Path(tempfile.mktemp(suffix=".json"))
-        save_project(self.project, tmp)
-        data = tmp.read_bytes()
-        try:
-            tmp.unlink()
-        except OSError:
-            pass
-        return data
+        self.sync_to_model()
+        return self._require_project().model_dump_json(by_alias=True, exclude_none=True, exclude_unset=True, indent=2).encode("utf-8")
 
     # ------------------------------------------------------------------
     # Berechnung
@@ -322,1581 +160,162 @@ class ProjectEditorApp:
 
     def run_calculation(self) -> None:
         if self.project is None:
-            self._set_status("Kein Projekt geladen.")
+            self._set_status(t("status.no_project"))
             return
         try:
-            self._sync_to_model()
-            result = self.project.calculate_cpm()
-            self.last_cpm_result = result
-            self._show_result(result)
-            self._set_status(
-                f"Berechnung abgeschlossen – Dauer: {result.project_duration}"
-            )
+            self.sync_to_model()
+            self.schedule = build_schedule(self.project, cfg_dir=get_cfg_dir())
+            result_panel.show_result(self.schedule, self._quick_export_actions())
+            self._set_status(t("status.calc_done", duration=self.schedule.cpm.project_duration))
         except Exception as e:
-            self._set_status(f"Fehler bei der Berechnung: {e}")
+            self._set_status(t("status.calc_error", error=e))
 
     # ------------------------------------------------------------------
-    # Interne Hilfsmethoden
+    # Widgets ↔ Modell
     # ------------------------------------------------------------------
 
-    def _detect_active_sections(self) -> None:
-        if self.project is None:
-            return
-        self.active_sections["resources"] = bool(self.project.resources)
-        self.active_sections["persons"] = bool(self.project.persons)
-        # Ruhezeiten-Sektion aktiv wenn Ruhezeiten, Urlaub oder Teilzeit vorhanden
-        has_resting = bool(self.project.resting_times)
-        has_vacation = any(p.vacation for p in (self.project.persons or []))
-        has_workinghours = any(p.workinghours_override for p in (self.project.persons or []))
-        self.active_sections["resting_times"] = has_resting or has_vacation or has_workinghours
-
-    def _read_rows_from_ui(self) -> None:
-        """Liest aktuelle Eingabewerte der Task-Tabelle in _task_rows zurück."""
-        import dearpygui.dearpygui as dpg
-        for i, row in enumerate(self._task_rows):
+    def _read_task_rows_from_ui(self) -> None:
+        for i, row in enumerate(self.task_rows):
             for field in ("id", "name", "duration", "successors_str", "cost"):
                 tag = f"task_{i}_{field}"
                 if dpg.does_item_exist(tag):
-                    row[field] = dpg.get_value(tag) or ""
+                    setattr(row, field, dpg.get_value(tag) or "")
 
-    def _sync_to_model(self) -> None:
-        """Überträgt GUI-State ins Pydantic-Modell."""
-        import dearpygui.dearpygui as dpg
+    def sync_to_model(self) -> None:
+        """Überträgt alle Eingaben ins Pydantic-Modell."""
         if self.project is None:
             return
-
-        self._read_rows_from_ui()
-        self.project.tasks = rows_to_tasks(self._task_rows)
-
-        def _get(tag: str) -> str:
+        for tag, (field, convert) in _MASTER_FIELDS.items():
+            text = _get_value(tag).strip()
+            if not text:
+                continue
             try:
-                return dpg.get_value(tag) or ""
-            except Exception:
-                return ""
-
-        v = _get("inp_project_name")
-        if v:
-            self.project.project = v
-        v = _get("inp_project_start")
-        if v:
-            self.project.project_start = v
-        v = _get("inp_unit")
-        if v:
-            self.project.unit = v
-        v = _get("inp_total_volume")
-        if v:
-            try:
-                self.project.total_volume = float(v)
+                setattr(self.project, field, convert(text))
             except ValueError:
                 pass
-        v = _get("inp_total_hours")
-        if v:
-            try:
-                self.project.total_hours = int(v)
-            except ValueError:
-                pass
-        v = _get("inp_order_volume")
-        if v:
-            try:
-                self.project.order_volume = int(v)
-            except ValueError:
-                pass
+        self._read_task_rows_from_ui()
+        self.project.tasks = rows_to_tasks(self.task_rows)
+        self.task_rows = tasks_to_rows(self.project.tasks)
+        self.sections.sync()
+
+    # Name aus früheren Versionen
+    _sync_to_model = sync_to_model
 
     def refresh_all(self) -> None:
-        """Aktualisiert alle UI-Komponenten nach dem Laden eines Projekts."""
-        import dearpygui.dearpygui as dpg
+        """Aktualisiert alle Widgets aus dem Modell."""
         if self.project is None:
             return
-
-        def _set(tag: str, val: str) -> None:
-            try:
-                if dpg.does_item_exist(tag):
-                    dpg.set_value(tag, val)
-            except Exception:
-                pass
-
-        _set("inp_project_name", self.project.project or "")
-        _set("inp_project_start", self.project.project_start or "")
-        _set("inp_unit", self.project.unit or "days")
-        _set(
-            "inp_total_hours",
-            str(self.project.total_hours) if self.project.total_hours is not None else "",
-        )
-        _set(
-            "inp_total_volume",
-            str(self.project.total_volume) if self.project.total_volume is not None else "",
-        )
-        _set(
-            "inp_order_volume",
-            str(self.project.order_volume) if self.project.order_volume is not None else "",
-        )
-
-        from gui.components.task_table import rebuild_task_table
+        for tag, (field, _) in _MASTER_FIELDS.items():
+            value = getattr(self.project, field)
+            _set_value(tag, "" if value is None else str(value))
         rebuild_task_table(self)
-
-        self._refresh_resources()
-        self._refresh_persons()
-        self._refresh_resting_times()
-        self._refresh_vacation()
-        self._refresh_workinghours()
+        self.sections.refresh()
         self._update_section_visibility()
         self._update_sidebar()
+        result_panel.hide_result()
 
-        # Ergebnis-Tab ausblenden und leeren
-        self._hide_result_tab()
+    def _detect_active_sections(self) -> None:
+        p = self._require_project()
+        persons = p.persons or []
+        self.active_sections = {
+            "resources": bool(p.resources),
+            "persons": bool(persons),
+            "resting_times": bool(p.resting_times)
+                             or any(x.vacation or x.workinghours_override for x in persons),
+        }
 
     def _update_section_visibility(self) -> None:
-        import dearpygui.dearpygui as dpg
-        for section, tag in [
-            ("resources", "section_resources"),
-            ("persons", "section_persons"),
-            ("resting_times", "section_resting_times"),
-        ]:
-            is_active = self.active_sections.get(section, False)
-            try:
-                if dpg.does_item_exist(tag):
-                    dpg.configure_item(tag, show=is_active)
-            except Exception:
-                pass
+        for section in SECTIONS:
+            if dpg.does_item_exist(f"section_{section}"):
+                dpg.configure_item(f"section_{section}", show=self.active_sections[section])
 
     def _update_sidebar(self) -> None:
-        import dearpygui.dearpygui as dpg
-        for section, toggle_tag in [
-            ("resources", "sidebar_res_toggle"),
-            ("persons", "sidebar_pers_toggle"),
-            ("resting_times", "sidebar_rest_toggle"),
-        ]:
-            is_active = self.active_sections.get(section, False)
-            try:
-                if dpg.does_item_exist(toggle_tag):
-                    dpg.set_value(toggle_tag, is_active)
-            except Exception:
-                pass
+        toggles = {"resources": "sidebar_res_toggle", "persons": "sidebar_pers_toggle",
+                   "resting_times": "sidebar_rest_toggle"}
+        for section, tag in toggles.items():
+            _set_value(tag, self.active_sections[section])
 
     def toggle_section(self, section: str) -> None:
         self.active_sections[section] = not self.active_sections.get(section, False)
         self._update_section_visibility()
         self._update_sidebar()
 
-    def add_task_row(self, is_loop: bool = False) -> None:
-        """Fügt eine neue Zeile zur Task-Tabelle hinzu."""
-        self._read_rows_from_ui()
-        numeric_ids = [
-            int(r["id"]) for r in self._task_rows if str(r.get("id", "")).isdigit()
-        ]
-        new_id = str(max(numeric_ids or [0]) + 1)
-        if is_loop:
-            row = {
-                "row_type": "loop",
-                "id": new_id,
-                "name": "Neuer Loop-Task",
-                "duration": "",
-                "resources": "",
-                "successors_str": "",
-                "cost": "",
-                "loop_until": "total_volume <= 0",
-                "cycle_prefix": "F",
-                "loop_count": "",
-                "volume_per_cycle": "",
-                "parent_id": "",
-            }
-        else:
-            row = {
-                "row_type": "simple",
-                "id": new_id,
-                "name": "Neuer Task",
-                "duration": "1d",
-                "resources": "",
-                "successors_str": "",
-                "cost": "",
-                "loop_until": "",
-                "cycle_prefix": "",
-                "loop_count": "",
-                "volume_per_cycle": "",
-                "parent_id": "",
-            }
-        self._task_rows.append(row)
+    # ------------------------------------------------------------------
+    # Task-Tabelle
+    # ------------------------------------------------------------------
+
+    def _rows_changed(self) -> None:
         self.dirty = True
-        from gui.components.task_table import rebuild_task_table
         rebuild_task_table(self)
+
+    def add_task_row(self, is_loop: bool = False) -> None:
+        self._read_task_rows_from_ui()
+        name = t("task.new_loop") if is_loop else t("task.new")
+        self.task_rows.append(new_task_row(self.task_rows, is_loop, name))
+        self._rows_changed()
 
     def delete_task_row(self, row_idx: int) -> None:
-        """Löscht eine Zeile (und zugehörige Subtasks) aus der Task-Tabelle."""
-        self._read_rows_from_ui()
-        if row_idx >= len(self._task_rows):
+        """Löscht eine Zeile – bei Loop-Tasks samt Subtasks."""
+        self._read_task_rows_from_ui()
+        if row_idx >= len(self.task_rows):
             return
-        row = self._task_rows[row_idx]
-        indices_to_remove = [row_idx]
-        if row.get("row_type") == "loop":
-            loop_id = row["id"]
-            for j, r in enumerate(self._task_rows):
-                if r.get("parent_id") == loop_id:
-                    indices_to_remove.append(j)
-        for idx in sorted(set(indices_to_remove), reverse=True):
-            self._task_rows.pop(idx)
-        self.dirty = True
-        from gui.components.task_table import rebuild_task_table
-        rebuild_task_table(self)
+        row = self.task_rows[row_idx]
+        self.task_rows = [
+            r for i, r in enumerate(self.task_rows)
+            if i != row_idx and not (row.is_loop and r.is_subtask and r.parent_id == row.id)
+        ]
+        self._rows_changed()
 
     def add_subtask_to_loop(self, loop_row_idx: int) -> None:
-        """Fügt einem Loop-Task einen neuen Subtask hinzu."""
-        self._read_rows_from_ui()
-        if loop_row_idx >= len(self._task_rows):
+        self._read_task_rows_from_ui()
+        if loop_row_idx >= len(self.task_rows):
             return
-        loop_id = self._task_rows[loop_row_idx]["id"]
+        loop_id = self.task_rows[loop_row_idx].id
         insert_pos = loop_row_idx + 1
-        for j in range(loop_row_idx + 1, len(self._task_rows)):
-            if self._task_rows[j].get("parent_id") == loop_id:
-                insert_pos = j + 1
-            else:
-                break
-        self._task_rows.insert(insert_pos, {
-            "row_type": "subtask",
-            "id": "",
-            "name": "Neuer Subtask",
-            "duration": "",
-            "resources": "",
-            "successors_str": "",
-            "cost": "",
-            "loop_until": "",
-            "cycle_prefix": "",
-            "loop_count": "",
-            "volume_per_cycle": "",
-            "parent_id": loop_id,
-        })
-        self.dirty = True
-        from gui.components.task_table import rebuild_task_table
-        rebuild_task_table(self)
+        while insert_pos < len(self.task_rows) and self.task_rows[insert_pos].parent_id == loop_id:
+            insert_pos += 1
+        self.task_rows.insert(insert_pos, new_subtask_row(loop_id, t("task.new_subtask")))
+        self._rows_changed()
 
     # ------------------------------------------------------------------
-    # Abschnitts-Inhalte neu aufbauen
+    # Exporte
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _on_enter_focus_next(sender, app_data, user_data) -> None:
-        """Bei Enter-Taste: Fokus auf das gleichnamige Feld der nächsten Zeile."""
-        import dearpygui.dearpygui as dpg
-        next_tag = user_data
-        if next_tag and dpg.does_item_exist(next_tag):
-            dpg.focus_item(next_tag)
-
-    def _refresh_resources(self) -> None:
-        import dearpygui.dearpygui as dpg
-        from gui.components.task_table import _build_resource_color_map
-        if not dpg.does_item_exist("resources_content"):
-            return
-        dpg.delete_item("resources_content", children_only=True)
-
-        if not self.project or not self.project.resources:
-            dpg.add_text("Keine Ressourcen definiert.", parent="resources_content",
-                         color=(160, 160, 170))
-            return
-
-        color_map = _build_resource_color_map(self)
-        _rt = _CFG.section("resources_table")
-        n = len(self.project.resources)
-
-        with dpg.table(
-            parent="resources_content",
-            header_row=True,
-            resizable=True,
-            borders_outerH=True,
-            borders_innerV=True,
-            borders_outerV=True,
-            row_background=True,
-        ):
-            dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=_rt.get("col_id_width", 100))
-            dpg.add_table_column(label="Name", width_stretch=True)
-            dpg.add_table_column(label="Typ", width_fixed=True, init_width_or_weight=_rt.get("col_type_width", 90))
-            dpg.add_table_column(label="Farbe", width_fixed=True, init_width_or_weight=_rt.get("col_color_width", 80))
-            dpg.add_table_column(label="X", width_fixed=True, init_width_or_weight=32)
-
-            for i, r in enumerate(self.project.resources):
-                rid_color = color_map.get(r.id)
-                next_i = (i + 1) if (i + 1) < n else None
-                with dpg.table_row():
-                    tag_id = f"res_{i}_id"
-                    next_tag_id = f"res_{next_i}_id" if next_i is not None else None
-                    inp = dpg.add_input_text(
-                        tag=tag_id,
-                        default_value=r.id,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=next_tag_id,
-                    )
-                    if rid_color:
-                        dpg.bind_item_theme(inp, self._get_or_create_color_theme(rid_color))
-
-                    tag_name = f"res_{i}_name"
-                    next_tag_name = f"res_{next_i}_name" if next_i is not None else None
-                    inp_n = dpg.add_input_text(
-                        tag=tag_name,
-                        default_value=r.name or "",
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=next_tag_name,
-                    )
-                    if rid_color:
-                        dpg.bind_item_theme(inp_n, self._get_or_create_color_theme(rid_color))
-
-                    dpg.add_combo(
-                        tag=f"res_{i}_type",
-                        items=self._RES_TYPES,
-                        default_value=r.type or "person",
-                        width=-1,
-                    )
-
-                    dpg.add_input_text(
-                        tag=f"res_{i}_color",
-                        default_value=r.color or "",
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"res_{next_i}_color" if next_i is not None else None,
-                    )
-
-                    dpg.add_button(
-                        label="X",
-                        width=-1,
-                        callback=lambda s, a, u: self._cb_remove_resource(u),
-                        user_data=r.id,
-                    )
-
-    def _get_or_create_color_theme(self, rgb_tuple) -> int:
-        """Erstellt/holt ein DPG-Theme für Textfarbe."""
-        import dearpygui.dearpygui as dpg
-        if not hasattr(self, "_color_themes"):
-            self._color_themes = {}
-        key = rgb_tuple
-        if key not in self._color_themes:
-            with dpg.theme() as theme:
-                with dpg.theme_component(dpg.mvInputText):
-                    dpg.add_theme_color(dpg.mvThemeCol_Text, [*rgb_tuple, 255])
-            self._color_themes[key] = theme
-        return self._color_themes[key]
-
-    def _refresh_persons(self) -> None:
-        import dearpygui.dearpygui as dpg
-        if not dpg.does_item_exist("persons_content"):
-            return
-        dpg.delete_item("persons_content", children_only=True)
-
-        if not self.project or not self.project.persons:
-            dpg.add_text("Keine Personen definiert.", parent="persons_content",
-                         color=(160, 160, 170))
-            return
-
-        _pt = _CFG.section("persons_table")
-        n = len(self.project.persons)
-
-        with dpg.table(
-            parent="persons_content",
-            header_row=True,
-            resizable=True,
-            borders_outerH=True,
-            borders_innerV=True,
-            borders_outerV=True,
-            row_background=True,
-        ):
-            dpg.add_table_column(label="ID", width_fixed=True, init_width_or_weight=_pt.get("col_id_width", 90))
-            dpg.add_table_column(label="Name", width_stretch=True)
-            dpg.add_table_column(label="Rolle", width_stretch=True)
-            dpg.add_table_column(label="EUR/h", width_fixed=True, init_width_or_weight=_pt.get("col_rate_width", 70))
-            dpg.add_table_column(label="Info", width_stretch=True)
-            dpg.add_table_column(label="X", width_fixed=True, init_width_or_weight=32)
-
-            for i, p in enumerate(self.project.persons):
-                next_i = (i + 1) if (i + 1) < n else None
-                with dpg.table_row():
-                    dpg.add_input_text(
-                        tag=f"pers_{i}_id",
-                        default_value=p.id,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"pers_{next_i}_id" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"pers_{i}_name",
-                        default_value=p.name,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"pers_{next_i}_name" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"pers_{i}_role",
-                        default_value=p.role,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"pers_{next_i}_role" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"pers_{i}_rate",
-                        default_value=str(p.hourly_rate),
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"pers_{next_i}_rate" if next_i is not None else None,
-                    )
-                    info = []
-                    if p.vacation:
-                        info.append(f"Urlaub: {len(p.vacation)}")
-                    if p.workinghours_override:
-                        info.append("Teilzeit")
-                    dpg.add_text(", ".join(info) if info else "–")
-
-                    dpg.add_button(
-                        label="X",
-                        width=-1,
-                        callback=lambda s, a, u: self._cb_remove_person(u),
-                        user_data=p.id,
-                    )
-
-    def _refresh_resting_times(self) -> None:
-        import dearpygui.dearpygui as dpg
-        if not dpg.does_item_exist("resting_times_content"):
-            return
-        dpg.delete_item("resting_times_content", children_only=True)
-
-        if not self.project or not self.project.resting_times:
-            dpg.add_text("Keine Ruhezeitregeln definiert.", parent="resting_times_content",
-                         color=(160, 160, 170))
-            return
-
-        _rtt = _CFG.section("resting_times_table")
-        n = len(self.project.resting_times)
-
-        with dpg.table(
-            parent="resting_times_content",
-            header_row=True,
-            resizable=True,
-            borders_outerH=True,
-            borders_innerV=True,
-            borders_outerV=True,
-        ):
-            dpg.add_table_column(label="Nach (h)", width_fixed=True, init_width_or_weight=_rtt.get("col_hours_width", 90))
-            dpg.add_table_column(label="Pause", width_fixed=True, init_width_or_weight=_rtt.get("col_pause_width", 80))
-            dpg.add_table_column(label="Hinweis", width_stretch=True)
-            dpg.add_table_column(label="X", width_fixed=True, init_width_or_weight=32)
-
-            for i, ri in enumerate(self.project.resting_times):
-                next_i = (i + 1) if (i + 1) < n else None
-                with dpg.table_row():
-                    dpg.add_input_text(
-                        tag=f"rest_{i}_hours",
-                        default_value=str(ri.after_hours),
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"rest_{next_i}_hours" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"rest_{i}_duration",
-                        default_value=ri.duration,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"rest_{next_i}_duration" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"rest_{i}_note",
-                        default_value=ri.note or "",
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"rest_{next_i}_note" if next_i is not None else None,
-                    )
-                    dpg.add_button(
-                        label="X",
-                        width=-1,
-                        callback=lambda s, a, u: self._cb_remove_resting_time(u),
-                        user_data=i,
-                    )
-
-    def _refresh_vacation(self) -> None:
-        """Zeigt Urlaubseinträge aller Personen in einer Tabelle."""
-        import dearpygui.dearpygui as dpg
-        if not dpg.does_item_exist("vacation_content"):
-            return
-        dpg.delete_item("vacation_content", children_only=True)
-
-        # Alle Urlaubseinträge aus allen Personen sammeln
-        entries = []  # (person_id, vacation_entry, person_idx, vac_idx)
-        if self.project and self.project.persons:
-            for pi, p in enumerate(self.project.persons):
-                if p.vacation:
-                    for vi, v in enumerate(p.vacation):
-                        entries.append((p.id, v, pi, vi))
-
-        if not entries:
-            dpg.add_text("Kein Urlaub definiert.", parent="vacation_content",
-                         color=(160, 160, 170))
-            return
-
-        n = len(entries)
-        with dpg.table(
-            parent="vacation_content",
-            header_row=True,
-            resizable=True,
-            borders_outerH=True,
-            borders_innerV=True,
-            borders_outerV=True,
-            row_background=True,
-        ):
-            dpg.add_table_column(label="Personen-ID", width_fixed=True, init_width_or_weight=100)
-            dpg.add_table_column(label="Datum", width_fixed=True, init_width_or_weight=180)
-            dpg.add_table_column(label="Beschreibung", width_stretch=True)
-            dpg.add_table_column(label="X", width_fixed=True, init_width_or_weight=32)
-
-            for i, (pid, v, pi, vi) in enumerate(entries):
-                next_i = (i + 1) if (i + 1) < n else None
-                with dpg.table_row():
-                    dpg.add_input_text(
-                        tag=f"vac_{i}_pid",
-                        default_value=pid,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"vac_{next_i}_pid" if next_i is not None else None,
-                    )
-                    # Datum: entweder "date" oder "from – to"
-                    if v.date:
-                        date_str = v.date
-                    elif v.from_:
-                        date_str = f"{v.from_} – {v.to or ''}"
-                    else:
-                        date_str = ""
-                    dpg.add_input_text(
-                        tag=f"vac_{i}_date",
-                        default_value=date_str,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"vac_{next_i}_date" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"vac_{i}_desc",
-                        default_value=v.description or "",
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"vac_{next_i}_desc" if next_i is not None else None,
-                    )
-                    dpg.add_button(
-                        label="X",
-                        width=-1,
-                        callback=lambda s, a, u: self._cb_remove_vacation(u),
-                        user_data=(pi, vi),
-                    )
-
-    def _refresh_workinghours(self) -> None:
-        """Zeigt Teilzeitregelungen aller Personen in einer Tabelle."""
-        import dearpygui.dearpygui as dpg
-        if not dpg.does_item_exist("workinghours_content"):
-            return
-        dpg.delete_item("workinghours_content", children_only=True)
-
-        entries = []  # (person_id, override, person_idx)
-        if self.project and self.project.persons:
-            for pi, p in enumerate(self.project.persons):
-                if p.workinghours_override:
-                    entries.append((p.id, p.workinghours_override, pi))
-
-        if not entries:
-            dpg.add_text("Keine Teilzeitregelungen definiert.", parent="workinghours_content",
-                         color=(160, 160, 170))
-            return
-
-        n = len(entries)
-        with dpg.table(
-            parent="workinghours_content",
-            header_row=True,
-            resizable=True,
-            borders_outerH=True,
-            borders_innerV=True,
-            borders_outerV=True,
-            row_background=True,
-        ):
-            dpg.add_table_column(label="Personen-ID", width_fixed=True, init_width_or_weight=100)
-            dpg.add_table_column(label="Beschreibung", width_stretch=True)
-            dpg.add_table_column(label="Tage", width_fixed=True, init_width_or_weight=180)
-            dpg.add_table_column(label="Zeiten", width_fixed=True, init_width_or_weight=150)
-            dpg.add_table_column(label="X", width_fixed=True, init_width_or_weight=32)
-
-            for i, (pid, wh, pi) in enumerate(entries):
-                next_i = (i + 1) if (i + 1) < n else None
-                days_str = ", ".join(wh.days) if wh.days else ""
-                hours_str = ", ".join(
-                    f"{h.from_}-{h.to}" for h in (wh.hours or [])
-                )
-                with dpg.table_row():
-                    dpg.add_input_text(
-                        tag=f"wh_{i}_pid",
-                        default_value=pid,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"wh_{next_i}_pid" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"wh_{i}_desc",
-                        default_value=wh.description or "",
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"wh_{next_i}_desc" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"wh_{i}_days",
-                        default_value=days_str,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"wh_{next_i}_days" if next_i is not None else None,
-                    )
-                    dpg.add_input_text(
-                        tag=f"wh_{i}_hours",
-                        default_value=hours_str,
-                        width=-1,
-                        on_enter=True,
-                        callback=self._on_enter_focus_next,
-                        user_data=f"wh_{next_i}_hours" if next_i is not None else None,
-                    )
-                    dpg.add_button(
-                        label="X",
-                        width=-1,
-                        callback=lambda s, a, u: self._cb_remove_workinghours(u),
-                        user_data=pi,
-                    )
-
-    # ------------------------------------------------------------------
-    # Ressourcen hinzufügen / entfernen
-    # ------------------------------------------------------------------
-
-    _RES_TYPES = ["person", "machine", "truck", "material"]
-    _ADD_RES_TAG = "add_resource_dialog"
-
-    def _get_next_resource_color(self) -> str:
-        """Berechnet eine Default-Farbe für die nächste Ressource aus der Palette."""
-        import configparser
-        from lib.utils import get_cfg_dir
-        from gui.components.task_table import _interpolate_palette, _DEFAULT_PALETTE
-
-        cfg = configparser.ConfigParser()
-        cfg_dir = get_cfg_dir()
-        cfg.read([str(cfg_dir / "gui.cfg"), str(cfg_dir / "defaults.cfg")], encoding="utf-8")
-
-        palette = list(_DEFAULT_PALETTE)
-        if cfg.has_section("ResourceAutoColor"):
-            cs = cfg.get("ResourceAutoColor", "color_start", fallback="4472C4").strip()
-            ce = cfg.get("ResourceAutoColor", "color_end", fallback="8B7AB8").strip()
-            palette = [cs, ce]
-
-        n_existing = len(self.project.resources) if self.project and self.project.resources else 0
-        pos = n_existing / max(n_existing, 1)
-        return _interpolate_palette(palette, pos)
-
-    def _get_existing_resource_ids(self) -> set:
-        if self.project and self.project.resources:
-            return {r.id for r in self.project.resources}
-        return set()
-
-    def _cb_add_resource(self, sender=None, app_data=None, user_data=None) -> None:
-        """Öffnet Dialog zum Hinzufügen einer neuen Ressource."""
-        import dearpygui.dearpygui as dpg
-
-        if dpg.does_item_exist(self._ADD_RES_TAG):
-            dpg.delete_item(self._ADD_RES_TAG)
-
-        default_color = self._get_next_resource_color()
-
-        with dpg.window(
-            label="Ressource hinzufügen",
-            tag=self._ADD_RES_TAG,
-            modal=True,
-            width=360,
-            height=200,
-            pos=[450, 300],
-            no_resize=True,
-        ):
-            with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
-                           borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
-                dpg.add_table_column(width_fixed=True, init_width_or_weight=70)
-                dpg.add_table_column(width_stretch=True)
-
-                with dpg.table_row():
-                    dpg.add_text("ID:")
-                    dpg.add_input_text(tag="res_new_id", default_value="R_NEW", width=-1, no_spaces=True)
-                with dpg.table_row():
-                    dpg.add_text("Name:")
-                    dpg.add_input_text(tag="res_new_name", default_value="", width=-1, hint="Ressourcenname")
-                with dpg.table_row():
-                    dpg.add_text("Typ:")
-                    dpg.add_combo(tag="res_new_type", items=self._RES_TYPES, default_value="person", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Farbe:")
-                    dpg.add_input_text(tag="res_new_color", default_value=default_color, width=-1, hint="Hex ohne #")
-
-            dpg.add_spacer(height=6)
-            with dpg.group(horizontal=True):
-                dpg.add_button(label="Hinzufügen", callback=self._confirm_add_resource)
-                dpg.add_button(label="Abbrechen", callback=lambda: dpg.delete_item(self._ADD_RES_TAG))
-
-    def _confirm_add_resource(self, sender=None, app_data=None, user_data=None) -> None:
-        """Bestätigt das Hinzufügen einer Ressource und aktualisiert das Modell."""
-        import dearpygui.dearpygui as dpg
-        from lib.models.resources import PersonResource, MachineResource, TruckResource, ResourceBase, Person
-
-        res_id = dpg.get_value("res_new_id").strip() if dpg.does_item_exist("res_new_id") else ""
-        res_name = dpg.get_value("res_new_name").strip() if dpg.does_item_exist("res_new_name") else ""
-        res_type = dpg.get_value("res_new_type") if dpg.does_item_exist("res_new_type") else "person"
-        res_color = dpg.get_value("res_new_color").strip() if dpg.does_item_exist("res_new_color") else ""
-
-        if dpg.does_item_exist(self._ADD_RES_TAG):
-            dpg.delete_item(self._ADD_RES_TAG)
-
-        if not res_id:
-            return
-
-        # Eindeutigkeitsprüfung
-        existing_ids = self._get_existing_resource_ids()
-        if res_id in existing_ids:
-            dpg.add_text(
-                f"ID '{res_id}' existiert bereits!",
-                parent="resources_content",
-                color=(255, 80, 80),
-            )
-            return
-
-        if not self.project:
-            return
-
-        # Ressourcen-Liste initialisieren falls nötig
-        if self.project.resources is None:
-            self.project.resources = []
-
-        # Ressource erstellen
-        if res_type == "person":
-            new_res = PersonResource(id=res_id, name=res_name or None, type="person", color=res_color or None)
-            # Automatisch Person anlegen
-            if self.project.persons is None:
-                self.project.persons = []
-            # Default-Person-ID ableiten
-            person_id = res_id.replace("R_", "") if res_id.startswith("R_") else f"P_{res_id}"
-            # Prüfen ob Person-ID schon existiert
-            existing_person_ids = {p.id for p in self.project.persons}
-            if person_id not in existing_person_ids:
-                new_person = Person(
-                    id=person_id,
-                    name=res_name or "Max Mustermann",
-                    role="Arbeiter",
-                    hourly_rate=50.0,
-                )
-                self.project.persons.append(new_person)
-            new_res.person_id = person_id
-        elif res_type == "truck":
-            new_res = TruckResource(id=res_id, name=res_name or "", type="truck", color=res_color or None, capacity=12)
-        elif res_type == "machine":
-            new_res = MachineResource(id=res_id, name=res_name or "", type="machine", color=res_color or None)
-        else:
-            new_res = ResourceBase(id=res_id, name=res_name or "", type=res_type, color=res_color or None)
-
-        self.project.resources.append(new_res)
-        self.dirty = True
-
-        # Sektionen aktualisieren
-        self._refresh_resources()
-        self._refresh_persons()
-
-    def _cb_remove_resource(self, res_id: str) -> None:
-        """Entfernt eine Ressource anhand der ID."""
-        if not self.project or not self.project.resources:
-            return
-        self.project.resources = [r for r in self.project.resources if r.id != res_id]
-        self.dirty = True
-        self._refresh_resources()
-
-    def _cb_remove_person(self, pers_id: str) -> None:
-        """Entfernt eine Person anhand der ID."""
-        if not self.project or not self.project.persons:
-            return
-        self.project.persons = [p for p in self.project.persons if p.id != pers_id]
-        self.dirty = True
-        self._refresh_persons()
-
-    def _cb_remove_resting_time(self, index: int) -> None:
-        """Entfernt eine Ruhezeit-Regel anhand des Index."""
-        if not self.project or not self.project.resting_times:
-            return
-        if 0 <= index < len(self.project.resting_times):
-            self.project.resting_times.pop(index)
-            self.dirty = True
-            self._refresh_resting_times()
-
-    # ------------------------------------------------------------------
-    # Urlaub hinzufügen / entfernen
-    # ------------------------------------------------------------------
-
-    _ADD_VAC_TAG = "add_vacation_dialog"
-
-    def _cb_add_vacation(self, sender=None, app_data=None, user_data=None) -> None:
-        """Öffnet Dialog zum Hinzufügen eines Urlaubseintrags."""
-        import dearpygui.dearpygui as dpg
-
-        if dpg.does_item_exist(self._ADD_VAC_TAG):
-            dpg.delete_item(self._ADD_VAC_TAG)
-
-        # Verfügbare Personen-IDs für Dropdown
-        person_ids = []
-        if self.project and self.project.persons:
-            person_ids = [p.id for p in self.project.persons]
-
-        with dpg.window(
-            label="Urlaub hinzufügen",
-            tag=self._ADD_VAC_TAG,
-            modal=True,
-            width=380,
-            height=200,
-            pos=[450, 300],
-            no_resize=True,
-        ):
-            with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
-                           borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
-                dpg.add_table_column(width_fixed=True, init_width_or_weight=100)
-                dpg.add_table_column(width_stretch=True)
-
-                with dpg.table_row():
-                    dpg.add_text("Personen-ID:")
-                    dpg.add_combo(tag="vac_new_pid", items=person_ids,
-                                  default_value=person_ids[0] if person_ids else "", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Datum:")
-                    dpg.add_input_text(tag="vac_new_date", default_value="2026-01-01", width=-1,
-                                       hint="YYYY-MM-DD oder YYYY-MM-DD – YYYY-MM-DD")
-                with dpg.table_row():
-                    dpg.add_text("Beschreibung:")
-                    dpg.add_input_text(tag="vac_new_desc", default_value="", width=-1, hint="z.B. Urlaub, Fortbildung")
-
-            dpg.add_spacer(height=6)
-            with dpg.group(horizontal=True):
-                dpg.add_button(label="Hinzufügen", callback=self._confirm_add_vacation)
-                dpg.add_button(label="Abbrechen", callback=lambda: dpg.delete_item(self._ADD_VAC_TAG))
-
-    def _confirm_add_vacation(self, sender=None, app_data=None, user_data=None) -> None:
-        """Bestätigt das Hinzufügen eines Urlaubseintrags."""
-        import dearpygui.dearpygui as dpg
-        from lib.models.resources import VacationEntry
-
-        pid = dpg.get_value("vac_new_pid").strip() if dpg.does_item_exist("vac_new_pid") else ""
-        date_str = dpg.get_value("vac_new_date").strip() if dpg.does_item_exist("vac_new_date") else ""
-        desc = dpg.get_value("vac_new_desc").strip() if dpg.does_item_exist("vac_new_desc") else ""
-
-        if dpg.does_item_exist(self._ADD_VAC_TAG):
-            dpg.delete_item(self._ADD_VAC_TAG)
-
-        if not pid or not self.project or not self.project.persons:
-            return
-
-        # Person finden
-        person = next((p for p in self.project.persons if p.id == pid), None)
-        if not person:
-            return
-
-        # Datum parsen: "YYYY-MM-DD" oder "YYYY-MM-DD – YYYY-MM-DD"
-        if "–" in date_str or "-" in date_str.replace("-", "", 2):
-            # Versuch Zeitraum zu erkennen (getrennt durch " – " oder " - ")
-            for sep in [" – ", " - "]:
-                if sep in date_str:
-                    parts = date_str.split(sep)
-                    entry = VacationEntry(from_=parts[0].strip(), to=parts[1].strip(), description=desc or "Urlaub")
-                    break
-            else:
-                entry = VacationEntry(date=date_str, description=desc or "Urlaub")
-        else:
-            entry = VacationEntry(date=date_str, description=desc or "Urlaub")
-
-        if person.vacation is None:
-            person.vacation = []
-        person.vacation.append(entry)
-        self.dirty = True
-        self._refresh_vacation()
-
-    def _cb_remove_vacation(self, key: tuple) -> None:
-        """Entfernt einen Urlaubseintrag. key = (person_idx, vacation_idx)."""
-        pi, vi = key
-        if not self.project or not self.project.persons:
-            return
-        if 0 <= pi < len(self.project.persons):
-            person = self.project.persons[pi]
-            if person.vacation and 0 <= vi < len(person.vacation):
-                person.vacation.pop(vi)
-                self.dirty = True
-                self._refresh_vacation()
-
-    # ------------------------------------------------------------------
-    # Teilzeit hinzufügen / entfernen
-    # ------------------------------------------------------------------
-
-    _ADD_WH_TAG = "add_workinghours_dialog"
-
-    def _cb_add_workinghours(self, sender=None, app_data=None, user_data=None) -> None:
-        """Öffnet Dialog zum Hinzufügen einer Teilzeitregelung."""
-        import dearpygui.dearpygui as dpg
-
-        if dpg.does_item_exist(self._ADD_WH_TAG):
-            dpg.delete_item(self._ADD_WH_TAG)
-
-        person_ids = []
-        if self.project and self.project.persons:
-            # Nur Personen ohne bestehende workinghours_override
-            person_ids = [p.id for p in self.project.persons if not p.workinghours_override]
-
-        with dpg.window(
-            label="Teilzeit hinzufügen",
-            tag=self._ADD_WH_TAG,
-            modal=True,
-            width=420,
-            height=220,
-            pos=[430, 280],
-            no_resize=True,
-        ):
-            with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
-                           borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
-                dpg.add_table_column(width_fixed=True, init_width_or_weight=110)
-                dpg.add_table_column(width_stretch=True)
-
-                with dpg.table_row():
-                    dpg.add_text("Personen-ID:")
-                    dpg.add_combo(tag="wh_new_pid", items=person_ids,
-                                  default_value=person_ids[0] if person_ids else "", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Beschreibung:")
-                    dpg.add_input_text(tag="wh_new_desc", default_value="Teilzeit", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Tage:")
-                    dpg.add_input_text(tag="wh_new_days", default_value="mon, tue, wed, thu, fri", width=-1,
-                                       hint="mon, tue, wed, thu, fri, sat, sun")
-                with dpg.table_row():
-                    dpg.add_text("Zeiten:")
-                    dpg.add_input_text(tag="wh_new_hours", default_value="08:00-12:00", width=-1,
-                                       hint="08:00-12:00, 13:00-17:00")
-
-            dpg.add_spacer(height=6)
-            with dpg.group(horizontal=True):
-                dpg.add_button(label="Hinzufügen", callback=self._confirm_add_workinghours)
-                dpg.add_button(label="Abbrechen", callback=lambda: dpg.delete_item(self._ADD_WH_TAG))
-
-    def _confirm_add_workinghours(self, sender=None, app_data=None, user_data=None) -> None:
-        """Bestätigt das Hinzufügen einer Teilzeitregelung."""
-        import dearpygui.dearpygui as dpg
-        from lib.models.resources import WorkHoursOverride, TimeRange
-
-        pid = dpg.get_value("wh_new_pid").strip() if dpg.does_item_exist("wh_new_pid") else ""
-        desc = dpg.get_value("wh_new_desc").strip() if dpg.does_item_exist("wh_new_desc") else "Teilzeit"
-        days_str = dpg.get_value("wh_new_days").strip() if dpg.does_item_exist("wh_new_days") else ""
-        hours_str = dpg.get_value("wh_new_hours").strip() if dpg.does_item_exist("wh_new_hours") else ""
-
-        if dpg.does_item_exist(self._ADD_WH_TAG):
-            dpg.delete_item(self._ADD_WH_TAG)
-
-        if not pid or not self.project or not self.project.persons:
-            return
-
-        person = next((p for p in self.project.persons if p.id == pid), None)
-        if not person:
-            return
-
-        # Tage parsen
-        days = [d.strip() for d in days_str.split(",") if d.strip()]
-
-        # Zeiten parsen: "08:00-12:00, 13:00-17:00"
-        hours = []
-        for part in hours_str.split(","):
-            part = part.strip()
-            if "-" in part:
-                from_t, to_t = part.split("-", 1)
-                hours.append(TimeRange(from_=from_t.strip(), to=to_t.strip()))
-
-        if not days or not hours:
-            return
-
-        person.workinghours_override = WorkHoursOverride(
-            description=desc or "Teilzeit",
-            days=days,
-            hours=hours,
-        )
-        self.dirty = True
-        self._refresh_workinghours()
-
-    def _cb_remove_workinghours(self, person_idx: int) -> None:
-        """Entfernt die Teilzeitregelung einer Person."""
-        if not self.project or not self.project.persons:
-            return
-        if 0 <= person_idx < len(self.project.persons):
-            self.project.persons[person_idx].workinghours_override = None
-            self.dirty = True
-            self._refresh_workinghours()
-
-    # ------------------------------------------------------------------
-    # Person hinzufügen
-    # ------------------------------------------------------------------
-
-    _ADD_PERS_TAG = "add_person_dialog"
-
-    def _cb_add_person(self, sender=None, app_data=None, user_data=None) -> None:
-        """Öffnet Dialog zum Hinzufügen einer neuen Person."""
-        import dearpygui.dearpygui as dpg
-
-        if dpg.does_item_exist(self._ADD_PERS_TAG):
-            dpg.delete_item(self._ADD_PERS_TAG)
-
-        with dpg.window(
-            label="Person hinzufügen",
-            tag=self._ADD_PERS_TAG,
-            modal=True,
-            width=360,
-            height=220,
-            pos=[450, 300],
-            no_resize=True,
-        ):
-            with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
-                           borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
-                dpg.add_table_column(width_fixed=True, init_width_or_weight=70)
-                dpg.add_table_column(width_stretch=True)
-
-                with dpg.table_row():
-                    dpg.add_text("ID:")
-                    dpg.add_input_text(tag="pers_new_id", default_value="PERS1", width=-1, no_spaces=True)
-                with dpg.table_row():
-                    dpg.add_text("Name:")
-                    dpg.add_input_text(tag="pers_new_name", default_value="Max Mustermann", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Rolle:")
-                    dpg.add_input_text(tag="pers_new_role", default_value="Arbeiter", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("EUR/h:")
-                    dpg.add_input_text(tag="pers_new_rate", default_value="50", width=-1)
-
-            dpg.add_spacer(height=6)
-            with dpg.group(horizontal=True):
-                dpg.add_button(label="Hinzufügen", callback=self._confirm_add_person)
-                dpg.add_button(label="Abbrechen", callback=lambda: dpg.delete_item(self._ADD_PERS_TAG))
-
-    def _confirm_add_person(self, sender=None, app_data=None, user_data=None) -> None:
-        """Bestätigt das Hinzufügen einer Person."""
-        import dearpygui.dearpygui as dpg
-        from lib.models.resources import Person
-
-        pers_id = dpg.get_value("pers_new_id").strip() if dpg.does_item_exist("pers_new_id") else ""
-        pers_name = dpg.get_value("pers_new_name").strip() if dpg.does_item_exist("pers_new_name") else ""
-        pers_role = dpg.get_value("pers_new_role").strip() if dpg.does_item_exist("pers_new_role") else ""
-        pers_rate_str = dpg.get_value("pers_new_rate").strip() if dpg.does_item_exist("pers_new_rate") else "50"
-
-        if dpg.does_item_exist(self._ADD_PERS_TAG):
-            dpg.delete_item(self._ADD_PERS_TAG)
-
-        if not pers_id or not self.project:
-            return
-
-        try:
-            pers_rate = float(pers_rate_str)
-        except ValueError:
-            pers_rate = 50.0
-
-        if self.project.persons is None:
-            self.project.persons = []
-
-        # Eindeutigkeitsprüfung
-        existing_ids = {p.id for p in self.project.persons}
-        if pers_id in existing_ids:
-            dpg.add_text(
-                f"ID '{pers_id}' existiert bereits!",
-                parent="persons_content",
-                color=(255, 80, 80),
-            )
-            return
-
-        new_person = Person(
-            id=pers_id,
-            name=pers_name or "Max Mustermann",
-            role=pers_role or "Arbeiter",
-            hourly_rate=pers_rate,
-        )
-        self.project.persons.append(new_person)
-        self.dirty = True
-        self._refresh_persons()
-
-    # ------------------------------------------------------------------
-    # Ruhezeit hinzufügen
-    # ------------------------------------------------------------------
-
-    _ADD_REST_TAG = "add_resting_time_dialog"
-
-    def _cb_add_resting_time(self, sender=None, app_data=None, user_data=None) -> None:
-        """Öffnet Dialog zum Hinzufügen einer Ruhezeit-Regel."""
-        import dearpygui.dearpygui as dpg
-
-        if dpg.does_item_exist(self._ADD_REST_TAG):
-            dpg.delete_item(self._ADD_REST_TAG)
-
-        with dpg.window(
-            label="Ruhezeit hinzufügen",
-            tag=self._ADD_REST_TAG,
-            modal=True,
-            width=360,
-            height=180,
-            pos=[450, 300],
-            no_resize=True,
-        ):
-            with dpg.table(header_row=False, borders_outerH=False, borders_outerV=False,
-                           borders_innerV=False, policy=dpg.mvTable_SizingFixedFit):
-                dpg.add_table_column(width_fixed=True, init_width_or_weight=80)
-                dpg.add_table_column(width_stretch=True)
-
-                with dpg.table_row():
-                    dpg.add_text("Nach (h):")
-                    dpg.add_input_text(tag="rest_new_hours", default_value="4.5", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Pause:")
-                    dpg.add_input_text(tag="rest_new_duration", default_value="45m", width=-1)
-                with dpg.table_row():
-                    dpg.add_text("Hinweis:")
-                    dpg.add_input_text(tag="rest_new_note", default_value="", width=-1)
-
-            dpg.add_spacer(height=6)
-            with dpg.group(horizontal=True):
-                dpg.add_button(label="Hinzufügen", callback=self._confirm_add_resting_time)
-                dpg.add_button(label="Abbrechen", callback=lambda: dpg.delete_item(self._ADD_REST_TAG))
-
-    def _confirm_add_resting_time(self, sender=None, app_data=None, user_data=None) -> None:
-        """Bestätigt das Hinzufügen einer Ruhezeit-Regel."""
-        import dearpygui.dearpygui as dpg
-        from lib.models.resources import RestInterval
-
-        hours_str = dpg.get_value("rest_new_hours").strip() if dpg.does_item_exist("rest_new_hours") else "4.5"
-        duration = dpg.get_value("rest_new_duration").strip() if dpg.does_item_exist("rest_new_duration") else "45m"
-        note = dpg.get_value("rest_new_note").strip() if dpg.does_item_exist("rest_new_note") else ""
-
-        if dpg.does_item_exist(self._ADD_REST_TAG):
-            dpg.delete_item(self._ADD_REST_TAG)
-
-        if not self.project:
-            return
-
-        try:
-            after_hours = float(hours_str)
-        except ValueError:
-            after_hours = 4.5
-
-        if self.project.resting_times is None:
-            self.project.resting_times = []
-
-        new_ri = RestInterval(
-            after_hours=after_hours,
-            duration=duration or "45m",
-            note=note or None,
-        )
-        self.project.resting_times.append(new_ri)
-        self.dirty = True
-        self._refresh_resting_times()
-
-    # ------------------------------------------------------------------
-    # Ergebnis-Tab
-    # ------------------------------------------------------------------
-
-    def _hide_result_tab(self) -> None:
-        """Blendet den Ergebnis-Tab aus und leert seinen Inhalt."""
-        import dearpygui.dearpygui as dpg
-        try:
-            if dpg.does_item_exist("tab_result"):
-                dpg.configure_item("tab_result", show=False)
-            if dpg.does_item_exist("result_container"):
-                dpg.delete_item("result_container", children_only=True)
-            # Zum Eingabe-Tab wechseln
-            if dpg.does_item_exist("main_tab_bar"):
-                dpg.set_value("main_tab_bar", "tab_input")
-        except Exception:
-            pass
-
-    def _invalidate_result(self) -> None:
-        """Wird bei Eingabeänderungen aufgerufen – entfernt den Ergebnis-Tab."""
-        self.last_cpm_result = None
-        self._hide_result_tab()
-
-    def _show_result(self, result: CPMResult) -> None:
-        import dearpygui.dearpygui as dpg
-        from gui.i18n import t as tr
-
-        if not dpg.does_item_exist("result_container"):
-            return
-
-        # Ergebnis-Tab sichtbar machen, Inhalt leeren
-        if dpg.does_item_exist("tab_result"):
-            dpg.configure_item("tab_result", show=True)
-        dpg.delete_item("result_container", children_only=True)
-
-        _rest = _CFG.section("result_table")
-        _p = "result_container"
-
-        # ── Projektdauer ──
-        dpg.add_text(
-            tr("result.duration", duration=result.project_duration),
-            parent=_p,
-            color=_COLORS.get("result_duration", (100, 180, 255)),
-        )
-        dpg.add_spacer(parent=_p, height=6)
-
-        # ── 1. Kritischer Pfad ──
-        with dpg.collapsing_header(
-            label=tr("result.header.critical_path"),
-            parent=_p,
-            default_open=True,
-        ):
-            crit_str = " -> ".join(str(tid) for tid in result.critical_path)
-            dpg.add_text(
-                crit_str,
-                color=_COLORS.get("result_critical_path", (220, 80, 80)),
-                wrap=0,
-            )
-            dpg.add_spacer(height=4)
-
-            # Kritischer-Pfad-Tabelle (nur kritische Tasks)
-            with dpg.table(
-                tag="result_crit_table",
-                header_row=True,
-                resizable=True,
-                borders_outerH=True,
-                borders_innerV=True,
-                borders_outerV=True,
-                row_background=True,
-            ):
-                dpg.add_table_column(label=tr("result.col.id"), width_fixed=True, init_width_or_weight=_rest.get("col_id_width", 60))
-                dpg.add_table_column(label=tr("result.col.name"), width_stretch=True)
-                dpg.add_table_column(label=tr("result.col.duration"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
-                dpg.add_table_column(label=tr("result.col.faz"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
-                dpg.add_table_column(label=tr("result.col.fez"), width_fixed=True, init_width_or_weight=_rest.get("col_fez_width", 70))
-
-                for tid in result.critical_path:
-                    task = result.tasks.get(tid)
-                    if not task or task.is_break:
-                        continue
-                    with dpg.table_row():
-                        dpg.add_text(str(tid))
-                        dpg.add_text(task.name)
-                        dpg.add_text(f"{task.duration:.1f}")
-                        dpg.add_text(f"{task.faz:.1f}")
-                        dpg.add_text(f"{task.fez:.1f}")
-
-        dpg.add_spacer(parent=_p, height=6)
-
-        # ── 2. Alle Aufgaben ──
-        with dpg.collapsing_header(
-            label=tr("result.header.all_tasks"),
-            parent=_p,
-            default_open=True,
-        ):
-            crit_indices = []
-            visible_idx = 0
-            with dpg.table(
-                tag="result_table",
-                header_row=True,
-                resizable=True,
-                borders_outerH=True,
-                borders_innerV=True,
-                borders_outerV=True,
-                row_background=True,
-            ):
-                dpg.add_table_column(label=tr("result.col.id"), width_fixed=True, init_width_or_weight=_rest.get("col_id_width", 60))
-                dpg.add_table_column(label=tr("result.col.name"), width_stretch=True)
-                dpg.add_table_column(label=tr("result.col.duration"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
-                dpg.add_table_column(label=tr("result.col.faz"), width_fixed=True, init_width_or_weight=_rest.get("col_faz_width", 70))
-                dpg.add_table_column(label=tr("result.col.fez"), width_fixed=True, init_width_or_weight=_rest.get("col_fez_width", 70))
-                dpg.add_table_column(label=tr("result.col.saz"), width_fixed=True, init_width_or_weight=_rest.get("col_saz_width", 70))
-                dpg.add_table_column(label=tr("result.col.sez"), width_fixed=True, init_width_or_weight=_rest.get("col_sez_width", 70))
-                dpg.add_table_column(label=tr("result.col.buffer"), width_fixed=True, init_width_or_weight=_rest.get("col_puffer_width", 70))
-                dpg.add_table_column(label=tr("result.col.critical"), width_fixed=True, init_width_or_weight=_rest.get("col_krit_width", 45))
-
-                for tid, task in result.tasks.items():
-                    if task.is_break:
-                        continue
-                    with dpg.table_row():
-                        dpg.add_text(str(tid))
-                        dpg.add_text(task.name)
-                        dpg.add_text(f"{task.duration:.1f}")
-                        dpg.add_text(f"{task.faz:.1f}")
-                        dpg.add_text(f"{task.fez:.1f}")
-                        dpg.add_text(f"{task.saz:.1f}")
-                        dpg.add_text(f"{task.sez:.1f}")
-                        dpg.add_text(f"{task.puffer:.1f}")
-                        dpg.add_text("*" if task.is_critical else "")
-                    if task.is_critical:
-                        crit_indices.append(visible_idx)
-                    visible_idx += 1
-
-            for idx in crit_indices:
-                dpg.highlight_table_row("result_table", idx, list(_COLORS.get("critical_row", (220, 80, 80, 80))))
-
-        dpg.add_spacer(parent=_p, height=6)
-
-        # ── 3. Ressourcen & Kosten (nur wenn vorhanden) ──
-        self._show_result_costs(result, _p)
-
-        # ── 4. Gantt-Diagramm ──
-        self._show_result_gantt(result, _p)
-
-        # ── 5. Ressourcenauslastung ──
-        self._show_result_resource_chart(result, _p)
-
-        # ── Export-Buttons ──
-        dpg.add_spacer(parent=_p, height=8)
-        with dpg.group(horizontal=True, parent=_p):
-            dpg.add_button(label="↓ Markdown", callback=self._export_markdown)
-            dpg.add_button(label="↓ Excel", callback=self._export_excel)
-            dpg.add_button(label="↓ JSON", callback=self._export_json)
-
-        # Zum Ergebnis-Tab wechseln
-        if dpg.does_item_exist("main_tab_bar"):
-            dpg.set_value("main_tab_bar", "tab_result")
-
-    def _show_result_costs(self, result: CPMResult, parent: str) -> None:
-        """Zeigt Ressourcen & Kosten im Ergebnis-Tab (falls vorhanden)."""
-        import dearpygui.dearpygui as dpg
-        from gui.i18n import t as tr
-
-        if not self.project:
-            return
-
-        try:
-            from lib.cost_calculator import calculate_project_costs
-        except ImportError:
-            return
-
-        costs = calculate_project_costs(self.project, result)
-        if not costs or not costs.entries:
-            return
-
-        with dpg.collapsing_header(
-            label=tr("result.header.resources_costs"),
-            parent=parent,
-            default_open=True,
-        ):
-            with dpg.table(
-                header_row=True,
-                resizable=True,
-                borders_outerH=True,
-                borders_innerV=True,
-                borders_outerV=True,
-                row_background=True,
-            ):
-                dpg.add_table_column(label=tr("result.cost.col.resource"), width_stretch=True)
-                dpg.add_table_column(label=tr("result.cost.col.type"), width_fixed=True, init_width_or_weight=90)
-                dpg.add_table_column(label=tr("result.cost.col.hours"), width_fixed=True, init_width_or_weight=80)
-                dpg.add_table_column(label=tr("result.cost.col.rate"), width_fixed=True, init_width_or_weight=90)
-                dpg.add_table_column(label=tr("result.cost.col.provisioning"), width_fixed=True, init_width_or_weight=110)
-                dpg.add_table_column(label=tr("result.cost.col.labor"), width_fixed=True, init_width_or_weight=100)
-                dpg.add_table_column(label=tr("result.cost.col.total"), width_fixed=True, init_width_or_weight=100)
-
-                for e in costs.entries:
-                    with dpg.table_row():
-                        dpg.add_text(e.resource_name)
-                        dpg.add_text(e.resource_type)
-                        dpg.add_text(f"{e.hours_worked:.1f}")
-                        dpg.add_text(f"{e.hourly_rate:.2f}")
-                        dpg.add_text(f"{e.provisioning_costs:.2f}" if e.provisioning_costs else "—")
-                        dpg.add_text(f"{e.labor_costs:.2f}")
-                        dpg.add_text(f"{e.total_costs:.2f}")
-
-            dpg.add_spacer(height=6)
-
-            # Summenzeilen
-            _sum_color = _COLORS.get("result_duration", (100, 180, 255))
-            if costs.total_person_costs > 0:
-                dpg.add_text(f"{tr('result.cost.person_costs')}: {costs.total_person_costs:.2f} €", color=_sum_color)
-            if costs.total_machine_costs > 0:
-                dpg.add_text(f"{tr('result.cost.machine_costs')}: {costs.total_machine_costs:.2f} €", color=_sum_color)
-            if costs.total_provisioning_costs > 0:
-                dpg.add_text(f"{tr('result.cost.provisioning_costs')}: {costs.total_provisioning_costs:.2f} €", color=_sum_color)
-            dpg.add_text(
-                f"{tr('result.cost.total_costs')}: {costs.total_costs:.2f} €",
-                color=_COLORS.get("result_critical_path", (220, 80, 80)),
-            )
-
-    # ------------------------------------------------------------------
-    # Diagramme (matplotlib → PNG → DPG Texture)
-    # ------------------------------------------------------------------
-
-    def _show_result_gantt(self, result: CPMResult, parent: str) -> None:
-        """Rendert das Gantt-Diagramm als Bild im Ergebnis-Tab."""
-        import dearpygui.dearpygui as dpg
-        from gui.i18n import t as tr
-
-        try:
-            from gui.gantt_chart import render_gantt_png, load_png_as_dpg_texture
-        except ImportError:
-            return
-
-        from gui.components.task_table import _build_resource_color_map
-        res_colors = _build_resource_color_map(self)
-
-        png = render_gantt_png(result, resource_colors=res_colors)
-        if not png:
-            return
-
-        tex_tag = "_gantt_chart_tex"
-        if not load_png_as_dpg_texture(png, tex_tag):
-            return
-
-        with dpg.collapsing_header(
-            label=tr("result.header.gantt"),
-            parent=parent,
-            default_open=True,
-        ):
-            dpg.add_image(tex_tag)
-
-    def _show_result_resource_chart(self, result: CPMResult, parent: str) -> None:
-        """Rendert das Ressourcenauslastungs-Diagramm als Bild im Ergebnis-Tab."""
-        import dearpygui.dearpygui as dpg
-        from gui.i18n import t as tr
-
-        if not self.project or not self.project.resources:
-            return
-
-        try:
-            from gui.gantt_chart import render_resource_chart_png, load_png_as_dpg_texture
-        except ImportError:
-            return
-
-        from gui.components.task_table import _build_resource_color_map
-        res_colors = _build_resource_color_map(self)
-
-        png = render_resource_chart_png(
-            result, project=self.project, resource_colors=res_colors,
-        )
-        if not png:
-            return
-
-        tex_tag = "_resource_chart_tex"
-        if not load_png_as_dpg_texture(png, tex_tag):
-            return
-
-        with dpg.collapsing_header(
-            label=tr("result.header.resource_chart"),
-            parent=parent,
-            default_open=True,
-        ):
-            dpg.add_image(tex_tag)
-
-    # ------------------------------------------------------------------
-    # Export-Aktionen
-    # ------------------------------------------------------------------
-
-    def export_json(self, target_dir: Optional[Path] = None) -> Path:
-        """Exportiert das Projekt als JSON in target_dir."""
+    def export_project_json(self, target_dir: Optional[Path] = None) -> Path:
+        """Kopie der Projektdatei (Eingabeformat) in target_dir."""
         if self.project is None:
-            raise RuntimeError("Kein Projekt vorhanden.")
-        d = target_dir or Path.cwd()
-        name = (self.project.project or "project").replace(" ", "_")
-        out = d / f"{name}.json"
-        self.save_to_file(out)
-        return out
+            raise RuntimeError(t("status.no_project"))
+        return self.save_to_file((target_dir or Path.cwd()) / f"{self._file_stem()}.json")
 
-    def export_markdown(self, target_dir: Optional[Path] = None) -> Path:
-        """Exportiert CPM-Ergebnis als Markdown in target_dir."""
-        if not self.last_cpm_result:
-            raise RuntimeError("Kein Berechnungsergebnis. Bitte erst berechnen.")
-        from lib.markdown_export import export_cpm_to_markdown
-        d = target_dir or Path.cwd()
-        project_name = self.project.project if self.project else "Projekt"
-        out = d / f"{project_name.replace(' ', '_')}.md"
-        export_cpm_to_markdown(self.last_cpm_result, out, project_name, self.project)
-        return out
+    def export_report(self, fmt: str, target_dir: Optional[Path] = None) -> Path:
+        """Report im Format fmt (siehe REPORT_FORMATS) – identisch zum CLI-Export."""
+        if self.schedule is None:
+            raise RuntimeError(t("error.no_result"))
+        options = ExportOptions(out_dir=target_dir or get_results_dir(), file_stem=self._file_stem(),
+                                cfg_dir=get_cfg_dir(), lang=get_language())
+        return export_schedule(self.schedule, [fmt], options)[0]
 
-    def export_excel(self, target_dir: Optional[Path] = None) -> Path:
-        """Exportiert CPM-Ergebnis als Excel in target_dir."""
-        if not self.last_cpm_result or not self.project:
-            raise RuntimeError("Kein Berechnungsergebnis. Bitte erst berechnen.")
-        from openpyxl import Workbook
-        from lib.excel_reports import create_gantt_chart, load_excel_export_config
-        from lib.models.reports import GanttReport
-        d = target_dir or Path.cwd()
-        project_name = self.project.project or "project"
-        out = d / f"{project_name.replace(' ', '_')}.xlsx"
+    def _quick_export_actions(self) -> Dict[str, Callable[[], None]]:
+        """Buttons im Ergebnis-Tab: Export nach $PV_RESULTS."""
+        def report(fmt: str) -> Callable[[], None]:
+            return lambda: self._wrap_export(lambda: self.export_report(fmt))
 
-        cfg_dir = Path(__file__).resolve().parent.parent / "cfg"
-        full_config = load_excel_export_config(cfg_dir) if cfg_dir.exists() else {}
-        report = GanttReport(
-            id='gantt_chart',
-            name='Gantt Chart',
-            headline='Gantt Chart',
-            type='gantt',
-            columns=['ID', 'Name', 'Start', 'Ende', 'Aufwand', 'Diagramm'],
-            loadunit=self.last_cpm_result.time_unit,
-        )
+        actions = {f"↓ {REPORT_FORMATS[fmt]}": report(fmt) for fmt in ("md", "xlsx", "txt")}
+        actions["↓ JSON"] = lambda: self._wrap_export(lambda: self.export_project_json(get_results_dir()))
+        return actions
 
-        wb = Workbook()
-        create_gantt_chart(wb, self.project, self.last_cpm_result, report, full_config)
-        wb.save(out)
-        return out
-
-    def export_txt(self, target_dir: Optional[Path] = None) -> Path:
-        """Exportiert CPM-Ergebnis als einfache Textdatei in target_dir."""
-        if not self.last_cpm_result or not self.project:
-            raise RuntimeError("Kein Berechnungsergebnis. Bitte erst berechnen.")
-        d = target_dir or Path.cwd()
-        result = self.last_cpm_result
-        project_name = self.project.project or "Projekt"
-        out = d / f"{project_name.replace(' ', '_')}.txt"
-
-        lines = [
-            f"Projekt:          {project_name}",
-            f"Projektdauer:     {result.project_duration}",
-            f"Kritischer Pfad:  {' → '.join(str(t) for t in result.critical_path)}",
-            "",
-            f"{'#':<6} {'Name':<30} {'FAZ':>7} {'FEZ':>7} {'SAZ':>7} {'SEZ':>7} {'Puffer':>7}  Krit.",
-            "-" * 75,
-        ]
-        for tid, t in result.tasks.items():
-            if t.is_break:
-                continue
-            krit = "*" if t.is_critical else ""
-            lines.append(
-                f"{str(tid):<6} {t.name:<30} {t.faz:>7.1f} {t.fez:>7.1f}"
-                f" {t.saz:>7.1f} {t.sez:>7.1f} {t.puffer:>7.1f}  {krit}"
-            )
-        out.write_text("\n".join(lines), encoding="utf-8")
-        return out
-
-    # Rückwärtskompatible Shortcuts (vom Ergebnis-Panel aufgerufen)
-    def _export_json(self)     -> None: self._wrap_export(self.export_json)
-    def _export_markdown(self) -> None: self._wrap_export(self.export_markdown)
-    def _export_excel(self)    -> None: self._wrap_export(self.export_excel)
-
-    def _get_export_dir(self) -> Path:
-        """Gibt das Standard-Exportverzeichnis (PV_RESULTS) zurück und erstellt es bei Bedarf."""
-        import os
-        d = Path(os.environ.get("PV_RESULTS", "")) if os.environ.get("PV_RESULTS") else Path(__file__).resolve().parent.parent / "results"
-        d.mkdir(exist_ok=True)
-        return d
-
-    def _wrap_export(self, fn) -> None:
+    def _wrap_export(self, export: Callable[[], Path]) -> None:
         try:
-            out = fn(self._get_export_dir())
-            self._set_status(f"Gespeichert: {out}")
+            self._set_status(t("status.saved", path=export()))
         except Exception as e:
-            self._set_status(f"Export fehlgeschlagen: {e}")
+            self._set_status(t("status.export_failed", error=e))
 
     # ------------------------------------------------------------------
     # Status
     # ------------------------------------------------------------------
 
-    def _set_status(self, msg: str) -> None:
-        import dearpygui.dearpygui as dpg
-        try:
-            if dpg.does_item_exist("statusbar_text"):
-                dpg.set_value("statusbar_text", msg)
-        except Exception:
-            pass
+    @staticmethod
+    def _set_status(msg: str) -> None:
+        _set_value("statusbar_text", msg)
+
+

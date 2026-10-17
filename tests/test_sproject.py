@@ -256,7 +256,7 @@ class TestExcelExport(unittest.TestCase):
         except ImportError:
             self.skipTest("openpyxl nicht installiert")
 
-        from lib.sproject import export_cpm_to_xlsx
+        from lib.excel_reports import export_cpm_to_xlsx
 
         software_file = _EXAMPLES_DIR / 'software_simple.json'
 
@@ -872,7 +872,7 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
 
     def test_cycle_with_zero_order_volume(self):
         """Test: Zyklus mit Bestellvolumen 0"""
-        from lib.models.resources import MachineResource
+        from lib.models.resources import Resource
         from lib.models.tasks import InstanceTask
 
         project = Project(
@@ -880,7 +880,7 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
             project_start="2026-04-01",
             order_volume=0,
             unit="Stück",
-            resources=[MachineResource(id="R1", name="Resource 1", type="machine", unit="Stück/h")],
+            resources=[Resource(id="R1", name="Resource 1", type="machine", unit="Stück/h")],
             tasks=[
                 InstanceTask(id=1, name="Task", duration="1h", instances="order_volume")
             ]
@@ -892,7 +892,7 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
 
     def test_cycle_with_one_instance(self):
         """Test: Zyklus mit nur einer Instanz"""
-        from lib.models.resources import MachineResource
+        from lib.models.resources import Resource
         from lib.models.tasks import InstanceTask
 
         project = Project(
@@ -900,7 +900,7 @@ class TestEdgeCasesCycleExpansion(unittest.TestCase):
             project_start="2026-04-01",
             order_volume=1,
             unit="Stück",
-            resources=[MachineResource(id="R1", name="Resource 1", type="machine", unit="Stück/h")],
+            resources=[Resource(id="R1", name="Resource 1", type="machine", unit="Stück/h")],
             tasks=[
                 InstanceTask(id=1, name="Task", duration="1h", instances="order_volume")
             ]
@@ -917,7 +917,7 @@ class TestEdgeCasesLoopExpansion(unittest.TestCase):
 
     def test_loop_with_minimal_setup(self):
         """Test: Loop-Projekt mit minimaler Konfiguration (SimpleTask, keine LoopTasks)"""
-        from lib.models.resources import MachineResource
+        from lib.models.resources import Resource
         from lib.models.tasks import SimpleTask
 
         project = Project(
@@ -925,7 +925,7 @@ class TestEdgeCasesLoopExpansion(unittest.TestCase):
             project_start="2026-04-01",
             total_volume=100,
             unit="m3",
-            resources=[MachineResource(id="R1", name="Resource 1", type="machine", capacity=10, unit="m3")],
+            resources=[Resource(id="R1", name="Resource 1", type="machine", capacity=10, unit="m3")],
             tasks=[
                 SimpleTask(id=1, name="Prep", duration="1d")
             ]
@@ -1461,7 +1461,7 @@ class TestExcelExportContent(unittest.TestCase):
             import openpyxl
         except ImportError:
             self.skipTest("openpyxl nicht installiert")
-        from lib.sproject import export_cpm_to_xlsx
+        from lib.excel_reports import export_cpm_to_xlsx
 
         project, result = self._make_project_and_result()
         with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
@@ -1492,7 +1492,7 @@ class TestExcelExportContent(unittest.TestCase):
             import openpyxl
         except ImportError:
             self.skipTest("openpyxl nicht installiert")
-        from lib.sproject import export_cpm_to_xlsx
+        from lib.excel_reports import export_cpm_to_xlsx
 
         project, result = self._make_project_and_result()
         with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
@@ -1526,7 +1526,7 @@ class TestExcelExportContent(unittest.TestCase):
             import openpyxl
         except ImportError:
             self.skipTest("openpyxl nicht installiert")
-        from lib.sproject import export_cpm_to_xlsx
+        from lib.excel_reports import export_cpm_to_xlsx
         from lib.models.tasks import SimpleTask
 
         project = SimpleProject(

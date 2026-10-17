@@ -1,0 +1,68 @@
+======================================================================
+Tank Design Project - CPM REPORT
+======================================================================
+
+======================================================================
+PROJEKTZUSAMMENFASSUNG
+======================================================================
+
+Projekt:            Tank Design Project
+Projektdauer:       50.0d
+Zeiteinheit:        days
+Startdatum:         2026-03-03
+Enddatum:           2026-05-18
+Anzahl Tasks:       8
+Kritische Tasks:    4
+
+======================================================================
+KRITISCHER PFAD
+======================================================================
+
+  [1] design tank projekt                 Dauer: 10.0d
+  [3] construct tank foundation           Dauer: 25.0d
+  [7] assemble tank                       Dauer: 15.0d
+  [8] test commisions tank                Dauer: 0.0d
+
+======================================================================
+NETZPLAN TABELLE
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
+----------------------------------------------------------------------
+1       design tank projekt            10.0     0.0      10.0     0.0      10.0     0.0      0.0      2, 3                 JA
+2       Select Tank supplyer           8.0      10.0     18.0     13.0     21.0     3.0      0.0      4, 5                 
+3       construct tank foundation      25.0     10.0     35.0     10.0     35.0     0.0      0.0      7                    JA
+4       manufacture tank components    10.0     18.0     28.0     21.0     31.0     3.0      0.0      6                    
+5       prepare Installation drawings  3.0      18.0     21.0     32.0     35.0     14.0     14.0     7                    
+6       Deliver tank components        4.0      28.0     32.0     31.0     35.0     3.0      3.0      7                    
+7       assemble tank                  15.0     35.0     50.0     35.0     50.0     0.0      0.0      8                    JA
+8       test commisions tank           0.0      50.0     50.0     50.0     50.0     0.0      0.0                           JA
+----------------------------------------------------------------------
+
+======================================================================
+ALLE TASKS
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Krit.
+----------------------------------------------------------------------
+1       design tank projekt            10.0d    0.0d     10.0d    0.0d     10.0d    0.0d     0.0d     JA
+2       Select Tank supplyer           8.0d     10.0d    18.0d    13.0d    21.0d    3.0d     0.0d     
+3       construct tank foundation      25.0d    10.0d    35.0d    10.0d    35.0d    0.0d     0.0d     JA
+4       manufacture tank components    10.0d    18.0d    28.0d    21.0d    31.0d    3.0d     0.0d     
+5       prepare Installation drawings  3.0d     18.0d    21.0d    32.0d    35.0d    14.0d    14.0d    
+6       Deliver tank components        4.0d     28.0d    32.0d    31.0d    35.0d    3.0d     3.0d     
+7       assemble tank                  15.0d    35.0d    50.0d    35.0d    50.0d    0.0d     0.0d     JA
+8       test commisions tank           0.0d     50.0d    50.0d    50.0d    50.0d    0.0d     0.0d     JA
+----------------------------------------------------------------------
+
+======================================================================
+VERANTWORTLICHE
+======================================================================
+
+  (keine Ressourcen-Informationen verfügbar)
+
+======================================================================
+KOSTENÜBERSICHT
+======================================================================
+
+  (keine Kostendaten – Stundensätze fehlen)

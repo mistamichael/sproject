@@ -10,12 +10,10 @@ import json
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
-try:
-    from .models.cpm import CPMResult
-    from .utils import format_time_value, add_workdays, is_system_task, load_export_config, collect_resource_data
-except (ImportError, ValueError):
-    from models.cpm import CPMResult
-    from utils import format_time_value, add_workdays, is_system_task, load_export_config, collect_resource_data
+from .durations import format_time_value
+from .export_config import load_export_config
+from .models.cpm import CPMResult
+from .report_data import collect_resource_data
 
 
 # ---------------------------------------------------------------------------
@@ -51,13 +49,13 @@ def _build_summary(result: CPMResult, project_name: str) -> Dict[str, Any]:
         'project_duration': base.get('project_duration', ''),
         'time_unit':        result.time_unit,
         'num_tasks':        len([t for t in result.tasks.values()
-                                 if not t.is_break and not is_system_task(t.id)]),
+                                 if not t.is_system]),
         'num_critical':     len([t for t in result.tasks.values() if t.is_critical]),
     }
     if base.get('project_start'):
         data['project_start'] = base['project_start']
         project_duration = max(task.fez for task in result.tasks.values())
-        data['project_end'] = add_workdays(result.project_start, project_duration).strftime('%Y-%m-%d')
+        data['project_end'] = result.date_at(project_duration).strftime('%Y-%m-%d')
     if base.get('calculation_date'):
         data['calculation_date'] = base['calculation_date']
     return data
@@ -70,7 +68,7 @@ def _build_critical_path(result: CPMResult) -> List[Dict[str, Any]]:
         if tid not in result.tasks:
             continue
         task = result.tasks[tid]
-        if task.is_break or is_system_task(tid):
+        if task.is_system:
             continue
         out.append({
             'id':       str(tid),
@@ -159,13 +157,7 @@ def _build_resources(result: CPMResult, project: Optional[object]) -> Optional[D
 
 def _build_costs(result: CPMResult, project: Optional[object]) -> Optional[Dict[str, Any]]:
     """Kostenrechnung als JSON-Objekt."""
-    try:
-        from cost_calculator import calculate_project_costs
-    except ImportError:
-        try:
-            from .cost_calculator import calculate_project_costs
-        except ImportError:
-            return None
+    from .cost_calculator import calculate_project_costs
 
     costs = calculate_project_costs(project, result)
     if not costs:

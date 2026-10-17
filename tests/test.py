@@ -14,7 +14,7 @@ class TestSProjectIntegration(unittest.TestCase):
 
     def test_find_project_files(self):
         """Test ob find_project_files korrekt funktioniert."""
-        from sproject import find_project_files
+        from lib.sproject import find_project_files
 
         temp_dir = Path(tempfile.mkdtemp())
         (temp_dir / "project1.json").write_text("{}")

@@ -1,0 +1,311 @@
+{
+  "summary": {
+    "project": "Tank Design Project",
+    "project_duration": "50.0d",
+    "time_unit": "days",
+    "num_tasks": 8,
+    "num_critical": 4,
+    "project_start": "2026-03-03",
+    "project_end": "2026-05-18",
+  },
+  "critical_path": [
+    {
+      "id": "1",
+      "name": "design tank projekt",
+      "duration": "10.0d"
+    },
+    {
+      "id": "3",
+      "name": "construct tank foundation",
+      "duration": "25.0d"
+    },
+    {
+      "id": "7",
+      "name": "assemble tank",
+      "duration": "15.0d"
+    },
+    {
+      "id": "8",
+      "name": "test commisions tank",
+      "duration": "0.0d"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "name": "design tank projekt",
+      "duration": "10.0d",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-03",
+        "fez": "2026-03-17",
+        "saz": "2026-03-03",
+        "sez": "2026-03-17",
+        "gp": "0.0d",
+        "fp": "0.0d",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-17",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-17"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Select Tank supplyer",
+      "duration": "8.0d",
+      "is_critical": false,
+      "cpm": {
+        "faz": "2026-03-17",
+        "fez": "2026-03-27",
+        "saz": "2026-03-20",
+        "sez": "2026-04-01",
+        "gp": "3.0d",
+        "fp": "0.0d",
+        "dates": {
+          "faz_date": "2026-03-17",
+          "fez_date": "2026-03-27",
+          "saz_date": "2026-03-20",
+          "sez_date": "2026-04-01"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "name": "construct tank foundation",
+      "duration": "25.0d",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-17",
+        "fez": "2026-04-23",
+        "saz": "2026-03-17",
+        "sez": "2026-04-23",
+        "gp": "0.0d",
+        "fp": "0.0d",
+        "dates": {
+          "faz_date": "2026-03-17",
+          "fez_date": "2026-04-23",
+          "saz_date": "2026-03-17",
+          "sez_date": "2026-04-23"
+        }
+      }
+    },
+    {
+      "id": "4",
+      "name": "manufacture tank components",
+      "duration": "10.0d",
+      "is_critical": false,
+      "cpm": {
+        "faz": "2026-03-27",
+        "fez": "2026-04-14",
+        "saz": "2026-04-01",
+        "sez": "2026-04-17",
+        "gp": "3.0d",
+        "fp": "0.0d",
+        "dates": {
+          "faz_date": "2026-03-27",
+          "fez_date": "2026-04-14",
+          "saz_date": "2026-04-01",
+          "sez_date": "2026-04-17"
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "prepare Installation drawings",
+      "duration": "3.0d",
+      "is_critical": false,
+      "cpm": {
+        "faz": "2026-03-27",
+        "fez": "2026-04-01",
+        "saz": "2026-04-20",
+        "sez": "2026-04-23",
+        "gp": "14.0d",
+        "fp": "14.0d",
+        "dates": {
+          "faz_date": "2026-03-27",
+          "fez_date": "2026-04-01",
+          "saz_date": "2026-04-20",
+          "sez_date": "2026-04-23"
+        }
+      }
+    },
+    {
+      "id": "6",
+      "name": "Deliver tank components",
+      "duration": "4.0d",
+      "is_critical": false,
+      "cpm": {
+        "faz": "2026-04-14",
+        "fez": "2026-04-20",
+        "saz": "2026-04-17",
+        "sez": "2026-04-23",
+        "gp": "3.0d",
+        "fp": "3.0d",
+        "dates": {
+          "faz_date": "2026-04-14",
+          "fez_date": "2026-04-20",
+          "saz_date": "2026-04-17",
+          "sez_date": "2026-04-23"
+        }
+      }
+    },
+    {
+      "id": "7",
+      "name": "assemble tank",
+      "duration": "15.0d",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-04-23",
+        "fez": "2026-05-18",
+        "saz": "2026-04-23",
+        "sez": "2026-05-18",
+        "gp": "0.0d",
+        "fp": "0.0d",
+        "dates": {
+          "faz_date": "2026-04-23",
+          "fez_date": "2026-05-18",
+          "saz_date": "2026-04-23",
+          "sez_date": "2026-05-18"
+        }
+      }
+    },
+    {
+      "id": "8",
+      "name": "test commisions tank",
+      "duration": "0.0d",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-05-18",
+        "fez": "2026-05-18",
+        "saz": "2026-05-18",
+        "sez": "2026-05-18",
+        "gp": "0.0d",
+        "fp": "0.0d",
+        "dates": {
+          "faz_date": "2026-05-18",
+          "fez_date": "2026-05-18",
+          "saz_date": "2026-05-18",
+          "sez_date": "2026-05-18"
+        }
+      }
+    }
+  ],
+  "gantt_chart": {
+    "project_name": "Tank Design Project",
+    "project_start_date": "2026-03-03T07:00:00",
+    "time_unit": "days",
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "tasks": {
+      "1": {
+        "id": "1",
+        "name": "design tank projekt",
+        "network_duration_days": 10.0,
+        "calendar_start_date": "2026-03-03T07:00:00",
+        "calendar_end_date": "2026-03-16T07:00:00",
+        "working_days": 10.0,
+        "calendar_days": 14,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2": {
+        "id": "2",
+        "name": "Select Tank supplyer",
+        "network_duration_days": 8.0,
+        "calendar_start_date": "2026-03-17T07:00:00",
+        "calendar_end_date": "2026-03-26T07:00:00",
+        "working_days": 8.0,
+        "calendar_days": 10,
+        "is_critical": false,
+        "puffer_days": 3.0
+      },
+      "3": {
+        "id": "3",
+        "name": "construct tank foundation",
+        "network_duration_days": 25.0,
+        "calendar_start_date": "2026-03-17T07:00:00",
+        "calendar_end_date": "2026-04-22T07:00:00",
+        "working_days": 25.0,
+        "calendar_days": 37,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "4": {
+        "id": "4",
+        "name": "manufacture tank components",
+        "network_duration_days": 10.0,
+        "calendar_start_date": "2026-03-27T07:00:00",
+        "calendar_end_date": "2026-04-13T07:00:00",
+        "working_days": 10.0,
+        "calendar_days": 18,
+        "is_critical": false,
+        "puffer_days": 3.0
+      },
+      "5": {
+        "id": "5",
+        "name": "prepare Installation drawings",
+        "network_duration_days": 3.0,
+        "calendar_start_date": "2026-03-27T07:00:00",
+        "calendar_end_date": "2026-03-31T07:00:00",
+        "working_days": 3.0,
+        "calendar_days": 5,
+        "is_critical": false,
+        "puffer_days": 14.0
+      },
+      "6": {
+        "id": "6",
+        "name": "Deliver tank components",
+        "network_duration_days": 4.0,
+        "calendar_start_date": "2026-04-14T07:00:00",
+        "calendar_end_date": "2026-04-17T07:00:00",
+        "working_days": 4.0,
+        "calendar_days": 4,
+        "is_critical": false,
+        "puffer_days": 3.0
+      },
+      "7": {
+        "id": "7",
+        "name": "assemble tank",
+        "network_duration_days": 15.0,
+        "calendar_start_date": "2026-04-23T07:00:00",
+        "calendar_end_date": "2026-05-15T07:00:00",
+        "working_days": 15.0,
+        "calendar_days": 23,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "8": {
+        "id": "8",
+        "name": "test commisions tank",
+        "network_duration_days": 0.0,
+        "calendar_start_date": "2026-05-18T07:00:00",
+        "calendar_end_date": "2026-05-17T07:00:00",
+        "working_days": 0.0,
+        "calendar_days": 0,
+        "is_critical": true,
+        "puffer_days": 0.0
+      }
+    }
+  },
+  "settings": {
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "holidays": [
+      "2026-01-01",
+      "2026-01-06",
+      "2026-04-03",
+      "2026-04-06",
+      "2026-05-01",
+      "2026-05-14",
+      "2026-05-25",
+      "2026-06-04",
+      "2026-08-15",
+      "2026-10-03",
+      "2026-11-01",
+      "2026-12-25",
+      "2026-12-26"
+    ]
+  }
+}

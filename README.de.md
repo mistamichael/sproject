@@ -36,25 +36,31 @@ sproject/
 │   ├── software_simple.json    # Software-Projekt mit Ressourcen
 │   ├── tankdesign.json         # Ingenieurprojekt
 │   └── results/                # Vorberechnete Beispiel-Ergebnisse
-├── lib/                        # Python-Quellcode
-│   ├── sproject.py             # Hauptprogramm (Einstiegspunkt)
+├── lib/                        # Python-Quellcode (Paket "lib")
+│   ├── sproject.py             # CLI-Einstiegspunkt
+│   ├── schedule.py             # build_schedule(): Expansion → CPM → Gantt → Kosten
+│   ├── exporters.py            # Export-Registry (gemeinsam für CLI und GUI)
 │   ├── models/                 # Pydantic-Modelle
-│   │   ├── cpm.py              # CPM-Berechnung
-│   │   ├── gantt.py            # Gantt-Terminplanung
+│   │   ├── project.py          # Projekt-Wurzelmodell (Daten + Validierung)
 │   │   ├── tasks.py            # Task-Modelle (inkl. Loop/Cycle)
+│   │   ├── dependencies.py     # Abhängigkeitstypen EA/AA/EE/AE
 │   │   ├── resources.py        # Ressourcen und Personen
-│   │   ├── project.py          # Projekt-Wurzelmodell
+│   │   ├── expander.py         # Expansion von Instance-/Loop-Tasks
+│   │   ├── rest_breaks.py      # Ruhepausen für Personen
+│   │   ├── cpm.py              # CPM-Berechnung
+│   │   ├── gantt.py            # Gantt-Terminplanung (Kalenderdaten)
 │   │   └── loader.py           # JSON-Loader
+│   ├── durations.py            # Dauer-Parsing/-Formatierung (hours_per_day aus defaults.cfg)
+│   ├── work_calendar.py        # Arbeitstage, Wochenenden, Feiertage
+│   ├── cost_calculator.py      # Kostenrechnung
+│   ├── report_data.py          # Gemeinsame Datenaufbereitung der Exporte
 │   ├── excel_reports.py        # XLSX-Export
 │   ├── json_export.py          # JSON-Export
 │   ├── txt_export.py           # TXT-Export
-│   ├── markdown_export.py      # Markdown-Export
+│   ├── markdown_export.py      # Markdown/HTML/ZIP-Export
 │   ├── mermaid_export.py       # SVG via Mermaid/kroki
-│   ├── utils.py                # Hilfsfunktionen
-│   ├── config_loader.py        # Konfiguration lesen
-│   ├── test.py                 # Unit-Tests
-│   ├── test_models.py          # Modell-Tests
-│   └── test_sproject.py        # Integrations-Tests
+│   ├── colors.py, paths.py, export_config.py, config_loader.py
+├── tests/                      # pytest (inkl. Golden-File-Tests in tests/golden/)
 ├── requirements.txt            # Python-Abhängigkeiten
 ├── log/                        # Logdateien (automatisch erstellt)
 ├── results/                    # Generierte Reports (automatisch erstellt)
@@ -338,13 +344,16 @@ Hier ein Beispiel für die Ausgabedatei als [markdown mit mermaid diagramm](doc/
 
 ## Tests
 
-Unit-Tests ausführen:
+Alle Tests ausführen (Unit-Tests, Golden-File-Vergleich aller Beispiele, GUI-Tests ohne Fenster):
 
 ```bash
-cd lib
-python -m unittest test.py
-python -m unittest test_models.py
-python -m unittest test_sproject.py
+python -m pytest
+```
+
+Nach einer gewollten Ergebnisänderung die Referenzdateien in `tests/golden/` neu erzeugen:
+
+```bash
+UPDATE_GOLDEN=1 python -m pytest tests/test_golden.py
 ```
 
 Oder über das Batch-Skript (Windows):

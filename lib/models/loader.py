@@ -73,7 +73,7 @@ def save_project(project: Project, file_path: Union[str, Path], indent: int = 2)
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Exportiere mit Aliasen (z.B. "from" statt "from_")
-    data = project.model_dump(by_alias=True, exclude_none=True)
+    data = project.model_dump(by_alias=True, exclude_none=True, exclude_unset=True)
 
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=indent, ensure_ascii=False)

@@ -11,10 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from datetime import datetime
 
-try:
-    from .utils import get_cfg_dir
-except (ImportError, ValueError):
-    from utils import get_cfg_dir
+from .paths import get_cfg_dir
 
 
 class ConfigLoader:

@@ -1,0 +1,69 @@
+======================================================================
+Montage Gesamtsystem - CPM REPORT
+======================================================================
+
+======================================================================
+PROJEKTZUSAMMENFASSUNG
+======================================================================
+
+Projekt:            Montage Gesamtsystem
+Projektdauer:       30.0d
+Zeiteinheit:        days
+Startdatum:         2026-03-09
+Enddatum:           2026-04-22
+Anzahl Tasks:       8
+Kritische Tasks:    5
+
+======================================================================
+KRITISCHER PFAD
+======================================================================
+
+  [1] Transport/Anlieferung               Dauer: 3.0d
+  [2] Vormontage Prozessstationen         Dauer: 10.0d
+  [6] Montage Gesamtsystem                Dauer: 10.0d
+  [7] Test Gesamtsystem                   Dauer: 5.0d
+  [8] Einweisung der Produktionsmitarbeiter Dauer: 2.0d
+
+======================================================================
+NETZPLAN TABELLE
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
+----------------------------------------------------------------------
+1       Transport/Anlieferung          3.0      0.0      3.0      0.0      3.0      0.0      0.0      2, 3, 4              JA
+2       Vormontage Prozessstationen    10.0     3.0      13.0     3.0      13.0     0.0      0.0      6                    JA
+3       Vormontage Transportband       7.0      3.0      10.0     6.0      13.0     3.0      3.0      6                    
+4       Anpassung Steuereinheiten      2.0      3.0      5.0      11.0     13.0     8.0      0.0      5, 6                 
+5       Programmierung Steuereinheiten 8.0      5.0      13.0     15.0     23.0     10.0     10.0     7                    
+6       Montage Gesamtsystem           10.0     13.0     23.0     13.0     23.0     0.0      0.0      7                    JA
+7       Test Gesamtsystem              5.0      23.0     28.0     23.0     28.0     0.0      0.0      8                    JA
+8       Einweisung der Produktionsm... 2.0      28.0     30.0     28.0     30.0     0.0      0.0                           JA
+----------------------------------------------------------------------
+
+======================================================================
+ALLE TASKS
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Krit.
+----------------------------------------------------------------------
+1       Transport/Anlieferung          3.0d     0.0d     3.0d     0.0d     3.0d     0.0d     0.0d     JA
+2       Vormontage Prozessstationen    10.0d    3.0d     13.0d    3.0d     13.0d    0.0d     0.0d     JA
+3       Vormontage Transportband       7.0d     3.0d     10.0d    6.0d     13.0d    3.0d     3.0d     
+4       Anpassung Steuereinheiten      2.0d     3.0d     5.0d     11.0d    13.0d    8.0d     0.0d     
+5       Programmierung Steuereinheiten 8.0d     5.0d     13.0d    15.0d    23.0d    10.0d    10.0d    
+6       Montage Gesamtsystem           10.0d    13.0d    23.0d    13.0d    23.0d    0.0d     0.0d     JA
+7       Test Gesamtsystem              5.0d     23.0d    28.0d    23.0d    28.0d    0.0d     0.0d     JA
+8       Einweisung der Produktionsm... 2.0d     28.0d    30.0d    28.0d    30.0d    0.0d     0.0d     JA
+----------------------------------------------------------------------
+
+======================================================================
+VERANTWORTLICHE
+======================================================================
+
+  (keine Ressourcen-Informationen verfügbar)
+
+======================================================================
+KOSTENÜBERSICHT
+======================================================================
+
+  (keine Kostendaten – Stundensätze fehlen)

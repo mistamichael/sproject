@@ -14,22 +14,29 @@ sproject/
 ├── doc/              # Dokumentation
 ├── examples/         # Beispiel-JSON-Projektdateien
 ├── gui/              # Dear PyGui GUI-Anwendung
-│   ├── app.py        # Hauptlayout, Menüs, Toolbar, Viewport-Aufbau
-│   ├── editor.py     # ProjectEditorApp – zentraler State + Event-Handler
+│   ├── app.py        # Hauptlayout, Menüs, Toolbar, Dialoge, Viewport-Aufbau
+│   ├── editor.py     # ProjectEditorApp – State, Datei-Ops, sync/refresh, Exporte
+│   ├── task_rows.py  # TaskRow: verlustfreie Umwandlung Tasks ↔ Tabellenzeilen (ohne DPG)
+│   ├── colors.py     # Ressourcen-Farbzuordnung
 │   ├── i18n.py       # Internationalisierung (de/en), t()-Funktion
 │   ├── gui_config.py # Konfigurationslader (gui.cfg → Farben, Größen, Themes)
 │   └── components/   # UI-Komponenten
+│       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection) + Formular-Dialog
+│       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit
+│       ├── task_table.py   # Aufgaben-Tabelle
+│       ├── result_panel.py # Ergebnis-Tab
 │       ├── sidebar.py      # Wizard-Navigation + Beispielliste
-│       ├── task_table.py   # Aufgaben-Tabelle mit Zeilen-Management
-│       ├── file_browser.py # Datei-Öffnen-Dialog
-│       └── icon_font.py    # Icon-Rendering
-├── lib/              # Kernlogik (kein GUI-Code)
-│   ├── models/       # Pydantic-Modelle: Project, Tasks, Resources, CPMResult
-│   ├── cpm.py        # CPM-Algorithmus
-│   ├── markdown_export.py
-│   └── excel_reports.py
+│       └── file_browser.py # Datei-Öffnen-Dialog
+├── lib/              # Kernlogik (kein GUI-Code), Paket "lib" – nur relative Imports
+│   ├── schedule.py   # build_schedule(): Expansion → CPM → Gantt → Kosten (einziger Rechenweg)
+│   ├── exporters.py  # EXPORTERS-Registry, export_schedule()
+│   ├── durations.py  # Dauer-Parsing/Formatierung, hours_per_day aus defaults.cfg
+│   ├── work_calendar.py # WorkCalendar: Arbeitstage, Wochenenden, Feiertage
+│   ├── models/       # Pydantic-Modelle: Project, Tasks, Dependencies, Resources, CPM, Gantt
+│   ├── *_export.py, excel_reports.py  # Exporte
+│   └── sproject.py   # CLI
 ├── results/          # Export-Ausgaben (in .gitignore)
-├── tests/            # Tests
+├── tests/            # pytest; tests/golden/ = Referenz-Exporte aller Beispiele
 └── work/             # Arbeitsdateien, Default-Speicherort für neue Projekte (PV_WORK)
 ```
 
@@ -44,10 +51,11 @@ sproject/
 
 1. **JSON-Datei** → `lib.models.load_project()` → **Pydantic `Project`-Modell**
 2. **GUI** liest/schreibt über `ProjectEditorApp` (Single Source of Truth = `self.project`)
-3. **UI → Modell:** `_sync_to_model()` liest DPG-Widgets → aktualisiert Pydantic-Objekt
+3. **UI → Modell:** `sync_to_model()` liest Stammdaten, Task-Tabelle (`TaskRow`) und alle `ListSection`s
 4. **Modell → UI:** `refresh_all()` aktualisiert alle DPG-Widgets aus dem Pydantic-Objekt
-5. **Berechnung:** `project.calculate_cpm()` → `CPMResult`
-6. **Export:** JSON, Markdown, Excel (.xlsx), TXT
+5. **Berechnung:** `lib.schedule.build_schedule(project)` → `Schedule` (expandiertes Projekt, CPM, Gantt, Kosten) – GUI und CLI identisch
+6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
+7. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 
 ### GUI-Layout (Dear PyGui)
 
@@ -88,8 +96,9 @@ Viewport
 
 | Klasse/Datei                       | Zweck                                    |
 |------------------------------------|------------------------------------------|
-| `gui/editor.py: ProjectEditorApp`  | Zentraler GUI-State, alle Event-Handler  |
-| `lib/models/project.py: Project`   | Pydantic-Modell, `calculate_cpm()`       |
+| `gui/editor.py: ProjectEditorApp`  | Zentraler GUI-State, Datei-Ops, Exporte  |
+| `lib/schedule.py: build_schedule`  | Kompletter Rechenweg (CLI + GUI)         |
+| `lib/models/project.py: Project`   | Pydantic-Modell (Daten + Validierung)    |
 | `lib/models/tasks.py`              | SimpleTask, LoopTask, SubTask            |
 | `lib/models/resources.py`          | Resource, Person, VacationEntry, etc.    |
 | `gui/i18n.py`                      | `t(key, **kwargs)` – Übersetzungen de/en |
@@ -108,6 +117,9 @@ Datei
 ```
 
 ### Konventionen für GUI-Erweiterungen
+
+- **Neue Tabellen-Sektion:** `ListSection` mit `Column`-Liste in `gui/components/sections.py` – nicht von Hand bauen
+- **IDs** in Sektionstabellen sind nur Anzeige (andere Objekte verweisen darauf)
 
 - **i18n:** Jeder sichtbare Text nutzt `t("key")` aus `gui/i18n.py` – immer de + en pflegen
 - **Tags:** DPG-Items erhalten sprechende Tags (z.B. `mi_new`, `inp_project_name`)

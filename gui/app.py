@@ -29,7 +29,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import dearpygui.dearpygui as dpg
 
-from gui.editor import ProjectEditorApp
+from gui.editor import ProjectEditorApp, REPORT_FORMATS
+from lib.paths import get_results_dir
 from gui.icons import setup_icon_textures, add_icon_button
 from gui.components.sidebar import build_sidebar
 from gui.components.task_table import build_task_section
@@ -199,7 +200,7 @@ def _show_open_browser(app: ProjectEditorApp) -> None:
     open_file_browser(
         callback=app.load_from_file,
         start_path=start,
-        title="Projekt öffnen",
+        title=t("dialog.open_title"),
         file_ext=".json",
     )
 
@@ -210,7 +211,7 @@ def _show_open_browser(app: ProjectEditorApp) -> None:
 
 def _open_save_dialog(app: ProjectEditorApp) -> None:
     if app.project is None:
-        app._set_status("Kein Projekt geladen.")
+        app._set_status(t("status.no_project"))
         return
     if dpg.does_item_exist(TAG_SAVE_DLG):
         dpg.delete_item(TAG_SAVE_DLG)
@@ -222,7 +223,7 @@ def _open_save_dialog(app: ProjectEditorApp) -> None:
 
     _s = "dialog.save"
     with dpg.window(
-        label="Speichern unter …",
+        label=t("dialog.save_title"),
         tag=TAG_SAVE_DLG,
         modal=True,
         width=CFG.resolve(_s, "width", 520),
@@ -245,9 +246,9 @@ def _open_save_dialog(app: ProjectEditorApp) -> None:
                 if dpg.does_item_exist(TAG_SAVE_DLG):
                     dpg.delete_item(TAG_SAVE_DLG)
 
-            dpg.add_button(label="Speichern", callback=_do_save)
+            dpg.add_button(label=t("dialog.save_btn"), callback=_do_save)
             dpg.add_button(
-                label="Abbrechen",
+                label=t("dialog.cancel"),
                 callback=lambda: dpg.delete_item(TAG_SAVE_DLG),
             )
 
@@ -381,69 +382,45 @@ def _close_export_dialog() -> None:
 
 def _open_export_dialog(app: ProjectEditorApp) -> None:
     if app.project is None:
-        app._set_status("Kein Projekt geladen.")
+        app._set_status(t("status.no_project"))
         return
     if dpg.does_item_exist(TAG_EXP_DLG):
         dpg.delete_item(TAG_EXP_DLG)
 
-    name = (app.project.project or "project").replace(" ", "_")
-    import os
-    results_dir = Path(os.environ.get("PV_RESULTS", "")) if os.environ.get("PV_RESULTS") else Path(__file__).resolve().parent.parent / "results"
-    results_dir.mkdir(exist_ok=True)
-    default_dir = str(results_dir)
-
-    needs_calc = not app.last_cpm_result  # MD/Excel/TXT brauchen Ergebnis
+    name = app._file_stem()
+    needs_calc = app.schedule is None   # Reports brauchen ein Berechnungsergebnis
 
     _s = "dialog.export"
     _col = CFG.section("colors")
     with dpg.window(
-        label="Export",
+        label=t("dialog.export_title"),
         tag=TAG_EXP_DLG,
         modal=True,
         width=CFG.resolve(_s, "width", 420),
-        height=CFG.resolve(_s, "height", 240),
+        height=CFG.resolve(_s, "height", 240) + 50,
         pos=[CFG.resolve(_s, "pos_x", 430), CFG.resolve(_s, "pos_y", 260)],
         no_resize=True,
     ):
-        dpg.add_text("Formate auswählen:", color=_col.get("dialog_label", (180, 180, 210)))
+        dpg.add_text(t("dialog.export_formats"), color=_col.get("dialog_label", (180, 180, 210)))
         dpg.add_spacer(height=5)
 
-        # JSON ist immer möglich
-        dpg.add_checkbox(
-            tag="exp_chk_json",
-            label=f"JSON       →  {name}.json",
-            default_value=True,
-        )
-        # Folgende Formate brauchen ein Berechnungsergebnis
-        for key, label, ext in [
-            ("markdown", "Markdown",  "md"),
-            ("excel",    "Excel",     "xlsx"),
-            ("txt",      "Text",      "txt"),
-        ]:
-            tag = f"exp_chk_{key}"
-            dpg.add_checkbox(
-                tag=tag,
-                label=f"{label:<10} →  {name}.{ext}",
-                default_value=False,
-                enabled=not needs_calc,
-            )
+        dpg.add_checkbox(tag="exp_chk_project", label=f"{'Projekt-JSON':<14} →  {name}.json", default_value=True)
+        for fmt, label in REPORT_FORMATS.items():
+            dpg.add_checkbox(tag=f"exp_chk_{fmt}", label=f"{label:<14} →  {fmt}",
+                             default_value=False, enabled=not needs_calc)
         if needs_calc:
-            dpg.add_text(
-                "  ⚠ Markdown / Excel / TXT benötigen eine Berechnung (▶).",
-                color=_col.get("warning_text", (220, 180, 60)),
-            )
+            dpg.add_text(t("dialog.export_warn"), color=_col.get("warning_text", (220, 180, 60)))
 
         dpg.add_spacer(height=8)
         dpg.add_separator()
         dpg.add_spacer(height=5)
 
         with dpg.group(horizontal=True):
-            dpg.add_text("Zielordner:")
+            dpg.add_text(t("dialog.export_target"))
             dpg.add_input_text(
                 tag="exp_dir_input",
-                default_value=default_dir,
+                default_value=str(get_results_dir()),
                 width=-1,
-                hint="Zielverzeichnis",
                 tab_input=True,
                 on_enter=False,
                 callback=lambda: _close_ac_popup(),
@@ -451,49 +428,44 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
 
         dpg.add_spacer(height=8)
         with dpg.group(horizontal=True):
-            dpg.add_button(
-                label="Exportieren",
-                callback=lambda: _do_export(app),
-            )
-            dpg.add_button(
-                label="Abbrechen",
-                callback=lambda: _close_export_dialog(),
-            )
+            dpg.add_button(label=t("dialog.export_btn"), callback=lambda: _do_export(app))
+            dpg.add_button(label=t("dialog.cancel"), callback=lambda: _close_export_dialog())
 
     _setup_ac_handlers(app)
 
 
 def _do_export(app: ProjectEditorApp) -> None:
     target_dir = Path(dpg.get_value("exp_dir_input") or ".")
+    selected = {tag: bool(dpg.get_value(tag)) for tag in
+                ["exp_chk_project"] + [f"exp_chk_{fmt}" for fmt in REPORT_FORMATS]
+                if dpg.does_item_exist(tag)}
     _close_export_dialog()
 
     if not target_dir.exists():
-        app._set_status(f"Verzeichnis nicht gefunden: {target_dir}")
+        app._set_status(t("status.dir_not_found", path=target_dir))
         return
 
-    exported: list[str] = []
-    errors:   list[str] = []
+    jobs = [("Projekt-JSON", "exp_chk_project", lambda: app.export_project_json(target_dir))]
+    jobs += [(label, f"exp_chk_{fmt}", lambda f=fmt: app.export_report(f, target_dir))
+             for fmt, label in REPORT_FORMATS.items()]
 
-    _tasks = [
-        ("exp_chk_json",     app.export_json,     "JSON"),
-        ("exp_chk_markdown", app.export_markdown, "Markdown"),
-        ("exp_chk_excel",    app.export_excel,    "Excel"),
-        ("exp_chk_txt",      app.export_txt,      "TXT"),
-    ]
-    for chk_tag, fn, label in _tasks:
-        if dpg.does_item_exist(chk_tag) and dpg.get_value(chk_tag):
-            try:
-                fn(target_dir)
-                exported.append(label)
-            except Exception as exc:
-                errors.append(f"{label}: {exc}")
+    exported: list[str] = []
+    errors: list[str] = []
+    for label, tag, export in jobs:
+        if not selected.get(tag):
+            continue
+        try:
+            export()
+            exported.append(label)
+        except Exception as exc:
+            errors.append(f"{label}: {exc}")
 
     if errors:
-        app._set_status("Export-Fehler: " + " | ".join(errors))
+        app._set_status(t("status.export_error", errors=" | ".join(errors)))
     elif exported:
-        app._set_status(f"Exportiert: {', '.join(exported)}  →  {target_dir}")
+        app._set_status(t("status.exported", formats=", ".join(exported), path=target_dir))
     else:
-        app._set_status("Keine Formate ausgewählt.")
+        app._set_status(t("status.no_formats"))
 
 
 # ---------------------------------------------------------------------------
@@ -528,8 +500,7 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
                                    width=-1, hint="2026-01-01 08:00:00")
             with dpg.table_row():
                 dpg.add_text(t("label.unit"), tag="lbl_unit")
-                dpg.add_combo(tag="inp_unit", items=["days", "hours", "minutes"],
-                              default_value="days", width=-1)
+                dpg.add_input_text(tag="inp_unit", default_value="", width=-1, hint="m3, Stück")
                 dpg.add_text(t("label.total_hours"), tag="lbl_total_hours")
                 dpg.add_input_text(tag="inp_total_hours", default_value="",
                                    width=-1, hint="160")
@@ -547,70 +518,36 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
 # Abschnitts-Builder: optionale Sektionen
 # ---------------------------------------------------------------------------
 
-def _build_resources_section(_app) -> None:
-    with dpg.group(tag="section_resources", show=False):
-        with dpg.collapsing_header(
-            label=t("section.resources"),
-            tag="section_resources_header",
-            default_open=True
-        ):
-            dpg.add_button(
-                label="+ Ressource",
-                callback=lambda: _app._cb_add_resource(),
-            )
-            dpg.add_spacer(height=3)
-            with dpg.group(tag="resources_content"):
-                dpg.add_text("Keine Ressourcen geladen.")
-        dpg.add_spacer(height=4)
-
-
-def _build_persons_section(_app) -> None:
-    with dpg.group(tag="section_persons", show=False):
-        with dpg.collapsing_header(
-            label=t("section.persons"),
-            tag="section_persons_header",
-            default_open=True
-        ):
-            dpg.add_button(
-                label="+ Person",
-                callback=lambda: _app._cb_add_person(),
-            )
-            dpg.add_spacer(height=3)
-            with dpg.group(tag="persons_content"):
-                dpg.add_text("Keine Personen geladen.")
-        dpg.add_spacer(height=4)
-
-
-def _build_resting_times_section(_app) -> None:
-    with dpg.group(tag="section_resting_times", show=False):
-        with dpg.collapsing_header(
-                label=t("section.resting_times"),
-                tag="section_resting_times_header",
-                default_open=True
-            ):
+def _build_optional_section(section: str, buttons, contents) -> None:
+    """Ein- und ausblendbare Sektion mit Hinzufügen-Buttons und Tabellen-Containern."""
+    with dpg.group(tag=f"section_{section}", show=False):
+        with dpg.collapsing_header(label=t(f"section.{section}"), tag=f"section_{section}_header",
+                                   default_open=True):
             with dpg.group(horizontal=True):
-                dpg.add_button(
-                    label="+ Ruhezeit",
-                    callback=lambda: _app._cb_add_resting_time(),
-                )
-                dpg.add_button(
-                    label="+ Urlaub",
-                    callback=lambda: _app._cb_add_vacation(),
-                )
-                dpg.add_button(
-                    label="+ Teilzeit",
-                    callback=lambda: _app._cb_add_workinghours(),
-                )
-            dpg.add_spacer(height=3)
-            with dpg.group(tag="resting_times_content"):
-                dpg.add_text("Keine Ruhezeitregeln definiert.")
-            dpg.add_spacer(height=4)
-            with dpg.group(tag="vacation_content"):
-                dpg.add_text("Kein Urlaub definiert.")
-            dpg.add_spacer(height=4)
-            with dpg.group(tag="workinghours_content"):
-                dpg.add_text("Keine Teilzeitregelungen definiert.")
+                for label_key, callback in buttons:
+                    dpg.add_button(label=t(label_key), callback=callback)
+            for content_tag in contents:
+                dpg.add_spacer(height=3)
+                dpg.add_group(tag=content_tag)
         dpg.add_spacer(height=4)
+
+
+def _build_resources_section(app: ProjectEditorApp) -> None:
+    _build_optional_section("resources", [("button.add_resource", lambda: app.sections.add_resource())],
+                            ["resources_content"])
+
+
+def _build_persons_section(app: ProjectEditorApp) -> None:
+    _build_optional_section("persons", [("button.add_person", lambda: app.sections.add_person())],
+                            ["persons_content"])
+
+
+def _build_resting_times_section(app: ProjectEditorApp) -> None:
+    _build_optional_section("resting_times", [
+        ("button.add_resting_time", lambda: app.sections.add_resting_time()),
+        ("button.add_vacation", lambda: app.sections.add_vacation()),
+        ("button.add_workinghours", lambda: app.sections.add_workinghours()),
+    ], ["resting_times_content", "vacation_content", "workinghours_content"])
 
 
 # ---------------------------------------------------------------------------

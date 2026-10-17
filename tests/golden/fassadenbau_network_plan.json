@@ -1,0 +1,387 @@
+{
+  "summary": {
+    "project": "Fassadensanierung & Kellerisolierung",
+    "project_duration": "38.0h",
+    "time_unit": "hours",
+    "num_tasks": 5,
+    "num_critical": 5,
+    "project_start": "2026-03-02",
+    "project_end": "2026-03-06",
+  },
+  "critical_path": [
+    {
+      "id": "1",
+      "name": "Erdarbeiten & Freilegung",
+      "duration": "8.0h"
+    },
+    {
+      "id": "2",
+      "name": "Kellerisolierung (Perimeter)",
+      "duration": "6.0h"
+    },
+    {
+      "id": "3",
+      "name": "Holzständerwerk & Holzfaserplatten",
+      "duration": "16.0h"
+    },
+    {
+      "id": "4",
+      "name": "Zellulose Einblasdämmung",
+      "duration": "4.0h"
+    },
+    {
+      "id": "5",
+      "name": "Verfüllen & Abschluss",
+      "duration": "4.0h"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "name": "Erdarbeiten & Freilegung",
+      "duration": "8.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "0.00h",
+        "fez": "8.00h",
+        "saz": "0.00h",
+        "sez": "8.00h",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-02",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-02",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Kellerisolierung (Perimeter)",
+      "duration": "6.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.00h",
+        "fez": "14.00h",
+        "saz": "8.00h",
+        "sez": "14.00h",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "name": "Holzständerwerk & Holzfaserplatten",
+      "duration": "16.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "14.00h",
+        "fez": "2026-03-05 18:00",
+        "saz": "14.00h",
+        "sez": "2026-03-05 18:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-05",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-05"
+        }
+      }
+    },
+    {
+      "id": "4",
+      "name": "Zellulose Einblasdämmung",
+      "duration": "4.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-05 18:00",
+        "fez": "2026-03-06 06:00",
+        "saz": "2026-03-05 18:00",
+        "sez": "2026-03-06 06:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-05",
+          "fez_date": "2026-03-06",
+          "saz_date": "2026-03-05",
+          "sez_date": "2026-03-06"
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Verfüllen & Abschluss",
+      "duration": "4.0h",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-06 06:00",
+        "fez": "2026-03-06 18:00",
+        "saz": "2026-03-06 06:00",
+        "sez": "2026-03-06 18:00",
+        "gp": "0.0h",
+        "fp": "0.0h",
+        "dates": {
+          "faz_date": "2026-03-06",
+          "fez_date": "2026-03-06",
+          "saz_date": "2026-03-06",
+          "sez_date": "2026-03-06"
+        }
+      }
+    }
+  ],
+  "gantt_chart": {
+    "project_name": "Fassadensanierung & Kellerisolierung",
+    "project_start_date": "2026-03-02T00:00:00",
+    "time_unit": "hours",
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "tasks": {
+      "1": {
+        "id": "1",
+        "name": "Erdarbeiten & Freilegung",
+        "network_duration_days": 1.0,
+        "calendar_start_date": "2026-03-02T00:00:00",
+        "calendar_end_date": "2026-03-02T00:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2": {
+        "id": "2",
+        "name": "Kellerisolierung (Perimeter)",
+        "network_duration_days": 0.75,
+        "calendar_start_date": "2026-03-03T00:00:00",
+        "calendar_end_date": "2026-03-03T00:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "3": {
+        "id": "3",
+        "name": "Holzständerwerk & Holzfaserplatten",
+        "network_duration_days": 2.0,
+        "calendar_start_date": "2026-03-03T18:00:00",
+        "calendar_end_date": "2026-03-04T18:00:00",
+        "working_days": 2.0,
+        "calendar_days": 2,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "4": {
+        "id": "4",
+        "name": "Zellulose Einblasdämmung",
+        "network_duration_days": 0.5,
+        "calendar_start_date": "2026-03-05T18:00:00",
+        "calendar_end_date": "2026-03-05T18:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "5": {
+        "id": "5",
+        "name": "Verfüllen & Abschluss",
+        "network_duration_days": 0.5,
+        "calendar_start_date": "2026-03-06T06:00:00",
+        "calendar_end_date": "2026-03-06T06:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      }
+    }
+  },
+  "resource_list": {
+    "assignments": [
+      {
+        "resource_id": "EB1",
+        "resource_name": "Zellulose-Einblasmaschine",
+        "task_ids": [
+          "4"
+        ]
+      },
+      {
+        "resource_id": "MAT_WOOD",
+        "resource_name": "Holzfaserplatten & Ständerwerk",
+        "task_ids": [
+          "3"
+        ]
+      },
+      {
+        "resource_id": "MAT_XPS",
+        "resource_name": "Perimeterdämmung XPS",
+        "task_ids": [
+          "2"
+        ]
+      },
+      {
+        "resource_id": "MB1",
+        "resource_name": "Minibagger 3.5t",
+        "task_ids": [
+          "1",
+          "5"
+        ]
+      },
+      {
+        "resource_id": "R_PERS_ERD",
+        "resource_name": "LKW-Fahrer Max",
+        "task_ids": [
+          "1",
+          "2",
+          "5"
+        ]
+      },
+      {
+        "resource_id": "R_PERS_ISO",
+        "resource_name": "Baggerführer Bodo",
+        "task_ids": [
+          "4"
+        ]
+      },
+      {
+        "resource_id": "R_PERS_ZIM",
+        "resource_name": "LKW-Fahrer Heinz",
+        "task_ids": [
+          "3"
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "name": "LKW-Fahrer Max",
+        "type": "person",
+        "person_id": "PERS_ERD"
+      },
+      {
+        "name": "LKW-Fahrer Heinz",
+        "type": "person",
+        "person_id": "PERS_ZIM"
+      },
+      {
+        "name": "Baggerführer Bodo",
+        "type": "person",
+        "person_id": "PERS_ISO"
+      },
+      {
+        "name": "Minibagger 3.5t",
+        "type": "machine"
+      },
+      {
+        "name": "Zellulose-Einblasmaschine",
+        "type": "machine"
+      },
+      {
+        "name": "Perimeterdämmung XPS",
+        "type": "material"
+      },
+      {
+        "name": "Holzfaserplatten & Ständerwerk",
+        "type": "material"
+      }
+    ],
+    "persons": [
+      {
+        "id": "PERS_ERD",
+        "name": "Thomas Tiefbau",
+        "hourly_rate": 60.0
+      },
+      {
+        "id": "PERS_ZIM",
+        "name": "Stefan Schnitt",
+        "hourly_rate": 65.0
+      },
+      {
+        "id": "PERS_ISO",
+        "name": "Klaus Flocke",
+        "hourly_rate": 55.0
+      }
+    ]
+  },
+  "cost_overview": {
+    "entries": [
+      {
+        "resource_id": "EB1",
+        "resource_name": "Zellulose-Einblasmaschine",
+        "resource_type": "machine",
+        "hours_worked": 4.0,
+        "hourly_rate": 45.0,
+        "provisioning_costs": 50.0,
+        "labor_costs": 180.0,
+        "total_costs": 230.0
+      },
+      {
+        "resource_id": "MB1",
+        "resource_name": "Minibagger 3.5t",
+        "resource_type": "machine",
+        "hours_worked": 12.0,
+        "hourly_rate": 85.0,
+        "provisioning_costs": 120.0,
+        "labor_costs": 1020.0,
+        "total_costs": 1140.0
+      },
+      {
+        "resource_id": "R_PERS_ERD",
+        "resource_name": "LKW-Fahrer Max",
+        "resource_type": "person",
+        "hours_worked": 18.0,
+        "hourly_rate": 60.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 1080.0,
+        "total_costs": 1080.0
+      },
+      {
+        "resource_id": "R_PERS_ISO",
+        "resource_name": "Baggerführer Bodo",
+        "resource_type": "person",
+        "hours_worked": 4.0,
+        "hourly_rate": 55.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 220.0,
+        "total_costs": 220.0
+      },
+      {
+        "resource_id": "R_PERS_ZIM",
+        "resource_name": "LKW-Fahrer Heinz",
+        "resource_type": "person",
+        "hours_worked": 16.0,
+        "hourly_rate": 65.0,
+        "provisioning_costs": 0.0,
+        "labor_costs": 1040.0,
+        "total_costs": 1040.0
+      }
+    ],
+    "total_person_costs": 2340.0,
+    "total_machine_costs": 1200.0,
+    "total_provisioning_costs": 170.0,
+    "total_costs": 3710.0
+  },
+  "settings": {
+    "skip_weekends": true,
+    "skip_holidays": true,
+    "holidays": [
+      "2026-01-01",
+      "2026-01-06",
+      "2026-04-03",
+      "2026-04-06",
+      "2026-05-01",
+      "2026-05-14",
+      "2026-05-25",
+      "2026-06-04",
+      "2026-08-15",
+      "2026-10-03",
+      "2026-11-01",
+      "2026-12-25",
+      "2026-12-26"
+    ]
+  }
+}

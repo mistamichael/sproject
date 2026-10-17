@@ -5,18 +5,102 @@ Cycle and Loop expansion logic for Projects
 Provides expansion functionality for InstanceTask and LoopTask.
 """
 
-from typing import List, Union, Optional, Any
+import ast
 import math
+import operator
 import re
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from .tasks import SimpleTask, InstanceTask, LoopTask
+from ..durations import parse_duration_to_minutes
+from .dependencies import SUCCESSOR_FIELDS
 from .resources import Resource
+from .tasks import InstanceTask, LoopTask, SimpleTask
 
-# Import utils - try relative import first, then absolute
-try:
-    from ..utils import generate_cycle_id
-except (ImportError, ValueError):
-    from utils import generate_cycle_id
+if TYPE_CHECKING:
+    from .project import Project
+
+
+def generate_cycle_id(task_id: Union[int, str], cycle_number: int, prefix: str) -> str:
+    """
+    Zyklus-ID im Format "task_id-prefix+cycle_number".
+
+    Examples:
+        >>> generate_cycle_id(2, 1, "P")
+        '2-P1'
+    """
+    return f"{task_id}-{prefix}{cycle_number}"
+
+
+def parse_cycle_id(cycle_id: str) -> tuple:
+    """
+    Gegenstück zu generate_cycle_id: (task_id, cycle_number, prefix).
+
+    Examples:
+        >>> parse_cycle_id("2-P1")
+        (2, 1, 'P')
+    """
+    match = re.match(r'^(.+)-([A-Z]+)(\d+)$', cycle_id)
+    if not match:
+        return cycle_id, 0, ''
+    task_id_str, prefix, number_str = match.groups()
+    try:
+        task_id: Union[int, str] = int(task_id_str)
+    except ValueError:
+        task_id = task_id_str
+    return task_id, int(number_str), prefix
+
+
+# =============================================================================
+# Projekt-Expansion
+# =============================================================================
+
+def expand_project(project: 'Project') -> 'Project':
+    """
+    Expandiert alle InstanceTasks und LoopTasks eines Projekts in SimpleTasks.
+
+    - Verweise auf einen InstanceTask zeigen danach auf seine letzte Instanz,
+      Verweise auf einen LoopTask auf seinen ersten Zyklus.
+    - Bei Loop-Projekten mit Personen und resting_times werden Pausen eingefügt.
+    - Alle übrigen Projektfelder bleiben erhalten.
+
+    Gibt project unverändert zurück, wenn nichts zu expandieren ist.
+    """
+    has_instances = any(isinstance(t, InstanceTask) for t in project.tasks)
+    has_loops = any(isinstance(t, LoopTask) for t in project.tasks)
+    if not (has_instances or has_loops):
+        return project
+    if has_instances and project.order_volume is None:
+        raise ValueError("order_volume muss für Cycle-Expansion gesetzt sein")
+    if has_loops and project.total_volume is None:
+        raise ValueError("total_volume muss für Loop-Expansion gesetzt sein")
+
+    order_volume = project.order_volume or 0
+    total_volume = project.total_volume or 0
+    expanded: List[SimpleTask] = []
+    redirect: Dict[Union[int, str], Union[int, str]] = {}
+    for task in project.tasks:
+        parts: List[SimpleTask]
+        if isinstance(task, InstanceTask):
+            parts = expand_instance_task(task, order_volume, project.tasks)
+            if parts:
+                redirect[task.id] = parts[-1].id
+        elif isinstance(task, LoopTask):
+            parts = expand_loop_task(task, total_volume, project.resources or [])
+            if parts:
+                redirect[task.id] = parts[0].id
+        else:
+            parts = [task.model_copy(deep=True)]
+        expanded.extend(parts)
+
+    for task in expanded:
+        for field in SUCCESSOR_FIELDS.values():
+            setattr(task, field, [redirect.get(dep, dep) for dep in getattr(task, field)])
+
+    if has_loops and project.persons and project.resting_times:
+        from .rest_breaks import insert_rest_breaks
+        expanded = insert_rest_breaks(expanded, project)
+
+    return project.model_copy(update={"tasks": expanded})
 
 
 def expand_instance_task(
@@ -50,7 +134,7 @@ def expand_instance_task(
         num_instances = int(task.instances)
 
     prefix = task.cycle_prefix or 'P'
-    expanded_tasks = []
+    expanded_tasks: List[SimpleTask] = []
 
     # Erstelle Dictionary für schnelles Lookup ob ein Task expandiert wird
     instance_task_ids = {
@@ -60,7 +144,7 @@ def expand_instance_task(
 
     for cycle_num in range(1, num_instances + 1):
         # Expandiere Nachfolger
-        new_successors = []
+        new_successors: List[Union[int, str]] = []
         for dep_id in (task.successors or []):
             if dep_id in instance_task_ids:
                 # Nachfolger ist auch ein InstanceTask -> verknüpfe mit gleichem Zyklus
@@ -126,7 +210,7 @@ def expand_loop_task(
     num_loops = _calculate_loop_count(task, total_volume, resources)
 
     prefix = task.cycle_prefix or 'F'
-    expanded_tasks = []
+    expanded_tasks: List[SimpleTask] = []
 
     # Falls keine Subtasks definiert sind, erstelle einen zusammengefassten Task (Legacy)
     if not task.subtasks:
@@ -135,10 +219,7 @@ def expand_loop_task(
         for cycle_num in range(1, num_loops + 1):
             task_resources = _collect_resources_from_subtasks(task, cycle_num)
 
-            if cycle_num == 1:
-                successors = task.successors.copy() if task.successors else []
-            else:
-                successors = []
+            successors: List[Union[int, str]] = list(task.successors) if cycle_num == 1 else []
 
             current_cycle_id = generate_cycle_id(task.id, cycle_num, prefix)
             expanded_task = SimpleTask(
@@ -163,7 +244,7 @@ def expand_loop_task(
 
     # Neue Logik: Expandiere Subtasks als separate Tasks
     for cycle_num in range(1, num_loops + 1):
-        cycle_subtasks = []
+        cycle_subtasks: List[SimpleTask] = []
 
         for subtask_idx, subtask in enumerate(task.subtasks):
             # Berechne Dauer für diesen Subtask
@@ -174,7 +255,7 @@ def expand_loop_task(
 
             # Erstelle Task-ID mit Nummerierung: z.B. "2-P1.1" (Pizza formen & belegen)
             # Falls ID schon im Subtask definiert, verwende diese; sonst generiere Nummer
-            if hasattr(subtask, 'id') and subtask.id:
+            if subtask.id:
                 subtask_id = subtask.id
             else:
                 # Nummeriere Subtasks: P1.1, P1.2, P1.3, etc.
@@ -227,39 +308,17 @@ def expand_loop_task(
     return expanded_tasks
 
 
+def _resolve_resources(specs: Optional[List[str]], cycle_num: int) -> Optional[List[str]]:
+    """Löst Ressourcen-Spezifikationen (mit & und |) für einen Zyklus auf, ohne Duplikate."""
+    resolved: List[str] = []
+    for spec in specs or []:
+        resolved.extend(_parse_resource_spec(spec, cycle_num))
+    return list(dict.fromkeys(resolved)) or None
+
+
 def _collect_resources_from_subtasks(task: LoopTask, cycle_num: int = 1) -> Optional[List[str]]:
-    """
-    Sammelt alle eindeutigen Ressourcen aus den Subtasks eines LoopTasks.
-
-    Unterstützt Notation:
-    - "R_PERS1&L1" = R_PERS1 und L1 zusammen
-    - "R_PERS1&L1|R_PERS2&L2" = R_PERS1 mit L1 ODER R_PERS2 mit L2 (rotierend)
-
-    Args:
-        task: LoopTask mit Subtasks
-        cycle_num: Zyklus-Nummer für Rotation von alternativen Ressourcen
-
-    Returns:
-        Liste von Ressourcen-IDs oder None
-    """
-    if not task.subtasks:
-        return None
-
-    all_resources = []
-    for subtask in task.subtasks:
-        if hasattr(subtask, 'resources') and subtask.resources:
-            for res_spec in subtask.resources:
-                # Parse Ressourcen-Spezifikation
-                parsed = _parse_resource_spec(res_spec, cycle_num)
-                all_resources.extend(parsed)
-
-    # Entferne Duplikate
-    unique_resources = []
-    for res_id in all_resources:
-        if res_id not in unique_resources:
-            unique_resources.append(res_id)
-
-    return unique_resources if unique_resources else None
+    """Alle Ressourcen aller Subtasks eines LoopTasks für einen Zyklus."""
+    return _resolve_resources([spec for sub in task.subtasks for spec in (sub.resources or [])], cycle_num)
 
 
 def _parse_resource_spec(spec: str, cycle_num: int) -> List[str]:
@@ -312,7 +371,7 @@ def _calculate_loop_count(
         Anzahl der Iterationen
     """
     # 1. Expliziter loop_count hat höchste Priorität
-    if hasattr(task, 'loop_count') and task.loop_count is not None:
+    if task.loop_count is not None:
         return task.loop_count
 
     loop_until = task.loop_until or ''
@@ -320,14 +379,14 @@ def _calculate_loop_count(
     # 2. Parse "total_volume <= 0" Bedingung
     if 'total_volume' in loop_until:
         # 2a. Verwende volume_per_cycle falls angegeben
-        if hasattr(task, 'volume_per_cycle') and task.volume_per_cycle:
+        if task.volume_per_cycle:
             num_cycles = math.ceil(total_volume / task.volume_per_cycle)
             return max(1, num_cycles)
 
         # 2b. Hole LKW-Ressourcen (für Erdaushub-ähnliche Projekte)
-        trucks = [r for r in resources if hasattr(r, 'type') and r.type == 'truck']
+        trucks = [r for r in resources if r.type == 'truck']
 
-        if trucks and hasattr(trucks[0], 'capacity'):
+        if trucks:
             # Nimm capacity des ersten LKWs
             truck_capacity = trucks[0].capacity or 15
 
@@ -375,96 +434,67 @@ def _calculate_loop_duration(
             if isinstance(duration_str, str) and 'resource.' in duration_str:
                 duration = _evaluate_duration_formula(duration_str, resources)
             else:
-                duration = _parse_duration_to_minutes(duration_str)
+                duration = parse_duration_to_minutes(duration_str)
             total_minutes += duration
 
     return f"{total_minutes:.1f}m"
 
 
+_TRUCK_ALIASES = {'truck', 'current_truck', 'any_truck'}
+_RE_RESOURCE_REF = re.compile(r'resource\.(\w+)\.(\w+)')
+
+_BINARY_OPS: Dict[type, Callable[[float, float], float]] = {
+    ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+    ast.Div: operator.truediv, ast.Pow: operator.pow,
+}
+_UNARY_OPS: Dict[type, Callable[[float], float]] = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+
+
+def _safe_arithmetic(expression: str) -> float:
+    """Wertet einen reinen Rechenausdruck aus (Zahlen, + - * / **, Klammern) – kein eval()."""
+    def _eval(node: ast.AST) -> float:
+        if isinstance(node, ast.Expression):
+            return _eval(node.body)
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            return float(node.value)
+        if isinstance(node, ast.BinOp) and type(node.op) in _BINARY_OPS:
+            return _BINARY_OPS[type(node.op)](_eval(node.left), _eval(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPS:
+            return _UNARY_OPS[type(node.op)](_eval(node.operand))
+        raise ValueError(f"Nicht erlaubter Ausdruck: {ast.dump(node)}")
+    return _eval(ast.parse(expression, mode='eval'))
+
+
+def _resource_value(resource_id: str, attr: str, resources: List[Resource]) -> Optional[Any]:
+    """Wert von resource.<id>.<attr>; 'truck' & Co. meinen den ersten LKW."""
+    if resource_id in _TRUCK_ALIASES:
+        resource = next((r for r in resources if r.type == 'truck'), None)
+    else:
+        resource = next((r for r in resources if r.id == resource_id), None)
+    return getattr(resource, attr, 0) if resource is not None else None
+
+
 def _evaluate_duration_formula(formula: str, resources: List[Resource]) -> float:
     """
-    Wertet eine Dauer-Formel oder resource-Referenz aus.
+    Wertet eine Dauer-Formel in Minuten aus.
 
-    Args:
-        formula: String wie "resource.truck.capacity / resource.B1.loading_speed_per_min"
-                 oder "resource.truck.transport_cycle_fixed"
-        resources: Verfügbare Ressourcen
-
-    Returns:
-        Dauer in Minuten
+    Beispiele:
+        "resource.truck.transport_cycle_fixed"                          → Dauer-Wert ("25m" o. ä.)
+        "resource.truck.capacity / resource.B1.loading_speed_per_min"   → Rechenausdruck
     """
-    # Erstelle Resource-Lookup-Dictionary
-    resource_dict = {r.id: r for r in resources if r.id}
+    simple = re.fullmatch(r'resource\.(\w+)\.(\w+)', formula.strip())
+    if simple:
+        value = _resource_value(simple.group(1), simple.group(2), resources)
+        return parse_duration_to_minutes(value) if value is not None else 0.0
 
-    # Prüfe auf einfache Referenz ohne Operatoren
-    simple_pattern = r'^resource\.(\w+)\.(\w+)$'
-    simple_match = re.match(simple_pattern, formula.strip())
+    def _substitute(match: re.Match) -> str:
+        value = _resource_value(match.group(1), match.group(2), resources)
+        return str(value) if value is not None else match.group(0)
 
-    if simple_match:
-        resource_id, attr = simple_match.groups()
-        # Hole Ressource
-        if resource_id in ['truck', 'current_truck', 'any_truck']:
-            trucks = [r for r in resources if r.type == 'truck']
-            if trucks:
-                value = getattr(trucks[0], attr, 0)
-                return _parse_duration_to_minutes(value)
-        elif resource_id in resource_dict:
-            resource = resource_dict[resource_id]
-            value = getattr(resource, attr, 0)
-            return _parse_duration_to_minutes(value)
-        return 0.0
-
-    # Extrahiere Werte aus resources für komplexe Formeln
-    pattern = r'resource\.(\w+)\.(\w+)'
-    matches = re.findall(pattern, formula)
-
-    # Ersetze durch tatsächliche Werte
-    formula_eval = formula
-    for resource_id, attr in matches:
-        if resource_id in ['truck', 'current_truck', 'any_truck']:
-            trucks = [r for r in resources if r.type == 'truck']
-            if trucks:
-                value = getattr(trucks[0], attr, 0)
-                formula_eval = formula_eval.replace(f'resource.{resource_id}.{attr}', str(value))
-        elif resource_id in resource_dict:
-            resource = resource_dict[resource_id]
-            value = getattr(resource, attr, 0)
-            formula_eval = formula_eval.replace(f'resource.{resource_id}.{attr}', str(value))
-
-    # Evaluiere Formel
     try:
-        result = eval(formula_eval)
-        return float(result)
-    except:
+        return _safe_arithmetic(_RE_RESOURCE_REF.sub(_substitute, formula))
+    except (ValueError, SyntaxError, ZeroDivisionError, TypeError):
         return 0.0
-
-
-def _parse_duration_to_minutes(duration_value: Any) -> float:
-    """
-    Parst Dauer-Wert zu Minuten.
-
-    Args:
-        duration_value: Kann int, float oder str sein
-
-    Returns:
-        Dauer in Minuten
-    """
-    if isinstance(duration_value, (int, float)):
-        return float(duration_value)
-
-    duration_str = str(duration_value).strip()
-
-    if duration_str.endswith('m'):
-        return float(duration_str[:-1])
-    elif duration_str.endswith('h'):
-        return float(duration_str[:-1]) * 60
-    elif duration_str.endswith('d'):
-        return float(duration_str[:-1]) * 8 * 60  # 8h Arbeitstag
-    else:
-        try:
-            return float(duration_str)
-        except:
-            return 0.0
 
 
 def _calculate_subtask_duration(subtask, resources: List[Resource]) -> str:
@@ -479,12 +509,12 @@ def _calculate_subtask_duration(subtask, resources: List[Resource]) -> str:
         Dauer als String (z.B. "8.0m", "40m")
     """
     # Prüfe auf duration_formula
-    if hasattr(subtask, 'duration_formula') and subtask.duration_formula:
+    if subtask.duration_formula:
         duration_minutes = _evaluate_duration_formula(subtask.duration_formula, resources)
         return f"{duration_minutes:.1f}m"
 
     # Prüfe auf duration
-    if hasattr(subtask, 'duration') and subtask.duration:
+    if subtask.duration:
         duration_str = subtask.duration
         # Falls es auf resource verweist
         if isinstance(duration_str, str) and 'resource.' in duration_str:
@@ -498,29 +528,5 @@ def _calculate_subtask_duration(subtask, resources: List[Resource]) -> str:
 
 
 def _parse_subtask_resources(subtask, cycle_num: int) -> Optional[List[str]]:
-    """
-    Extrahiert die Ressourcen eines Subtasks mit Rotation.
-
-    Args:
-        subtask: Subtask mit resources Feld
-        cycle_num: Zyklus-Nummer für Rotation
-
-    Returns:
-        Liste von Ressourcen-IDs oder None
-    """
-    if not hasattr(subtask, 'resources') or not subtask.resources:
-        return None
-
-    all_resources = []
-    for res_spec in subtask.resources:
-        # Parse Ressourcen-Spezifikation (unterstützt & und |)
-        parsed = _parse_resource_spec(res_spec, cycle_num)
-        all_resources.extend(parsed)
-
-    # Entferne Duplikate
-    unique_resources = []
-    for res_id in all_resources:
-        if res_id not in unique_resources:
-            unique_resources.append(res_id)
-
-    return unique_resources if unique_resources else None
+    """Ressourcen eines Subtasks für einen Zyklus (mit Rotation bei |)."""
+    return _resolve_resources(subtask.resources, cycle_num)

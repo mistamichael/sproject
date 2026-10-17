@@ -24,6 +24,10 @@ class SimpleTask(TaskBase):
     """
     is_break: bool = False
     is_blocker: bool = False
+    # Gesetzt bei Tasks, die durch Expansion eines Instance-/Loop-Tasks entstanden sind
+    original_id: Optional[Union[int, str]] = None
+    cycle_number: Optional[int] = None
+    cycle_prefix: Optional[str] = None
 
 
 class ExpandableTask(TaskBase):

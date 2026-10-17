@@ -1,0 +1,109 @@
+======================================================================
+Fassadensanierung & Kellerisolierung - CPM REPORT
+======================================================================
+
+======================================================================
+PROJEKTZUSAMMENFASSUNG
+======================================================================
+
+Projekt:            Fassadensanierung & Kellerisolierung
+Projektdauer:       4.8d
+Zeiteinheit:        hours
+Startdatum:         2026-03-02
+Enddatum:           2026-03-06
+Anzahl Tasks:       5
+Kritische Tasks:    5
+
+======================================================================
+KRITISCHER PFAD
+======================================================================
+
+  [1] Erdarbeiten & Freilegung            Dauer: 8.0h
+  [2] Kellerisolierung (Perimeter)        Dauer: 6.0h
+  [3] Holzständerwerk & Holzfaserplatten  Dauer: 16.0h
+  [4] Zellulose Einblasdämmung            Dauer: 4.0h
+  [5] Verfüllen & Abschluss               Dauer: 4.0h
+
+======================================================================
+NETZPLAN TABELLE
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
+----------------------------------------------------------------------
+1       Erdarbeiten & Freilegung       1.0      0.0      1.0      0.0      1.0      0.0      0.0      2                    JA
+2       Kellerisolierung (Perimeter)   0.8      1.0      1.8      1.0      1.8      0.0      0.0      3                    JA
+3       Holzständerwerk & Holzfaser... 2.0      1.8      3.8      1.8      3.8      0.0      0.0      4                    JA
+4       Zellulose Einblasdämmung       0.5      3.8      4.2      3.8      4.2      0.0      0.0      5                    JA
+5       Verfüllen & Abschluss          0.5      4.2      4.8      4.2      4.8      0.0      0.0                           JA
+----------------------------------------------------------------------
+
+======================================================================
+ALLE TASKS
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Krit.
+----------------------------------------------------------------------
+1       Erdarbeiten & Freilegung       8.0h     0.0h     8.0h     0.0h     8.0h     0.0h     0.0h     JA
+2       Kellerisolierung (Perimeter)   6.0h     8.0h     14.0h    8.0h     14.0h    0.0h     0.0h     JA
+3       Holzständerwerk & Holzfaser... 16.0h    14.0h    30.0h    14.0h    30.0h    0.0h     0.0h     JA
+4       Zellulose Einblasdämmung       4.0h     30.0h    34.0h    30.0h    34.0h    0.0h     0.0h     JA
+5       Verfüllen & Abschluss          4.0h     34.0h    38.0h    34.0h    38.0h    0.0h     0.0h     JA
+----------------------------------------------------------------------
+
+======================================================================
+VERANTWORTLICHE
+======================================================================
+
+  Ressource                 Tasks                     Frühester Start 
+  ----------------------------------------------------------------------
+  Zellulose-Einblasmaschine [4]
+    [4] Zellulose Einblasdämmung      FAZ: 30.0h    FEZ: 34.0h    Krit.
+
+  Holzfaserplatten & Ständerwerk [3]
+    [3] Holzständerwerk & Holzfaserp  FAZ: 14.0h    FEZ: 30.0h    Krit.
+
+  Perimeterdämmung XPS      [2]
+    [2] Kellerisolierung (Perimeter)  FAZ: 8.0h     FEZ: 14.0h    Krit.
+
+  Minibagger 3.5t           [1, 5]
+    [1] Erdarbeiten & Freilegung      FAZ: 0.0h     FEZ: 8.0h     Krit.
+    [5] Verfüllen & Abschluss         FAZ: 34.0h    FEZ: 38.0h    Krit.
+
+  LKW-Fahrer Max            [1, 2, 5]
+    [1] Erdarbeiten & Freilegung      FAZ: 0.0h     FEZ: 8.0h     Krit.
+    [2] Kellerisolierung (Perimeter)  FAZ: 8.0h     FEZ: 14.0h    Krit.
+    [5] Verfüllen & Abschluss         FAZ: 34.0h    FEZ: 38.0h    Krit.
+
+  Baggerführer Bodo         [4]
+    [4] Zellulose Einblasdämmung      FAZ: 30.0h    FEZ: 34.0h    Krit.
+
+  LKW-Fahrer Heinz          [3]
+    [3] Holzständerwerk & Holzfaserp  FAZ: 14.0h    FEZ: 30.0h    Krit.
+
+----------------------------------------------------------------------
+Personen:
+
+  Thomas Tiefbau            Kosten: 60.00 €/h    Abwesenheiten: keine
+                                                   Puffer-Abwesenheiten: keine
+  Stefan Schnitt            Kosten: 65.00 €/h    Abwesenheiten: keine
+                                                   Puffer-Abwesenheiten: keine
+  Klaus Flocke              Kosten: 55.00 €/h    Abwesenheiten: keine
+                                                   Puffer-Abwesenheiten: keine
+
+======================================================================
+KOSTENÜBERSICHT
+======================================================================
+
+  Ressource                     Stunden       €/h   Bereitst.€   Lohnkosten€      Gesamt €
+  ----------------------------------------------------------------------
+  Zellulose-Einblasmaschine         4.0     45.00        50.00        180.00        230.00
+  Minibagger 3.5t                  12.0     85.00       120.00       1020.00       1140.00
+  LKW-Fahrer Max                   18.0     60.00         0.00       1080.00       1080.00
+  Baggerführer Bodo                 4.0     55.00         0.00        220.00        220.00
+  LKW-Fahrer Heinz                 16.0     65.00         0.00       1040.00       1040.00
+  ----------------------------------------------------------------------
+  Personalkosten:                                                                    2340.00
+  Maschinenkosten (Lohn):                                              1200.00              
+  Bereitstellungskosten:                                  170.00                            
+  ----------------------------------------------------------------------
+  GESAMTKOSTEN:                                                                      3710.00 €

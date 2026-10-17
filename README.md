@@ -38,22 +38,31 @@ sproject/
 │   ├── software_simple.json    # Software project with resources
 │   ├── tankdesign.json         # Engineering project
 │   └── results/                # Pre-computed reference results
-├── lib/                        # Python source code
-│   ├── sproject.py             # Main entry point
+├── lib/                        # Python source code (package "lib")
+│   ├── sproject.py             # CLI entry point
+│   ├── schedule.py             # build_schedule(): expand → CPM → Gantt → costs
+│   ├── exporters.py            # Export registry (shared by CLI and GUI)
 │   ├── models/                 # Pydantic models
-│   │   ├── cpm.py              # CPM calculation
-│   │   ├── gantt.py            # Gantt scheduling
+│   │   ├── project.py          # Project root model (data + validation)
 │   │   ├── tasks.py            # Task models (incl. loop/cycle)
+│   │   ├── dependencies.py     # Dependency types EA/AA/EE/AE
 │   │   ├── resources.py        # Resources and persons
-│   │   ├── project.py          # Project root model
+│   │   ├── expander.py         # Expansion of instance/loop tasks
+│   │   ├── rest_breaks.py      # Rest breaks for persons
+│   │   ├── cpm.py              # CPM calculation
+│   │   ├── gantt.py            # Gantt scheduling (calendar dates)
 │   │   └── loader.py           # JSON loader
+│   ├── durations.py            # Duration parsing/formatting (hours_per_day from defaults.cfg)
+│   ├── work_calendar.py        # Working days, weekends, holidays
+│   ├── cost_calculator.py      # Cost calculation
+│   ├── report_data.py          # Data preparation shared by the exports
 │   ├── excel_reports.py        # XLSX export
 │   ├── json_export.py          # JSON export
 │   ├── txt_export.py           # TXT export
 │   ├── markdown_export.py      # Markdown/HTML/ZIP export
 │   ├── mermaid_export.py       # SVG via Mermaid/kroki
-│   ├── utils.py                # Utility functions
-│   └── config_loader.py        # Configuration reader
+│   ├── colors.py, paths.py, export_config.py, config_loader.py
+├── tests/                      # pytest (incl. golden-file tests in tests/golden/)
 ├── requirements.txt            # Python dependencies
 ├── log/                        # Log files (auto-created)
 ├── results/                    # Generated reports (auto-created)
@@ -336,13 +345,16 @@ ID      Name                           Duration  ES     EF     LS     LF     TF 
 
 ## Tests
 
-Run unit tests:
+Run all tests (unit tests, golden-file comparison of all examples, headless GUI tests):
 
 ```bash
-cd lib
-python -m unittest test.py
-python -m unittest test_models.py
-python -m unittest test_sproject.py
+python -m pytest
+```
+
+After an intended change of results, regenerate the reference files in `tests/golden/`:
+
+```bash
+UPDATE_GOLDEN=1 python -m pytest tests/test_golden.py
 ```
 
 Or via batch script (Windows):

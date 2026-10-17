@@ -7,9 +7,9 @@ sowie einmaliger Bereitstellungskosten für Maschinen/Fahrzeuge.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Any, Dict
+from typing import Dict, List, Optional
 
-HOURS_PER_DAY = 8.0  # Arbeitsstunden pro Tag (für Umrechnung CPM-Tage → Stunden)
+from .durations import hours_per_day, parse_duration_to_minutes
 
 
 @dataclass
@@ -37,123 +37,66 @@ class CostBreakdown:
     total_costs: float = 0.0
 
 
-def _cpm_days_to_hours(days: float) -> float:
-    """Konvertiert CPM-interne Dauer (immer in Tagen) in Stunden."""
-    return days * HOURS_PER_DAY
-
-
-def calculate_project_costs(project: Any, cpm_result: Any) -> Optional[CostBreakdown]:
+def calculate_project_costs(project, cpm_result=None) -> Optional[CostBreakdown]:
     """
-    Berechnet Projektkosten aus Personen- und Ressourcen-Stundensätzen.
+    Projektkosten aus Stundensätzen und Bereitstellungskosten.
 
-    Für Personen-Ressourcen (type='person') wird der Stundensatz aus dem
-    verknüpften Person-Objekt (hourly_rate) gelesen.
-    Für Maschinen/Fahrzeuge wird hourly_rate direkt aus der Ressource gelesen,
-    provisioning_costs werden einmalig pro Ressource addiert.
-
-    Args:
-        project:    Projekt-Objekt mit tasks, resources und persons
-        cpm_result: CPM-Berechnungsergebnis (für Zeiteinheit und Dauern)
+    - Personen-Ressourcen: Stundensatz der verknüpften Person (person_id → hourly_rate)
+    - Maschinen/Fahrzeuge: hourly_rate der Ressource, provisioning_costs einmalig
+    - Pausen und Kalender-Blocker verursachen keine Kosten
+    - Dauer aus dem CPM-Ergebnis, sonst aus task.duration
 
     Returns:
-        CostBreakdown oder None wenn keine Kostendaten verfügbar
+        CostBreakdown oder None, wenn keine Ressource einen Stundensatz hat
     """
-    if not project or not hasattr(project, 'tasks'):
+    if not project:
         return None
 
-    # Personen-Stundensätze aufbauen: person_id → hourly_rate
-    person_rates: Dict[str, float] = {}
-    if hasattr(project, 'persons') and project.persons:
-        for person in project.persons:
-            rate = getattr(person, 'hourly_rate', None)
-            if rate is not None and rate > 0:
-                person_rates[person.id] = float(rate)
+    person_rates = {p.id: p.hourly_rate for p in (project.persons or []) if p.hourly_rate and p.hourly_rate > 0}
+    resources = {r.id: r for r in (project.resources or [])}
 
-    # Ressourcen-Info aufbauen: resource_id → {name, type, hourly_rate, provisioning_costs}
-    resource_info: Dict[str, Dict] = {}
-    if hasattr(project, 'resources') and project.resources:
-        for res in project.resources:
-            person_id = getattr(res, 'person_id', None)
-            hourly_rate = getattr(res, 'hourly_rate', None)
-
-            # Für Personen-Ressourcen: Stundensatz aus verknüpfter Person
-            if person_id and person_id in person_rates:
-                hourly_rate = person_rates[person_id]
-
-            resource_info[res.id] = {
-                'name': getattr(res, 'name', res.id) or res.id,
-                'type': getattr(res, 'type', 'unknown') or 'unknown',
-                'hourly_rate': float(hourly_rate) if hourly_rate is not None else None,
-                'provisioning_costs': float(getattr(res, 'provisioning_costs', 0.0) or 0.0),
-            }
-
-    # Stunden pro Ressource aus Tasks akkumulieren
     hours_per_resource: Dict[str, float] = {}
-
     for task in project.tasks:
-        if not hasattr(task, 'resources') or not task.resources:
+        if not task.resources or getattr(task, 'is_break', False) or getattr(task, 'is_blocker', False):
             continue
-        if getattr(task, 'is_break', False) or getattr(task, 'is_blocker', False):
-            continue
-
-        # Dauer aus CPM-Ergebnis holen (in Tagen, CPM-intern immer Tage)
-        if cpm_result and task.id in cpm_result.tasks:
-            cpm_task = cpm_result.tasks[task.id]
-            if cpm_task.is_break:
+        cpm_task = cpm_result.tasks.get(task.id) if cpm_result else None
+        if cpm_task is not None:
+            if cpm_task.is_system:
                 continue
-            duration_hours = _cpm_days_to_hours(cpm_task.duration)
+            hours = cpm_task.duration * hours_per_day()
         else:
-            # Fallback: task.duration string direkt parsen
-            try:
-                from utils import parse_duration_to_minutes
-            except ImportError:
-                from .utils import parse_duration_to_minutes
-            duration_min = parse_duration_to_minutes(task.duration or '0')
-            duration_hours = duration_min / 60.0
-
+            hours = parse_duration_to_minutes(task.duration or '0') / 60.0
         for res_id in task.resources:
-            hours_per_resource[res_id] = hours_per_resource.get(res_id, 0.0) + duration_hours
+            hours_per_resource[res_id] = hours_per_resource.get(res_id, 0.0) + hours
 
-    if not hours_per_resource:
-        return None
-
-    # Kostenzeilen aufbauen (nur Ressourcen mit Stundensatz)
     entries: List[ResourceCostEntry] = []
-
-    for res_id in sorted(hours_per_resource.keys()):
-        info = resource_info.get(res_id, {
-            'name': res_id,
-            'type': 'unknown',
-            'hourly_rate': None,
-            'provisioning_costs': 0.0,
-        })
-
-        hourly_rate = info.get('hourly_rate')
-        if not hourly_rate:
+    for res_id in sorted(hours_per_resource):
+        res = resources.get(res_id)
+        rate = res.hourly_rate if res else None
+        if res and res.person_id in person_rates:
+            rate = person_rates[res.person_id]
+        if not rate:
             continue  # Ressource ohne Stundensatz überspringen
 
         hours = hours_per_resource[res_id]
-        provisioning = info.get('provisioning_costs') or 0.0
-        labor = hours * hourly_rate
-        total = labor + provisioning
-
+        provisioning = float(res.provisioning_costs or 0.0) if res else 0.0
+        labor = hours * rate
         entries.append(ResourceCostEntry(
             resource_id=res_id,
-            resource_name=info['name'],
-            resource_type=info['type'],
+            resource_name=(res.name or res_id) if res else res_id,
+            resource_type=res.type if res else 'unknown',
             hours_worked=round(hours, 2),
-            hourly_rate=hourly_rate,
+            hourly_rate=float(rate),
             provisioning_costs=provisioning,
             labor_costs=round(labor, 2),
-            total_costs=round(total, 2),
+            total_costs=round(labor + provisioning, 2),
         ))
 
     if not entries:
         return None
 
-    person_entries  = [e for e in entries if e.resource_type == 'person']
+    person_entries = [e for e in entries if e.resource_type == 'person']
     machine_entries = [e for e in entries if e.resource_type != 'person']
-
     return CostBreakdown(
         entries=entries,
         total_person_costs=round(sum(e.total_costs for e in person_entries), 2),
