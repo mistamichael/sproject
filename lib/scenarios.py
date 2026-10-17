@@ -120,7 +120,7 @@ def comparison_rows(outcomes: List[ScenarioOutcome]) -> List[List[str]]:
     """Tabelle für Konsole und Reports: Szenario, Ende, Dauer, Δ, Kosten, Deadlines."""
     unit = outcomes[0].schedule.cpm.time_unit
     fmt = '%Y-%m-%d %H:%M' if unit != 'days' else '%Y-%m-%d'
-    rows = [["Szenario", "Ende", "Dauer", "Δ zum Basisplan", "Kosten", "Deadlines verfehlt"]]
+    rows = [["Szenario", "Ende", "Dauer", "vs. Basisplan", "Kosten", "Deadlines verfehlt"]]
     for o in outcomes:
         rows.append([
             o.name,

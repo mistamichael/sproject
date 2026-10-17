@@ -12,6 +12,7 @@ Datenfluss:
 """
 
 import json
+import threading
 import webbrowser
 from datetime import date
 from pathlib import Path
@@ -28,7 +29,9 @@ from lib.baseline import create_baseline
 from lib.exporters import ExportOptions, export_schedule
 from lib.models import Project, load_project, load_project_from_dict, save_project
 from lib.paths import get_cfg_dir, get_results_dir, get_work_dir
+from lib.charts import build_simulation_figures, write_html
 from lib.scenarios import compare_scenarios
+from lib.simulation import SimulationResult, has_uncertainty, simulate
 from lib.schedule import Schedule, build_schedule
 
 SECTIONS = ("resources", "persons", "resting_times")
@@ -74,6 +77,9 @@ class ProjectEditorApp:
         self.task_rows: List[TaskRow] = []
         self.active_sections: Dict[str, bool] = dict.fromkeys(SECTIONS, False)
         self.schedule: Optional[Schedule] = None
+        self.scenario_outcomes: list = []
+        self.simulation: Optional[SimulationResult] = None
+        self._simulation_running = False
         self.sections = OptionalSections(self)
         self._dirty = False
         self._last_save_path: Optional[Path] = None
@@ -172,8 +178,10 @@ class ProjectEditorApp:
         try:
             self.sync_to_model()
             self.schedule = build_schedule(self.project, cfg_dir=get_cfg_dir())
-            outcomes = compare_scenarios(self.project, cfg_dir=get_cfg_dir()) if self.project.scenarios else []
-            result_panel.show_result(self.schedule, self._quick_export_actions(), outcomes)
+            self.scenario_outcomes = (compare_scenarios(self.project, cfg_dir=get_cfg_dir())
+                                      if self.project.scenarios else [])
+            self.simulation = None
+            result_panel.show_result(self.schedule, self._quick_export_actions(), self.scenario_outcomes)
             self._set_status(t("status.calc_done", duration=self.schedule.cpm.project_duration))
         except Exception as e:
             self._set_status(t("status.calc_error", error=e))
@@ -314,6 +322,66 @@ class ProjectEditorApp:
         actions[t("result.save_baseline")] = self.save_baseline
         return actions
 
+    # ------------------------------------------------------------------
+    # Analyse: Szenarien und Monte-Carlo
+    # ------------------------------------------------------------------
+
+    def run_scenarios(self) -> None:
+        """Basisplan und Szenarien rechnen, Vergleich im Ergebnis-Tab und im Browser zeigen."""
+        if self.project is None:
+            self._set_status(t("status.no_project"))
+            return
+        self.sync_to_model()
+        if not self.project.scenarios:
+            self._set_status(t("status.no_scenarios"))
+            return
+        self.run_calculation()
+        if self.schedule is not None:
+            self._open_in_browser(lambda: self.export_report("scenarios"))
+
+    def run_simulation(self, runs: int, seed: Optional[int] = None) -> None:
+        """Monte-Carlo-Simulation im Hintergrund; Ergebnis im Ergebnis-Tab und als HTML im Browser."""
+        if self.project is None:
+            self._set_status(t("status.no_project"))
+            return
+        self.sync_to_model()
+        if not has_uncertainty(self.project):
+            self._set_status(t("status.no_uncertainty"))
+            return
+        if self._simulation_running:
+            return
+        self.run_calculation()
+        if self.schedule is None:
+            return
+        project, schedule = self.project, self.schedule
+        self._simulation_running = True
+        self._set_status(t("status.simulation_running", runs=runs))
+
+        def work() -> None:
+            try:
+                sim = simulate(project, runs=runs, seed=seed, cfg_dir=get_cfg_dir())
+                self.simulation = sim
+                path = write_html(build_simulation_figures(sim, schedule.name, get_language()),
+                                  get_results_dir() / f"{self._file_stem()}_simulation.html", schedule.name)
+                result_panel.show_result(schedule, self._quick_export_actions(), self.scenario_outcomes, sim)
+                p80 = sim.date(sim.percentile(80))
+                self._set_status(t("status.simulation_done", p80=f"{p80:%Y-%m-%d %H:%M}" if p80 else "–"))
+                webbrowser.open(path.resolve().as_uri())
+            except Exception as e:
+                self._set_status(t("status.calc_error", error=e))
+            finally:
+                self._simulation_running = False
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _open_in_browser(self, export: Callable[[], Path]) -> None:
+        try:
+            path = export()
+            webbrowser.open(path.resolve().as_uri())
+            self._set_status(t("status.saved", path=path))
+        except Exception as e:
+            self._set_status(t("status.export_failed", error=e))
+
     def save_baseline(self) -> None:
         """Aktuellen Plan als Baseline ins Projekt übernehmen (wird mit dem Projekt gespeichert)."""
         if self.schedule is None or self.project is None:
@@ -328,12 +396,7 @@ class ProjectEditorApp:
 
     def open_charts_in_browser(self) -> None:
         """Interaktive Plotly-Charts erzeugen und im Standardbrowser öffnen."""
-        try:
-            path = self.export_report("plotly")
-            webbrowser.open(path.resolve().as_uri())
-            self._set_status(t("status.saved", path=path))
-        except Exception as e:
-            self._set_status(t("status.export_failed", error=e))
+        self._open_in_browser(lambda: self.export_report("plotly"))
 
     def _wrap_export(self, export: Callable[[], Path]) -> None:
         try:

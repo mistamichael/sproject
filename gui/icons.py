@@ -24,6 +24,8 @@ _ICONS: dict[str, tuple[int, int, int]] = {
     "save_as":   ( 60, 185, 170),
     "export":    (220, 150,  55),
     "calculate": (155,  80, 205),
+    "scenarios": ( 70, 130, 180),
+    "roulette":  (192,  57,  43),
 }
 
 _IMAGES_DIR = Path(__file__).parent / "images"
@@ -115,7 +117,7 @@ def add_icon_button(
     else:
         # Fallback: Text-Button mit Emoji
         _emoji = {"open": "📂", "save": "💾", "save_as": "📄",
-                  "export": "⬇", "calculate": "▶"}
+                  "export": "⬇", "calculate": "▶", "scenarios": "⛰", "roulette": "🎲"}
         btn = dpg.add_button(
             label=_emoji.get(name, "?"),
             width=ICON_SIZE + 4,

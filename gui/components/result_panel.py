@@ -33,7 +33,7 @@ def hide_result() -> None:
 
 
 def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]],
-                scenario_outcomes: Optional[list] = None) -> None:
+                scenario_outcomes: Optional[list] = None, simulation=None) -> None:
     """
     Füllt den Ergebnis-Tab und wechselt dorthin.
 
@@ -64,6 +64,7 @@ def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]
     dpg.add_spacer(parent=_PARENT, height=6)
     _costs(schedule)
     _scenarios(scenario_outcomes or [])
+    _simulation(simulation)
     _charts(schedule)
 
     dpg.add_spacer(parent=_PARENT, height=8)
@@ -181,6 +182,25 @@ def _scenarios(outcomes: list) -> None:
                     for cell in row:
                         dpg.add_text(cell)
         dpg.add_spacer(height=6)
+
+
+def _simulation(sim) -> None:
+    """Kennzahlen und kritischste Tasks der Monte-Carlo-Simulation."""
+    if sim is None:
+        return
+    from lib.simulation import summary_rows, top_critical
+
+    with dpg.collapsing_header(label=t("result.header.simulation"), parent=_PARENT, default_open=True):
+        for rows, header in [(summary_rows(sim), [t("result.col.metric"), t("result.col.value")]),
+                             (top_critical(sim), ["Task", "Name", t("result.col.critical_share")])]:
+            with _table():
+                for title in header:
+                    dpg.add_table_column(label=title)
+                for row in rows:
+                    with dpg.table_row():
+                        for cell in row:
+                            dpg.add_text(cell)
+            dpg.add_spacer(height=6)
 
 
 def _charts(schedule: Schedule) -> None:

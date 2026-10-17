@@ -35,6 +35,7 @@ from gui.icons import setup_icon_textures, add_icon_button
 from gui.components.sidebar import build_sidebar
 from gui.components.task_table import build_task_section
 from gui.components.file_browser import open_file_browser
+from gui.components.list_section import FormField, open_form_dialog
 from gui.gui_config import load_gui_config
 from gui.i18n import t, set_language, get_language
 
@@ -124,6 +125,10 @@ def _update_ui_language() -> None:
     _label_map = {
         # Menues
         "menu_file":        "menu.file",
+        "menu_analysis":    "menu.analysis",
+        "mi_calculate":     "menu.analysis.calculate",
+        "mi_scenarios":     "menu.analysis.scenarios",
+        "mi_simulation":    "menu.analysis.simulation",
         "menu_settings":    "menu.settings",
         "menu_help":        "menu.help",
         "menu_theme":       "menu.settings.theme",
@@ -162,7 +167,8 @@ def _update_ui_language() -> None:
         "lbl_unit":         "label.unit",
         "lbl_total_hours":  "label.total_hours",
         "lbl_total_volume": "label.total_volume",
-        "lbl_order_volume": "label.order_volume"
+        "lbl_order_volume": "label.order_volume",
+        "lbl_status_date":  "label.status_date",
     }
     for tag, key in _text_map.items():
         if dpg.does_item_exist(tag):
@@ -434,6 +440,22 @@ def _open_export_dialog(app: ProjectEditorApp) -> None:
     _setup_ac_handlers(app)
 
 
+def _open_simulation_dialog(app: ProjectEditorApp) -> None:
+    """Fragt Läufe und Zufallsstartwert ab und startet die Monte-Carlo-Simulation."""
+    def start(values: dict) -> None:
+        try:
+            runs = max(int(values.get("runs") or 300), 1)
+        except ValueError:
+            runs = 300
+        seed_text = values.get("seed", "")
+        app.run_simulation(runs, int(seed_text) if seed_text.lstrip("-").isdigit() else None)
+
+    open_form_dialog("simulation_dialog", "dlg.simulation", [
+        FormField("runs", "col.runs", default="300"),
+        FormField("seed", "col.seed", hint=t("hint.seed")),
+    ], start, width=380)
+
+
 def _do_export(app: ProjectEditorApp) -> None:
     target_dir = Path(dpg.get_value("exp_dir_input") or ".")
     selected = {tag: bool(dpg.get_value(tag)) for tag in
@@ -636,6 +658,23 @@ def create_app() -> ProjectEditorApp:
                     callback=lambda: dpg.stop_dearpygui(),
                 )
 
+            with dpg.menu(label=t("menu.analysis"), tag="menu_analysis"):
+                dpg.add_menu_item(
+                    label=t("menu.analysis.calculate"),
+                    tag="mi_calculate",
+                    callback=lambda: editor.run_calculation(),
+                )
+                dpg.add_menu_item(
+                    label=t("menu.analysis.scenarios"),
+                    tag="mi_scenarios",
+                    callback=lambda: editor.run_scenarios(),
+                )
+                dpg.add_menu_item(
+                    label=t("menu.analysis.simulation"),
+                    tag="mi_simulation",
+                    callback=lambda: _open_simulation_dialog(editor),
+                )
+
             with dpg.menu(label=t("menu.settings"), tag="menu_settings"):
                 with dpg.menu(label=t("menu.settings.theme"), tag="menu_theme"):
                     for theme_name in CFG.available_themes():
@@ -668,22 +707,22 @@ def create_app() -> ProjectEditorApp:
         # ── Icon-Toolbar ─────────────────────────────────────────────────
         with dpg.group(horizontal=True, tag="icon_toolbar"):
             add_icon_button(
-                "open", "Öffnen  (Ctrl+O)",
+                "open", t("tooltip.open"),
                 callback=lambda: _show_open_browser(editor),
                 tag="tb_open",
             )
             add_icon_button(
-                "save", "Speichern  (Ctrl+S)",
+                "save", t("tooltip.save"),
                 callback=lambda: editor.save_quick(),
                 tag="tb_save",
             )
             add_icon_button(
-                "save_as", "Speichern unter …  (Ctrl+Shift+S)",
+                "save_as", t("tooltip.save_as"),
                 callback=lambda: _open_save_dialog(editor),
                 tag="tb_save_as",
             )
             add_icon_button(
-                "export", "Export …",
+                "export", t("tooltip.export"),
                 callback=lambda: _open_export_dialog(editor),
                 tag="tb_export",
             )
@@ -691,9 +730,19 @@ def create_app() -> ProjectEditorApp:
             dpg.add_text(" | ", color=_col.get("toolbar_sep", (100, 100, 110)))
 
             add_icon_button(
-                "calculate", "Berechnen & Anzeigen",
+                "calculate", t("tooltip.calculate"),
                 callback=lambda: editor.run_calculation(),
                 tag="tb_calculate",
+            )
+            add_icon_button(
+                "scenarios", t("tooltip.scenarios"),
+                callback=lambda: editor.run_scenarios(),
+                tag="tb_scenarios",
+            )
+            add_icon_button(
+                "roulette", t("tooltip.simulation"),
+                callback=lambda: _open_simulation_dialog(editor),
+                tag="tb_simulation",
             )
 
         # Status-Zeile
