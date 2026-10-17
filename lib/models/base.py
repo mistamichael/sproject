@@ -12,6 +12,20 @@ from ..durations import parse_duration_to_days, validate_duration_string
 from .dependencies import DepType, Dependency, SUCCESSOR_FIELDS, TaskId
 
 
+class TaskRisk(BaseModel):
+    """Risiko eines Tasks: tritt mit probability ein und verzögert den Start um delay."""
+    probability: float = Field(ge=0.0, le=1.0)
+    delay: str
+    note: Optional[str] = None
+
+    @field_validator('delay')
+    @classmethod
+    def _validate_delay(cls, v: str) -> str:  # noqa
+        if not validate_duration_string(v):
+            raise ValueError(f"Ungültige Dauer: {v}")
+        return v
+
+
 class TaskBase(BaseModel):
     """
     Basis-Klasse für alle Task-Typen.
@@ -47,6 +61,19 @@ class TaskBase(BaseModel):
     not_before: Optional[str] = None  # Frühester Start, "YYYY-MM-DD[ HH:MM]" (z. B. Materiallieferung)
     deadline: Optional[str] = None    # Spätestes Ende, "YYYY-MM-DD[ HH:MM]" (Datum ohne Uhrzeit = Tagesende)
     delay: Optional[str] = None       # Wartezeit vor dem Start (z. B. "2d" Trocknung, Lieferverzug)
+    # Unsicherheit für die Monte-Carlo-Simulation (lib/simulation.py)
+    duration_range: Optional[List[str]] = None   # [Minimum, Maximum]; wahrscheinlichster Wert = duration
+    risk: Optional["TaskRisk"] = None            # mit probability tritt eine Startverzögerung delay ein
+
+    @field_validator('duration_range')
+    @classmethod
+    def _validate_range(cls, v: Optional[List[str]]) -> Optional[List[str]]:  # noqa
+        if v is not None:
+            if len(v) != 2 or not all(validate_duration_string(x) for x in v):
+                raise ValueError("duration_range braucht zwei Dauern, z. B. [\"4d\", \"9d\"]")
+            if parse_duration_to_days(v[0]) > parse_duration_to_days(v[1]):
+                raise ValueError("duration_range: Minimum ist größer als Maximum")
+        return v
 
     @field_validator('not_before', 'deadline')
     @classmethod
@@ -105,3 +132,6 @@ class TaskBase(BaseModel):
     model_config = {
         'extra': 'allow',  # Erlaube zusätzliche Felder (für Zukunft/Erweiterungen)
     }
+
+
+TaskBase.model_rebuild()

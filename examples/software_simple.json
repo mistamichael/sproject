@@ -108,6 +108,8 @@
       "id": 4,
       "name": "Backend Entwicklung",
       "duration": "40h",
+      "duration_range": ["32h", "72h"],
+      "risk": { "probability": 0.2, "delay": "16h", "note": "API des Kunden noch instabil" },
       "resources": ["R_DEV1"],
       "successors": [5]
     },
@@ -115,6 +117,7 @@
       "id": 5,
       "name": "Frontend Entwicklung",
       "duration": "32h",
+      "duration_range": ["24h", "48h"],
       "resources": ["R_DEV2"],
       "successors": [6]
     },
@@ -122,6 +125,7 @@
       "id": 6,
       "name": "Testing & QA",
       "duration": "20h",
+      "duration_range": ["16h", "40h"],
       "resources": ["R_DEV1", "R_DEV2"],
       "successors": [7]
     },
@@ -141,7 +145,7 @@
     }
   ],
   "scenarios": [
-    { "name": "Alice eine Woche krank",
+    { "name": "Alice eine Woche krank", "probability": 0.15,
       "changes": [ { "person": "DEV1", "vacation": [ { "from": "2026-03-09", "to": "2026-03-13", "description": "krank" } ] } ] },
     { "name": "Backend 50 % aufwendiger",
       "changes": [ { "task": 4, "duration_factor": 1.5 } ] },

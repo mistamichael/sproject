@@ -19,6 +19,8 @@ class ExportOptions:
     file_stem: str                  # Basis-Dateiname, z. B. Name der Projektdatei
     cfg_dir: Optional[Path] = None
     lang: str = 'de'
+    simulation_runs: int = 300        # Monte-Carlo-Läufe für das Format "simulation"
+    seed: Optional[int] = None        # fester Zufallsstartwert (reproduzierbar)
 
 
 def _check(ok: Optional[bool], fmt: str) -> None:
@@ -93,6 +95,15 @@ def _scenarios(s: Schedule, o: ExportOptions) -> Path:
     return write_html(build_scenario_figures(outcomes, s.name), o.out_dir / f"{o.file_stem}_scenarios.html", s.name)
 
 
+def _simulation(s: Schedule, o: ExportOptions) -> Path:
+    from .charts import build_simulation_figures, write_html
+    from .simulation import simulate
+    sim = simulate(s.source or s.project, runs=o.simulation_runs, seed=o.seed,
+                   start_date=s.cpm.project_start, cfg_dir=o.cfg_dir)
+    return write_html(build_simulation_figures(sim, s.name, o.lang),
+                      o.out_dir / f"{o.file_stem}_simulation.html", s.name)
+
+
 EXPORTERS: Dict[str, Callable[[Schedule, ExportOptions], Path]] = {
     'json': _json,
     'txt':  _txt,
@@ -103,6 +114,7 @@ EXPORTERS: Dict[str, Callable[[Schedule, ExportOptions], Path]] = {
     'plotly': _plotly_html,       # interaktives HTML (Gantt + Ressourcen)
     'plotly_svg': _plotly_svg,   # SVG-Bilder (kaleido + lokaler Chrome)
     'scenarios': _scenarios,     # Szenario-Vergleich als HTML
+    'simulation': _simulation,   # Monte-Carlo-Simulation als HTML
 }
 
 

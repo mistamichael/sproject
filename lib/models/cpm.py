@@ -143,6 +143,7 @@ class CPMResult(BaseModel):
     skip_holidays: bool = False
     status_date: Optional[float] = None       # Stichtag in Arbeitstagen
     baseline_end: Optional[float] = None      # Projektende laut Baseline
+    leveling_rule: Optional[str] = None       # Prioritätsregel des gewählten Plans (Ressourcenplanung)
 
     @property
     def slip(self) -> Optional[float]:
@@ -294,13 +295,15 @@ class CPMCalculator:
     def __init__(self, project, start_date: Optional[datetime] = None,
                  cfg_dir: Optional[Path] = None,
                  calendar: Optional[WorkCalendar] = None,
-                 holidays: Optional[Dict[str, str]] = None):
+                 holidays: Optional[Dict[str, str]] = None,
+                 leveling_rule: Optional[str] = None):
         """
         Args:
             project:    Projekt (Pydantic-Modell)
             start_date: Projektstart; Default: project_start oder jetzt
             cfg_dir:    Konfigurationsverzeichnis, aus dem der Kalender geladen wird
             calendar, holidays: Kalender direkt vorgeben (überspringt das Laden)
+            leveling_rule: nur diese Prioritätsregel rechnen (Standard: alle, kürzester Plan gewinnt)
         """
         from .project import parse_start_date
 
@@ -324,6 +327,8 @@ class CPMCalculator:
             self.status = self.calendar.workday_offset(self.start_date, datetime.now(), hours_per_day())
 
         self.cpm_tasks: Dict[TaskId, CPMTaskResult] = {}
+        self.leveling_rule = leveling_rule
+        self.used_rule: Optional[str] = None
 
     def calculate(self) -> CPMResult:
         """
@@ -353,6 +358,7 @@ class CPMCalculator:
             skip_holidays=self.holidays is not None,
             status_date=self.status,
             baseline_end=self._baseline_end(),
+            leveling_rule=self.used_rule,
         )
 
     def _baseline_end(self) -> Optional[float]:
@@ -523,7 +529,10 @@ class CPMCalculator:
         # Jede Prioritätsregel auf denselben Ausgangswerten rechnen, den kürzesten Plan behalten
         initial = {tid: (t.faz, t.fez) for tid, t in self.cpm_tasks.items()}
         best = None
-        for priority in priority_rules(self.cpm_tasks).values():
+        rules = priority_rules(self.cpm_tasks)
+        if self.leveling_rule in rules:
+            rules = {self.leveling_rule: rules[self.leveling_rule]}
+        for rule_name, priority in rules.items():
             for tid, (faz, fez) in initial.items():
                 self.cpm_tasks[tid].faz, self.cpm_tasks[tid].fez = faz, fez
             links = ResourceScheduler(self.project, self.cpm_tasks, availability,
@@ -531,9 +540,9 @@ class CPMCalculator:
             makespan = max((t.fez for t in self.cpm_tasks.values()), default=0.0)
             if best is None or makespan < best[0] - 1e-9:
                 plan = {tid: (t.faz, t.fez, t.leveling_delay) for tid, t in self.cpm_tasks.items()}
-                best = (makespan, plan, links)
+                best = (makespan, plan, links, rule_name)
         assert best is not None
-        _, plan, waits_for = best
+        _, plan, waits_for, self.used_rule = best
         for tid, (faz, fez, delay) in plan.items():
             task = self.cpm_tasks[tid]
             task.faz, task.fez, task.leveling_delay = faz, fez, delay

@@ -34,6 +34,7 @@ from .paths import get_results_dir
 from .report_data import deadline_warning_lines, tracking_summary
 from .scenarios import apply_scenario, compare_scenarios, comparison_rows, find_scenario
 from .schedule import build_schedule
+from .simulation import simulate, summary_rows, top_critical
 
 
 def setup_logging(log_dir: Optional[Path] = None) -> logging.Logger:
@@ -111,7 +112,10 @@ def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
 
 
 def _print_scenarios(outcomes) -> None:
-    rows = comparison_rows(outcomes)
+    _print_table(comparison_rows(outcomes))
+
+
+def _print_table(rows: List[List[str]]) -> None:
     widths = [max(len(r[i]) for r in rows) for i in range(len(rows[0]))]
     print("=" * 70)
     for n, row in enumerate(rows):
@@ -148,6 +152,10 @@ Beispiele:
                         help="Alle Szenarien der Projektdatei mit dem Basisplan vergleichen")
     parser.add_argument("--scenario", type=str,
                         help="Ein Szenario (Name) statt des Basisplans rechnen und exportieren")
+    parser.add_argument("--simulate", type=int, metavar="N",
+                        help="Monte-Carlo-Simulation mit N Läufen (Unsicherheiten aus duration_range, risk, "
+                             "Szenarien mit probability)")
+    parser.add_argument("--seed", type=int, help="Zufallsstartwert für reproduzierbare Simulationen")
     parser.add_argument("--save-baseline", action="store_true",
                         help="Berechneten Plan als Baseline in die Projektdatei schreiben (Plan/Ist-Vergleich)")
     parser.add_argument("--lang", type=str, default="de", choices=["de", "en"],
@@ -167,6 +175,11 @@ def _process(project_file: Path, args: argparse.Namespace, formats: List[str], l
         project = apply_scenario(project, scenario)
         stem = f"{stem}_{re.sub(r'[^A-Za-z0-9]+', '_', scenario.name).strip('_')}"
     schedule = build_schedule(project, start_date=args.start_date, cfg_dir=args.cfg_dir)
+    if args.simulate:
+        sim = simulate(project, runs=args.simulate, seed=args.seed,
+                       start_date=args.start_date, cfg_dir=args.cfg_dir)
+        _print_table([["Kennzahl", "Wert"]] + summary_rows(sim))
+        _print_table([["Task", "Name", "kritisch in"]] + top_critical(sim))
     if len(schedule.project.tasks) != len(project.tasks):
         logger.info(f"  -> {len(schedule.project.tasks)} Tasks nach Expansion")
 
@@ -184,6 +197,8 @@ def _process(project_file: Path, args: argparse.Namespace, formats: List[str], l
         file_stem=stem,
         cfg_dir=args.cfg_dir,
         lang=args.lang,
+        simulation_runs=args.simulate or 300,
+        seed=args.seed,
     )
     ok = True
     for fmt in formats:

@@ -50,3 +50,5 @@ class Scenario(BaseModel):
     name: str
     description: Optional[str] = None
     changes: List[ScenarioChange] = Field(default_factory=list)
+    # Eintrittswahrscheinlichkeit je Lauf der Monte-Carlo-Simulation (None = nur Was-wäre-wenn)
+    probability: Optional[float] = Field(default=None, ge=0.0, le=1.0)

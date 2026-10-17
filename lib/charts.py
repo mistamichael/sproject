@@ -327,3 +327,64 @@ def build_scenario_figures(outcomes, title: str) -> List[go.Figure]:
     ))
     table.update_layout(height=max(200, 80 + 30 * len(outcomes)), margin=dict(l=10, r=10, t=10, b=10))
     return [bars, table]
+
+
+# ---------------------------------------------------------------------------
+# Monte-Carlo-Simulation
+# ---------------------------------------------------------------------------
+
+def build_simulation_figures(sim, title: str, lang: str = 'de') -> List[go.Figure]:
+    """Histogramm des Projektendes mit Summenkurve und Perzentilen, Kritikalität, Kennzahlen."""
+    from plotly.subplots import make_subplots
+    from .simulation import PERCENTILES, summary_rows, top_critical
+
+    result = sim.result
+    end = max(sim.ends[-1], result.project_end_days)
+    bins = min(30, max(5, len(set(round(e, 3) for e in sim.ends))))
+    width = max((sim.ends[-1] - sim.ends[0]) / bins, 1e-6)
+    counts = [0] * bins
+    for e in sim.ends:
+        counts[min(int((e - sim.ends[0]) / width), bins - 1)] += 1
+    centers = [sim.ends[0] + (i + 0.5) * width for i in range(bins)]
+
+    hist = make_subplots(specs=[[{"secondary_y": True}]])
+    hist.add_trace(go.Bar(x=centers, y=counts, width=width * 0.95, name="Läufe", marker=dict(color="#4472C4")),
+                   secondary_y=False)
+    hist.add_trace(go.Scatter(x=sim.ends, y=[(i + 1) / len(sim.ends) for i in range(len(sim.ends))],
+                              mode="lines", name="Summenkurve", line=dict(color="#C0392B")),
+                   secondary_y=True)
+    marks = [(f"P{p}", sim.percentile(p), "#7F7F7F") for p in PERCENTILES]
+    marks.append(("Plan", result.project_end_days, "#2E7D32"))
+    if result.baseline_end is not None:
+        marks.append(("Baseline", result.baseline_end, "#000000"))
+    for label, x, color in marks:
+        hist.add_vline(x=x, line=dict(color=color, dash="dash"), annotation_text=label, annotation_position="top")
+    values, labels = axis_ticks(result, lang, end=end + width)
+    hist.update_xaxes(tickvals=values, ticktext=labels, tickangle=-45,
+                      range=[min(sim.ends[0], result.project_end_days) - width, end + width])
+    hist.update_yaxes(title_text="Läufe", secondary_y=False)
+    hist.update_yaxes(title_text="Wahrscheinlichkeit fertig", tickformat=".0%", range=[0, 1.02], dtick=0.2,
+                      secondary_y=True)
+    hist.update_layout(title=f"{title} – Monte-Carlo-Simulation ({sim.runs} Läufe)", height=480,
+                       margin=dict(l=10, r=10, t=80, b=100), legend=dict(orientation="h", y=1.08))
+
+    critical = top_critical(sim, limit=15)
+    crit = go.Figure(go.Bar(orientation="h", y=[f"[{tid}] {name}" for tid, name, _ in critical],
+                            x=[sim.criticality[_task_key(sim, tid)] for tid, _, _ in critical],
+                            marker=dict(color="#C0392B"), text=[r for _, _, r in critical], textposition="auto"))
+    crit.update_layout(title="Kritikalität: Anteil der Läufe auf dem kritischen Pfad",
+                       height=max(250, 100 + 28 * len(critical)), margin=dict(l=10, r=10, t=60, b=40))
+    crit.update_xaxes(tickformat=".0%", range=[0, 1])
+    crit.update_yaxes(autorange="reversed")
+
+    rows = summary_rows(sim)
+    table = go.Figure(go.Table(
+        header=dict(values=["Kennzahl", "Wert"], fill_color="#4472C4", font=dict(color="white"), align="left"),
+        cells=dict(values=[[r[0] for r in rows], [r[1] for r in rows]], align="left"),
+    ))
+    table.update_layout(height=max(200, 60 + 28 * len(rows)), margin=dict(l=10, r=10, t=10, b=10))
+    return [hist, table, crit]
+
+
+def _task_key(sim, tid_text: str):
+    return next(tid for tid in sim.criticality if str(tid) == tid_text)

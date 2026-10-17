@@ -42,6 +42,7 @@ REPORT_FORMATS: Dict[str, str] = {
     "json": "Netzplan-JSON",
     "plotly": "Charts (HTML)",
     "scenarios": "Szenarien (HTML)",
+    "simulation": "Simulation (HTML)",
 }
 
 # Stammdaten: Widget-Tag → (Projektfeld, Umwandlung Text → Wert)

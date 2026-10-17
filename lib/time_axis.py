@@ -13,7 +13,7 @@ Arbeitstags kommen auf der Achse nicht vor.
 
 import math
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .durations import format_time_value, hours_per_day
 from .models.cpm import CPMResult
@@ -39,9 +39,13 @@ def point_in_time(result: CPMResult, workdays: float, is_end: bool = False) -> d
     return day + timedelta(hours=fraction * hours_per_day())
 
 
-def axis_ticks(result: CPMResult, lang: str = 'de') -> Tuple[List[float], List[str]]:
-    """Tick-Positionen (Arbeitstage) und Beschriftungen (Kalender), höchstens ~25 Ticks."""
-    end = max(result.project_end_days, 1 / hours_per_day())
+def axis_ticks(result: CPMResult, lang: str = 'de',
+               end: Optional[float] = None) -> Tuple[List[float], List[str]]:
+    """
+    Tick-Positionen (Arbeitstage) und Beschriftungen (Kalender), höchstens ~25 Ticks.
+    end: Achsenende (Standard: Projektende), z. B. für Simulationen über das Planende hinaus.
+    """
+    end = max(end if end is not None else result.project_end_days, 1 / hours_per_day())
     hour = 1 / hours_per_day()
     steps = [hour / 12, hour / 4, hour / 2, hour, 2 * hour, 0.5, 1, 2, 5, 10, 20, 50, 100, 250]
     step = next((st for st in steps if end / st <= _MAX_TICKS), steps[-1])

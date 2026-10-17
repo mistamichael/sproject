@@ -119,3 +119,34 @@ python lib/sproject.py --project mein_projekt.json --scenario "LKW L1 defekt" --
 ```
 
 In der GUI erscheint der Vergleich im Ergebnis-Tab (Abschnitt „Szenarien“).
+
+## Monte-Carlo-Simulation (Wie sicher ist der Termin?)
+
+sproject rechnet den Plan viele Male mit zufälligen Abweichungen. Unsicherheit wird an drei Stellen
+angegeben:
+
+```json
+{ "id": 4, "name": "Backend Entwicklung", "duration": "40h",
+  "duration_range": ["32h", "72h"],
+  "risk": { "probability": 0.2, "delay": "16h", "note": "API des Kunden noch instabil" } }
+```
+
+```json
+"scenarios": [ { "name": "Alice eine Woche krank", "probability": 0.15, "changes": [ ... ] } ]
+```
+
+| Angabe | Wirkung je Lauf |
+| --- | --- |
+| `duration_range` | Dauer zufällig zwischen Minimum und Maximum, am häufigsten die geplante Dauer (Dreiecksverteilung) |
+| `risk` | mit `probability` verzögert sich der Start um `delay` |
+| Szenario mit `probability` | das Szenario tritt mit dieser Wahrscheinlichkeit ein |
+
+```bash
+python lib/sproject.py --project mein_projekt.json --simulate 500 --seed 1          # Kennzahlen
+python lib/sproject.py --project mein_projekt.json --export simulation --simulate 500
+```
+
+Ergebnis: mit welcher Wahrscheinlichkeit der Plan (und die Baseline, Deadlines) gehalten wird,
+P50/P80/P90 („zu 80 % fertig bis …“), frühestes/spätestes Ende und die **Kritikalität** – wie oft
+ein Task auf dem kritischen Pfad lag. Das HTML zeigt Histogramm und Summenkurve. `--seed` macht
+Läufe reproduzierbar. In der GUI: Exportdialog „Simulation (HTML)“.
