@@ -33,7 +33,9 @@ Gantt-Kalender (betrifft `hausbau`, `simpleproject`, `tankdesign`; die CPM-Werte
 Fachliche Korrekturen (zweiter Schritt, Tests in `tests/test_semantics.py`):
 
 1. Ruhepausen werden für alle Projekte mit Personen und `resting_times` eingefügt, nicht nur bei Loop-Projekten
-   (betrifft `fassadenbau`).
+   (betrifft `fassadenbau`). Sie werden in `build_schedule()` nach dem berechneten Zeitplan verteilt
+   (CPM → Pausen in FAZ-Reihenfolge → CPM), die Regeln gelten **je Arbeitstag**, und ein Task kann mehrere
+   fällige Pausen auslösen. Ein Task bucht seine Stunden auf seinen Starttag.
 2. Ein Vorgänger eines Instance-Tasks zeigt nach der Expansion auf die **erste** Instanz (vorher die letzte).
 3. Endknoten erhalten SEZ = Projektende (Standard-CPM). Vorher galt SEZ = eigenes FEZ, wodurch jeder Endknoten
    fälschlich kritisch war (z. B. `pizzas`: 51 → 15 kritische Tasks). Projektdauer unverändert.

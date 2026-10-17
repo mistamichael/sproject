@@ -4,7 +4,7 @@
     "project_duration": "727.0m",
     "time_unit": "minutes",
     "num_tasks": 169,
-    "num_critical": 91,
+    "num_critical": 95,
     "project_start": "2026-03-02",
     "project_end": "2026-03-03",
   },
@@ -3309,10 +3309,30 @@
       "cpm": {
         "faz": "9.45h",
         "fez": "10.12h",
-        "saz": "11.45h",
-        "sez": "12.12h",
-        "gp": "120.0m",
-        "fp": "120.0m",
+        "saz": "10.70h",
+        "sez": "11.37h",
+        "gp": "75.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F69.2-BRK-P1",
+      "name": "Pause: Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+      "duration": "45.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.12h",
+        "fez": "10.87h",
+        "saz": "10.12h",
+        "sez": "10.87h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -3349,10 +3369,30 @@
       "cpm": {
         "faz": "9.58h",
         "fez": "10.25h",
-        "saz": "11.45h",
-        "sez": "12.12h",
-        "gp": "112.0m",
-        "fp": "112.0m",
+        "saz": "10.70h",
+        "sez": "11.37h",
+        "gp": "67.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F70.2-BRK-P2",
+      "name": "Pause: Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+      "duration": "45.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.25h",
+        "fez": "11.00h",
+        "saz": "10.25h",
+        "sez": "11.00h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -3469,10 +3509,30 @@
       "cpm": {
         "faz": "9.98h",
         "fez": "10.65h",
-        "saz": "11.45h",
-        "sez": "12.12h",
-        "gp": "88.0m",
-        "fp": "88.0m",
+        "saz": "10.95h",
+        "sez": "11.62h",
+        "gp": "58.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F73.2-BRK-P1",
+      "name": "Pause: Max Mustermann (Vorschrift laut Arbeitszeitgesetz)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.65h",
+        "fez": "11.15h",
+        "saz": "10.65h",
+        "sez": "11.15h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -3509,10 +3569,30 @@
       "cpm": {
         "faz": "10.12h",
         "fez": "10.78h",
-        "saz": "11.45h",
-        "sez": "12.12h",
-        "gp": "80.0m",
-        "fp": "80.0m",
+        "saz": "10.95h",
+        "sez": "11.62h",
+        "gp": "50.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-F74.2-BRK-P2",
+      "name": "Pause: Heinz Müller (Vorschrift laut Arbeitszeitgesetz)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "10.78h",
+        "fez": "11.28h",
+        "saz": "10.78h",
+        "sez": "11.28h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -5511,7 +5591,18 @@
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": false,
-        "puffer_days": 0.25
+        "puffer_days": 0.156
+      },
+      "2-F69.2-BRK-P1": {
+        "id": "2-F69.2-BRK-P1",
+        "name": "Pause: Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+        "network_duration_days": 0.094,
+        "calendar_start_date": "2026-03-03T06:21:00",
+        "calendar_end_date": "2026-03-03T06:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
       },
       "2-F70.1": {
         "id": "2-F70.1",
@@ -5533,7 +5624,18 @@
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": false,
-        "puffer_days": 0.233
+        "puffer_days": 0.14
+      },
+      "2-F70.2-BRK-P2": {
+        "id": "2-F70.2-BRK-P2",
+        "name": "Pause: Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz)",
+        "network_duration_days": 0.094,
+        "calendar_start_date": "2026-03-03T06:45:00",
+        "calendar_end_date": "2026-03-03T06:45:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
       },
       "2-F71.1": {
         "id": "2-F71.1",
@@ -5599,7 +5701,18 @@
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": false,
-        "puffer_days": 0.183
+        "puffer_days": 0.121
+      },
+      "2-F73.2-BRK-P1": {
+        "id": "2-F73.2-BRK-P1",
+        "name": "Pause: Max Mustermann (Vorschrift laut Arbeitszeitgesetz)",
+        "network_duration_days": 0.062,
+        "calendar_start_date": "2026-03-03T07:57:00",
+        "calendar_end_date": "2026-03-03T07:57:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
       },
       "2-F74.1": {
         "id": "2-F74.1",
@@ -5621,7 +5734,18 @@
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": false,
-        "puffer_days": 0.167
+        "puffer_days": 0.104
+      },
+      "2-F74.2-BRK-P2": {
+        "id": "2-F74.2-BRK-P2",
+        "name": "Pause: Heinz Müller (Vorschrift laut Arbeitszeitgesetz)",
+        "network_duration_days": 0.062,
+        "calendar_start_date": "2026-03-03T08:21:00",
+        "calendar_end_date": "2026-03-03T08:21:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
       },
       "2-F75.1": {
         "id": "2-F75.1",

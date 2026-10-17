@@ -6,12 +6,12 @@
 ### Projektzusammenfassung
 
 - **Projekt:** Fassadensanierung & Kellerisolierung
-- **Projektdauer:** 38.0h
+- **Projektdauer:** 2280.0m
 - **Startdatum:** 2026-03-02 00:00
 - **Enddatum (geschätzt):** 2026-03-06 18:00
-- **Zeiteinheit:** hours
-- **Anzahl Tasks:** 8
-- **Kritische Tasks:** 8
+- **Zeiteinheit:** minutes
+- **Anzahl Tasks:** 11
+- **Kritische Tasks:** 11
 
 ---
 
@@ -19,14 +19,17 @@
 
 Der kritische Pfad besteht aus folgenden Tasks:
 
-- **[1]** Erdarbeiten & Freilegung (Dauer: 8.0h)
-- **[1-BRK-P_ERD]** Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (Dauer: 0.8h)
-- **[2]** Kellerisolierung (Perimeter) (Dauer: 6.0h)
-- **[2-BRK-P_ERD]** Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (Dauer: 0.5h)
-- **[3]** Holzständerwerk & Holzfaserplatten (Dauer: 16.0h)
-- **[3-BRK-P_ZIM]** Pause: Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (Dauer: 0.8h)
-- **[4]** Zellulose Einblasdämmung (Dauer: 4.0h)
-- **[5]** Verfüllen & Abschluss (Dauer: 4.0h)
+- **[1]** Erdarbeiten & Freilegung (Dauer: 480.0m)
+- **[1-BRK-P_ERD]** Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (Dauer: 45.0m)
+- **[1-BRK-P_ERD-2]** Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (Dauer: 30.0m)
+- **[2]** Kellerisolierung (Perimeter) (Dauer: 360.0m)
+- **[2-BRK-P_ERD]** Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (Dauer: 45.0m)
+- **[2-BRK-P_ERD-2]** Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (Dauer: 30.0m)
+- **[3]** Holzständerwerk & Holzfaserplatten (Dauer: 960.0m)
+- **[3-BRK-P_ZIM]** Pause: Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (Dauer: 45.0m)
+- **[3-BRK-P_ZIM-2]** Pause: Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (Dauer: 30.0m)
+- **[4]** Zellulose Einblasdämmung (Dauer: 240.0m)
+- **[5]** Verfüllen & Abschluss (Dauer: 240.0m)
 
 ---
 
@@ -35,21 +38,27 @@ Der kritische Pfad besteht aus folgenden Tasks:
 ```mermaid
 graph TD
 
-    N1["<b>[1] | Erdarbeiten & Freilegung<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N1-BRK-P_ERD["<b>[1-BRK-P_ERD] | Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt))<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N2["<b>[2] | Kellerisolierung (Perimeter)<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N2-BRK-P_ERD["<b>[2-BRK-P_ERD] | Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N3["<b>[3] | Holzständerwerk & Holzfaserplatten<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N3-BRK-P_ZIM["<b>[3-BRK-P_ZIM] | Pause: Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt))<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N4["<b>[4] | Zellulose Einblasdämmung<br/>GP:0.0h | FP:0.0h</b>"]:::critical
-    N5["<b>[5] | Verfüllen & Abschluss<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N1["<b>[1] | Erdarbeiten & Freilegung<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N1-BRK-P_ERD["<b>[1-BRK-P_ERD] | Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt))<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N1-BRK-P_ERD-2["<b>[1-BRK-P_ERD-2] | Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2["<b>[2] | Kellerisolierung (Perimeter)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-BRK-P_ERD["<b>[2-BRK-P_ERD] | Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt))<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-BRK-P_ERD-2["<b>[2-BRK-P_ERD-2] | Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N3["<b>[3] | Holzständerwerk & Holzfaserplatten<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N3-BRK-P_ZIM["<b>[3-BRK-P_ZIM] | Pause: Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt))<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N3-BRK-P_ZIM-2["<b>[3-BRK-P_ZIM-2] | Pause: Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N4["<b>[4] | Zellulose Einblasdämmung<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N5["<b>[5] | Verfüllen & Abschluss<br/>GP:0.0m | FP:0.0m</b>"]:::critical
 
     N1 --> N2
     N1 --> N1-BRK-P_ERD
+    N1 --> N1-BRK-P_ERD-2
     N2 --> N3
     N2 --> N2-BRK-P_ERD
+    N2 --> N2-BRK-P_ERD-2
     N3 --> N4
     N3 --> N3-BRK-P_ZIM
+    N3 --> N3-BRK-P_ZIM-2
     N4 --> N5
 
     classDef critical fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:3px
@@ -62,14 +71,17 @@ graph TD
 
 | ID | Name | Dauer | FAZ | FEZ | SAZ | SEZ | GP | FP | Krit. |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | Erdarbeiten & Freilegung | 8.0h | 0.0h | 8.0h | 0.0h | 8.0h | 0.0h | 0.0h | JA |
-| 1-BRK-P_ERD | Pause: Thomas Tiefbau (Lenkzeitu... | 0.8h | 8.0h | 8.8h | 8.0h | 8.8h | 0.0h | 0.0h | JA |
-| 2 | Kellerisolierung (Perimeter) | 6.0h | 8.0h | 14.0h | 8.0h | 14.0h | 0.0h | 0.0h | JA |
-| 2-BRK-P_ERD | Pause: Thomas Tiefbau (Vorschrif... | 0.5h | 14.0h | 14.5h | 14.0h | 14.5h | 0.0h | 0.0h | JA |
-| 3 | Holzständerwerk & Holzfaserplatten | 16.0h | 14.0h | 30.0h | 14.0h | 30.0h | 0.0h | 0.0h | JA |
-| 3-BRK-P_ZIM | Pause: Stefan Schnitt (Lenkzeitu... | 0.8h | 30.0h | 30.8h | 30.0h | 30.8h | 0.0h | 0.0h | JA |
-| 4 | Zellulose Einblasdämmung | 4.0h | 30.0h | 34.0h | 30.0h | 34.0h | 0.0h | 0.0h | JA |
-| 5 | Verfüllen & Abschluss | 4.0h | 34.0h | 38.0h | 34.0h | 38.0h | 0.0h | 0.0h | JA |
+| 1 | Erdarbeiten & Freilegung | 480.0m | 0.0m | 480.0m | 0.0m | 480.0m | 0.0m | 0.0m | JA |
+| 1-BRK-P_ERD | Pause: Thomas Tiefbau (Lenkzeitu... | 45.0m | 480.0m | 525.0m | 480.0m | 525.0m | 0.0m | 0.0m | JA |
+| 1-BRK-P_ERD-2 | Pause: Thomas Tiefbau (Vorschrif... | 30.0m | 480.0m | 510.0m | 480.0m | 510.0m | 0.0m | 0.0m | JA |
+| 2 | Kellerisolierung (Perimeter) | 360.0m | 480.0m | 840.0m | 480.0m | 840.0m | 0.0m | 0.0m | JA |
+| 2-BRK-P_ERD | Pause: Thomas Tiefbau (Lenkzeitu... | 45.0m | 840.0m | 885.0m | 840.0m | 885.0m | 0.0m | 0.0m | JA |
+| 2-BRK-P_ERD-2 | Pause: Thomas Tiefbau (Vorschrif... | 30.0m | 840.0m | 870.0m | 840.0m | 870.0m | 0.0m | 0.0m | JA |
+| 3 | Holzständerwerk & Holzfaserplatten | 960.0m | 840.0m | 1800.0m | 840.0m | 1800.0m | 0.0m | 0.0m | JA |
+| 3-BRK-P_ZIM | Pause: Stefan Schnitt (Lenkzeitu... | 45.0m | 1800.0m | 1845.0m | 1800.0m | 1845.0m | 0.0m | 0.0m | JA |
+| 3-BRK-P_ZIM-2 | Pause: Stefan Schnitt (Vorschrif... | 30.0m | 1800.0m | 1830.0m | 1800.0m | 1830.0m | 0.0m | 0.0m | JA |
+| 4 | Zellulose Einblasdämmung | 240.0m | 1800.0m | 2040.0m | 1800.0m | 2040.0m | 0.0m | 0.0m | JA |
+| 5 | Verfüllen & Abschluss | 240.0m | 2040.0m | 2280.0m | 2040.0m | 2280.0m | 0.0m | 0.0m | JA |
 
 ---
 
@@ -84,11 +96,14 @@ gantt
     section Feiertage
     section Tasks
     [1] Erdarbeiten & Freilegung (KRIT) :crit, 2026-03-02 00:00, 2026-03-03 00:00
-    [1-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 00:00
+    [1-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 00:45
+    [1-BRK-P_ERD-2] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 00:30
     [2] Kellerisolierung (Perimeter) (KRIT) :crit, 2026-03-03 00:00, 2026-03-03 06:00
-    [2-BRK-P_ERD] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 06:00, 2026-03-03 06:00
+    [2-BRK-P_ERD] Pause Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-03 06:00, 2026-03-03 06:45
+    [2-BRK-P_ERD-2] Pause Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-03 06:00, 2026-03-03 06:30
     [3] Holzständerwerk & Holzfaserplatten (KRIT) :crit, 2026-03-03 06:00, 2026-03-05 06:00
-    [3-BRK-P_ZIM] Pause Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-05 06:00, 2026-03-05 06:00
+    [3-BRK-P_ZIM] Pause Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt)) (KRIT) :crit, 2026-03-05 06:00, 2026-03-05 06:45
+    [3-BRK-P_ZIM-2] Pause Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke) (KRIT) :crit, 2026-03-05 06:00, 2026-03-05 06:30
     [4] Zellulose Einblasdämmung (KRIT) :crit, 2026-03-05 06:00, 2026-03-06 02:00
     [5] Verfüllen & Abschluss (KRIT) :crit, 2026-03-06 02:00, 2026-03-06 06:00
 ```

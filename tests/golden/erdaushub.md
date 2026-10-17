@@ -10,8 +10,8 @@
 - **Startdatum:** 2026-03-02 00:00
 - **Enddatum (geschätzt):** 2026-03-03 12:21
 - **Zeiteinheit:** minutes
-- **Anzahl Tasks:** 174
-- **Kritische Tasks:** 91
+- **Anzahl Tasks:** 178
+- **Kritische Tasks:** 95
 
 ---
 
@@ -100,11 +100,15 @@ Der kritische Pfad besteht aus folgenden Tasks:
 - **[2-F73.1]** Beladen #73 (Dauer: 8.0m)
 - **[2-F74.1]** Beladen #74 (Dauer: 8.0m)
 - **[2-F75.1]** Beladen #75 (Dauer: 8.0m)
+- **[2-F69.2-BRK-P1]** Pause: Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz) (Dauer: 45.0m)
 - **[2-F76.1]** Beladen #76 (Dauer: 8.0m)
+- **[2-F70.2-BRK-P2]** Pause: Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz) (Dauer: 45.0m)
 - **[2-F77.1]** Beladen #77 (Dauer: 8.0m)
 - **[2-F78.1]** Beladen #78 (Dauer: 8.0m)
 - **[2-F79.1]** Beladen #79 (Dauer: 8.0m)
+- **[2-F73.2-BRK-P1]** Pause: Max Mustermann (Vorschrift laut Arbeitszeitgesetz) (Dauer: 30.0m)
 - **[2-F80.1]** Beladen #80 (Dauer: 8.0m)
+- **[2-F74.2-BRK-P2]** Pause: Heinz Müller (Vorschrift laut Arbeitszeitgesetz) (Dauer: 30.0m)
 - **[2-F81.1]** Beladen #81 (Dauer: 8.0m)
 - **[2-F82.1]** Beladen #82 (Dauer: 8.0m)
 - **[2-F83.1]** Beladen #83 (Dauer: 8.0m)
@@ -261,17 +265,21 @@ graph TD
     N2-F68.1["<b>[2-F68.1] | Beladen #68<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F68.2["[2-F68.2] | Transport-Umlauf #68<br/>GP:128.0m | FP:128.0m"]
     N2-F69.1["<b>[2-F69.1] | Beladen #69<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-F69.2["[2-F69.2] | Transport-Umlauf #69<br/>GP:120.0m | FP:120.0m"]
+    N2-F69.2["[2-F69.2] | Transport-Umlauf #69<br/>GP:75.0m | FP:0.0m"]
+    N2-F69.2-BRK-P1["<b>[2-F69.2-BRK-P1] | Pause: Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F70.1["<b>[2-F70.1] | Beladen #70<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-F70.2["[2-F70.2] | Transport-Umlauf #70<br/>GP:112.0m | FP:112.0m"]
+    N2-F70.2["[2-F70.2] | Transport-Umlauf #70<br/>GP:67.0m | FP:0.0m"]
+    N2-F70.2-BRK-P2["<b>[2-F70.2-BRK-P2] | Pause: Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F71.1["<b>[2-F71.1] | Beladen #71<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F71.2["[2-F71.2] | Transport-Umlauf #71<br/>GP:104.0m | FP:104.0m"]
     N2-F72.1["<b>[2-F72.1] | Beladen #72<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F72.2["[2-F72.2] | Transport-Umlauf #72<br/>GP:96.0m | FP:96.0m"]
     N2-F73.1["<b>[2-F73.1] | Beladen #73<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-F73.2["[2-F73.2] | Transport-Umlauf #73<br/>GP:88.0m | FP:88.0m"]
+    N2-F73.2["[2-F73.2] | Transport-Umlauf #73<br/>GP:58.0m | FP:0.0m"]
+    N2-F73.2-BRK-P1["<b>[2-F73.2-BRK-P1] | Pause: Max Mustermann (Vorschrift laut Arbeitszeitgesetz)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F74.1["<b>[2-F74.1] | Beladen #74<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-F74.2["[2-F74.2] | Transport-Umlauf #74<br/>GP:80.0m | FP:80.0m"]
+    N2-F74.2["[2-F74.2] | Transport-Umlauf #74<br/>GP:50.0m | FP:0.0m"]
+    N2-F74.2-BRK-P2["<b>[2-F74.2-BRK-P2] | Pause: Heinz Müller (Vorschrift laut Arbeitszeitgesetz)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F75.1["<b>[2-F75.1] | Beladen #75<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-F75.2["[2-F75.2] | Transport-Umlauf #75<br/>GP:72.0m | FP:72.0m"]
     N2-F76.1["<b>[2-F76.1] | Beladen #76<br/>GP:0.0m | FP:0.0m</b>"]:::critical
@@ -437,16 +445,20 @@ graph TD
     N2-F68.1 --> N2-F69.1
     N2-F69.1 --> N2-F69.2
     N2-F69.1 --> N2-F70.1
+    N2-F69.2 --> N2-F69.2-BRK-P1
     N2-F70.1 --> N2-F70.2
     N2-F70.1 --> N2-F71.1
+    N2-F70.2 --> N2-F70.2-BRK-P2
     N2-F71.1 --> N2-F71.2
     N2-F71.1 --> N2-F72.1
     N2-F72.1 --> N2-F72.2
     N2-F72.1 --> N2-F73.1
     N2-F73.1 --> N2-F73.2
     N2-F73.1 --> N2-F74.1
+    N2-F73.2 --> N2-F73.2-BRK-P1
     N2-F74.1 --> N2-F74.2
     N2-F74.1 --> N2-F75.1
+    N2-F74.2 --> N2-F74.2-BRK-P2
     N2-F75.1 --> N2-F75.2
     N2-F75.1 --> N2-F76.1
     N2-F76.1 --> N2-F76.2
@@ -620,17 +632,21 @@ graph TD
 | 2-F68.1 | Beladen #68 | 8.0m | 551.0m | 559.0m | 551.0m | 559.0m | 0.0m | 0.0m | JA |
 | 2-F68.2 | Transport-Umlauf #68 | 40.0m | 559.0m | 599.0m | 687.0m | 727.0m | 128.0m | 128.0m |  |
 | 2-F69.1 | Beladen #69 | 8.0m | 559.0m | 567.0m | 559.0m | 567.0m | 0.0m | 0.0m | JA |
-| 2-F69.2 | Transport-Umlauf #69 | 40.0m | 567.0m | 607.0m | 687.0m | 727.0m | 120.0m | 120.0m |  |
+| 2-F69.2 | Transport-Umlauf #69 | 40.0m | 567.0m | 607.0m | 642.0m | 682.0m | 75.0m | 0.0m |  |
+| 2-F69.2-BRK-P1 | Pause: Max Mustermann (Lenkzeitu... | 45.0m | 607.0m | 652.0m | 607.0m | 652.0m | 0.0m | 0.0m | JA |
 | 2-F70.1 | Beladen #70 | 8.0m | 567.0m | 575.0m | 567.0m | 575.0m | 0.0m | 0.0m | JA |
-| 2-F70.2 | Transport-Umlauf #70 | 40.0m | 575.0m | 615.0m | 687.0m | 727.0m | 112.0m | 112.0m |  |
+| 2-F70.2 | Transport-Umlauf #70 | 40.0m | 575.0m | 615.0m | 642.0m | 682.0m | 67.0m | 0.0m |  |
+| 2-F70.2-BRK-P2 | Pause: Heinz Müller (Lenkzeitunt... | 45.0m | 615.0m | 660.0m | 615.0m | 660.0m | 0.0m | 0.0m | JA |
 | 2-F71.1 | Beladen #71 | 8.0m | 575.0m | 583.0m | 575.0m | 583.0m | 0.0m | 0.0m | JA |
 | 2-F71.2 | Transport-Umlauf #71 | 40.0m | 583.0m | 623.0m | 687.0m | 727.0m | 104.0m | 104.0m |  |
 | 2-F72.1 | Beladen #72 | 8.0m | 583.0m | 591.0m | 583.0m | 591.0m | 0.0m | 0.0m | JA |
 | 2-F72.2 | Transport-Umlauf #72 | 40.0m | 591.0m | 631.0m | 687.0m | 727.0m | 96.0m | 96.0m |  |
 | 2-F73.1 | Beladen #73 | 8.0m | 591.0m | 599.0m | 591.0m | 599.0m | 0.0m | 0.0m | JA |
-| 2-F73.2 | Transport-Umlauf #73 | 40.0m | 599.0m | 639.0m | 687.0m | 727.0m | 88.0m | 88.0m |  |
+| 2-F73.2 | Transport-Umlauf #73 | 40.0m | 599.0m | 639.0m | 657.0m | 697.0m | 58.0m | 0.0m |  |
+| 2-F73.2-BRK-P1 | Pause: Max Mustermann (Vorschrif... | 30.0m | 639.0m | 669.0m | 639.0m | 669.0m | 0.0m | 0.0m | JA |
 | 2-F74.1 | Beladen #74 | 8.0m | 599.0m | 607.0m | 599.0m | 607.0m | 0.0m | 0.0m | JA |
-| 2-F74.2 | Transport-Umlauf #74 | 40.0m | 607.0m | 647.0m | 687.0m | 727.0m | 80.0m | 80.0m |  |
+| 2-F74.2 | Transport-Umlauf #74 | 40.0m | 607.0m | 647.0m | 657.0m | 697.0m | 50.0m | 0.0m |  |
+| 2-F74.2-BRK-P2 | Pause: Heinz Müller (Vorschrift ... | 30.0m | 647.0m | 677.0m | 647.0m | 677.0m | 0.0m | 0.0m | JA |
 | 2-F75.1 | Beladen #75 | 8.0m | 607.0m | 615.0m | 607.0m | 615.0m | 0.0m | 0.0m | JA |
 | 2-F75.2 | Transport-Umlauf #75 | 40.0m | 615.0m | 655.0m | 687.0m | 727.0m | 72.0m | 72.0m |  |
 | 2-F76.1 | Beladen #76 | 8.0m | 615.0m | 623.0m | 615.0m | 623.0m | 0.0m | 0.0m | JA |
@@ -808,16 +824,20 @@ gantt
     [2-F68.2] Transport-Umlauf #68 :2026-03-03 01:19, 2026-03-03 01:59
     [2-F69.1] Beladen #69 (KRIT) :crit, 2026-03-03 01:19, 2026-03-03 01:27
     [2-F69.2] Transport-Umlauf #69 :2026-03-03 01:27, 2026-03-03 02:07
+    [2-F69.2-BRK-P1] Pause Max Mustermann (Lenkzeitunterbrechung laut Fahrpersonalgesetz) (KRIT) :crit, 2026-03-03 02:07, 2026-03-03 02:52
     [2-F70.1] Beladen #70 (KRIT) :crit, 2026-03-03 01:27, 2026-03-03 01:35
     [2-F70.2] Transport-Umlauf #70 :2026-03-03 01:35, 2026-03-03 02:15
+    [2-F70.2-BRK-P2] Pause Heinz Müller (Lenkzeitunterbrechung laut Fahrpersonalgesetz) (KRIT) :crit, 2026-03-03 02:15, 2026-03-03 03:00
     [2-F71.1] Beladen #71 (KRIT) :crit, 2026-03-03 01:35, 2026-03-03 01:43
     [2-F71.2] Transport-Umlauf #71 :2026-03-03 01:43, 2026-03-03 02:23
     [2-F72.1] Beladen #72 (KRIT) :crit, 2026-03-03 01:43, 2026-03-03 01:51
     [2-F72.2] Transport-Umlauf #72 :2026-03-03 01:51, 2026-03-03 02:31
     [2-F73.1] Beladen #73 (KRIT) :crit, 2026-03-03 01:51, 2026-03-03 01:59
     [2-F73.2] Transport-Umlauf #73 :2026-03-03 01:59, 2026-03-03 02:39
+    [2-F73.2-BRK-P1] Pause Max Mustermann (Vorschrift laut Arbeitszeitgesetz) (KRIT) :crit, 2026-03-03 02:39, 2026-03-03 03:09
     [2-F74.1] Beladen #74 (KRIT) :crit, 2026-03-03 01:59, 2026-03-03 02:07
     [2-F74.2] Transport-Umlauf #74 :2026-03-03 02:07, 2026-03-03 02:47
+    [2-F74.2-BRK-P2] Pause Heinz Müller (Vorschrift laut Arbeitszeitgesetz) (KRIT) :crit, 2026-03-03 02:47, 2026-03-03 03:17
     [2-F75.1] Beladen #75 (KRIT) :crit, 2026-03-03 02:07, 2026-03-03 02:15
     [2-F75.2] Transport-Umlauf #75 :2026-03-03 02:15, 2026-03-03 02:55
     [2-F76.1] Beladen #76 (KRIT) :crit, 2026-03-03 02:15, 2026-03-03 02:23

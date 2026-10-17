@@ -60,15 +60,14 @@ def expand_project(project: 'Project') -> 'Project':
 
     - Verweise auf einen Instance- oder Loop-Task zeigen danach auf die erste
       Instanz bzw. den ersten Zyklus (die Instanzen sind untereinander verkettet).
-    - Bei Projekten mit Personen und resting_times werden Pausen eingefügt.
     - Alle übrigen Projektfelder bleiben erhalten.
+    - Ruhepausen gehören zur Terminplanung und werden in lib.schedule eingefügt.
 
-    Gibt project unverändert zurück, wenn nichts zu tun ist.
+    Gibt project unverändert zurück, wenn nichts zu expandieren ist.
     """
     has_instances = any(isinstance(t, InstanceTask) for t in project.tasks)
     has_loops = any(isinstance(t, LoopTask) for t in project.tasks)
-    needs_breaks = bool(project.persons and project.resting_times)
-    if not (has_instances or has_loops or needs_breaks):
+    if not (has_instances or has_loops):
         return project
     if has_instances and project.order_volume is None:
         raise ValueError("order_volume muss für Cycle-Expansion gesetzt sein")
@@ -96,10 +95,6 @@ def expand_project(project: 'Project') -> 'Project':
     for task in expanded:
         for field in SUCCESSOR_FIELDS.values():
             setattr(task, field, [redirect.get(dep, dep) for dep in getattr(task, field)])
-
-    if needs_breaks:
-        from .rest_breaks import insert_rest_breaks
-        expanded = insert_rest_breaks(expanded, project)
 
     return project.model_copy(update={"tasks": expanded})
 

@@ -8,7 +8,7 @@ PROJEKTZUSAMMENFASSUNG
 
 Projekt:            Fassadensanierung & Kellerisolierung
 Projektdauer:       4.8d
-Zeiteinheit:        hours
+Zeiteinheit:        minutes
 Startdatum:         2026-03-02
 Enddatum:           2026-03-06
 Anzahl Tasks:       5
@@ -18,11 +18,11 @@ Kritische Tasks:    5
 KRITISCHER PFAD
 ======================================================================
 
-  [1] Erdarbeiten & Freilegung            Dauer: 8.0h
-  [2] Kellerisolierung (Perimeter)        Dauer: 6.0h
-  [3] Holzständerwerk & Holzfaserplatten  Dauer: 16.0h
-  [4] Zellulose Einblasdämmung            Dauer: 4.0h
-  [5] Verfüllen & Abschluss               Dauer: 4.0h
+  [1] Erdarbeiten & Freilegung            Dauer: 480.0m
+  [2] Kellerisolierung (Perimeter)        Dauer: 360.0m
+  [3] Holzständerwerk & Holzfaserplatten  Dauer: 960.0m
+  [4] Zellulose Einblasdämmung            Dauer: 240.0m
+  [5] Verfüllen & Abschluss               Dauer: 240.0m
 
 ======================================================================
 NETZPLAN TABELLE
@@ -30,12 +30,15 @@ NETZPLAN TABELLE
 
 ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
 ----------------------------------------------------------------------
-1       Erdarbeiten & Freilegung       1.0      0.0      1.0      0.0      1.0      0.0      0.0      2, 1-BRK-P_ERD       JA
+1       Erdarbeiten & Freilegung       1.0      0.0      1.0      0.0      1.0      0.0      0.0      2, 1-BRK-P_ERD, 1... JA
 1-BRK-P_ERD Pause: Thomas Tiefbau (Lenk... 0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
-2       Kellerisolierung (Perimeter)   0.8      1.0      1.8      1.0      1.8      0.0      0.0      3, 2-BRK-P_ERD       JA
-2-BRK-P_ERD Pause: Thomas Tiefbau (Vors... 0.1      1.8      1.8      1.8      1.8      0.0      0.0                           JA
-3       Holzständerwerk & Holzfaser... 2.0      1.8      3.8      1.8      3.8      0.0      0.0      4, 3-BRK-P_ZIM       JA
+1-BRK-P_ERD-2 Pause: Thomas Tiefbau (Vors... 0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
+2       Kellerisolierung (Perimeter)   0.8      1.0      1.8      1.0      1.8      0.0      0.0      3, 2-BRK-P_ERD, 2... JA
+2-BRK-P_ERD Pause: Thomas Tiefbau (Lenk... 0.1      1.8      1.8      1.8      1.8      0.0      0.0                           JA
+2-BRK-P_ERD-2 Pause: Thomas Tiefbau (Vors... 0.1      1.8      1.8      1.8      1.8      0.0      0.0                           JA
+3       Holzständerwerk & Holzfaser... 2.0      1.8      3.8      1.8      3.8      0.0      0.0      4, 3-BRK-P_ZIM, 3... JA
 3-BRK-P_ZIM Pause: Stefan Schnitt (Lenk... 0.1      3.8      3.8      3.8      3.8      0.0      0.0                           JA
+3-BRK-P_ZIM-2 Pause: Stefan Schnitt (Vors... 0.1      3.8      3.8      3.8      3.8      0.0      0.0                           JA
 4       Zellulose Einblasdämmung       0.5      3.8      4.2      3.8      4.2      0.0      0.0      5                    JA
 5       Verfüllen & Abschluss          0.5      4.2      4.8      4.2      4.8      0.0      0.0                           JA
 ----------------------------------------------------------------------
@@ -46,11 +49,11 @@ ALLE TASKS
 
 ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Krit.
 ----------------------------------------------------------------------
-1       Erdarbeiten & Freilegung       8.0h     0.0h     8.0h     0.0h     8.0h     0.0h     0.0h     JA
-2       Kellerisolierung (Perimeter)   6.0h     8.0h     14.0h    8.0h     14.0h    0.0h     0.0h     JA
-3       Holzständerwerk & Holzfaser... 16.0h    14.0h    30.0h    14.0h    30.0h    0.0h     0.0h     JA
-4       Zellulose Einblasdämmung       4.0h     30.0h    34.0h    30.0h    34.0h    0.0h     0.0h     JA
-5       Verfüllen & Abschluss          4.0h     34.0h    38.0h    34.0h    38.0h    0.0h     0.0h     JA
+1       Erdarbeiten & Freilegung       480.0m   0.0m     480.0m   0.0m     480.0m   0.0m     0.0m     JA
+2       Kellerisolierung (Perimeter)   360.0m   480.0m   840.0m   480.0m   840.0m   0.0m     0.0m     JA
+3       Holzständerwerk & Holzfaser... 960.0m   840.0m   1800.0m  840.0m   1800.0m  0.0m     0.0m     JA
+4       Zellulose Einblasdämmung       240.0m   1800.0m  2040.0m  1800.0m  2040.0m  0.0m     0.0m     JA
+5       Verfüllen & Abschluss          240.0m   2040.0m  2280.0m  2040.0m  2280.0m  0.0m     0.0m     JA
 ----------------------------------------------------------------------
 
 ======================================================================
@@ -60,28 +63,28 @@ VERANTWORTLICHE
   Ressource                 Tasks                     Frühester Start 
   ----------------------------------------------------------------------
   Zellulose-Einblasmaschine [4]
-    [4] Zellulose Einblasdämmung      FAZ: 30.0h    FEZ: 34.0h    Krit.
+    [4] Zellulose Einblasdämmung      FAZ: 1800.0m  FEZ: 2040.0m  Krit.
 
   Holzfaserplatten & Ständerwerk [3]
-    [3] Holzständerwerk & Holzfaserp  FAZ: 14.0h    FEZ: 30.0h    Krit.
+    [3] Holzständerwerk & Holzfaserp  FAZ: 840.0m   FEZ: 1800.0m  Krit.
 
   Perimeterdämmung XPS      [2]
-    [2] Kellerisolierung (Perimeter)  FAZ: 8.0h     FEZ: 14.0h    Krit.
+    [2] Kellerisolierung (Perimeter)  FAZ: 480.0m   FEZ: 840.0m   Krit.
 
   Minibagger 3.5t           [1, 5]
-    [1] Erdarbeiten & Freilegung      FAZ: 0.0h     FEZ: 8.0h     Krit.
-    [5] Verfüllen & Abschluss         FAZ: 34.0h    FEZ: 38.0h    Krit.
+    [1] Erdarbeiten & Freilegung      FAZ: 0.0m     FEZ: 480.0m   Krit.
+    [5] Verfüllen & Abschluss         FAZ: 2040.0m  FEZ: 2280.0m  Krit.
 
   LKW-Fahrer Max            [1, 2, 5]
-    [1] Erdarbeiten & Freilegung      FAZ: 0.0h     FEZ: 8.0h     Krit.
-    [2] Kellerisolierung (Perimeter)  FAZ: 8.0h     FEZ: 14.0h    Krit.
-    [5] Verfüllen & Abschluss         FAZ: 34.0h    FEZ: 38.0h    Krit.
+    [1] Erdarbeiten & Freilegung      FAZ: 0.0m     FEZ: 480.0m   Krit.
+    [2] Kellerisolierung (Perimeter)  FAZ: 480.0m   FEZ: 840.0m   Krit.
+    [5] Verfüllen & Abschluss         FAZ: 2040.0m  FEZ: 2280.0m  Krit.
 
   Baggerführer Bodo         [4]
-    [4] Zellulose Einblasdämmung      FAZ: 30.0h    FEZ: 34.0h    Krit.
+    [4] Zellulose Einblasdämmung      FAZ: 1800.0m  FEZ: 2040.0m  Krit.
 
   LKW-Fahrer Heinz          [3]
-    [3] Holzständerwerk & Holzfaserp  FAZ: 14.0h    FEZ: 30.0h    Krit.
+    [3] Holzständerwerk & Holzfaserp  FAZ: 840.0m   FEZ: 1800.0m  Krit.
 
 ----------------------------------------------------------------------
 Personen:

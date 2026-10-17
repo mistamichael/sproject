@@ -1,10 +1,10 @@
 {
   "summary": {
     "project": "Fassadensanierung & Kellerisolierung",
-    "project_duration": "38.0h",
-    "time_unit": "hours",
+    "project_duration": "2280.0m",
+    "time_unit": "minutes",
     "num_tasks": 5,
-    "num_critical": 8,
+    "num_critical": 11,
     "project_start": "2026-03-02",
     "project_end": "2026-03-06",
   },
@@ -12,42 +12,42 @@
     {
       "id": "1",
       "name": "Erdarbeiten & Freilegung",
-      "duration": "8.0h"
+      "duration": "480.0m"
     },
     {
       "id": "2",
       "name": "Kellerisolierung (Perimeter)",
-      "duration": "6.0h"
+      "duration": "360.0m"
     },
     {
       "id": "3",
       "name": "Holzständerwerk & Holzfaserplatten",
-      "duration": "16.0h"
+      "duration": "960.0m"
     },
     {
       "id": "4",
       "name": "Zellulose Einblasdämmung",
-      "duration": "4.0h"
+      "duration": "240.0m"
     },
     {
       "id": "5",
       "name": "Verfüllen & Abschluss",
-      "duration": "4.0h"
+      "duration": "240.0m"
     }
   ],
   "tasks": [
     {
       "id": "1",
       "name": "Erdarbeiten & Freilegung",
-      "duration": "8.0h",
+      "duration": "480.0m",
       "is_critical": true,
       "cpm": {
         "faz": "0.00h",
         "fez": "8.00h",
         "saz": "0.00h",
         "sez": "8.00h",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-02",
           "fez_date": "2026-03-03",
@@ -59,15 +59,35 @@
     {
       "id": "1-BRK-P_ERD",
       "name": "Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt))",
-      "duration": "0.8h",
+      "duration": "45.0m",
       "is_critical": true,
       "cpm": {
         "faz": "8.00h",
         "fez": "8.75h",
         "saz": "8.00h",
         "sez": "8.75h",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "1-BRK-P_ERD-2",
+      "name": "Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "8.00h",
+        "fez": "8.50h",
+        "saz": "8.00h",
+        "sez": "8.50h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -79,15 +99,15 @@
     {
       "id": "2",
       "name": "Kellerisolierung (Perimeter)",
-      "duration": "6.0h",
+      "duration": "360.0m",
       "is_critical": true,
       "cpm": {
         "faz": "8.00h",
         "fez": "14.00h",
         "saz": "8.00h",
         "sez": "14.00h",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -98,16 +118,36 @@
     },
     {
       "id": "2-BRK-P_ERD",
+      "name": "Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt))",
+      "duration": "45.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "14.00h",
+        "fez": "14.75h",
+        "saz": "14.00h",
+        "sez": "14.75h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-03",
+          "fez_date": "2026-03-03",
+          "saz_date": "2026-03-03",
+          "sez_date": "2026-03-03"
+        }
+      }
+    },
+    {
+      "id": "2-BRK-P_ERD-2",
       "name": "Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)",
-      "duration": "0.5h",
+      "duration": "30.0m",
       "is_critical": true,
       "cpm": {
         "faz": "14.00h",
         "fez": "14.50h",
         "saz": "14.00h",
         "sez": "14.50h",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -119,15 +159,15 @@
     {
       "id": "3",
       "name": "Holzständerwerk & Holzfaserplatten",
-      "duration": "16.0h",
+      "duration": "960.0m",
       "is_critical": true,
       "cpm": {
         "faz": "14.00h",
         "fez": "2026-03-05 18:00",
         "saz": "14.00h",
         "sez": "2026-03-05 18:00",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-05",
@@ -139,15 +179,35 @@
     {
       "id": "3-BRK-P_ZIM",
       "name": "Pause: Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt))",
-      "duration": "0.8h",
+      "duration": "45.0m",
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-05 18:00",
         "fez": "2026-03-05 20:15",
         "saz": "2026-03-05 18:00",
         "sez": "2026-03-05 20:15",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
+        "dates": {
+          "faz_date": "2026-03-05",
+          "fez_date": "2026-03-05",
+          "saz_date": "2026-03-05",
+          "sez_date": "2026-03-05"
+        }
+      }
+    },
+    {
+      "id": "3-BRK-P_ZIM-2",
+      "name": "Pause: Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)",
+      "duration": "30.0m",
+      "is_critical": true,
+      "cpm": {
+        "faz": "2026-03-05 18:00",
+        "fez": "2026-03-05 19:30",
+        "saz": "2026-03-05 18:00",
+        "sez": "2026-03-05 19:30",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-05",
           "fez_date": "2026-03-05",
@@ -159,15 +219,15 @@
     {
       "id": "4",
       "name": "Zellulose Einblasdämmung",
-      "duration": "4.0h",
+      "duration": "240.0m",
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-05 18:00",
         "fez": "2026-03-06 06:00",
         "saz": "2026-03-05 18:00",
         "sez": "2026-03-06 06:00",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-05",
           "fez_date": "2026-03-06",
@@ -179,15 +239,15 @@
     {
       "id": "5",
       "name": "Verfüllen & Abschluss",
-      "duration": "4.0h",
+      "duration": "240.0m",
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-06 06:00",
         "fez": "2026-03-06 18:00",
         "saz": "2026-03-06 06:00",
         "sez": "2026-03-06 18:00",
-        "gp": "0.0h",
-        "fp": "0.0h",
+        "gp": "0.0m",
+        "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-06",
           "fez_date": "2026-03-06",
@@ -200,7 +260,7 @@
   "gantt_chart": {
     "project_name": "Fassadensanierung & Kellerisolierung",
     "project_start_date": "2026-03-02T00:00:00",
-    "time_unit": "hours",
+    "time_unit": "minutes",
     "skip_weekends": true,
     "skip_holidays": true,
     "tasks": {
@@ -226,6 +286,17 @@
         "is_critical": true,
         "puffer_days": 0.0
       },
+      "1-BRK-P_ERD-2": {
+        "id": "1-BRK-P_ERD-2",
+        "name": "Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)",
+        "network_duration_days": 0.062,
+        "calendar_start_date": "2026-03-03T00:00:00",
+        "calendar_end_date": "2026-03-03T00:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
       "2": {
         "id": "2",
         "name": "Kellerisolierung (Perimeter)",
@@ -239,6 +310,17 @@
       },
       "2-BRK-P_ERD": {
         "id": "2-BRK-P_ERD",
+        "name": "Pause: Thomas Tiefbau (Lenkzeitunterbrechung (falls Materialtransport anfällt))",
+        "network_duration_days": 0.094,
+        "calendar_start_date": "2026-03-03T18:00:00",
+        "calendar_end_date": "2026-03-03T18:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "2-BRK-P_ERD-2": {
+        "id": "2-BRK-P_ERD-2",
         "name": "Pause: Thomas Tiefbau (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)",
         "network_duration_days": 0.062,
         "calendar_start_date": "2026-03-03T18:00:00",
@@ -263,6 +345,17 @@
         "id": "3-BRK-P_ZIM",
         "name": "Pause: Stefan Schnitt (Lenkzeitunterbrechung (falls Materialtransport anfällt))",
         "network_duration_days": 0.094,
+        "calendar_start_date": "2026-03-05T18:00:00",
+        "calendar_end_date": "2026-03-05T18:00:00",
+        "working_days": 1.0,
+        "calendar_days": 1,
+        "is_critical": true,
+        "puffer_days": 0.0
+      },
+      "3-BRK-P_ZIM-2": {
+        "id": "3-BRK-P_ZIM-2",
+        "name": "Pause: Stefan Schnitt (Vorschrift laut Arbeitszeitgesetz für alle Gewerke)",
+        "network_duration_days": 0.062,
         "calendar_start_date": "2026-03-05T18:00:00",
         "calendar_end_date": "2026-03-05T18:00:00",
         "working_days": 1.0,

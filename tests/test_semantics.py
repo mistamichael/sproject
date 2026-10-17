@@ -7,6 +7,7 @@ from lib.models import InstanceTask, Person, Project, Resource, SimpleTask
 from lib.models.resources import RestInterval
 from lib.work_calendar import WorkCalendar
 from lib.models.cpm import CPMCalculator
+from lib.schedule import build_schedule
 
 
 def _cpm(project: Project):
@@ -35,17 +36,44 @@ def test_end_nodes_get_float_up_to_project_end():
     assert result.critical_path == [1, 2]
 
 
-def test_rest_breaks_without_loop_tasks():
-    project = Project(
+def _break_project(tasks):
+    return Project(
         project="p",
+        project_start="2026-03-02",
         persons=[Person(id="P1", name="Anna", role="x", hourly_rate=50, rest_intervals="resting_times")],
         resources=[Resource(id="R1", person_id="P1")],
         resting_times=[RestInterval(after_hours=6, duration="30m")],
-        tasks=[SimpleTask(id=1, name="Arbeit", duration="8h", resources=["R1"])],
+        tasks=tasks,
     )
-    expanded = project.expand()
-    assert [t.id for t in expanded.tasks] == [1, "1-BRK-P1"]
-    assert expanded.tasks[1].is_break
+
+
+def test_rest_breaks_without_loop_tasks_and_input_unchanged():
+    project = _break_project([SimpleTask(id=1, name="Arbeit", duration="8h", resources=["R1"])])
+    schedule = build_schedule(project)
+    assert [t.id for t in schedule.project.tasks] == [1, "1-BRK-P1"]
+    assert schedule.project.tasks[1].is_break
+    assert project.tasks[0].successors == []          # geladenes Projekt bleibt unberührt
+
+
+def test_rest_breaks_follow_schedule_not_list_order():
+    # Liste: B vor A, Zeitplan: A (Tag 0, 4h) vor B (Tag 0, 4h) -> Pause nach B
+    project = _break_project([
+        SimpleTask(id="B", name="B", duration="4h", resources=["R1"]),
+        SimpleTask(id="A", name="A", duration="4h", resources=["R1"], successors=["B"]),
+    ])
+    ids = [t.id for t in build_schedule(project).project.tasks]
+    assert "B-BRK-P1" in ids and "A-BRK-P1" not in ids
+
+
+def test_rest_break_rules_apply_per_working_day():
+    # Je 1 Tag (8h) an drei Tagen -> an jedem Tag eine Pause
+    project = _break_project([
+        SimpleTask(id=1, name="T1", duration="1d", resources=["R1"], successors=[2]),
+        SimpleTask(id=2, name="T2", duration="1d", resources=["R1"], successors=[3]),
+        SimpleTask(id=3, name="T3", duration="1d", resources=["R1"]),
+    ])
+    breaks = [t.id for t in build_schedule(project).project.tasks if t.is_break]
+    assert breaks == ["1-BRK-P1", "2-BRK-P1", "3-BRK-P1"]
 
 
 def test_task_cost_is_fixed_price():
