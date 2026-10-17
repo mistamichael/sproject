@@ -27,6 +27,7 @@ class WorkCalendar:
     """
     skip_weekends: bool = True
     holidays: FrozenSet[str] = frozenset()
+    day_start_hour: float = 8.0      # Arbeitsbeginn (aus [WorkingHours] morning_shift)
 
     def interruption_reason(self, day: datetime) -> Optional[str]:
         """'weekend', 'holiday' oder None für einen Arbeitstag."""
@@ -38,6 +39,13 @@ class WorkCalendar:
 
     def is_working_day(self, day: datetime) -> bool:
         return self.interruption_reason(day) is None
+
+    def next_work_start(self, now: datetime) -> datetime:
+        """Arbeitsbeginn am Tag von now bzw. am nächsten Arbeitstag."""
+        day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        while not self.is_working_day(day):
+            day += timedelta(days=1)
+        return day + timedelta(hours=self.day_start_hour)
 
     def add_workdays(self, start: datetime, days: float) -> datetime:
         """
@@ -95,5 +103,15 @@ def load_calendar(cfg_dir: Optional[Path] = None,
     calendar = WorkCalendar(
         skip_weekends=settings.get('skip_weekends', True),
         holidays=frozenset(holidays or {}),
+        day_start_hour=_parse_day_start(config.get_working_hours().get('morning_shift', '')),
     )
     return calendar, holidays
+
+
+def _parse_day_start(shift: str) -> float:
+    """'09:00-12:00' → 9.0; Fallback 8.0."""
+    try:
+        hours, minutes = shift.split('-')[0].strip().split(':')
+        return int(hours) + int(minutes) / 60
+    except (ValueError, AttributeError):
+        return 8.0

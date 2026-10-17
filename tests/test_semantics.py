@@ -92,3 +92,11 @@ def test_task_cost_is_fixed_price():
     assert costs.entries[0].hours_worked == 8.0          # nur Task 1 zählt als Lohn
     assert costs.total_fixed_costs == 250.0
     assert costs.total_costs == 800.0 + 250.0
+
+
+def test_default_start_is_next_working_day_at_work_start():
+    from datetime import datetime
+    calendar = WorkCalendar(day_start_hour=9.0)
+    saturday_night = datetime(2026, 10, 17, 23, 4)
+    assert calendar.next_work_start(saturday_night) == datetime(2026, 10, 19, 9, 0)
+    assert calendar.next_work_start(datetime(2026, 10, 20, 15, 30)) == datetime(2026, 10, 20, 9, 0)

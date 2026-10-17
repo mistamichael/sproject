@@ -263,14 +263,17 @@ class CPMCalculator:
         from .project import parse_start_date
 
         self.project = project
-        self.start_date = start_date or parse_start_date(project.project_start) or datetime.now()
+        explicit_start = start_date or parse_start_date(project.project_start)
         self.time_unit: TimeUnit = project.get_time_unit()
 
         if calendar is None:
-            calendar, holidays = load_calendar(cfg_dir, year=self.start_date.year)
+            year = (explicit_start or datetime.now()).year
+            calendar, holidays = load_calendar(cfg_dir, year=year)
         elif holidays is None and calendar.holidays:
             holidays = {d: '' for d in calendar.holidays}
         self.calendar = calendar
+        # Ohne Startdatum: heute bzw. nächster Arbeitstag zum Arbeitsbeginn (nicht "jetzt")
+        self.start_date = explicit_start or calendar.next_work_start(datetime.now())
         # None = Feiertage deaktiviert, {} = aktiviert, aber keine gefunden
         self.holidays = holidays
 
