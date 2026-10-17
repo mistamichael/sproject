@@ -12,8 +12,8 @@ from typing import Optional, List, Literal, Union, get_args
 ResourceType = Literal["person", "machine", "truck", "oven", "material"]
 RESOURCE_TYPES: List[str] = list(get_args(ResourceType))
 
-# Ressourcen-Typen, deren capacity im Resource-Leveling begrenzt wird
-_CAPACITY_TYPES = {"machine", "truck", "oven"}
+# Typen, bei denen capacity die Zahl gleichzeitiger Aufträge ist (siehe Resource.slots)
+_PARALLEL_CAPACITY_TYPES = {"machine", "oven"}
 
 
 class Resource(BaseModel):
@@ -50,8 +50,21 @@ class Resource(BaseModel):
     }
 
     @property
-    def is_capacity_limited(self) -> bool:
-        return self.capacity is not None and self.type in _CAPACITY_TYPES
+    def slots(self) -> Optional[int]:
+        """
+        Wie viele Tasks die Ressource gleichzeitig bearbeiten kann (None = unbegrenzt).
+
+        count, wenn gesetzt; sonst capacity bei Maschinen/Öfen (z. B. Ofen mit 4 Plätzen);
+        Material ist unbegrenzt; alles andere (Personen, LKW, Bagger) kann eine Aufgabe zugleich.
+        Bei LKW ist capacity die Ladekapazität, nicht die Zahl paralleler Fahrten.
+        """
+        if self.count:
+            return int(self.count)
+        if self.type in _PARALLEL_CAPACITY_TYPES and self.capacity:
+            return max(int(self.capacity), 1)
+        if self.type == "material":
+            return None
+        return 1
 
 
 class TimeRange(BaseModel):

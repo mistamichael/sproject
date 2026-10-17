@@ -6,9 +6,9 @@
 ### Projektzusammenfassung
 
 - **Projekt:** Software Entwicklung Projekt
-- **Projektdauer:** 124.0h
+- **Projektdauer:** 192.0h
 - **Startdatum:** 2026-03-03 09:00
-- **Enddatum (geschätzt):** 2026-03-18 21:00
+- **Enddatum (geschätzt):** 2026-04-08 09:00
 - **Zeiteinheit:** hours
 - **Anzahl Tasks:** 8
 - **Kritische Tasks:** 7
@@ -66,10 +66,10 @@ graph TD
 | 2 | Requirements Analyse | 16.0h | 4.0h | 20.0h | 4.0h | 20.0h | 0.0h | 0.0h | JA |
 | 3 | UI/UX Design | 24.0h | 20.0h | 44.0h | 36.0h | 60.0h | 16.0h | 16.0h |  |
 | 4 | Backend Entwicklung | 40.0h | 20.0h | 60.0h | 20.0h | 60.0h | 0.0h | 0.0h | JA |
-| 5 | Frontend Entwicklung | 32.0h | 60.0h | 92.0h | 60.0h | 92.0h | 0.0h | 0.0h | JA |
-| 6 | Testing & QA | 20.0h | 92.0h | 112.0h | 92.0h | 112.0h | 0.0h | 0.0h | JA |
-| 7 | Deployment | 8.0h | 112.0h | 120.0h | 112.0h | 120.0h | 0.0h | 0.0h | JA |
-| 8 | Projektabschluss | 4.0h | 120.0h | 124.0h | 120.0h | 124.0h | 0.0h | 0.0h | JA |
+| 5 | Frontend Entwicklung | 32.0h | 60.0h | 124.0h | 60.0h | 124.0h | 0.0h | 0.0h | JA |
+| 6 | Testing & QA | 20.0h | 124.0h | 164.0h | 124.0h | 164.0h | 0.0h | 0.0h | JA |
+| 7 | Deployment | 8.0h | 164.0h | 188.0h | 164.0h | 188.0h | 0.0h | 0.0h | JA |
+| 8 | Projektabschluss | 4.0h | 188.0h | 192.0h | 188.0h | 192.0h | 0.0h | 0.0h | JA |
 
 ---
 
@@ -87,10 +87,10 @@ gantt
     [2] Requirements Analyse (KRIT) :crit, 2026-03-03 13:00, 2026-03-05 13:00
     [3] UI/UX Design :2026-03-05 13:00, 2026-03-08 13:00
     [4] Backend Entwicklung (KRIT) :crit, 2026-03-05 13:00, 2026-03-10 13:00
-    [5] Frontend Entwicklung (KRIT) :crit, 2026-03-10 13:00, 2026-03-14 13:00
-    [6] Testing & QA (KRIT) :crit, 2026-03-14 13:00, 2026-03-17 09:00
-    [7] Deployment (KRIT) :crit, 2026-03-17 09:00, 2026-03-18 09:00
-    [8] Projektabschluss (KRIT) :crit, 2026-03-18 09:00, 2026-03-18 13:00
+    [5] Frontend Entwicklung (KRIT) :crit, 2026-03-10 13:00, 2026-03-18 13:00
+    [6] Testing & QA (KRIT) :crit, 2026-03-18 13:00, 2026-03-23 13:00
+    [7] Deployment (KRIT) :crit, 2026-03-23 13:00, 2026-03-26 13:00
+    [8] Projektabschluss (KRIT) :crit, 2026-03-26 13:00, 2026-03-27 09:00
 ```
 
 ---
@@ -133,8 +133,8 @@ gantt
 
     Requirements Analyse        :t0, 2026-03-03 13:00, 2026-03-05 13:00
     Backend Entwicklung         :t1, 2026-03-05 13:00, 2026-03-10 13:00
-    Testing & QA                :t2, 2026-03-14 13:00, 2026-03-17 09:00
-    Deployment                  :t3, 2026-03-17 09:00, 2026-03-18 09:00
+    Testing & QA                :t2, 2026-03-18 13:00, 2026-03-23 13:00
+    Deployment                  :t3, 2026-03-23 13:00, 2026-03-26 13:00
 ```
 
 ```mermaid
@@ -147,8 +147,8 @@ gantt
 
     section Junior Developer
 
-    Frontend Entwicklung        :t0, 2026-03-10 13:00, 2026-03-14 13:00
-    Testing & QA                :t1, 2026-03-14 13:00, 2026-03-17 09:00
+    Frontend Entwicklung        :t0, 2026-03-10 13:00, 2026-03-18 13:00
+    Testing & QA                :t1, 2026-03-18 13:00, 2026-03-23 13:00
 ```
 
 ```mermaid
@@ -163,17 +163,17 @@ gantt
 
     Projektinitialisierung      :t0, 2026-03-03 09:00, 2026-03-03 13:00
     Requirements Analyse        :t1, 2026-03-03 13:00, 2026-03-05 13:00
-    Projektabschluss            :t2, 2026-03-18 09:00, 2026-03-18 13:00
+    Projektabschluss            :t2, 2026-03-26 13:00, 2026-03-27 09:00
 ```
 
 #### Personen
 
 | Person | Kosten/Stunde | Abwesenheiten im Projektzeitraum | Abwesenheiten kurz nach dem Projektzeitraum |
 |---|---|---|---|
-| Alice | 85.00 €/h | keine | 2026-04-01 – 2026-04-05 (Urlaub Alice), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) |
-| Bob | 55.00 €/h | keine | 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) |
-| Charlie | 70.00 €/h | 2026-03-16 (Fortbildung) | 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) |
-| Diana | 95.00 €/h | keine | 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) |
+| Alice | 85.00 €/h | 2026-04-01 – 2026-04-05 (Urlaub Alice), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) | keine |
+| Bob | 55.00 €/h | 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) | keine |
+| Charlie | 70.00 €/h | 2026-03-16 (Fortbildung), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) | keine |
+| Diana | 95.00 €/h | 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag) | keine |
 
 #### Ressourcen-Details
 

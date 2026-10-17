@@ -29,6 +29,7 @@ from .exporters import EXPORTERS, ExportOptions, export_schedule
 from .models import load_project
 from .models.cpm import CPMResult
 from .paths import get_results_dir
+from .report_data import deadline_warning_lines
 from .schedule import build_schedule
 
 
@@ -77,6 +78,8 @@ def print_cpm_summary(result: CPMResult, labels: Optional[dict] = None) -> None:
     if result.project_start:
         print(f"{label('label_start', 'Startdatum')}: {result.project_start.strftime('%Y-%m-%d')}")
         print(f"{label('label_end', 'Enddatum (geschätzt)')}: {result.date_at(project_duration).strftime('%Y-%m-%d')}")
+    for warning in deadline_warning_lines(result):
+        print(f"WARNUNG – Deadline verfehlt: {warning}")
     print("=" * 70)
     print()
     print(f"{label('label_crit_path', 'Kritischer Pfad')}:")

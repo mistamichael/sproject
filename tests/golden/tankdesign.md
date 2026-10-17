@@ -8,7 +8,7 @@
 - **Projekt:** Tank Design Project
 - **Projektdauer:** 50.0d
 - **Startdatum:** 2026-03-03 07:00
-- **Enddatum (geschätzt):** 2026-04-22 07:00
+- **Enddatum (geschätzt):** 2026-05-18 07:00
 - **Zeiteinheit:** days
 - **Anzahl Tasks:** 8
 - **Kritische Tasks:** 4

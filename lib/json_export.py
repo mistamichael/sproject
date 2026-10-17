@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any, List
 from .durations import format_time_value
 from .export_config import load_export_config
 from .models.cpm import CPMResult
-from .report_data import collect_resource_data
+from .report_data import collect_deadline_violations, collect_resource_data
 
 
 # ---------------------------------------------------------------------------
@@ -58,6 +58,9 @@ def _build_summary(result: CPMResult, project_name: str) -> Dict[str, Any]:
         data['project_end'] = result.date_at(project_duration).strftime('%Y-%m-%d')
     if base.get('calculation_date'):
         data['calculation_date'] = base['calculation_date']
+    violations = collect_deadline_violations(result)
+    if violations:
+        data['deadline_violations'] = [vars(v) for v in violations]
     return data
 
 
@@ -102,6 +105,16 @@ def _build_tasks(result: CPMResult) -> List[Dict[str, Any]]:
                 'fp':  cpm_raw.get('FP'),
             },
         }
+        task = result.tasks[t['id']]
+        if task.not_before is not None:
+            entry['not_before'] = format_time_value(task.not_before, result.time_unit)
+        if task.deadline is not None:
+            entry['deadline'] = format_time_value(task.deadline, result.time_unit)
+            entry['deadline_missed'] = task.deadline_missed
+        if task.leveling_delay > 1e-9:
+            entry['leveling_delay'] = format_time_value(task.leveling_delay, result.time_unit)
+            if task.resource_predecessors:
+                entry['waits_for'] = [str(p) for p in task.resource_predecessors]
         if 'dates' in cpm_raw:
             dates = cpm_raw['dates']
             entry['cpm']['dates'] = {

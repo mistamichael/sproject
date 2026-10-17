@@ -23,7 +23,8 @@ from .export_config import load_export_config
 from .mermaid_export import export_mermaid_to_svg, generate_mermaid_gantt
 from .models.cpm import CPMResult
 from .paths import get_cfg_dir
-from .report_data import collect_person_entries, collect_resource_data, format_task_field
+from .report_data import (collect_person_entries, collect_resource_data, deadline_warning_lines,
+                          format_task_field)
 
 
 # ---------------------------------------------------------------------------
@@ -144,17 +145,18 @@ def _generate_summary_section(result: CPMResult, project_name: str, heading: str
         lines.append(f"- **Startdatum:** {start_str}")
 
         if result.tasks:
-            max_sez = max(task.sez for task in result.tasks.values())
-            if max_sez > 0:
-                from datetime import timedelta
-                estimated_end = result.project_start + timedelta(days=max_sez)
-                lines.append(f"- **Enddatum (geschätzt):** {estimated_end.strftime('%Y-%m-%d %H:%M')}")
+            estimated_end = result.date_at(result.project_end_days)
+            lines.append(f"- **Enddatum (geschätzt):** {estimated_end.strftime('%Y-%m-%d %H:%M')}")
 
     lines.append(f"- **Zeiteinheit:** {result.time_unit}")
     lines.append(f"- **Anzahl Tasks:** {len(result.tasks)}")
 
     critical_tasks = [t for t in result.tasks.values() if t.is_critical]
     lines.append(f"- **Kritische Tasks:** {len(critical_tasks)}")
+    warnings = deadline_warning_lines(result)
+    if warnings:
+        lines.append("")
+        lines.extend(f"> ⚠ **Deadline verfehlt:** {w}" for w in warnings)
     lines.append("")
     return "\n".join(lines)
 

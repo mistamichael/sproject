@@ -44,6 +44,16 @@ class TaskBase(BaseModel):
     resources: Optional[List[str]] = None
     description: Optional[str] = None
     cost: Optional[float] = None  # Explizite Kosten (0.0 = kostenlos, None = normal berechnen)
+    not_before: Optional[str] = None  # Frühester Start, "YYYY-MM-DD[ HH:MM]" (z. B. Materiallieferung)
+    deadline: Optional[str] = None    # Spätestes Ende, "YYYY-MM-DD[ HH:MM]" (Datum ohne Uhrzeit = Tagesende)
+
+    @field_validator('not_before', 'deadline')
+    @classmethod
+    def _validate_date(cls, v: Optional[str]) -> Optional[str]:  # noqa
+        if v is not None:
+            from .project import parse_start_date
+            parse_start_date(v)   # wirft ValueError bei ungültigem Format
+        return v
 
     @field_validator('successors', 'successors_aa', 'successors_ee', 'successors_ae', mode='before')
     @classmethod

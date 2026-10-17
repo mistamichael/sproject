@@ -8,7 +8,7 @@ CPM-Arbeitstage in Kalenderdaten umrechnet.
 
 import math
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Dict, FrozenSet, Optional, Tuple
 
@@ -29,7 +29,7 @@ class WorkCalendar:
     holidays: FrozenSet[str] = frozenset()
     day_start_hour: float = 8.0      # Arbeitsbeginn (aus [WorkingHours] morning_shift)
 
-    def interruption_reason(self, day: datetime) -> Optional[str]:
+    def interruption_reason(self, day: date) -> Optional[str]:
         """'weekend', 'holiday' oder None für einen Arbeitstag."""
         if self.skip_weekends and day.weekday() >= 5:
             return 'weekend'
@@ -37,7 +37,7 @@ class WorkCalendar:
             return 'holiday'
         return None
 
-    def is_working_day(self, day: datetime) -> bool:
+    def is_working_day(self, day: date) -> bool:
         return self.interruption_reason(day) is None
 
     def next_work_start(self, now: datetime) -> datetime:
@@ -70,6 +70,30 @@ class WorkCalendar:
                 current += step
         fraction = days - whole
         return current + timedelta(days=fraction) if fraction else current
+
+    def count_workdays(self, start: date, end: date) -> int:
+        """Arbeitstage in [start, end); negativ, wenn end vor start liegt."""
+        sign, lo, hi = (1, start, end) if end >= start else (-1, end, start)
+        days = (lo + timedelta(days=i) for i in range((hi - lo).days))
+        return sign * len([d for d in days if self.is_working_day(d)])
+
+    def workday_offset(self, project_start: datetime, moment: datetime, hours_per_day: float,
+                       end_of_day: bool = False) -> float:
+        """
+        Position von moment in CPM-Arbeitstagen ab project_start.
+
+        Ein Arbeitstag beginnt zur Uhrzeit von project_start und dauert hours_per_day.
+        Ein Datum ohne Uhrzeit meint den Tagesbeginn, mit end_of_day=True das Tagesende.
+        Liegt moment auf einem freien Tag, gilt der Beginn des nächsten Arbeitstags.
+        """
+        offset = float(self.count_workdays(project_start.date(), moment.date()))
+        if not self.is_working_day(moment):
+            return offset
+        if moment.hour or moment.minute:
+            day_begin = project_start.hour + project_start.minute / 60
+            hours = moment.hour + moment.minute / 60 - day_begin
+            return offset + min(max(hours / hours_per_day, 0.0), 1.0)
+        return offset + (1.0 if end_of_day else 0.0)
 
     def count_weekend_days(self, start: datetime, end: datetime) -> int:
         """Anzahl Samstage/Sonntage in [start, end)."""

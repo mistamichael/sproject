@@ -15,7 +15,7 @@ from datetime import datetime
 from .durations import format_time_value, format_time_value_auto
 from .export_config import load_export_config
 from .models.cpm import CPMResult
-from .report_data import collect_person_entries, collect_resource_data
+from .report_data import collect_person_entries, collect_resource_data, deadline_warning_lines
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +96,8 @@ def _generate_summary(result: CPMResult, project_name: str, heading: str) -> Lis
     lines.append(f"Kritische Tasks:    {len([t for t in non_break if t.is_critical])}")
     if result.calculation_date:
         lines.append(f"Erstellt am:        {result.calculation_date.strftime('%Y-%m-%d %H:%M')}")
+    for warning in deadline_warning_lines(result):
+        lines.append(f"WARNUNG:            {warning}")
     lines.append("")
     return lines
 

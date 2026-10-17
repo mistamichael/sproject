@@ -8,7 +8,7 @@
 - **Projekt:** Montage Gesamtsystem
 - **Projektdauer:** 30.0d
 - **Startdatum:** 2026-03-09 08:00
-- **Enddatum (geschätzt):** 2026-04-08 08:00
+- **Enddatum (geschätzt):** 2026-04-22 08:00
 - **Zeiteinheit:** days
 - **Anzahl Tasks:** 8
 - **Kritische Tasks:** 5

@@ -90,6 +90,12 @@ def expand_project(project: 'Project') -> 'Project':
                 redirect[task.id] = parts[0].id
         else:
             parts = [task.model_copy(deep=True)]
+        if parts and not isinstance(task, SimpleTask):
+            # Termine des Instance-/Loop-Tasks gelten für den ersten bzw. letzten Zyklus
+            if task.not_before:
+                parts[0].not_before = task.not_before
+            if task.deadline:
+                parts[-1].deadline = task.deadline
         expanded.extend(parts)
 
     for task in expanded:

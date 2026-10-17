@@ -54,6 +54,8 @@ sproject/
 3. **UI → Modell:** `sync_to_model()` liest Stammdaten, Task-Tabelle (`TaskRow`) und alle `ListSection`s
 4. **Modell → UI:** `refresh_all()` aktualisiert alle DPG-Widgets aus dem Pydantic-Objekt
 5. **Berechnung:** `lib.schedule.build_schedule(project)` → `Schedule` (expandiertes Projekt, CPM, Gantt, Kosten) – GUI und CLI identisch
+   - CPM rechnet in Arbeitstagen; danach plant `lib/models/leveling.py` mit Ressourcen (eine Person/ein LKW = eine Aufgabe zugleich, `Resource.slots`), Urlaub und Teilzeit (strecken Tasks) sowie `not_before`/`deadline`. Mehrere Prioritätsregeln, der kürzeste Plan gewinnt.
+   - Ruhepausen werden nach dem berechneten Zeitplan eingefügt (zweiter CPM-Lauf).
 6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
 7. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 
@@ -98,6 +100,8 @@ Viewport
 |------------------------------------|------------------------------------------|
 | `gui/editor.py: ProjectEditorApp`  | Zentraler GUI-State, Datei-Ops, Exporte  |
 | `lib/schedule.py: build_schedule`  | Kompletter Rechenweg (CLI + GUI)         |
+| `lib/models/leveling.py`           | Ressourcenplanung, Urlaub, Teilzeit      |
+| `lib/time_axis.py`, `lib/charts.py`| Zeitachse (Kalender) und Plotly-Charts   |
 | `lib/models/project.py: Project`   | Pydantic-Modell (Daten + Validierung)    |
 | `lib/models/tasks.py`              | SimpleTask, LoopTask, SubTask            |
 | `lib/models/resources.py`          | Resource, Person, VacationEntry, etc.    |

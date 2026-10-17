@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from ..durations import TimeUnit, format_time_value, hours_per_day, parse_duration_to_days
 from ..work_calendar import WorkCalendar, load_calendar
+from .leveling import Availability, ResourceScheduler, priority_rules
 from .dependencies import DepType, Dependency, TaskId
 
 # Toleranz, unter der ein Gesamtpuffer als 0 (kritisch) gilt
@@ -48,6 +49,21 @@ class CPMTaskResult(BaseModel):
     is_blocker: bool = False    # Kalender-Blocker (Wochenende/Feiertag)
     successor_deps: List[Dependency] = Field(default_factory=list)
     predecessor_deps: List[Dependency] = Field(default_factory=list)
+    # Termine (in Arbeitstagen) und Ergebnis der Ressourcenplanung
+    not_before: Optional[float] = None
+    deadline: Optional[float] = None
+    leveling_delay: float = 0.0                      # Verschiebung durch Ressourcen/Urlaub/Teilzeit
+    resource_predecessors: List[TaskId] = Field(default_factory=list)  # auf deren Ressource gewartet wurde
+
+    @property
+    def span(self) -> float:
+        """Belegte Zeit (FEZ − FAZ); größer als duration, wenn Urlaub/Teilzeit den Task streckt."""
+        span = self.fez - self.faz
+        return self.duration if abs(span - self.duration) < 1e-9 else span
+
+    @property
+    def deadline_missed(self) -> bool:
+        return self.deadline is not None and self.fez > self.deadline + CRITICAL_EPS
 
     @property
     def is_system(self) -> bool:
@@ -129,6 +145,11 @@ class CPMResult(BaseModel):
     def project_end_days(self) -> float:
         """Projektdauer in Arbeitstagen (max. FEZ)."""
         return max((t.fez for t in self.tasks.values()), default=0.0)
+
+    @property
+    def deadline_violations(self) -> List[CPMTaskResult]:
+        """Tasks, die ihre Deadline nicht halten (Verspätung = fez − deadline)."""
+        return [t for t in self.tasks.values() if t.deadline_missed]
 
     def is_blocker(self, task_id: TaskId) -> bool:
         task = self.tasks.get(task_id)
@@ -235,9 +256,9 @@ _FORWARD: Dict[DepType, Callable[[Times, Times], float]] = {
 # Spätestes Ende des Vorgängers p, das ein Nachfolger s erzwingt (Rückwärtsrechnung).
 _BACKWARD: Dict[DepType, Callable[[Times, Times], float]] = {
     DepType.EA: lambda p, s: s.saz,
-    DepType.AA: lambda p, s: s.saz + p.duration,
+    DepType.AA: lambda p, s: s.saz + p.span,
     DepType.EE: lambda p, s: s.sez,
-    DepType.AE: lambda p, s: s.sez + p.duration,
+    DepType.AE: lambda p, s: s.sez + p.span,
 }
 
 
@@ -246,7 +267,8 @@ class CPMCalculator:
     Berechnet den Netzplan eines (bereits expandierten) Projekts.
 
     Phasen: Graph aufbauen → Zyklen prüfen/topologisch sortieren → Vorwärts-
-    und Rückwärtsrechnung → Puffer → Resource-Leveling für Kapazitätsressourcen.
+    und Rückwärtsrechnung → Ressourcenplanung (Kapazität, Urlaub, Teilzeit;
+    siehe leveling.py) → Rückwärtsrechnung mit Ressourcen-Abhängigkeiten → Puffer.
     """
 
     def __init__(self, project, start_date: Optional[datetime] = None,
@@ -290,8 +312,8 @@ class CPMCalculator:
         order = self._topological_order()
         self._forward_pass(order)
         self._backward_pass(order)
+        self._resource_leveling(order)
         self._calculate_slack()
-        self._resource_leveling()
 
         project_duration = max((t.fez for t in self.cpm_tasks.values()), default=0.0)
         return CPMResult(
@@ -319,12 +341,27 @@ class CPMCalculator:
                 successor_deps=task.dependencies,
                 is_break=getattr(task, 'is_break', False),
                 is_blocker=is_blocker,
+                not_before=self._offset(task.not_before),
+                deadline=self._offset(task.deadline, end_of_day=True),
             )
 
         for task_id, task in self.cpm_tasks.items():
             for dep in task.successor_deps:
                 if dep.target in self.cpm_tasks:
                     self.cpm_tasks[dep.target].predecessor_deps.append(Dependency(task_id, dep.type))
+
+    def _offset(self, value: Optional[str], end_of_day: bool = False) -> Optional[float]:
+        """Datum/Uhrzeit → Arbeitstage ab Projektstart."""
+        from .project import parse_start_date
+        moment = parse_start_date(value)
+        if moment is None:
+            return None
+        return self.calendar.workday_offset(self.start_date, moment, hours_per_day(), end_of_day)
+
+    def _earliest_start(self, task: CPMTaskResult) -> float:
+        """Frühester Start aus Abhängigkeiten (EA/AA/AE) und not_before."""
+        preds = [(self.cpm_tasks[d.target], d.type) for d in task.predecessor_deps]
+        return max([0.0, task.not_before or 0.0] + [_FORWARD[t](p, task) for p, t in preds if t in _FORWARD])
 
     def _topological_order(self) -> List[TaskId]:
         """Topologische Reihenfolge; ValueError bei Selbstreferenz oder Zyklus."""
@@ -352,7 +389,7 @@ class CPMCalculator:
             task = self.cpm_tasks[task_id]
             preds = [(self.cpm_tasks[d.target], d.type) for d in task.predecessor_deps]
 
-            task.faz = max([0.0] + [_FORWARD[t](p, task) for p, t in preds if t in _FORWARD])
+            task.faz = self._earliest_start(task)
             task.fez = task.faz + task.duration
 
             # EE: Nachfolger darf nicht vor dem Vorgänger enden → ggf. nach hinten schieben
@@ -361,17 +398,24 @@ class CPMCalculator:
                     task.faz = pred.fez - task.duration
                     task.fez = pred.fez
 
-    def _backward_pass(self, order: List[TaskId]) -> None:
-        """Rückwärtsrechnung: SAZ/SEZ. Endknoten (ohne Nachfolger) erhalten SEZ = Projektende."""
+    def _backward_pass(self, order: List[TaskId],
+                       resource_successors: Optional[Dict[TaskId, List[TaskId]]] = None) -> None:
+        """
+        Rückwärtsrechnung: SAZ/SEZ. Endknoten (ohne Nachfolger) erhalten SEZ = Projektende,
+        eine Deadline begrenzt SEZ zusätzlich. Ressourcen-Abhängigkeiten wirken wie EA.
+        """
         project_end = max((t.fez for t in self.cpm_tasks.values()), default=0.0)
+        resource_successors = resource_successors or {}
         for task_id in reversed(order):
             task = self.cpm_tasks[task_id]
             constraints = [
                 _BACKWARD[d.type](task, self.cpm_tasks[d.target])
                 for d in task.successor_deps if d.target in self.cpm_tasks
-            ]
+            ] + [self.cpm_tasks[s].saz for s in resource_successors.get(task_id, [])]
             task.sez = min(constraints) if constraints else project_end
-            task.saz = task.sez - task.duration
+            if task.deadline is not None:
+                task.sez = min(task.sez, task.deadline)
+            task.saz = task.sez - task.span
 
     def _calculate_slack(self) -> None:
         """Gesamt-/freier Puffer; Pausen und Blocker sind fix (GP = 0, kritisch)."""
@@ -390,56 +434,41 @@ class CPMCalculator:
                 task.free_puffer = math.inf
             else:
                 task.free_puffer = task.puffer
-            task.is_critical = abs(task.puffer) < CRITICAL_EPS
+            task.is_critical = task.puffer < CRITICAL_EPS      # negativ = Deadline verfehlt
 
-    def _resource_leveling(self, max_iterations: int = 10) -> None:
+    def _resource_leveling(self, order: List[TaskId]) -> None:
         """
-        Verschiebt Tasks, solange eine Kapazitätsressource (machine/truck/oven mit
-        capacity) zu einem Zeitpunkt von mehr Tasks belegt ist, als capacity erlaubt.
-
-        Verschoben wird jeweils der beteiligte Task mit dem größten Puffer, hinter das
-        Ende des Konflikt-Segments; EA-Nachfolger rücken bei Bedarf nach.
+        Plant mit Ressourcen-Kapazitäten, Urlaub und Teilzeit (leveling.py) und rechnet
+        danach rückwärts mit den entstandenen Ressourcen-Abhängigkeiten.
         """
-        limited = {r.id: r.capacity for r in (self.project.resources or []) if r.is_capacity_limited}
-        if not limited:
+        availability = Availability(self.calendar, self.start_date, self.project)
+        if not ResourceScheduler(self.project, self.cpm_tasks, availability, self._earliest_start).needed():
             return
 
-        users: Dict[str, List[CPMTaskResult]] = {res_id: [] for res_id in limited}
-        for task in self.project.tasks:
-            for res_id in dict.fromkeys(task.resources or []):
-                if res_id in users and task.id in self.cpm_tasks:
-                    users[res_id].append(self.cpm_tasks[task.id])
+        # Jede Prioritätsregel auf denselben Ausgangswerten rechnen, den kürzesten Plan behalten
+        initial = {tid: (t.faz, t.fez) for tid, t in self.cpm_tasks.items()}
+        best = None
+        for priority in priority_rules(self.cpm_tasks).values():
+            for tid, (faz, fez) in initial.items():
+                self.cpm_tasks[tid].faz, self.cpm_tasks[tid].fez = faz, fez
+            links = ResourceScheduler(self.project, self.cpm_tasks, availability,
+                                      self._earliest_start).schedule(priority)
+            makespan = max((t.fez for t in self.cpm_tasks.values()), default=0.0)
+            if best is None or makespan < best[0] - 1e-9:
+                plan = {tid: (t.faz, t.fez, t.leveling_delay) for tid, t in self.cpm_tasks.items()}
+                best = (makespan, plan, links)
+        assert best is not None
+        _, plan, waits_for = best
+        for tid, (faz, fez, delay) in plan.items():
+            task = self.cpm_tasks[tid]
+            task.faz, task.fez, task.leveling_delay = faz, fez, delay
 
-        for _ in range(max_iterations):
-            conflicts_found = False
-            for res_id, capacity in limited.items():
-                tasks = sorted(users[res_id], key=lambda t: t.faz)
-                boundaries = sorted({t.faz for t in tasks} | {t.fez for t in tasks})
-                for seg_start, seg_end in zip(boundaries, boundaries[1:]):
-                    mid = (seg_start + seg_end) / 2
-                    active = [t for t in tasks if t.faz <= mid < t.fez]
-                    if len(active) <= capacity:
-                        continue
-                    conflicts_found = True
-                    task = max(active, key=lambda t: t.puffer)
-                    new_faz = max([seg_end] + [self.cpm_tasks[p].fez for p in task.predecessors_of(DepType.EA)])
-                    if new_faz > task.faz:
-                        task.faz = new_faz
-                        task.fez = new_faz + task.duration
-                        self._push_successors(task)
-                        task.puffer = task.saz - task.faz
-                        task.is_critical = abs(task.puffer) < CRITICAL_EPS
-            if not conflicts_found:
-                break
-
-    def _push_successors(self, task: CPMTaskResult) -> None:
-        """Schiebt EA-Nachfolger, die vor dem Ende von task beginnen würden, nach hinten."""
-        for succ_id in task.successors_ea:
-            succ = self.cpm_tasks.get(succ_id)
-            if succ is not None and succ.faz < task.fez:
-                succ.faz = task.fez
-                succ.fez = task.fez + succ.duration
-                self._push_successors(succ)
+        resource_successors: Dict[TaskId, List[TaskId]] = {}
+        for task_id, blockers in waits_for.items():
+            self.cpm_tasks[task_id].resource_predecessors = blockers
+            for blocker in blockers:
+                resource_successors.setdefault(blocker, []).append(task_id)
+        self._backward_pass(order, resource_successors)
 
     def _get_critical_path(self) -> List[TaskId]:
         """Kritische Task-IDs, chronologisch nach FAZ."""

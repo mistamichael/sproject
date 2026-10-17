@@ -1,12 +1,12 @@
 {
   "summary": {
     "project": "Software Entwicklung Projekt",
-    "project_duration": "124.0h",
+    "project_duration": "192.0h",
     "time_unit": "hours",
     "num_tasks": 8,
     "num_critical": 7,
     "project_start": "2026-03-03",
-    "project_end": "2026-03-24",
+    "project_end": "2026-04-08",
   },
   "critical_path": [
     {
@@ -133,16 +133,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-12 21:00",
-        "fez": "2026-03-18 21:00",
+        "fez": "2026-03-24 21:00",
         "saz": "2026-03-12 21:00",
-        "sez": "2026-03-18 21:00",
+        "sez": "2026-03-24 21:00",
         "gp": "0.0h",
         "fp": "0.0h",
         "dates": {
           "faz_date": "2026-03-12",
-          "fez_date": "2026-03-18",
+          "fez_date": "2026-03-24",
           "saz_date": "2026-03-12",
-          "sez_date": "2026-03-18"
+          "sez_date": "2026-03-24"
         }
       }
     },
@@ -152,19 +152,20 @@
       "duration": "20.0h",
       "is_critical": true,
       "cpm": {
-        "faz": "2026-03-18 21:00",
-        "fez": "2026-03-23 09:00",
-        "saz": "2026-03-18 21:00",
-        "sez": "2026-03-23 09:00",
+        "faz": "2026-03-24 21:00",
+        "fez": "2026-03-31 21:00",
+        "saz": "2026-03-24 21:00",
+        "sez": "2026-03-31 21:00",
         "gp": "0.0h",
         "fp": "0.0h",
         "dates": {
-          "faz_date": "2026-03-18",
-          "fez_date": "2026-03-23",
-          "saz_date": "2026-03-18",
-          "sez_date": "2026-03-23"
+          "faz_date": "2026-03-24",
+          "fez_date": "2026-03-31",
+          "saz_date": "2026-03-24",
+          "sez_date": "2026-03-31"
         }
-      }
+      },
+      "leveling_delay": "32.0h"
     },
     {
       "id": "7",
@@ -172,19 +173,20 @@
       "duration": "8.0h",
       "is_critical": true,
       "cpm": {
-        "faz": "2026-03-23 09:00",
-        "fez": "2026-03-24 09:00",
-        "saz": "2026-03-23 09:00",
-        "sez": "2026-03-24 09:00",
+        "faz": "2026-03-31 21:00",
+        "fez": "2026-04-07 21:00",
+        "saz": "2026-03-31 21:00",
+        "sez": "2026-04-07 21:00",
         "gp": "0.0h",
         "fp": "0.0h",
         "dates": {
-          "faz_date": "2026-03-23",
-          "fez_date": "2026-03-24",
-          "saz_date": "2026-03-23",
-          "sez_date": "2026-03-24"
+          "faz_date": "2026-03-31",
+          "fez_date": "2026-04-07",
+          "saz_date": "2026-03-31",
+          "sez_date": "2026-04-07"
         }
-      }
+      },
+      "leveling_delay": "52.0h"
     },
     {
       "id": "8",
@@ -192,19 +194,20 @@
       "duration": "4.0h",
       "is_critical": true,
       "cpm": {
-        "faz": "2026-03-24 09:00",
-        "fez": "2026-03-24 21:00",
-        "saz": "2026-03-24 09:00",
-        "sez": "2026-03-24 21:00",
+        "faz": "2026-04-07 21:00",
+        "fez": "2026-04-08 09:00",
+        "saz": "2026-04-07 21:00",
+        "sez": "2026-04-08 09:00",
         "gp": "0.0h",
         "fp": "0.0h",
         "dates": {
-          "faz_date": "2026-03-24",
-          "fez_date": "2026-03-24",
-          "saz_date": "2026-03-24",
-          "sez_date": "2026-03-24"
+          "faz_date": "2026-04-07",
+          "fez_date": "2026-04-08",
+          "saz_date": "2026-04-07",
+          "sez_date": "2026-04-08"
         }
-      }
+      },
+      "leveling_delay": "68.0h"
     }
   ],
   "gantt_chart": {
@@ -273,8 +276,8 @@
         "id": "6",
         "name": "Testing & QA",
         "network_duration_days": 2.5,
-        "calendar_start_date": "2026-03-18T21:00:00",
-        "calendar_end_date": "2026-03-20T21:00:00",
+        "calendar_start_date": "2026-03-24T21:00:00",
+        "calendar_end_date": "2026-03-26T21:00:00",
         "working_days": 3.0,
         "calendar_days": 3,
         "is_critical": true,
@@ -284,8 +287,8 @@
         "id": "7",
         "name": "Deployment",
         "network_duration_days": 1.0,
-        "calendar_start_date": "2026-03-23T09:00:00",
-        "calendar_end_date": "2026-03-23T09:00:00",
+        "calendar_start_date": "2026-03-31T21:00:00",
+        "calendar_end_date": "2026-03-31T21:00:00",
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": true,
@@ -295,8 +298,8 @@
         "id": "8",
         "name": "Projektabschluss",
         "network_duration_days": 0.5,
-        "calendar_start_date": "2026-03-24T09:00:00",
-        "calendar_end_date": "2026-03-24T09:00:00",
+        "calendar_start_date": "2026-04-07T21:00:00",
+        "calendar_end_date": "2026-04-07T21:00:00",
         "working_days": 1.0,
         "calendar_days": 1,
         "is_critical": true,

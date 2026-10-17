@@ -38,11 +38,15 @@ _LABELS = {
         'critical': 'Kritisch', 'normal': 'Normal', 'break': 'Pause', 'float': 'Puffer',
         'gantt': 'Gantt', 'resources': 'Ressourcenauslastung', 'duration': 'Projektdauer',
         'start': 'Start', 'end': 'Ende', 'res': 'Ressourcen',
+        'delay': 'Verschoben um', 'waits': 'wartet auf', 'span': 'Belegt (Urlaub/Teilzeit)',
+        'missed': 'VERFEHLT', 'deadline': 'Deadline',
     },
     'en': {
         'critical': 'Critical', 'normal': 'Normal', 'break': 'Break', 'float': 'Float',
         'gantt': 'Gantt', 'resources': 'Resource utilisation', 'duration': 'Project duration',
         'start': 'Start', 'end': 'End', 'res': 'Resources',
+        'delay': 'Delayed by', 'waits': 'waits for', 'span': 'Occupied (vacation/part-time)',
+        'missed': 'MISSED', 'deadline': 'Deadline',
     },
 }
 
@@ -99,6 +103,14 @@ def _hover(bar: _Bar, unit, lb: Dict[str, str]) -> str:
     ]
     if bar.resources:
         lines.append(f"{lb['res']}: {bar.resources}")
+    if t.leveling_delay > 1e-9:
+        reason = f" ({lb['waits']}: {', '.join(map(str, t.resource_predecessors))})" if t.resource_predecessors else ""
+        lines.append(f"{lb['delay']}: {fmt(t.leveling_delay)}{reason}")
+    if t.span > t.duration + 1e-9:
+        lines.append(f"{lb['span']}: {fmt(t.span)}")
+    if t.deadline is not None:
+        status = f" – {lb['missed']}" if t.deadline_missed else ""
+        lines.append(f"Deadline: {fmt(t.deadline)}{status}")
     return "<br>".join(lines)
 
 
@@ -136,6 +148,17 @@ def build_gantt_figure(schedule: Schedule, lang: str = 'de') -> go.Figure:
     for name, color, group in groups:
         if group:
             fig.add_trace(_bar_trace(group, name, color, unit, lb))
+    deadlines = [(b, b.task.deadline) for b in bars if b.task.deadline is not None]
+    with_deadline = [b for b, _ in deadlines]
+    if deadlines:
+        hover = [f"Deadline {b.label}: {point_in_time(result, d, is_end=True):%Y-%m-%d %H:%M}"
+                 if result.project_start else f"Deadline {b.label}" for b, d in deadlines]
+        fig.add_trace(go.Scatter(
+            name=lb['deadline'], mode="markers", x=[d for _, d in deadlines],
+            y=[b.label for b in with_deadline], hoverinfo="text", hovertext=hover,
+            marker=dict(symbol="diamond", size=12, color=["#8B0000" if b.task.deadline_missed else "#2E7D32"
+                                                           for b in with_deadline]),
+        ))
 
     fig.update_layout(
         title=f"{schedule.name} – {lb['duration']}: {result.project_duration}",

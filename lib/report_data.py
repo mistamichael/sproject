@@ -182,3 +182,40 @@ def collect_resource_data(project: Any) -> Optional[ResourceData]:
         resources=resources,
         persons=list(project.persons or []),
     )
+
+
+# =============================================================================
+# Termine
+# =============================================================================
+
+@dataclass
+class DeadlineViolation:
+    task_id:  str
+    name:     str
+    deadline: str    # formatiertes Datum
+    end:      str    # geplantes Ende
+    late:     str    # Verspätung in Projekteinheit
+
+
+def collect_deadline_violations(result: Any) -> List[DeadlineViolation]:
+    """Tasks, die ihre Deadline verfehlen – für Warnungen in allen Exporten."""
+    from .time_axis import point_in_time
+
+    fmt = '%Y-%m-%d %H:%M' if result.time_unit != 'days' else '%Y-%m-%d'
+
+    def moment(workdays: float) -> str:
+        if result.project_start is None:
+            return format_time_value(workdays, result.time_unit)
+        return point_in_time(result, workdays, is_end=True).strftime(fmt)   # Ende des Arbeitstags
+
+    return [
+        DeadlineViolation(task_id=str(task.id), name=task.name, deadline=moment(task.deadline),
+                          end=moment(task.fez), late=format_time_value(task.fez - task.deadline, result.time_unit))
+        for task in result.deadline_violations
+    ]
+
+
+def deadline_warning_lines(result: Any) -> List[str]:
+    """'Task 5 (Abnahme): Deadline 2026-05-01, geplantes Ende 2026-05-06 (+3.0d)'."""
+    return [f"Task {v.task_id} ({v.name}): Deadline {v.deadline}, geplantes Ende {v.end} (+{v.late})"
+            for v in collect_deadline_violations(result)]

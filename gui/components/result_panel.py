@@ -13,6 +13,7 @@ import dearpygui.dearpygui as dpg
 from gui.colors import resource_color_map
 from gui.gui_config import load_gui_config
 from gui.i18n import t
+from lib.report_data import collect_deadline_violations
 from lib.schedule import Schedule
 
 _CFG = load_gui_config()
@@ -47,6 +48,10 @@ def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]
     result = schedule.cpm
     dpg.add_text(t("result.duration", duration=result.project_duration), parent=_PARENT,
                  color=_COLORS.get("result_duration", (100, 180, 255)))
+    for v in collect_deadline_violations(result):
+        dpg.add_text(t("result.deadline_missed", task=f"{v.task_id} ({v.name})", deadline=v.deadline,
+                       end=v.end, late=v.late),
+                     parent=_PARENT, color=_COLORS.get("result_critical_path", (220, 80, 80)))
     dpg.add_spacer(parent=_PARENT, height=6)
 
     _critical_path(schedule)
