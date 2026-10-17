@@ -15,13 +15,34 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.figure import Figure
 
-from lib.models.cpm import CPMResult, CPMTaskResult
+from gui.i18n import get_language
+from lib.durations import format_time_value
+from lib.models.cpm import CPMResult
+from lib.time_axis import axis_ticks
 
 
 def _hex_to_mpl(hex_str: str) -> str:
     """Wandelt '4472C4' in '#4472C4' um."""
     hex_str = hex_str.lstrip("#")
     return f"#{hex_str}"
+
+
+def _apply_time_axis(ax, result: CPMResult) -> None:
+    """
+    x-Achse: CPM-Zeit in Arbeitstagen, beschriftet mit Kalenderdaten
+    (dieselbe Achse wie die Plotly-Charts, siehe lib/time_axis.py).
+    """
+    values, labels = axis_ticks(result, get_language())
+    ax.set_xticks(values)
+    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=7)
+    end = max(result.project_end_days, values[1] if len(values) > 1 else 1.0)
+    ax.set_xlim(-0.01 * end, end * 1.02)
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+
+
+def _label_min_width(result: CPMResult) -> float:
+    """Balken unter ~6 % der Projektdauer bekommen keine Beschriftung."""
+    return 0.06 * max(result.project_end_days, 1e-9)
 
 
 def render_gantt_png(
@@ -97,21 +118,19 @@ def render_gantt_png(
                 color=buffer_color, alpha=0.6,
             )
 
-        # Dauer als Text im Balken
+        # Dauer als Text im Balken (nur wenn der Balken breit genug ist)
         bar_width = t.fez - t.faz
-        if bar_width > 0.5:
+        if bar_width > _label_min_width(result):
             ax.text(
-                t.faz + bar_width / 2, y, f"{t.duration:.0f}",
+                t.faz + bar_width / 2, y, format_time_value(t.duration, result.time_unit),
                 ha="center", va="center", fontsize=7,
                 color="white" if dark_mode else "black", fontweight="bold",
             )
 
     ax.set_yticks(y_positions)
     ax.set_yticklabels(labels, fontsize=8)
-    ax.set_xlabel(result.time_unit, fontsize=9)
+    _apply_time_axis(ax, result)
     ax.set_title("Gantt-Diagramm", fontsize=11, fontweight="bold")
-    ax.set_xlim(left=0)
-    ax.grid(axis="x", alpha=0.3, linestyle="--")
 
     # Legende
     legend_patches = [
@@ -221,7 +240,7 @@ def render_resource_chart_png(
                 linewidth=0.5, alpha=0.85,
             )
             bar_width = fez - faz
-            if bar_width > 0.8:
+            if bar_width > _label_min_width(result):
                 ax.text(
                     faz + bar_width / 2, y, str(tid),
                     ha="center", va="center", fontsize=7,
@@ -237,10 +256,8 @@ def render_resource_chart_png(
 
     ax.set_yticks(list(range(n - 1, -1, -1)))
     ax.set_yticklabels(res_labels, fontsize=8)
-    ax.set_xlabel(result.time_unit, fontsize=9)
+    _apply_time_axis(ax, result)
     ax.set_title("Ressourcenauslastung", fontsize=11, fontweight="bold")
-    ax.set_xlim(left=0)
-    ax.grid(axis="x", alpha=0.3, linestyle="--")
 
     fig.tight_layout()
     buf = BytesIO()
