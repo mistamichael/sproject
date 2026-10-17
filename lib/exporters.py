@@ -70,6 +70,19 @@ def _xlsx(s: Schedule, o: ExportOptions) -> Path:
     return path
 
 
+def _plotly_html(s: Schedule, o: ExportOptions) -> Path:
+    from .charts import build_figures, write_html
+    return write_html(build_figures(s, o.lang), o.out_dir / f"{o.file_stem}_charts.html", s.name)
+
+
+def _plotly_svg(s: Schedule, o: ExportOptions) -> Path:
+    from .charts import build_figures, write_image
+    figures = build_figures(s, o.lang)
+    names = ["gantt", "resources"][:len(figures)]
+    paths = [write_image(fig, o.out_dir / f"{o.file_stem}_{name}.svg") for fig, name in zip(figures, names)]
+    return paths[0]
+
+
 EXPORTERS: Dict[str, Callable[[Schedule, ExportOptions], Path]] = {
     'json': _json,
     'txt':  _txt,
@@ -77,6 +90,8 @@ EXPORTERS: Dict[str, Callable[[Schedule, ExportOptions], Path]] = {
     'html': _html,
     'zip':  _zip,
     'xlsx': _xlsx,
+    'plotly': _plotly_html,       # interaktives HTML (Gantt + Ressourcen)
+    'plotly_svg': _plotly_svg,   # SVG-Bilder (kaleido + lokaler Chrome)
 }
 
 

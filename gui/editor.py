@@ -12,6 +12,7 @@ Datenfluss:
 """
 
 import json
+import webbrowser
 from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -37,6 +38,7 @@ REPORT_FORMATS: Dict[str, str] = {
     "txt":  "Text",
     "html": "HTML",
     "json": "Netzplan-JSON",
+    "plotly": "Charts (HTML)",
 }
 
 # Stammdaten: Widget-Tag → (Projektfeld, Umwandlung Text → Wert)
@@ -302,7 +304,17 @@ class ProjectEditorApp:
 
         actions = {f"↓ {REPORT_FORMATS[fmt]}": report(fmt) for fmt in ("md", "xlsx", "txt")}
         actions["↓ JSON"] = lambda: self._wrap_export(lambda: self.export_project_json(get_results_dir()))
+        actions[f"↗ {t('result.open_charts')}"] = self.open_charts_in_browser
         return actions
+
+    def open_charts_in_browser(self) -> None:
+        """Interaktive Plotly-Charts erzeugen und im Standardbrowser öffnen."""
+        try:
+            path = self.export_report("plotly")
+            webbrowser.open(path.resolve().as_uri())
+            self._set_status(t("status.saved", path=path))
+        except Exception as e:
+            self._set_status(t("status.export_failed", error=e))
 
     def _wrap_export(self, export: Callable[[], Path]) -> None:
         try:
