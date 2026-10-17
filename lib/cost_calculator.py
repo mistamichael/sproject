@@ -27,13 +27,24 @@ class ResourceCostEntry:
 
 
 @dataclass
+class FixedCostEntry:
+    """Task mit explizitem Festpreis (task.cost)."""
+
+    task_id: str
+    task_name: str
+    cost: float
+
+
+@dataclass
 class CostBreakdown:
     """Gesamtergebnis der Kostenrechnung."""
 
     entries: List[ResourceCostEntry] = field(default_factory=list)
+    fixed_costs: List[FixedCostEntry] = field(default_factory=list)
     total_person_costs: float = 0.0
     total_machine_costs: float = 0.0      # Lohnkosten Maschinen/Fahrzeuge
     total_provisioning_costs: float = 0.0
+    total_fixed_costs: float = 0.0        # Summe der Task-Festpreise
     total_costs: float = 0.0
 
 
@@ -44,10 +55,12 @@ def calculate_project_costs(project, cpm_result=None) -> Optional[CostBreakdown]
     - Personen-Ressourcen: Stundensatz der verknüpften Person (person_id → hourly_rate)
     - Maschinen/Fahrzeuge: hourly_rate der Ressource, provisioning_costs einmalig
     - Pausen und Kalender-Blocker verursachen keine Kosten
+    - Tasks mit task.cost haben einen Festpreis: ihre Ressourcenstunden zählen
+      nicht als Lohn, stattdessen geht task.cost in die Summe ein (0.0 = kostenlos)
     - Dauer aus dem CPM-Ergebnis, sonst aus task.duration
 
     Returns:
-        CostBreakdown oder None, wenn keine Ressource einen Stundensatz hat
+        CostBreakdown oder None, wenn weder Stundensätze noch Festpreise vorhanden sind
     """
     if not project:
         return None
@@ -56,8 +69,15 @@ def calculate_project_costs(project, cpm_result=None) -> Optional[CostBreakdown]
     resources = {r.id: r for r in (project.resources or [])}
 
     hours_per_resource: Dict[str, float] = {}
+    fixed_costs: List[FixedCostEntry] = []
     for task in project.tasks:
-        if not task.resources or getattr(task, 'is_break', False) or getattr(task, 'is_blocker', False):
+        if getattr(task, 'is_break', False) or getattr(task, 'is_blocker', False):
+            continue
+        if task.cost is not None:
+            if task.cost:
+                fixed_costs.append(FixedCostEntry(str(task.id), task.name, float(task.cost)))
+            continue
+        if not task.resources:
             continue
         cpm_task = cpm_result.tasks.get(task.id) if cpm_result else None
         if cpm_task is not None:
@@ -92,7 +112,7 @@ def calculate_project_costs(project, cpm_result=None) -> Optional[CostBreakdown]
             total_costs=round(labor + provisioning, 2),
         ))
 
-    if not entries:
+    if not entries and not fixed_costs:
         return None
 
     person_entries = [e for e in entries if e.resource_type == 'person']
@@ -102,5 +122,7 @@ def calculate_project_costs(project, cpm_result=None) -> Optional[CostBreakdown]
         total_person_costs=round(sum(e.total_costs for e in person_entries), 2),
         total_machine_costs=round(sum(e.labor_costs for e in machine_entries), 2),
         total_provisioning_costs=round(sum(e.provisioning_costs for e in machine_entries), 2),
-        total_costs=round(sum(e.total_costs for e in entries), 2),
+        total_fixed_costs=round(sum(f.cost for f in fixed_costs), 2),
+        total_costs=round(sum(e.total_costs for e in entries) + sum(f.cost for f in fixed_costs), 2),
+        fixed_costs=fixed_costs,
     )

@@ -359,14 +359,15 @@ class CPMCalculator:
                     task.fez = pred.fez
 
     def _backward_pass(self, order: List[TaskId]) -> None:
-        """Rückwärtsrechnung: SAZ/SEZ. Endknoten erhalten SEZ = eigenes FEZ."""
+        """Rückwärtsrechnung: SAZ/SEZ. Endknoten (ohne Nachfolger) erhalten SEZ = Projektende."""
+        project_end = max((t.fez for t in self.cpm_tasks.values()), default=0.0)
         for task_id in reversed(order):
             task = self.cpm_tasks[task_id]
             constraints = [
                 _BACKWARD[d.type](task, self.cpm_tasks[d.target])
                 for d in task.successor_deps if d.target in self.cpm_tasks
             ]
-            task.sez = min(constraints) if constraints else task.fez
+            task.sez = min(constraints) if constraints else project_end
             task.saz = task.sez - task.duration
 
     def _calculate_slack(self) -> None:

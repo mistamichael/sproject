@@ -181,6 +181,9 @@ def _build_costs(result: CPMResult, project: Optional[object]) -> Optional[Dict[
         'total_person_costs':       costs.total_person_costs,
         'total_machine_costs':      costs.total_machine_costs,
         'total_provisioning_costs': costs.total_provisioning_costs,
+        'total_fixed_costs':        costs.total_fixed_costs,
+        'fixed_costs':              [{'task_id': f.task_id, 'name': f.task_name, 'cost': f.cost}
+                                     for f in costs.fixed_costs],
         'total_costs':              costs.total_costs,
     }
 

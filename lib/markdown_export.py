@@ -504,6 +504,8 @@ def _generate_cost_overview_section(
         lines.append(f"- Maschinenkosten (Lohn): **{costs.total_machine_costs:.2f} €**")
     if costs.total_provisioning_costs > 0:
         lines.append(f"- Bereitstellungskosten: **{costs.total_provisioning_costs:.2f} €**")
+    if costs.total_fixed_costs > 0:
+        lines.append(f"- Feste Task-Kosten: **{costs.total_fixed_costs:.2f} €**")
     lines.append(f"- **Gesamtkosten: {costs.total_costs:.2f} €**")
     lines.append("")
     return "\n".join(lines)

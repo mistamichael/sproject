@@ -1389,6 +1389,8 @@ def create_cost_sheet(wb: 'Workbook', project: Any, result: CPMResult,
         _sum_row("Maschinenkosten (Lohn)", costs.total_machine_costs, subtotal_fill)
     if costs.total_provisioning_costs > 0:
         _sum_row("Bereitstellungskosten", costs.total_provisioning_costs, subtotal_fill)
+    if costs.total_fixed_costs > 0:
+        _sum_row("Feste Task-Kosten", costs.total_fixed_costs, subtotal_fill)
 
     row += 1
     _sum_row("GESAMTKOSTEN", costs.total_costs, total_fill)

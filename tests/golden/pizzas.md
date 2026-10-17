@@ -11,7 +11,7 @@
 - **Enddatum (geschätzt):** 2026-03-03 14:00
 - **Zeiteinheit:** minutes
 - **Anzahl Tasks:** 51
-- **Kritische Tasks:** 51
+- **Kritische Tasks:** 15
 
 ---
 
@@ -21,53 +21,17 @@ Der kritische Pfad besteht aus folgenden Tasks:
 
 - **[1]** Teigvorbereitung (Batch für alle Pizzen) (Dauer: 60.0m)
 - **[2-P1.1]** Pizza formen & belegen #1 (Dauer: 3.0m)
-- **[2-P1.2]** Pizza in den Ofen #1 (Dauer: 0.5m)
 - **[2-P2.1]** Pizza formen & belegen #2 (Dauer: 3.0m)
-- **[2-P1.3]** Pizza backen #1 (Dauer: 7.0m)
-- **[2-P2.2]** Pizza in den Ofen #2 (Dauer: 0.5m)
 - **[2-P3.1]** Pizza formen & belegen #3 (Dauer: 3.0m)
-- **[2-P2.3]** Pizza backen #2 (Dauer: 7.0m)
-- **[2-P3.2]** Pizza in den Ofen #3 (Dauer: 0.5m)
 - **[2-P4.1]** Pizza formen & belegen #4 (Dauer: 3.0m)
-- **[2-P3.3]** Pizza backen #3 (Dauer: 7.0m)
-- **[2-P1.4]** Pizza aus dem Ofen holen #1 (Dauer: 0.5m)
-- **[2-P1.5]** Pizza verkaufen #1 (Dauer: 2.0m)
-- **[2-P4.2]** Pizza in den Ofen #4 (Dauer: 0.5m)
 - **[2-P5.1]** Pizza formen & belegen #5 (Dauer: 3.0m)
-- **[2-P4.3]** Pizza backen #4 (Dauer: 7.0m)
-- **[2-P2.4]** Pizza aus dem Ofen holen #2 (Dauer: 0.5m)
-- **[2-P2.5]** Pizza verkaufen #2 (Dauer: 2.0m)
-- **[2-P5.2]** Pizza in den Ofen #5 (Dauer: 0.5m)
 - **[2-P6.1]** Pizza formen & belegen #6 (Dauer: 3.0m)
-- **[2-P5.3]** Pizza backen #5 (Dauer: 7.0m)
-- **[2-P3.4]** Pizza aus dem Ofen holen #3 (Dauer: 0.5m)
-- **[2-P3.5]** Pizza verkaufen #3 (Dauer: 2.0m)
-- **[2-P6.2]** Pizza in den Ofen #6 (Dauer: 0.5m)
 - **[2-P7.1]** Pizza formen & belegen #7 (Dauer: 3.0m)
-- **[2-P6.3]** Pizza backen #6 (Dauer: 7.0m)
-- **[2-P4.4]** Pizza aus dem Ofen holen #4 (Dauer: 0.5m)
-- **[2-P4.5]** Pizza verkaufen #4 (Dauer: 2.0m)
-- **[2-P7.2]** Pizza in den Ofen #7 (Dauer: 0.5m)
 - **[2-P8.1]** Pizza formen & belegen #8 (Dauer: 3.0m)
-- **[2-P7.3]** Pizza backen #7 (Dauer: 7.0m)
-- **[2-P5.4]** Pizza aus dem Ofen holen #5 (Dauer: 0.5m)
-- **[2-P5.5]** Pizza verkaufen #5 (Dauer: 2.0m)
-- **[2-P8.2]** Pizza in den Ofen #8 (Dauer: 0.5m)
 - **[2-P9.1]** Pizza formen & belegen #9 (Dauer: 3.0m)
-- **[2-P8.3]** Pizza backen #8 (Dauer: 7.0m)
-- **[2-P6.4]** Pizza aus dem Ofen holen #6 (Dauer: 0.5m)
-- **[2-P6.5]** Pizza verkaufen #6 (Dauer: 2.0m)
-- **[2-P9.2]** Pizza in den Ofen #9 (Dauer: 0.5m)
 - **[2-P10.1]** Pizza formen & belegen #10 (Dauer: 3.0m)
-- **[2-P9.3]** Pizza backen #9 (Dauer: 7.0m)
-- **[2-P7.4]** Pizza aus dem Ofen holen #7 (Dauer: 0.5m)
-- **[2-P7.5]** Pizza verkaufen #7 (Dauer: 2.0m)
 - **[2-P10.2]** Pizza in den Ofen #10 (Dauer: 0.5m)
 - **[2-P10.3]** Pizza backen #10 (Dauer: 7.0m)
-- **[2-P8.4]** Pizza aus dem Ofen holen #8 (Dauer: 0.5m)
-- **[2-P8.5]** Pizza verkaufen #8 (Dauer: 2.0m)
-- **[2-P9.4]** Pizza aus dem Ofen holen #9 (Dauer: 0.5m)
-- **[2-P9.5]** Pizza verkaufen #9 (Dauer: 2.0m)
 - **[2-P10.4]** Pizza aus dem Ofen holen #10 (Dauer: 0.5m)
 - **[2-P10.5]** Pizza verkaufen #10 (Dauer: 2.0m)
 
@@ -80,50 +44,50 @@ graph TD
 
     N1["<b>[1] | Teigvorbereitung (Batch für alle Pizzen)<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-P1.1["<b>[2-P1.1] | Pizza formen & belegen #1<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P1.2["<b>[2-P1.2] | Pizza in den Ofen #1<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P1.3["<b>[2-P1.3] | Pizza backen #1<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P1.4["<b>[2-P1.4] | Pizza aus dem Ofen holen #1<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P1.5["<b>[2-P1.5] | Pizza verkaufen #1<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P1.2["[2-P1.2] | Pizza in den Ofen #1<br/>GP:27.0m | FP:0.0m"]
+    N2-P1.3["[2-P1.3] | Pizza backen #1<br/>GP:27.0m | FP:0.0m"]
+    N2-P1.4["[2-P1.4] | Pizza aus dem Ofen holen #1<br/>GP:27.0m | FP:0.0m"]
+    N2-P1.5["[2-P1.5] | Pizza verkaufen #1<br/>GP:27.0m | FP:27.0m"]
     N2-P2.1["<b>[2-P2.1] | Pizza formen & belegen #2<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P2.2["<b>[2-P2.2] | Pizza in den Ofen #2<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P2.3["<b>[2-P2.3] | Pizza backen #2<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P2.4["<b>[2-P2.4] | Pizza aus dem Ofen holen #2<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P2.5["<b>[2-P2.5] | Pizza verkaufen #2<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P2.2["[2-P2.2] | Pizza in den Ofen #2<br/>GP:24.0m | FP:0.0m"]
+    N2-P2.3["[2-P2.3] | Pizza backen #2<br/>GP:24.0m | FP:0.0m"]
+    N2-P2.4["[2-P2.4] | Pizza aus dem Ofen holen #2<br/>GP:24.0m | FP:0.0m"]
+    N2-P2.5["[2-P2.5] | Pizza verkaufen #2<br/>GP:24.0m | FP:24.0m"]
     N2-P3.1["<b>[2-P3.1] | Pizza formen & belegen #3<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P3.2["<b>[2-P3.2] | Pizza in den Ofen #3<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P3.3["<b>[2-P3.3] | Pizza backen #3<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P3.4["<b>[2-P3.4] | Pizza aus dem Ofen holen #3<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P3.5["<b>[2-P3.5] | Pizza verkaufen #3<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P3.2["[2-P3.2] | Pizza in den Ofen #3<br/>GP:21.0m | FP:0.0m"]
+    N2-P3.3["[2-P3.3] | Pizza backen #3<br/>GP:21.0m | FP:0.0m"]
+    N2-P3.4["[2-P3.4] | Pizza aus dem Ofen holen #3<br/>GP:21.0m | FP:0.0m"]
+    N2-P3.5["[2-P3.5] | Pizza verkaufen #3<br/>GP:21.0m | FP:21.0m"]
     N2-P4.1["<b>[2-P4.1] | Pizza formen & belegen #4<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P4.2["<b>[2-P4.2] | Pizza in den Ofen #4<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P4.3["<b>[2-P4.3] | Pizza backen #4<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P4.4["<b>[2-P4.4] | Pizza aus dem Ofen holen #4<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P4.5["<b>[2-P4.5] | Pizza verkaufen #4<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P4.2["[2-P4.2] | Pizza in den Ofen #4<br/>GP:18.0m | FP:0.0m"]
+    N2-P4.3["[2-P4.3] | Pizza backen #4<br/>GP:18.0m | FP:0.0m"]
+    N2-P4.4["[2-P4.4] | Pizza aus dem Ofen holen #4<br/>GP:18.0m | FP:0.0m"]
+    N2-P4.5["[2-P4.5] | Pizza verkaufen #4<br/>GP:18.0m | FP:18.0m"]
     N2-P5.1["<b>[2-P5.1] | Pizza formen & belegen #5<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P5.2["<b>[2-P5.2] | Pizza in den Ofen #5<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P5.3["<b>[2-P5.3] | Pizza backen #5<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P5.4["<b>[2-P5.4] | Pizza aus dem Ofen holen #5<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P5.5["<b>[2-P5.5] | Pizza verkaufen #5<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P5.2["[2-P5.2] | Pizza in den Ofen #5<br/>GP:15.0m | FP:0.0m"]
+    N2-P5.3["[2-P5.3] | Pizza backen #5<br/>GP:15.0m | FP:0.0m"]
+    N2-P5.4["[2-P5.4] | Pizza aus dem Ofen holen #5<br/>GP:15.0m | FP:0.0m"]
+    N2-P5.5["[2-P5.5] | Pizza verkaufen #5<br/>GP:15.0m | FP:15.0m"]
     N2-P6.1["<b>[2-P6.1] | Pizza formen & belegen #6<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P6.2["<b>[2-P6.2] | Pizza in den Ofen #6<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P6.3["<b>[2-P6.3] | Pizza backen #6<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P6.4["<b>[2-P6.4] | Pizza aus dem Ofen holen #6<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P6.5["<b>[2-P6.5] | Pizza verkaufen #6<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P6.2["[2-P6.2] | Pizza in den Ofen #6<br/>GP:12.0m | FP:0.0m"]
+    N2-P6.3["[2-P6.3] | Pizza backen #6<br/>GP:12.0m | FP:0.0m"]
+    N2-P6.4["[2-P6.4] | Pizza aus dem Ofen holen #6<br/>GP:12.0m | FP:0.0m"]
+    N2-P6.5["[2-P6.5] | Pizza verkaufen #6<br/>GP:12.0m | FP:12.0m"]
     N2-P7.1["<b>[2-P7.1] | Pizza formen & belegen #7<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P7.2["<b>[2-P7.2] | Pizza in den Ofen #7<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P7.3["<b>[2-P7.3] | Pizza backen #7<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P7.4["<b>[2-P7.4] | Pizza aus dem Ofen holen #7<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P7.5["<b>[2-P7.5] | Pizza verkaufen #7<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P7.2["[2-P7.2] | Pizza in den Ofen #7<br/>GP:9.0m | FP:0.0m"]
+    N2-P7.3["[2-P7.3] | Pizza backen #7<br/>GP:9.0m | FP:0.0m"]
+    N2-P7.4["[2-P7.4] | Pizza aus dem Ofen holen #7<br/>GP:9.0m | FP:0.0m"]
+    N2-P7.5["[2-P7.5] | Pizza verkaufen #7<br/>GP:9.0m | FP:9.0m"]
     N2-P8.1["<b>[2-P8.1] | Pizza formen & belegen #8<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P8.2["<b>[2-P8.2] | Pizza in den Ofen #8<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P8.3["<b>[2-P8.3] | Pizza backen #8<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P8.4["<b>[2-P8.4] | Pizza aus dem Ofen holen #8<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P8.5["<b>[2-P8.5] | Pizza verkaufen #8<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P8.2["[2-P8.2] | Pizza in den Ofen #8<br/>GP:6.0m | FP:0.0m"]
+    N2-P8.3["[2-P8.3] | Pizza backen #8<br/>GP:6.0m | FP:0.0m"]
+    N2-P8.4["[2-P8.4] | Pizza aus dem Ofen holen #8<br/>GP:6.0m | FP:0.0m"]
+    N2-P8.5["[2-P8.5] | Pizza verkaufen #8<br/>GP:6.0m | FP:6.0m"]
     N2-P9.1["<b>[2-P9.1] | Pizza formen & belegen #9<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P9.2["<b>[2-P9.2] | Pizza in den Ofen #9<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P9.3["<b>[2-P9.3] | Pizza backen #9<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P9.4["<b>[2-P9.4] | Pizza aus dem Ofen holen #9<br/>GP:0.0m | FP:0.0m</b>"]:::critical
-    N2-P9.5["<b>[2-P9.5] | Pizza verkaufen #9<br/>GP:0.0m | FP:0.0m</b>"]:::critical
+    N2-P9.2["[2-P9.2] | Pizza in den Ofen #9<br/>GP:3.0m | FP:0.0m"]
+    N2-P9.3["[2-P9.3] | Pizza backen #9<br/>GP:3.0m | FP:0.0m"]
+    N2-P9.4["[2-P9.4] | Pizza aus dem Ofen holen #9<br/>GP:3.0m | FP:0.0m"]
+    N2-P9.5["[2-P9.5] | Pizza verkaufen #9<br/>GP:3.0m | FP:3.0m"]
     N2-P10.1["<b>[2-P10.1] | Pizza formen & belegen #10<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-P10.2["<b>[2-P10.2] | Pizza in den Ofen #10<br/>GP:0.0m | FP:0.0m</b>"]:::critical
     N2-P10.3["<b>[2-P10.3] | Pizza backen #10<br/>GP:0.0m | FP:0.0m</b>"]:::critical
@@ -193,50 +157,50 @@ graph TD
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Teigvorbereitung (Batch für alle... | 60.0m | 0.0m | 60.0m | 0.0m | 60.0m | 0.0m | 0.0m | JA |
 | 2-P1.1 | Pizza formen & belegen #1 | 3.0m | 60.0m | 63.0m | 60.0m | 63.0m | 0.0m | 0.0m | JA |
-| 2-P1.2 | Pizza in den Ofen #1 | 0.5m | 63.0m | 63.5m | 63.0m | 63.5m | 0.0m | 0.0m | JA |
-| 2-P1.3 | Pizza backen #1 | 7.0m | 63.5m | 70.5m | 63.5m | 70.5m | 0.0m | 0.0m | JA |
-| 2-P1.4 | Pizza aus dem Ofen holen #1 | 0.5m | 70.5m | 71.0m | 70.5m | 71.0m | 0.0m | 0.0m | JA |
-| 2-P1.5 | Pizza verkaufen #1 | 2.0m | 71.0m | 73.0m | 71.0m | 73.0m | 0.0m | 0.0m | JA |
+| 2-P1.2 | Pizza in den Ofen #1 | 0.5m | 63.0m | 63.5m | 90.0m | 90.5m | 27.0m | 0.0m |  |
+| 2-P1.3 | Pizza backen #1 | 7.0m | 63.5m | 70.5m | 90.5m | 97.5m | 27.0m | 0.0m |  |
+| 2-P1.4 | Pizza aus dem Ofen holen #1 | 0.5m | 70.5m | 71.0m | 97.5m | 98.0m | 27.0m | 0.0m |  |
+| 2-P1.5 | Pizza verkaufen #1 | 2.0m | 71.0m | 73.0m | 98.0m | 100.0m | 27.0m | 27.0m |  |
 | 2-P2.1 | Pizza formen & belegen #2 | 3.0m | 63.0m | 66.0m | 63.0m | 66.0m | 0.0m | 0.0m | JA |
-| 2-P2.2 | Pizza in den Ofen #2 | 0.5m | 66.0m | 66.5m | 66.0m | 66.5m | 0.0m | 0.0m | JA |
-| 2-P2.3 | Pizza backen #2 | 7.0m | 66.5m | 73.5m | 66.5m | 73.5m | 0.0m | 0.0m | JA |
-| 2-P2.4 | Pizza aus dem Ofen holen #2 | 0.5m | 73.5m | 74.0m | 73.5m | 74.0m | 0.0m | 0.0m | JA |
-| 2-P2.5 | Pizza verkaufen #2 | 2.0m | 74.0m | 76.0m | 74.0m | 76.0m | 0.0m | 0.0m | JA |
+| 2-P2.2 | Pizza in den Ofen #2 | 0.5m | 66.0m | 66.5m | 90.0m | 90.5m | 24.0m | 0.0m |  |
+| 2-P2.3 | Pizza backen #2 | 7.0m | 66.5m | 73.5m | 90.5m | 97.5m | 24.0m | 0.0m |  |
+| 2-P2.4 | Pizza aus dem Ofen holen #2 | 0.5m | 73.5m | 74.0m | 97.5m | 98.0m | 24.0m | 0.0m |  |
+| 2-P2.5 | Pizza verkaufen #2 | 2.0m | 74.0m | 76.0m | 98.0m | 100.0m | 24.0m | 24.0m |  |
 | 2-P3.1 | Pizza formen & belegen #3 | 3.0m | 66.0m | 69.0m | 66.0m | 69.0m | 0.0m | 0.0m | JA |
-| 2-P3.2 | Pizza in den Ofen #3 | 0.5m | 69.0m | 69.5m | 69.0m | 69.5m | 0.0m | 0.0m | JA |
-| 2-P3.3 | Pizza backen #3 | 7.0m | 69.5m | 76.5m | 69.5m | 76.5m | 0.0m | 0.0m | JA |
-| 2-P3.4 | Pizza aus dem Ofen holen #3 | 0.5m | 76.5m | 77.0m | 76.5m | 77.0m | 0.0m | 0.0m | JA |
-| 2-P3.5 | Pizza verkaufen #3 | 2.0m | 77.0m | 79.0m | 77.0m | 79.0m | 0.0m | 0.0m | JA |
+| 2-P3.2 | Pizza in den Ofen #3 | 0.5m | 69.0m | 69.5m | 90.0m | 90.5m | 21.0m | 0.0m |  |
+| 2-P3.3 | Pizza backen #3 | 7.0m | 69.5m | 76.5m | 90.5m | 97.5m | 21.0m | 0.0m |  |
+| 2-P3.4 | Pizza aus dem Ofen holen #3 | 0.5m | 76.5m | 77.0m | 97.5m | 98.0m | 21.0m | 0.0m |  |
+| 2-P3.5 | Pizza verkaufen #3 | 2.0m | 77.0m | 79.0m | 98.0m | 100.0m | 21.0m | 21.0m |  |
 | 2-P4.1 | Pizza formen & belegen #4 | 3.0m | 69.0m | 72.0m | 69.0m | 72.0m | 0.0m | 0.0m | JA |
-| 2-P4.2 | Pizza in den Ofen #4 | 0.5m | 72.0m | 72.5m | 72.0m | 72.5m | 0.0m | 0.0m | JA |
-| 2-P4.3 | Pizza backen #4 | 7.0m | 72.5m | 79.5m | 72.5m | 79.5m | 0.0m | 0.0m | JA |
-| 2-P4.4 | Pizza aus dem Ofen holen #4 | 0.5m | 79.5m | 80.0m | 79.5m | 80.0m | 0.0m | 0.0m | JA |
-| 2-P4.5 | Pizza verkaufen #4 | 2.0m | 80.0m | 82.0m | 80.0m | 82.0m | 0.0m | 0.0m | JA |
+| 2-P4.2 | Pizza in den Ofen #4 | 0.5m | 72.0m | 72.5m | 90.0m | 90.5m | 18.0m | 0.0m |  |
+| 2-P4.3 | Pizza backen #4 | 7.0m | 72.5m | 79.5m | 90.5m | 97.5m | 18.0m | 0.0m |  |
+| 2-P4.4 | Pizza aus dem Ofen holen #4 | 0.5m | 79.5m | 80.0m | 97.5m | 98.0m | 18.0m | 0.0m |  |
+| 2-P4.5 | Pizza verkaufen #4 | 2.0m | 80.0m | 82.0m | 98.0m | 100.0m | 18.0m | 18.0m |  |
 | 2-P5.1 | Pizza formen & belegen #5 | 3.0m | 72.0m | 75.0m | 72.0m | 75.0m | 0.0m | 0.0m | JA |
-| 2-P5.2 | Pizza in den Ofen #5 | 0.5m | 75.0m | 75.5m | 75.0m | 75.5m | 0.0m | 0.0m | JA |
-| 2-P5.3 | Pizza backen #5 | 7.0m | 75.5m | 82.5m | 75.5m | 82.5m | 0.0m | 0.0m | JA |
-| 2-P5.4 | Pizza aus dem Ofen holen #5 | 0.5m | 82.5m | 83.0m | 82.5m | 83.0m | 0.0m | 0.0m | JA |
-| 2-P5.5 | Pizza verkaufen #5 | 2.0m | 83.0m | 85.0m | 83.0m | 85.0m | 0.0m | 0.0m | JA |
+| 2-P5.2 | Pizza in den Ofen #5 | 0.5m | 75.0m | 75.5m | 90.0m | 90.5m | 15.0m | 0.0m |  |
+| 2-P5.3 | Pizza backen #5 | 7.0m | 75.5m | 82.5m | 90.5m | 97.5m | 15.0m | 0.0m |  |
+| 2-P5.4 | Pizza aus dem Ofen holen #5 | 0.5m | 82.5m | 83.0m | 97.5m | 98.0m | 15.0m | 0.0m |  |
+| 2-P5.5 | Pizza verkaufen #5 | 2.0m | 83.0m | 85.0m | 98.0m | 100.0m | 15.0m | 15.0m |  |
 | 2-P6.1 | Pizza formen & belegen #6 | 3.0m | 75.0m | 78.0m | 75.0m | 78.0m | 0.0m | 0.0m | JA |
-| 2-P6.2 | Pizza in den Ofen #6 | 0.5m | 78.0m | 78.5m | 78.0m | 78.5m | 0.0m | 0.0m | JA |
-| 2-P6.3 | Pizza backen #6 | 7.0m | 78.5m | 85.5m | 78.5m | 85.5m | 0.0m | 0.0m | JA |
-| 2-P6.4 | Pizza aus dem Ofen holen #6 | 0.5m | 85.5m | 86.0m | 85.5m | 86.0m | 0.0m | 0.0m | JA |
-| 2-P6.5 | Pizza verkaufen #6 | 2.0m | 86.0m | 88.0m | 86.0m | 88.0m | 0.0m | 0.0m | JA |
+| 2-P6.2 | Pizza in den Ofen #6 | 0.5m | 78.0m | 78.5m | 90.0m | 90.5m | 12.0m | 0.0m |  |
+| 2-P6.3 | Pizza backen #6 | 7.0m | 78.5m | 85.5m | 90.5m | 97.5m | 12.0m | 0.0m |  |
+| 2-P6.4 | Pizza aus dem Ofen holen #6 | 0.5m | 85.5m | 86.0m | 97.5m | 98.0m | 12.0m | 0.0m |  |
+| 2-P6.5 | Pizza verkaufen #6 | 2.0m | 86.0m | 88.0m | 98.0m | 100.0m | 12.0m | 12.0m |  |
 | 2-P7.1 | Pizza formen & belegen #7 | 3.0m | 78.0m | 81.0m | 78.0m | 81.0m | 0.0m | 0.0m | JA |
-| 2-P7.2 | Pizza in den Ofen #7 | 0.5m | 81.0m | 81.5m | 81.0m | 81.5m | 0.0m | 0.0m | JA |
-| 2-P7.3 | Pizza backen #7 | 7.0m | 81.5m | 88.5m | 81.5m | 88.5m | 0.0m | 0.0m | JA |
-| 2-P7.4 | Pizza aus dem Ofen holen #7 | 0.5m | 88.5m | 89.0m | 88.5m | 89.0m | 0.0m | 0.0m | JA |
-| 2-P7.5 | Pizza verkaufen #7 | 2.0m | 89.0m | 91.0m | 89.0m | 91.0m | 0.0m | 0.0m | JA |
+| 2-P7.2 | Pizza in den Ofen #7 | 0.5m | 81.0m | 81.5m | 90.0m | 90.5m | 9.0m | 0.0m |  |
+| 2-P7.3 | Pizza backen #7 | 7.0m | 81.5m | 88.5m | 90.5m | 97.5m | 9.0m | 0.0m |  |
+| 2-P7.4 | Pizza aus dem Ofen holen #7 | 0.5m | 88.5m | 89.0m | 97.5m | 98.0m | 9.0m | 0.0m |  |
+| 2-P7.5 | Pizza verkaufen #7 | 2.0m | 89.0m | 91.0m | 98.0m | 100.0m | 9.0m | 9.0m |  |
 | 2-P8.1 | Pizza formen & belegen #8 | 3.0m | 81.0m | 84.0m | 81.0m | 84.0m | 0.0m | 0.0m | JA |
-| 2-P8.2 | Pizza in den Ofen #8 | 0.5m | 84.0m | 84.5m | 84.0m | 84.5m | 0.0m | 0.0m | JA |
-| 2-P8.3 | Pizza backen #8 | 7.0m | 84.5m | 91.5m | 84.5m | 91.5m | 0.0m | 0.0m | JA |
-| 2-P8.4 | Pizza aus dem Ofen holen #8 | 0.5m | 91.5m | 92.0m | 91.5m | 92.0m | 0.0m | 0.0m | JA |
-| 2-P8.5 | Pizza verkaufen #8 | 2.0m | 92.0m | 94.0m | 92.0m | 94.0m | 0.0m | 0.0m | JA |
+| 2-P8.2 | Pizza in den Ofen #8 | 0.5m | 84.0m | 84.5m | 90.0m | 90.5m | 6.0m | 0.0m |  |
+| 2-P8.3 | Pizza backen #8 | 7.0m | 84.5m | 91.5m | 90.5m | 97.5m | 6.0m | 0.0m |  |
+| 2-P8.4 | Pizza aus dem Ofen holen #8 | 0.5m | 91.5m | 92.0m | 97.5m | 98.0m | 6.0m | 0.0m |  |
+| 2-P8.5 | Pizza verkaufen #8 | 2.0m | 92.0m | 94.0m | 98.0m | 100.0m | 6.0m | 6.0m |  |
 | 2-P9.1 | Pizza formen & belegen #9 | 3.0m | 84.0m | 87.0m | 84.0m | 87.0m | 0.0m | 0.0m | JA |
-| 2-P9.2 | Pizza in den Ofen #9 | 0.5m | 87.0m | 87.5m | 87.0m | 87.5m | 0.0m | 0.0m | JA |
-| 2-P9.3 | Pizza backen #9 | 7.0m | 87.5m | 94.5m | 87.5m | 94.5m | 0.0m | 0.0m | JA |
-| 2-P9.4 | Pizza aus dem Ofen holen #9 | 0.5m | 94.5m | 95.0m | 94.5m | 95.0m | 0.0m | 0.0m | JA |
-| 2-P9.5 | Pizza verkaufen #9 | 2.0m | 95.0m | 97.0m | 95.0m | 97.0m | 0.0m | 0.0m | JA |
+| 2-P9.2 | Pizza in den Ofen #9 | 0.5m | 87.0m | 87.5m | 90.0m | 90.5m | 3.0m | 0.0m |  |
+| 2-P9.3 | Pizza backen #9 | 7.0m | 87.5m | 94.5m | 90.5m | 97.5m | 3.0m | 0.0m |  |
+| 2-P9.4 | Pizza aus dem Ofen holen #9 | 0.5m | 94.5m | 95.0m | 97.5m | 98.0m | 3.0m | 0.0m |  |
+| 2-P9.5 | Pizza verkaufen #9 | 2.0m | 95.0m | 97.0m | 98.0m | 100.0m | 3.0m | 3.0m |  |
 | 2-P10.1 | Pizza formen & belegen #10 | 3.0m | 87.0m | 90.0m | 87.0m | 90.0m | 0.0m | 0.0m | JA |
 | 2-P10.2 | Pizza in den Ofen #10 | 0.5m | 90.0m | 90.5m | 90.0m | 90.5m | 0.0m | 0.0m | JA |
 | 2-P10.3 | Pizza backen #10 | 7.0m | 90.5m | 97.5m | 90.5m | 97.5m | 0.0m | 0.0m | JA |
@@ -257,50 +221,50 @@ gantt
     section Tasks
     [1] Teigvorbereitung (Batch für alle Pizzen) (KRIT) :crit, 2026-03-03 09:00, 2026-03-03 10:00
     [2-P1.1] Pizza formen & belegen #1 (KRIT) :crit, 2026-03-03 10:00, 2026-03-03 10:03
-    [2-P1.2] Pizza in den Ofen #1 (KRIT) :crit, 2026-03-03 10:03, 2026-03-03 10:03
-    [2-P1.3] Pizza backen #1 (KRIT) :crit, 2026-03-03 10:03, 2026-03-03 10:10
-    [2-P1.4] Pizza aus dem Ofen holen #1 (KRIT) :crit, 2026-03-03 10:10, 2026-03-03 10:11
-    [2-P1.5] Pizza verkaufen #1 (KRIT) :crit, 2026-03-03 10:11, 2026-03-03 10:13
+    [2-P1.2] Pizza in den Ofen #1 :2026-03-03 10:03, 2026-03-03 10:03
+    [2-P1.3] Pizza backen #1 :2026-03-03 10:03, 2026-03-03 10:10
+    [2-P1.4] Pizza aus dem Ofen holen #1 :2026-03-03 10:10, 2026-03-03 10:11
+    [2-P1.5] Pizza verkaufen #1 :2026-03-03 10:11, 2026-03-03 10:13
     [2-P2.1] Pizza formen & belegen #2 (KRIT) :crit, 2026-03-03 10:03, 2026-03-03 10:06
-    [2-P2.2] Pizza in den Ofen #2 (KRIT) :crit, 2026-03-03 10:06, 2026-03-03 10:06
-    [2-P2.3] Pizza backen #2 (KRIT) :crit, 2026-03-03 10:06, 2026-03-03 10:13
-    [2-P2.4] Pizza aus dem Ofen holen #2 (KRIT) :crit, 2026-03-03 10:13, 2026-03-03 10:14
-    [2-P2.5] Pizza verkaufen #2 (KRIT) :crit, 2026-03-03 10:14, 2026-03-03 10:16
+    [2-P2.2] Pizza in den Ofen #2 :2026-03-03 10:06, 2026-03-03 10:06
+    [2-P2.3] Pizza backen #2 :2026-03-03 10:06, 2026-03-03 10:13
+    [2-P2.4] Pizza aus dem Ofen holen #2 :2026-03-03 10:13, 2026-03-03 10:14
+    [2-P2.5] Pizza verkaufen #2 :2026-03-03 10:14, 2026-03-03 10:16
     [2-P3.1] Pizza formen & belegen #3 (KRIT) :crit, 2026-03-03 10:06, 2026-03-03 10:09
-    [2-P3.2] Pizza in den Ofen #3 (KRIT) :crit, 2026-03-03 10:09, 2026-03-03 10:09
-    [2-P3.3] Pizza backen #3 (KRIT) :crit, 2026-03-03 10:09, 2026-03-03 10:16
-    [2-P3.4] Pizza aus dem Ofen holen #3 (KRIT) :crit, 2026-03-03 10:16, 2026-03-03 10:17
-    [2-P3.5] Pizza verkaufen #3 (KRIT) :crit, 2026-03-03 10:17, 2026-03-03 10:19
+    [2-P3.2] Pizza in den Ofen #3 :2026-03-03 10:09, 2026-03-03 10:09
+    [2-P3.3] Pizza backen #3 :2026-03-03 10:09, 2026-03-03 10:16
+    [2-P3.4] Pizza aus dem Ofen holen #3 :2026-03-03 10:16, 2026-03-03 10:17
+    [2-P3.5] Pizza verkaufen #3 :2026-03-03 10:17, 2026-03-03 10:19
     [2-P4.1] Pizza formen & belegen #4 (KRIT) :crit, 2026-03-03 10:09, 2026-03-03 10:12
-    [2-P4.2] Pizza in den Ofen #4 (KRIT) :crit, 2026-03-03 10:12, 2026-03-03 10:12
-    [2-P4.3] Pizza backen #4 (KRIT) :crit, 2026-03-03 10:12, 2026-03-03 10:19
-    [2-P4.4] Pizza aus dem Ofen holen #4 (KRIT) :crit, 2026-03-03 10:19, 2026-03-03 10:20
-    [2-P4.5] Pizza verkaufen #4 (KRIT) :crit, 2026-03-03 10:20, 2026-03-03 10:22
+    [2-P4.2] Pizza in den Ofen #4 :2026-03-03 10:12, 2026-03-03 10:12
+    [2-P4.3] Pizza backen #4 :2026-03-03 10:12, 2026-03-03 10:19
+    [2-P4.4] Pizza aus dem Ofen holen #4 :2026-03-03 10:19, 2026-03-03 10:20
+    [2-P4.5] Pizza verkaufen #4 :2026-03-03 10:20, 2026-03-03 10:22
     [2-P5.1] Pizza formen & belegen #5 (KRIT) :crit, 2026-03-03 10:12, 2026-03-03 10:15
-    [2-P5.2] Pizza in den Ofen #5 (KRIT) :crit, 2026-03-03 10:15, 2026-03-03 10:15
-    [2-P5.3] Pizza backen #5 (KRIT) :crit, 2026-03-03 10:15, 2026-03-03 10:22
-    [2-P5.4] Pizza aus dem Ofen holen #5 (KRIT) :crit, 2026-03-03 10:22, 2026-03-03 10:23
-    [2-P5.5] Pizza verkaufen #5 (KRIT) :crit, 2026-03-03 10:23, 2026-03-03 10:25
+    [2-P5.2] Pizza in den Ofen #5 :2026-03-03 10:15, 2026-03-03 10:15
+    [2-P5.3] Pizza backen #5 :2026-03-03 10:15, 2026-03-03 10:22
+    [2-P5.4] Pizza aus dem Ofen holen #5 :2026-03-03 10:22, 2026-03-03 10:23
+    [2-P5.5] Pizza verkaufen #5 :2026-03-03 10:23, 2026-03-03 10:25
     [2-P6.1] Pizza formen & belegen #6 (KRIT) :crit, 2026-03-03 10:15, 2026-03-03 10:18
-    [2-P6.2] Pizza in den Ofen #6 (KRIT) :crit, 2026-03-03 10:18, 2026-03-03 10:18
-    [2-P6.3] Pizza backen #6 (KRIT) :crit, 2026-03-03 10:18, 2026-03-03 10:25
-    [2-P6.4] Pizza aus dem Ofen holen #6 (KRIT) :crit, 2026-03-03 10:25, 2026-03-03 10:26
-    [2-P6.5] Pizza verkaufen #6 (KRIT) :crit, 2026-03-03 10:26, 2026-03-03 10:28
+    [2-P6.2] Pizza in den Ofen #6 :2026-03-03 10:18, 2026-03-03 10:18
+    [2-P6.3] Pizza backen #6 :2026-03-03 10:18, 2026-03-03 10:25
+    [2-P6.4] Pizza aus dem Ofen holen #6 :2026-03-03 10:25, 2026-03-03 10:26
+    [2-P6.5] Pizza verkaufen #6 :2026-03-03 10:26, 2026-03-03 10:28
     [2-P7.1] Pizza formen & belegen #7 (KRIT) :crit, 2026-03-03 10:18, 2026-03-03 10:21
-    [2-P7.2] Pizza in den Ofen #7 (KRIT) :crit, 2026-03-03 10:21, 2026-03-03 10:21
-    [2-P7.3] Pizza backen #7 (KRIT) :crit, 2026-03-03 10:21, 2026-03-03 10:28
-    [2-P7.4] Pizza aus dem Ofen holen #7 (KRIT) :crit, 2026-03-03 10:28, 2026-03-03 10:29
-    [2-P7.5] Pizza verkaufen #7 (KRIT) :crit, 2026-03-03 10:29, 2026-03-03 10:31
+    [2-P7.2] Pizza in den Ofen #7 :2026-03-03 10:21, 2026-03-03 10:21
+    [2-P7.3] Pizza backen #7 :2026-03-03 10:21, 2026-03-03 10:28
+    [2-P7.4] Pizza aus dem Ofen holen #7 :2026-03-03 10:28, 2026-03-03 10:29
+    [2-P7.5] Pizza verkaufen #7 :2026-03-03 10:29, 2026-03-03 10:31
     [2-P8.1] Pizza formen & belegen #8 (KRIT) :crit, 2026-03-03 10:21, 2026-03-03 10:24
-    [2-P8.2] Pizza in den Ofen #8 (KRIT) :crit, 2026-03-03 10:24, 2026-03-03 10:24
-    [2-P8.3] Pizza backen #8 (KRIT) :crit, 2026-03-03 10:24, 2026-03-03 10:31
-    [2-P8.4] Pizza aus dem Ofen holen #8 (KRIT) :crit, 2026-03-03 10:31, 2026-03-03 10:32
-    [2-P8.5] Pizza verkaufen #8 (KRIT) :crit, 2026-03-03 10:32, 2026-03-03 10:34
+    [2-P8.2] Pizza in den Ofen #8 :2026-03-03 10:24, 2026-03-03 10:24
+    [2-P8.3] Pizza backen #8 :2026-03-03 10:24, 2026-03-03 10:31
+    [2-P8.4] Pizza aus dem Ofen holen #8 :2026-03-03 10:31, 2026-03-03 10:32
+    [2-P8.5] Pizza verkaufen #8 :2026-03-03 10:32, 2026-03-03 10:34
     [2-P9.1] Pizza formen & belegen #9 (KRIT) :crit, 2026-03-03 10:24, 2026-03-03 10:27
-    [2-P9.2] Pizza in den Ofen #9 (KRIT) :crit, 2026-03-03 10:27, 2026-03-03 10:27
-    [2-P9.3] Pizza backen #9 (KRIT) :crit, 2026-03-03 10:27, 2026-03-03 10:34
-    [2-P9.4] Pizza aus dem Ofen holen #9 (KRIT) :crit, 2026-03-03 10:34, 2026-03-03 10:35
-    [2-P9.5] Pizza verkaufen #9 (KRIT) :crit, 2026-03-03 10:35, 2026-03-03 10:37
+    [2-P9.2] Pizza in den Ofen #9 :2026-03-03 10:27, 2026-03-03 10:27
+    [2-P9.3] Pizza backen #9 :2026-03-03 10:27, 2026-03-03 10:34
+    [2-P9.4] Pizza aus dem Ofen holen #9 :2026-03-03 10:34, 2026-03-03 10:35
+    [2-P9.5] Pizza verkaufen #9 :2026-03-03 10:35, 2026-03-03 10:37
     [2-P10.1] Pizza formen & belegen #10 (KRIT) :crit, 2026-03-03 10:27, 2026-03-03 10:30
     [2-P10.2] Pizza in den Ofen #10 (KRIT) :crit, 2026-03-03 10:30, 2026-03-03 10:30
     [2-P10.3] Pizza backen #10 (KRIT) :crit, 2026-03-03 10:30, 2026-03-03 10:37

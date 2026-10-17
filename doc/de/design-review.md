@@ -30,6 +30,16 @@ mit (jetzt `exclude_unset`).
 Bewusste Ergebnisänderung: Datumswerte in JSON/TXT/Excel überspringen jetzt dieselben Feiertage wie der
 Gantt-Kalender (betrifft `hausbau`, `simpleproject`, `tankdesign`; die CPM-Werte sind unverändert).
 
+Fachliche Korrekturen (zweiter Schritt, Tests in `tests/test_semantics.py`):
+
+1. Ruhepausen werden für alle Projekte mit Personen und `resting_times` eingefügt, nicht nur bei Loop-Projekten
+   (betrifft `fassadenbau`).
+2. Ein Vorgänger eines Instance-Tasks zeigt nach der Expansion auf die **erste** Instanz (vorher die letzte).
+3. Endknoten erhalten SEZ = Projektende (Standard-CPM). Vorher galt SEZ = eigenes FEZ, wodurch jeder Endknoten
+   fälschlich kritisch war (z. B. `pizzas`: 51 → 15 kritische Tasks). Projektdauer unverändert.
+4. `task.cost` ist ein Festpreis: Die Ressourcenstunden des Tasks zählen nicht als Lohn, der Betrag geht als
+   „Feste Task-Kosten“ in die Gesamtkosten ein (`0.0` = kostenlos).
+
 ---
 
 ## 1. Kurzfazit

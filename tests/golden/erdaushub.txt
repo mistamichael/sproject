@@ -12,7 +12,7 @@ Zeiteinheit:        minutes
 Startdatum:         2026-03-02
 Enddatum:           2026-03-03
 Anzahl Tasks:       169
-Kritische Tasks:    169
+Kritische Tasks:    86
 
 ======================================================================
 KRITISCHER PFAD
@@ -20,171 +20,88 @@ KRITISCHER PFAD
 
   [1] Initialisierung und Bereitstellung  Dauer: 15.0m
   [2-F1.1] Beladen #1                          Dauer: 8.0m
-  [2-F1.2] Transport-Umlauf #1                 Dauer: 40.0m
   [2-F2.1] Beladen #2                          Dauer: 8.0m
-  [2-F2.2] Transport-Umlauf #2                 Dauer: 40.0m
   [2-F3.1] Beladen #3                          Dauer: 8.0m
-  [2-F3.2] Transport-Umlauf #3                 Dauer: 40.0m
   [2-F4.1] Beladen #4                          Dauer: 8.0m
-  [2-F4.2] Transport-Umlauf #4                 Dauer: 40.0m
   [2-F5.1] Beladen #5                          Dauer: 8.0m
-  [2-F5.2] Transport-Umlauf #5                 Dauer: 40.0m
   [2-F6.1] Beladen #6                          Dauer: 8.0m
-  [2-F6.2] Transport-Umlauf #6                 Dauer: 40.0m
   [2-F7.1] Beladen #7                          Dauer: 8.0m
-  [2-F7.2] Transport-Umlauf #7                 Dauer: 40.0m
   [2-F8.1] Beladen #8                          Dauer: 8.0m
-  [2-F8.2] Transport-Umlauf #8                 Dauer: 40.0m
   [2-F9.1] Beladen #9                          Dauer: 8.0m
-  [2-F9.2] Transport-Umlauf #9                 Dauer: 40.0m
   [2-F10.1] Beladen #10                         Dauer: 8.0m
-  [2-F10.2] Transport-Umlauf #10                Dauer: 40.0m
   [2-F11.1] Beladen #11                         Dauer: 8.0m
-  [2-F11.2] Transport-Umlauf #11                Dauer: 40.0m
   [2-F12.1] Beladen #12                         Dauer: 8.0m
-  [2-F12.2] Transport-Umlauf #12                Dauer: 40.0m
   [2-F13.1] Beladen #13                         Dauer: 8.0m
-  [2-F13.2] Transport-Umlauf #13                Dauer: 40.0m
   [2-F14.1] Beladen #14                         Dauer: 8.0m
-  [2-F14.2] Transport-Umlauf #14                Dauer: 40.0m
   [2-F15.1] Beladen #15                         Dauer: 8.0m
-  [2-F15.2] Transport-Umlauf #15                Dauer: 40.0m
   [2-F16.1] Beladen #16                         Dauer: 8.0m
-  [2-F16.2] Transport-Umlauf #16                Dauer: 40.0m
   [2-F17.1] Beladen #17                         Dauer: 8.0m
-  [2-F17.2] Transport-Umlauf #17                Dauer: 40.0m
   [2-F18.1] Beladen #18                         Dauer: 8.0m
-  [2-F18.2] Transport-Umlauf #18                Dauer: 40.0m
   [2-F19.1] Beladen #19                         Dauer: 8.0m
-  [2-F19.2] Transport-Umlauf #19                Dauer: 40.0m
   [2-F20.1] Beladen #20                         Dauer: 8.0m
-  [2-F20.2] Transport-Umlauf #20                Dauer: 40.0m
   [2-F21.1] Beladen #21                         Dauer: 8.0m
-  [2-F21.2] Transport-Umlauf #21                Dauer: 40.0m
   [2-F22.1] Beladen #22                         Dauer: 8.0m
-  [2-F22.2] Transport-Umlauf #22                Dauer: 40.0m
   [2-F23.1] Beladen #23                         Dauer: 8.0m
-  [2-F23.2] Transport-Umlauf #23                Dauer: 40.0m
   [2-F24.1] Beladen #24                         Dauer: 8.0m
-  [2-F24.2] Transport-Umlauf #24                Dauer: 40.0m
   [2-F25.1] Beladen #25                         Dauer: 8.0m
-  [2-F25.2] Transport-Umlauf #25                Dauer: 40.0m
   [2-F26.1] Beladen #26                         Dauer: 8.0m
-  [2-F26.2] Transport-Umlauf #26                Dauer: 40.0m
   [2-F27.1] Beladen #27                         Dauer: 8.0m
-  [2-F27.2] Transport-Umlauf #27                Dauer: 40.0m
   [2-F28.1] Beladen #28                         Dauer: 8.0m
-  [2-F28.2] Transport-Umlauf #28                Dauer: 40.0m
   [2-F29.1] Beladen #29                         Dauer: 8.0m
-  [2-F29.2] Transport-Umlauf #29                Dauer: 40.0m
   [2-F30.1] Beladen #30                         Dauer: 8.0m
-  [2-F30.2] Transport-Umlauf #30                Dauer: 40.0m
   [2-F31.1] Beladen #31                         Dauer: 8.0m
-  [2-F31.2] Transport-Umlauf #31                Dauer: 40.0m
   [2-F32.1] Beladen #32                         Dauer: 8.0m
-  [2-F32.2] Transport-Umlauf #32                Dauer: 40.0m
   [2-F33.1] Beladen #33                         Dauer: 8.0m
-  [2-F33.2] Transport-Umlauf #33                Dauer: 40.0m
   [2-F34.1] Beladen #34                         Dauer: 8.0m
-  [2-F34.2] Transport-Umlauf #34                Dauer: 40.0m
   [2-F35.1] Beladen #35                         Dauer: 8.0m
-  [2-F35.2] Transport-Umlauf #35                Dauer: 40.0m
   [2-F36.1] Beladen #36                         Dauer: 8.0m
-  [2-F36.2] Transport-Umlauf #36                Dauer: 40.0m
   [2-F37.1] Beladen #37                         Dauer: 8.0m
-  [2-F37.2] Transport-Umlauf #37                Dauer: 40.0m
   [2-F38.1] Beladen #38                         Dauer: 8.0m
-  [2-F38.2] Transport-Umlauf #38                Dauer: 40.0m
   [2-F39.1] Beladen #39                         Dauer: 8.0m
-  [2-F39.2] Transport-Umlauf #39                Dauer: 40.0m
   [2-F40.1] Beladen #40                         Dauer: 8.0m
-  [2-F40.2] Transport-Umlauf #40                Dauer: 40.0m
   [2-F41.1] Beladen #41                         Dauer: 8.0m
-  [2-F41.2] Transport-Umlauf #41                Dauer: 40.0m
   [2-F42.1] Beladen #42                         Dauer: 8.0m
-  [2-F42.2] Transport-Umlauf #42                Dauer: 40.0m
   [2-F43.1] Beladen #43                         Dauer: 8.0m
-  [2-F43.2] Transport-Umlauf #43                Dauer: 40.0m
   [2-F44.1] Beladen #44                         Dauer: 8.0m
-  [2-F44.2] Transport-Umlauf #44                Dauer: 40.0m
   [2-F45.1] Beladen #45                         Dauer: 8.0m
-  [2-F45.2] Transport-Umlauf #45                Dauer: 40.0m
   [2-F46.1] Beladen #46                         Dauer: 8.0m
-  [2-F46.2] Transport-Umlauf #46                Dauer: 40.0m
   [2-F47.1] Beladen #47                         Dauer: 8.0m
-  [2-F47.2] Transport-Umlauf #47                Dauer: 40.0m
   [2-F48.1] Beladen #48                         Dauer: 8.0m
-  [2-F48.2] Transport-Umlauf #48                Dauer: 40.0m
   [2-F49.1] Beladen #49                         Dauer: 8.0m
-  [2-F49.2] Transport-Umlauf #49                Dauer: 40.0m
   [2-F50.1] Beladen #50                         Dauer: 8.0m
-  [2-F50.2] Transport-Umlauf #50                Dauer: 40.0m
   [2-F51.1] Beladen #51                         Dauer: 8.0m
-  [2-F51.2] Transport-Umlauf #51                Dauer: 40.0m
   [2-F52.1] Beladen #52                         Dauer: 8.0m
-  [2-F52.2] Transport-Umlauf #52                Dauer: 40.0m
   [2-F53.1] Beladen #53                         Dauer: 8.0m
-  [2-F53.2] Transport-Umlauf #53                Dauer: 40.0m
   [2-F54.1] Beladen #54                         Dauer: 8.0m
-  [2-F54.2] Transport-Umlauf #54                Dauer: 40.0m
   [2-F55.1] Beladen #55                         Dauer: 8.0m
-  [2-F55.2] Transport-Umlauf #55                Dauer: 40.0m
   [2-F56.1] Beladen #56                         Dauer: 8.0m
-  [2-F56.2] Transport-Umlauf #56                Dauer: 40.0m
   [2-F57.1] Beladen #57                         Dauer: 8.0m
-  [2-F57.2] Transport-Umlauf #57                Dauer: 40.0m
   [2-F58.1] Beladen #58                         Dauer: 8.0m
-  [2-F58.2] Transport-Umlauf #58                Dauer: 40.0m
   [2-F59.1] Beladen #59                         Dauer: 8.0m
-  [2-F59.2] Transport-Umlauf #59                Dauer: 40.0m
   [2-F60.1] Beladen #60                         Dauer: 8.0m
-  [2-F60.2] Transport-Umlauf #60                Dauer: 40.0m
   [2-F61.1] Beladen #61                         Dauer: 8.0m
-  [2-F61.2] Transport-Umlauf #61                Dauer: 40.0m
   [2-F62.1] Beladen #62                         Dauer: 8.0m
-  [2-F62.2] Transport-Umlauf #62                Dauer: 40.0m
   [2-F63.1] Beladen #63                         Dauer: 8.0m
-  [2-F63.2] Transport-Umlauf #63                Dauer: 40.0m
   [2-F64.1] Beladen #64                         Dauer: 8.0m
-  [2-F64.2] Transport-Umlauf #64                Dauer: 40.0m
   [2-F65.1] Beladen #65                         Dauer: 8.0m
-  [2-F65.2] Transport-Umlauf #65                Dauer: 40.0m
   [2-F66.1] Beladen #66                         Dauer: 8.0m
-  [2-F66.2] Transport-Umlauf #66                Dauer: 40.0m
   [2-F67.1] Beladen #67                         Dauer: 8.0m
-  [2-F67.2] Transport-Umlauf #67                Dauer: 40.0m
   [2-F68.1] Beladen #68                         Dauer: 8.0m
-  [2-F68.2] Transport-Umlauf #68                Dauer: 40.0m
   [2-F69.1] Beladen #69                         Dauer: 8.0m
-  [2-F69.2] Transport-Umlauf #69                Dauer: 40.0m
   [2-F70.1] Beladen #70                         Dauer: 8.0m
-  [2-F70.2] Transport-Umlauf #70                Dauer: 40.0m
   [2-F71.1] Beladen #71                         Dauer: 8.0m
-  [2-F71.2] Transport-Umlauf #71                Dauer: 40.0m
   [2-F72.1] Beladen #72                         Dauer: 8.0m
-  [2-F72.2] Transport-Umlauf #72                Dauer: 40.0m
   [2-F73.1] Beladen #73                         Dauer: 8.0m
-  [2-F73.2] Transport-Umlauf #73                Dauer: 40.0m
   [2-F74.1] Beladen #74                         Dauer: 8.0m
-  [2-F74.2] Transport-Umlauf #74                Dauer: 40.0m
   [2-F75.1] Beladen #75                         Dauer: 8.0m
-  [2-F75.2] Transport-Umlauf #75                Dauer: 40.0m
   [2-F76.1] Beladen #76                         Dauer: 8.0m
-  [2-F76.2] Transport-Umlauf #76                Dauer: 40.0m
   [2-F77.1] Beladen #77                         Dauer: 8.0m
-  [2-F77.2] Transport-Umlauf #77                Dauer: 40.0m
   [2-F78.1] Beladen #78                         Dauer: 8.0m
-  [2-F78.2] Transport-Umlauf #78                Dauer: 40.0m
   [2-F79.1] Beladen #79                         Dauer: 8.0m
-  [2-F79.2] Transport-Umlauf #79                Dauer: 40.0m
   [2-F80.1] Beladen #80                         Dauer: 8.0m
-  [2-F80.2] Transport-Umlauf #80                Dauer: 40.0m
   [2-F81.1] Beladen #81                         Dauer: 8.0m
-  [2-F81.2] Transport-Umlauf #81                Dauer: 40.0m
   [2-F82.1] Beladen #82                         Dauer: 8.0m
-  [2-F82.2] Transport-Umlauf #82                Dauer: 40.0m
   [2-F83.1] Beladen #83                         Dauer: 8.0m
-  [2-F83.2] Transport-Umlauf #83                Dauer: 40.0m
   [2-F84.1] Beladen #84                         Dauer: 8.0m
   [2-F84.2] Transport-Umlauf #84                Dauer: 40.0m
 
@@ -196,176 +113,176 @@ ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ  
 ----------------------------------------------------------------------
 1       Initialisierung und Bereits... 0.0      0.0      0.0      -0.0     0.0      -0.0     0.0      2-F1.1               JA
 2-F1.1  Beladen #1                     0.0      0.0      0.0      0.0      0.0      -0.0     0.0      2-F1.2, 2-F2.1       JA
-2-F1.2  Transport-Umlauf #1            0.1      0.0      0.1      0.0      0.1      -0.0     -0.0                          JA
+2-F1.2  Transport-Umlauf #1            0.1      0.0      0.1      1.4      1.5      1.4      1.4                           
 2-F2.1  Beladen #2                     0.0      0.0      0.1      0.0      0.1      -0.0     0.0      2-F2.2, 2-F3.1       JA
-2-F2.2  Transport-Umlauf #2            0.1      0.1      0.1      0.1      0.1      -0.0     -0.0                          JA
+2-F2.2  Transport-Umlauf #2            0.1      0.1      0.1      1.4      1.5      1.4      1.4                           
 2-F3.1  Beladen #3                     0.0      0.1      0.1      0.1      0.1      -0.0     0.0      2-F3.2, 2-F4.1       JA
-2-F3.2  Transport-Umlauf #3            0.1      0.1      0.2      0.1      0.2      -0.0     -0.0                          JA
+2-F3.2  Transport-Umlauf #3            0.1      0.1      0.2      1.4      1.5      1.3      1.3                           
 2-F4.1  Beladen #4                     0.0      0.1      0.1      0.1      0.1      -0.0     0.0      2-F4.2, 2-F5.1       JA
-2-F4.2  Transport-Umlauf #4            0.1      0.1      0.2      0.1      0.2      -0.0     -0.0                          JA
+2-F4.2  Transport-Umlauf #4            0.1      0.1      0.2      1.4      1.5      1.3      1.3                           
 2-F5.1  Beladen #5                     0.0      0.1      0.1      0.1      0.1      -0.0     0.0      2-F5.2, 2-F6.1       JA
-2-F5.2  Transport-Umlauf #5            0.1      0.1      0.2      0.1      0.2      -0.0     -0.0                          JA
+2-F5.2  Transport-Umlauf #5            0.1      0.1      0.2      1.4      1.5      1.3      1.3                           
 2-F6.1  Beladen #6                     0.0      0.1      0.1      0.1      0.1      -0.0     0.0      2-F6.2, 2-F7.1       JA
-2-F6.2  Transport-Umlauf #6            0.1      0.1      0.2      0.1      0.2      0.0      0.0                           JA
+2-F6.2  Transport-Umlauf #6            0.1      0.1      0.2      1.4      1.5      1.3      1.3                           
 2-F7.1  Beladen #7                     0.0      0.1      0.1      0.1      0.1      -0.0     0.0      2-F7.2, 2-F8.1       JA
-2-F7.2  Transport-Umlauf #7            0.1      0.1      0.2      0.1      0.2      0.0      0.0                           JA
+2-F7.2  Transport-Umlauf #7            0.1      0.1      0.2      1.4      1.5      1.3      1.3                           
 2-F8.1  Beladen #8                     0.0      0.1      0.2      0.1      0.2      -0.0     0.0      2-F8.2, 2-F9.1       JA
-2-F8.2  Transport-Umlauf #8            0.1      0.2      0.2      0.2      0.2      0.0      0.0                           JA
+2-F8.2  Transport-Umlauf #8            0.1      0.2      0.2      1.4      1.5      1.3      1.3                           
 2-F9.1  Beladen #9                     0.0      0.2      0.2      0.2      0.2      -0.0     0.0      2-F9.2, 2-F10.1      JA
-2-F9.2  Transport-Umlauf #9            0.1      0.2      0.3      0.2      0.3      0.0      0.0                           JA
+2-F9.2  Transport-Umlauf #9            0.1      0.2      0.3      1.4      1.5      1.2      1.2                           
 2-F10.1 Beladen #10                    0.0      0.2      0.2      0.2      0.2      -0.0     0.0      2-F10.2, 2-F11.1     JA
-2-F10.2 Transport-Umlauf #10           0.1      0.2      0.3      0.2      0.3      0.0      0.0                           JA
+2-F10.2 Transport-Umlauf #10           0.1      0.2      0.3      1.4      1.5      1.2      1.2                           
 2-F11.1 Beladen #11                    0.0      0.2      0.2      0.2      0.2      -0.0     0.0      2-F11.2, 2-F12.1     JA
-2-F11.2 Transport-Umlauf #11           0.1      0.2      0.3      0.2      0.3      0.0      0.0      2-F11.2-BRK-P1       JA
+2-F11.2 Transport-Umlauf #11           0.1      0.2      0.3      1.3      1.4      1.1      0.0      2-F11.2-BRK-P1       
 2-F12.1 Beladen #12                    0.0      0.2      0.2      0.2      0.2      -0.0     0.0      2-F12.2, 2-F13.1     JA
-2-F12.2 Transport-Umlauf #12           0.1      0.2      0.3      0.2      0.3      0.0      0.0      2-F12.2-BRK-P2       JA
+2-F12.2 Transport-Umlauf #12           0.1      0.2      0.3      1.3      1.4      1.1      0.0      2-F12.2-BRK-P2       
 2-F13.1 Beladen #13                    0.0      0.2      0.2      0.2      0.2      -0.0     0.0      2-F13.2, 2-F14.1     JA
-2-F13.2 Transport-Umlauf #13           0.1      0.2      0.3      0.2      0.3      0.0      0.0                           JA
+2-F13.2 Transport-Umlauf #13           0.1      0.2      0.3      1.4      1.5      1.2      1.2                           
 2-F14.1 Beladen #14                    0.0      0.2      0.3      0.2      0.3      -0.0     0.0      2-F14.2, 2-F15.1     JA
-2-F14.2 Transport-Umlauf #14           0.1      0.3      0.3      0.3      0.3      0.0      0.0                           JA
+2-F14.2 Transport-Umlauf #14           0.1      0.3      0.3      1.4      1.5      1.2      1.2                           
 2-F15.1 Beladen #15                    0.0      0.3      0.3      0.3      0.3      -0.0     0.0      2-F15.2, 2-F16.1     JA
-2-F15.2 Transport-Umlauf #15           0.1      0.3      0.4      0.3      0.4      0.0      0.0      2-F15.2-BRK-P1       JA
+2-F15.2 Transport-Umlauf #15           0.1      0.3      0.4      1.4      1.5      1.1      0.0      2-F15.2-BRK-P1       
 2-F16.1 Beladen #16                    0.0      0.3      0.3      0.3      0.3      -0.0     0.0      2-F16.2, 2-F17.1     JA
 2-F11.2-BRK-P1 Pause: Max Mustermann (Lenk... 0.1      0.3      0.4      0.3      0.4      0.0      0.0                           JA
-2-F16.2 Transport-Umlauf #16           0.1      0.3      0.4      0.3      0.4      0.0      0.0      2-F16.2-BRK-P2       JA
+2-F16.2 Transport-Umlauf #16           0.1      0.3      0.4      1.4      1.5      1.1      0.0      2-F16.2-BRK-P2       
 2-F17.1 Beladen #17                    0.0      0.3      0.3      0.3      0.3      -0.0     0.0      2-F17.2, 2-F18.1     JA
 2-F12.2-BRK-P2 Pause: Heinz Müller (Lenkze... 0.1      0.3      0.4      0.3      0.4      0.0      0.0                           JA
-2-F17.2 Transport-Umlauf #17           0.1      0.3      0.4      0.3      0.4      0.0      0.0                           JA
+2-F17.2 Transport-Umlauf #17           0.1      0.3      0.4      1.4      1.5      1.1      1.1                           
 2-F18.1 Beladen #18                    0.0      0.3      0.3      0.3      0.3      -0.0     0.0      2-F18.2, 2-F19.1     JA
-2-F18.2 Transport-Umlauf #18           0.1      0.3      0.4      0.3      0.4      0.0      0.0                           JA
+2-F18.2 Transport-Umlauf #18           0.1      0.3      0.4      1.4      1.5      1.1      1.1                           
 2-F19.1 Beladen #19                    0.0      0.3      0.3      0.3      0.3      -0.0     0.0      2-F19.2, 2-F20.1     JA
-2-F19.2 Transport-Umlauf #19           0.1      0.3      0.4      0.3      0.4      0.0      0.0                           JA
+2-F19.2 Transport-Umlauf #19           0.1      0.3      0.4      1.4      1.5      1.1      1.1                           
 2-F20.1 Beladen #20                    0.0      0.3      0.4      0.3      0.4      -0.0     0.0      2-F20.2, 2-F21.1     JA
 2-F15.2-BRK-P1 Pause: Max Mustermann (Vors... 0.1      0.4      0.4      0.4      0.4      0.0      0.0                           JA
-2-F20.2 Transport-Umlauf #20           0.1      0.4      0.4      0.4      0.4      0.0      0.0                           JA
+2-F20.2 Transport-Umlauf #20           0.1      0.4      0.4      1.4      1.5      1.1      1.1                           
 2-F21.1 Beladen #21                    0.0      0.4      0.4      0.4      0.4      -0.0     0.0      2-F21.2, 2-F22.1     JA
 2-F16.2-BRK-P2 Pause: Heinz Müller (Vorsch... 0.1      0.4      0.4      0.4      0.4      0.0      0.0                           JA
-2-F21.2 Transport-Umlauf #21           0.1      0.4      0.5      0.4      0.5      0.0      0.0                           JA
+2-F21.2 Transport-Umlauf #21           0.1      0.4      0.5      1.4      1.5      1.1      1.1                           
 2-F22.1 Beladen #22                    0.0      0.4      0.4      0.4      0.4      -0.0     0.0      2-F22.2, 2-F23.1     JA
-2-F22.2 Transport-Umlauf #22           0.1      0.4      0.5      0.4      0.5      0.0      0.0                           JA
+2-F22.2 Transport-Umlauf #22           0.1      0.4      0.5      1.4      1.5      1.0      1.0                           
 2-F23.1 Beladen #23                    0.0      0.4      0.4      0.4      0.4      -0.0     0.0      2-F23.2, 2-F24.1     JA
-2-F23.2 Transport-Umlauf #23           0.1      0.4      0.5      0.4      0.5      0.0      0.0                           JA
+2-F23.2 Transport-Umlauf #23           0.1      0.4      0.5      1.4      1.5      1.0      1.0                           
 2-F24.1 Beladen #24                    0.0      0.4      0.4      0.4      0.4      -0.0     0.0      2-F24.2, 2-F25.1     JA
-2-F24.2 Transport-Umlauf #24           0.1      0.4      0.5      0.4      0.5      0.0      0.0                           JA
+2-F24.2 Transport-Umlauf #24           0.1      0.4      0.5      1.4      1.5      1.0      1.0                           
 2-F25.1 Beladen #25                    0.0      0.4      0.4      0.4      0.4      -0.0     0.0      2-F25.2, 2-F26.1     JA
-2-F25.2 Transport-Umlauf #25           0.1      0.4      0.5      0.4      0.5      0.0      0.0                           JA
+2-F25.2 Transport-Umlauf #25           0.1      0.4      0.5      1.4      1.5      1.0      1.0                           
 2-F26.1 Beladen #26                    0.0      0.4      0.5      0.4      0.5      -0.0     0.0      2-F26.2, 2-F27.1     JA
-2-F26.2 Transport-Umlauf #26           0.1      0.5      0.5      0.5      0.5      0.0      0.0                           JA
+2-F26.2 Transport-Umlauf #26           0.1      0.5      0.5      1.4      1.5      1.0      1.0                           
 2-F27.1 Beladen #27                    0.0      0.5      0.5      0.5      0.5      -0.0     0.0      2-F27.2, 2-F28.1     JA
-2-F27.2 Transport-Umlauf #27           0.1      0.5      0.6      0.5      0.6      0.0      0.0                           JA
+2-F27.2 Transport-Umlauf #27           0.1      0.5      0.6      1.4      1.5      0.9      0.9                           
 2-F28.1 Beladen #28                    0.0      0.5      0.5      0.5      0.5      -0.0     0.0      2-F28.2, 2-F29.1     JA
-2-F28.2 Transport-Umlauf #28           0.1      0.5      0.6      0.5      0.6      0.0      0.0                           JA
+2-F28.2 Transport-Umlauf #28           0.1      0.5      0.6      1.4      1.5      0.9      0.9                           
 2-F29.1 Beladen #29                    0.0      0.5      0.5      0.5      0.5      -0.0     0.0      2-F29.2, 2-F30.1     JA
-2-F29.2 Transport-Umlauf #29           0.1      0.5      0.6      0.5      0.6      0.0      0.0                           JA
+2-F29.2 Transport-Umlauf #29           0.1      0.5      0.6      1.4      1.5      0.9      0.9                           
 2-F30.1 Beladen #30                    0.0      0.5      0.5      0.5      0.5      -0.0     0.0      2-F30.2, 2-F31.1     JA
-2-F30.2 Transport-Umlauf #30           0.1      0.5      0.6      0.5      0.6      0.0      0.0                           JA
+2-F30.2 Transport-Umlauf #30           0.1      0.5      0.6      1.4      1.5      0.9      0.9                           
 2-F31.1 Beladen #31                    0.0      0.5      0.5      0.5      0.5      -0.0     0.0      2-F31.2, 2-F32.1     JA
-2-F31.2 Transport-Umlauf #31           0.1      0.5      0.6      0.5      0.6      0.0      0.0                           JA
+2-F31.2 Transport-Umlauf #31           0.1      0.5      0.6      1.4      1.5      0.9      0.9                           
 2-F32.1 Beladen #32                    0.0      0.5      0.6      0.5      0.6      -0.0     0.0      2-F32.2, 2-F33.1     JA
-2-F32.2 Transport-Umlauf #32           0.1      0.6      0.6      0.6      0.6      0.0      0.0                           JA
+2-F32.2 Transport-Umlauf #32           0.1      0.6      0.6      1.4      1.5      0.9      0.9                           
 2-F33.1 Beladen #33                    0.0      0.6      0.6      0.6      0.6      -0.0     0.0      2-F33.2, 2-F34.1     JA
-2-F33.2 Transport-Umlauf #33           0.1      0.6      0.7      0.6      0.7      0.0      0.0                           JA
+2-F33.2 Transport-Umlauf #33           0.1      0.6      0.7      1.4      1.5      0.8      0.8                           
 2-F34.1 Beladen #34                    0.0      0.6      0.6      0.6      0.6      -0.0     0.0      2-F34.2, 2-F35.1     JA
-2-F34.2 Transport-Umlauf #34           0.1      0.6      0.7      0.6      0.7      0.0      0.0                           JA
+2-F34.2 Transport-Umlauf #34           0.1      0.6      0.7      1.4      1.5      0.8      0.8                           
 2-F35.1 Beladen #35                    0.0      0.6      0.6      0.6      0.6      -0.0     0.0      2-F35.2, 2-F36.1     JA
-2-F35.2 Transport-Umlauf #35           0.1      0.6      0.7      0.6      0.7      0.0      0.0                           JA
+2-F35.2 Transport-Umlauf #35           0.1      0.6      0.7      1.4      1.5      0.8      0.8                           
 2-F36.1 Beladen #36                    0.0      0.6      0.6      0.6      0.6      -0.0     0.0      2-F36.2, 2-F37.1     JA
-2-F36.2 Transport-Umlauf #36           0.1      0.6      0.7      0.6      0.7      0.0      0.0                           JA
+2-F36.2 Transport-Umlauf #36           0.1      0.6      0.7      1.4      1.5      0.8      0.8                           
 2-F37.1 Beladen #37                    0.0      0.6      0.6      0.6      0.6      -0.0     0.0      2-F37.2, 2-F38.1     JA
-2-F37.2 Transport-Umlauf #37           0.1      0.6      0.7      0.6      0.7      0.0      0.0                           JA
+2-F37.2 Transport-Umlauf #37           0.1      0.6      0.7      1.4      1.5      0.8      0.8                           
 2-F38.1 Beladen #38                    0.0      0.6      0.7      0.6      0.7      -0.0     0.0      2-F38.2, 2-F39.1     JA
-2-F38.2 Transport-Umlauf #38           0.1      0.7      0.7      0.7      0.7      0.0      0.0                           JA
+2-F38.2 Transport-Umlauf #38           0.1      0.7      0.7      1.4      1.5      0.8      0.8                           
 2-F39.1 Beladen #39                    0.0      0.7      0.7      0.7      0.7      -0.0     0.0      2-F39.2, 2-F40.1     JA
-2-F39.2 Transport-Umlauf #39           0.1      0.7      0.8      0.7      0.8      0.0      0.0                           JA
+2-F39.2 Transport-Umlauf #39           0.1      0.7      0.8      1.4      1.5      0.7      0.7                           
 2-F40.1 Beladen #40                    0.0      0.7      0.7      0.7      0.7      -0.0     0.0      2-F40.2, 2-F41.1     JA
-2-F40.2 Transport-Umlauf #40           0.1      0.7      0.8      0.7      0.8      0.0      0.0                           JA
+2-F40.2 Transport-Umlauf #40           0.1      0.7      0.8      1.4      1.5      0.7      0.7                           
 2-F41.1 Beladen #41                    0.0      0.7      0.7      0.7      0.7      -0.0     0.0      2-F41.2, 2-F42.1     JA
-2-F41.2 Transport-Umlauf #41           0.1      0.7      0.8      0.7      0.8      0.0      0.0                           JA
+2-F41.2 Transport-Umlauf #41           0.1      0.7      0.8      1.4      1.5      0.7      0.7                           
 2-F42.1 Beladen #42                    0.0      0.7      0.7      0.7      0.7      -0.0     0.0      2-F42.2, 2-F43.1     JA
-2-F42.2 Transport-Umlauf #42           0.1      0.7      0.8      0.7      0.8      0.0      0.0                           JA
+2-F42.2 Transport-Umlauf #42           0.1      0.7      0.8      1.4      1.5      0.7      0.7                           
 2-F43.1 Beladen #43                    0.0      0.7      0.7      0.7      0.7      -0.0     0.0      2-F43.2, 2-F44.1     JA
-2-F43.2 Transport-Umlauf #43           0.1      0.7      0.8      0.7      0.8      0.0      0.0                           JA
+2-F43.2 Transport-Umlauf #43           0.1      0.7      0.8      1.4      1.5      0.7      0.7                           
 2-F44.1 Beladen #44                    0.0      0.7      0.8      0.7      0.8      -0.0     0.0      2-F44.2, 2-F45.1,... JA
 2-F44.1-BRK-P3 Pause: Bodo Schmidt (Vorsch... 0.1      0.8      0.8      0.8      0.8      0.0      0.0                           JA
-2-F44.2 Transport-Umlauf #44           0.1      0.8      0.8      0.8      0.8      0.0      0.0                           JA
+2-F44.2 Transport-Umlauf #44           0.1      0.8      0.8      1.4      1.5      0.7      0.7                           
 2-F45.1 Beladen #45                    0.0      0.8      0.8      0.8      0.8      -0.0     0.0      2-F45.2, 2-F46.1     JA
-2-F45.2 Transport-Umlauf #45           0.1      0.8      0.9      0.8      0.9      0.0      0.0                           JA
+2-F45.2 Transport-Umlauf #45           0.1      0.8      0.9      1.4      1.5      0.6      0.6                           
 2-F46.1 Beladen #46                    0.0      0.8      0.8      0.8      0.8      -0.0     0.0      2-F46.2, 2-F47.1     JA
-2-F46.2 Transport-Umlauf #46           0.1      0.8      0.9      0.8      0.9      0.0      0.0                           JA
+2-F46.2 Transport-Umlauf #46           0.1      0.8      0.9      1.4      1.5      0.6      0.6                           
 2-F47.1 Beladen #47                    0.0      0.8      0.8      0.8      0.8      -0.0     0.0      2-F47.2, 2-F48.1     JA
-2-F47.2 Transport-Umlauf #47           0.1      0.8      0.9      0.8      0.9      0.0      0.0                           JA
+2-F47.2 Transport-Umlauf #47           0.1      0.8      0.9      1.4      1.5      0.6      0.6                           
 2-F48.1 Beladen #48                    0.0      0.8      0.8      0.8      0.8      -0.0     0.0      2-F48.2, 2-F49.1     JA
-2-F48.2 Transport-Umlauf #48           0.1      0.8      0.9      0.8      0.9      0.0      0.0                           JA
+2-F48.2 Transport-Umlauf #48           0.1      0.8      0.9      1.4      1.5      0.6      0.6                           
 2-F49.1 Beladen #49                    0.0      0.8      0.8      0.8      0.8      -0.0     0.0      2-F49.2, 2-F50.1     JA
-2-F49.2 Transport-Umlauf #49           0.1      0.8      0.9      0.8      0.9      0.0      0.0                           JA
+2-F49.2 Transport-Umlauf #49           0.1      0.8      0.9      1.4      1.5      0.6      0.6                           
 2-F50.1 Beladen #50                    0.0      0.8      0.9      0.8      0.9      -0.0     0.0      2-F50.2, 2-F51.1     JA
-2-F50.2 Transport-Umlauf #50           0.1      0.9      0.9      0.9      0.9      0.0      0.0                           JA
+2-F50.2 Transport-Umlauf #50           0.1      0.9      0.9      1.4      1.5      0.6      0.6                           
 2-F51.1 Beladen #51                    0.0      0.9      0.9      0.9      0.9      -0.0     0.0      2-F51.2, 2-F52.1     JA
-2-F51.2 Transport-Umlauf #51           0.1      0.9      1.0      0.9      1.0      0.0      0.0                           JA
+2-F51.2 Transport-Umlauf #51           0.1      0.9      1.0      1.4      1.5      0.5      0.5                           
 2-F52.1 Beladen #52                    0.0      0.9      0.9      0.9      0.9      -0.0     0.0      2-F52.2, 2-F53.1     JA
-2-F52.2 Transport-Umlauf #52           0.1      0.9      1.0      0.9      1.0      0.0      0.0                           JA
+2-F52.2 Transport-Umlauf #52           0.1      0.9      1.0      1.4      1.5      0.5      0.5                           
 2-F53.1 Beladen #53                    0.0      0.9      0.9      0.9      0.9      -0.0     0.0      2-F53.2, 2-F54.1     JA
-2-F53.2 Transport-Umlauf #53           0.1      0.9      1.0      0.9      1.0      0.0      0.0                           JA
+2-F53.2 Transport-Umlauf #53           0.1      0.9      1.0      1.4      1.5      0.5      0.5                           
 2-F54.1 Beladen #54                    0.0      0.9      0.9      0.9      0.9      -0.0     0.0      2-F54.2, 2-F55.1     JA
-2-F54.2 Transport-Umlauf #54           0.1      0.9      1.0      0.9      1.0      -0.0     -0.0                          JA
+2-F54.2 Transport-Umlauf #54           0.1      0.9      1.0      1.4      1.5      0.5      0.5                           
 2-F55.1 Beladen #55                    0.0      0.9      0.9      0.9      0.9      -0.0     0.0      2-F55.2, 2-F56.1     JA
-2-F55.2 Transport-Umlauf #55           0.1      0.9      1.0      0.9      1.0      0.0      0.0                           JA
+2-F55.2 Transport-Umlauf #55           0.1      0.9      1.0      1.4      1.5      0.5      0.5                           
 2-F56.1 Beladen #56                    0.0      0.9      1.0      0.9      1.0      -0.0     0.0      2-F56.2, 2-F57.1     JA
-2-F56.2 Transport-Umlauf #56           0.1      1.0      1.0      1.0      1.0      -0.0     -0.0                          JA
+2-F56.2 Transport-Umlauf #56           0.1      1.0      1.0      1.4      1.5      0.5      0.5                           
 2-F57.1 Beladen #57                    0.0      1.0      1.0      1.0      1.0      -0.0     0.0      2-F57.2, 2-F58.1     JA
-2-F57.2 Transport-Umlauf #57           0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
+2-F57.2 Transport-Umlauf #57           0.1      1.0      1.1      1.4      1.5      0.4      0.4                           
 2-F58.1 Beladen #58                    0.0      1.0      1.0      1.0      1.0      -0.0     0.0      2-F58.2, 2-F59.1     JA
-2-F58.2 Transport-Umlauf #58           0.1      1.0      1.1      1.0      1.1      -0.0     -0.0                          JA
+2-F58.2 Transport-Umlauf #58           0.1      1.0      1.1      1.4      1.5      0.4      0.4                           
 2-F59.1 Beladen #59                    0.0      1.0      1.0      1.0      1.0      -0.0     0.0      2-F59.2, 2-F60.1     JA
-2-F59.2 Transport-Umlauf #59           0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
+2-F59.2 Transport-Umlauf #59           0.1      1.0      1.1      1.4      1.5      0.4      0.4                           
 2-F60.1 Beladen #60                    0.0      1.0      1.0      1.0      1.0      0.0      0.0      2-F60.2, 2-F61.1     JA
-2-F60.2 Transport-Umlauf #60           0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
+2-F60.2 Transport-Umlauf #60           0.1      1.0      1.1      1.4      1.5      0.4      0.4                           
 2-F61.1 Beladen #61                    0.0      1.0      1.0      1.0      1.0      0.0      0.0      2-F61.2, 2-F62.1     JA
-2-F61.2 Transport-Umlauf #61           0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
+2-F61.2 Transport-Umlauf #61           0.1      1.0      1.1      1.4      1.5      0.4      0.4                           
 2-F62.1 Beladen #62                    0.0      1.0      1.1      1.0      1.1      0.0      0.0      2-F62.2, 2-F63.1     JA
-2-F62.2 Transport-Umlauf #62           0.1      1.1      1.1      1.1      1.1      0.0      0.0                           JA
+2-F62.2 Transport-Umlauf #62           0.1      1.1      1.1      1.4      1.5      0.4      0.4                           
 2-F63.1 Beladen #63                    0.0      1.1      1.1      1.1      1.1      0.0      0.0      2-F63.2, 2-F64.1     JA
-2-F63.2 Transport-Umlauf #63           0.1      1.1      1.2      1.1      1.2      0.0      0.0                           JA
+2-F63.2 Transport-Umlauf #63           0.1      1.1      1.2      1.4      1.5      0.3      0.3                           
 2-F64.1 Beladen #64                    0.0      1.1      1.1      1.1      1.1      0.0      0.0      2-F64.2, 2-F65.1     JA
-2-F64.2 Transport-Umlauf #64           0.1      1.1      1.2      1.1      1.2      0.0      0.0                           JA
+2-F64.2 Transport-Umlauf #64           0.1      1.1      1.2      1.4      1.5      0.3      0.3                           
 2-F65.1 Beladen #65                    0.0      1.1      1.1      1.1      1.1      0.0      0.0      2-F65.2, 2-F66.1     JA
-2-F65.2 Transport-Umlauf #65           0.1      1.1      1.2      1.1      1.2      0.0      0.0                           JA
+2-F65.2 Transport-Umlauf #65           0.1      1.1      1.2      1.4      1.5      0.3      0.3                           
 2-F66.1 Beladen #66                    0.0      1.1      1.1      1.1      1.1      0.0      0.0      2-F66.2, 2-F67.1     JA
-2-F66.2 Transport-Umlauf #66           0.1      1.1      1.2      1.1      1.2      0.0      0.0                           JA
+2-F66.2 Transport-Umlauf #66           0.1      1.1      1.2      1.4      1.5      0.3      0.3                           
 2-F67.1 Beladen #67                    0.0      1.1      1.1      1.1      1.1      0.0      0.0      2-F67.2, 2-F68.1     JA
-2-F67.2 Transport-Umlauf #67           0.1      1.1      1.2      1.1      1.2      0.0      0.0                           JA
+2-F67.2 Transport-Umlauf #67           0.1      1.1      1.2      1.4      1.5      0.3      0.3                           
 2-F68.1 Beladen #68                    0.0      1.1      1.2      1.1      1.2      0.0      0.0      2-F68.2, 2-F69.1     JA
-2-F68.2 Transport-Umlauf #68           0.1      1.2      1.2      1.2      1.2      0.0      0.0                           JA
+2-F68.2 Transport-Umlauf #68           0.1      1.2      1.2      1.4      1.5      0.3      0.3                           
 2-F69.1 Beladen #69                    0.0      1.2      1.2      1.2      1.2      0.0      0.0      2-F69.2, 2-F70.1     JA
-2-F69.2 Transport-Umlauf #69           0.1      1.2      1.3      1.2      1.3      0.0      0.0                           JA
+2-F69.2 Transport-Umlauf #69           0.1      1.2      1.3      1.4      1.5      0.2      0.2                           
 2-F70.1 Beladen #70                    0.0      1.2      1.2      1.2      1.2      0.0      0.0      2-F70.2, 2-F71.1     JA
-2-F70.2 Transport-Umlauf #70           0.1      1.2      1.3      1.2      1.3      0.0      0.0                           JA
+2-F70.2 Transport-Umlauf #70           0.1      1.2      1.3      1.4      1.5      0.2      0.2                           
 2-F71.1 Beladen #71                    0.0      1.2      1.2      1.2      1.2      0.0      0.0      2-F71.2, 2-F72.1     JA
-2-F71.2 Transport-Umlauf #71           0.1      1.2      1.3      1.2      1.3      0.0      0.0                           JA
+2-F71.2 Transport-Umlauf #71           0.1      1.2      1.3      1.4      1.5      0.2      0.2                           
 2-F72.1 Beladen #72                    0.0      1.2      1.2      1.2      1.2      0.0      0.0      2-F72.2, 2-F73.1     JA
-2-F72.2 Transport-Umlauf #72           0.1      1.2      1.3      1.2      1.3      0.0      0.0                           JA
+2-F72.2 Transport-Umlauf #72           0.1      1.2      1.3      1.4      1.5      0.2      0.2                           
 2-F73.1 Beladen #73                    0.0      1.2      1.2      1.2      1.2      0.0      0.0      2-F73.2, 2-F74.1     JA
-2-F73.2 Transport-Umlauf #73           0.1      1.2      1.3      1.2      1.3      0.0      0.0                           JA
+2-F73.2 Transport-Umlauf #73           0.1      1.2      1.3      1.4      1.5      0.2      0.2                           
 2-F74.1 Beladen #74                    0.0      1.2      1.3      1.2      1.3      0.0      0.0      2-F74.2, 2-F75.1     JA
-2-F74.2 Transport-Umlauf #74           0.1      1.3      1.3      1.3      1.3      0.0      0.0                           JA
+2-F74.2 Transport-Umlauf #74           0.1      1.3      1.3      1.4      1.5      0.2      0.2                           
 2-F75.1 Beladen #75                    0.0      1.3      1.3      1.3      1.3      0.0      0.0      2-F75.2, 2-F76.1     JA
-2-F75.2 Transport-Umlauf #75           0.1      1.3      1.4      1.3      1.4      0.0      0.0                           JA
+2-F75.2 Transport-Umlauf #75           0.1      1.3      1.4      1.4      1.5      0.1      0.1                           
 2-F76.1 Beladen #76                    0.0      1.3      1.3      1.3      1.3      0.0      0.0      2-F76.2, 2-F77.1     JA
-2-F76.2 Transport-Umlauf #76           0.1      1.3      1.4      1.3      1.4      0.0      0.0                           JA
+2-F76.2 Transport-Umlauf #76           0.1      1.3      1.4      1.4      1.5      0.1      0.1                           
 2-F77.1 Beladen #77                    0.0      1.3      1.3      1.3      1.3      0.0      0.0      2-F77.2, 2-F78.1     JA
-2-F77.2 Transport-Umlauf #77           0.1      1.3      1.4      1.3      1.4      0.0      0.0                           JA
+2-F77.2 Transport-Umlauf #77           0.1      1.3      1.4      1.4      1.5      0.1      0.1                           
 2-F78.1 Beladen #78                    0.0      1.3      1.3      1.3      1.3      0.0      0.0      2-F78.2, 2-F79.1     JA
-2-F78.2 Transport-Umlauf #78           0.1      1.3      1.4      1.3      1.4      0.0      0.0                           JA
+2-F78.2 Transport-Umlauf #78           0.1      1.3      1.4      1.4      1.5      0.1      0.1                           
 2-F79.1 Beladen #79                    0.0      1.3      1.3      1.3      1.3      0.0      0.0      2-F79.2, 2-F80.1     JA
-2-F79.2 Transport-Umlauf #79           0.1      1.3      1.4      1.3      1.4      0.0      0.0                           JA
+2-F79.2 Transport-Umlauf #79           0.1      1.3      1.4      1.4      1.5      0.1      0.1                           
 2-F80.1 Beladen #80                    0.0      1.3      1.4      1.3      1.4      0.0      0.0      2-F80.2, 2-F81.1     JA
-2-F80.2 Transport-Umlauf #80           0.1      1.4      1.4      1.4      1.4      0.0      0.0                           JA
+2-F80.2 Transport-Umlauf #80           0.1      1.4      1.4      1.4      1.5      0.1      0.1                           
 2-F81.1 Beladen #81                    0.0      1.4      1.4      1.4      1.4      0.0      0.0      2-F81.2, 2-F82.1     JA
-2-F81.2 Transport-Umlauf #81           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           JA
+2-F81.2 Transport-Umlauf #81           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           
 2-F82.1 Beladen #82                    0.0      1.4      1.4      1.4      1.4      0.0      0.0      2-F82.2, 2-F83.1     JA
-2-F82.2 Transport-Umlauf #82           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           JA
+2-F82.2 Transport-Umlauf #82           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           
 2-F83.1 Beladen #83                    0.0      1.4      1.4      1.4      1.4      0.0      0.0      2-F83.2, 2-F84.1     JA
-2-F83.2 Transport-Umlauf #83           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           JA
+2-F83.2 Transport-Umlauf #83           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           
 2-F84.1 Beladen #84                    0.0      1.4      1.4      1.4      1.4      0.0      0.0      2-F84.2              JA
 2-F84.2 Transport-Umlauf #84           0.1      1.4      1.5      1.4      1.5      0.0      0.0                           JA
 ----------------------------------------------------------------------
@@ -378,171 +295,171 @@ ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ  
 ----------------------------------------------------------------------
 1       Initialisierung und Bereits... 15.0m    0.0m     15.0m    -0.0m    15.0m    -0.0m    0.0m     JA
 2-F1.1  Beladen #1                     8.0m     15.0m    23.0m    15.0m    23.0m    -0.0m    0.0m     JA
-2-F1.2  Transport-Umlauf #1            40.0m    23.0m    63.0m    23.0m    63.0m    -0.0m    -0.0m    JA
+2-F1.2  Transport-Umlauf #1            40.0m    23.0m    63.0m    687.0m   727.0m   664.0m   664.0m   
 2-F2.1  Beladen #2                     8.0m     23.0m    31.0m    23.0m    31.0m    -0.0m    0.0m     JA
-2-F2.2  Transport-Umlauf #2            40.0m    31.0m    71.0m    31.0m    71.0m    -0.0m    -0.0m    JA
+2-F2.2  Transport-Umlauf #2            40.0m    31.0m    71.0m    687.0m   727.0m   656.0m   656.0m   
 2-F3.1  Beladen #3                     8.0m     31.0m    39.0m    31.0m    39.0m    -0.0m    0.0m     JA
-2-F3.2  Transport-Umlauf #3            40.0m    39.0m    79.0m    39.0m    79.0m    -0.0m    -0.0m    JA
+2-F3.2  Transport-Umlauf #3            40.0m    39.0m    79.0m    687.0m   727.0m   648.0m   648.0m   
 2-F4.1  Beladen #4                     8.0m     39.0m    47.0m    39.0m    47.0m    -0.0m    0.0m     JA
-2-F4.2  Transport-Umlauf #4            40.0m    47.0m    87.0m    47.0m    87.0m    -0.0m    -0.0m    JA
+2-F4.2  Transport-Umlauf #4            40.0m    47.0m    87.0m    687.0m   727.0m   640.0m   640.0m   
 2-F5.1  Beladen #5                     8.0m     47.0m    55.0m    47.0m    55.0m    -0.0m    0.0m     JA
-2-F5.2  Transport-Umlauf #5            40.0m    55.0m    95.0m    55.0m    95.0m    -0.0m    -0.0m    JA
+2-F5.2  Transport-Umlauf #5            40.0m    55.0m    95.0m    687.0m   727.0m   632.0m   632.0m   
 2-F6.1  Beladen #6                     8.0m     55.0m    63.0m    55.0m    63.0m    -0.0m    0.0m     JA
-2-F6.2  Transport-Umlauf #6            40.0m    63.0m    103.0m   63.0m    103.0m   0.0m     0.0m     JA
+2-F6.2  Transport-Umlauf #6            40.0m    63.0m    103.0m   687.0m   727.0m   624.0m   624.0m   
 2-F7.1  Beladen #7                     8.0m     63.0m    71.0m    63.0m    71.0m    -0.0m    0.0m     JA
-2-F7.2  Transport-Umlauf #7            40.0m    71.0m    111.0m   71.0m    111.0m   0.0m     0.0m     JA
+2-F7.2  Transport-Umlauf #7            40.0m    71.0m    111.0m   687.0m   727.0m   616.0m   616.0m   
 2-F8.1  Beladen #8                     8.0m     71.0m    79.0m    71.0m    79.0m    -0.0m    0.0m     JA
-2-F8.2  Transport-Umlauf #8            40.0m    79.0m    119.0m   79.0m    119.0m   0.0m     0.0m     JA
+2-F8.2  Transport-Umlauf #8            40.0m    79.0m    119.0m   687.0m   727.0m   608.0m   608.0m   
 2-F9.1  Beladen #9                     8.0m     79.0m    87.0m    79.0m    87.0m    -0.0m    0.0m     JA
-2-F9.2  Transport-Umlauf #9            40.0m    87.0m    127.0m   87.0m    127.0m   0.0m     0.0m     JA
+2-F9.2  Transport-Umlauf #9            40.0m    87.0m    127.0m   687.0m   727.0m   600.0m   600.0m   
 2-F10.1 Beladen #10                    8.0m     87.0m    95.0m    87.0m    95.0m    -0.0m    0.0m     JA
-2-F10.2 Transport-Umlauf #10           40.0m    95.0m    135.0m   95.0m    135.0m   0.0m     0.0m     JA
+2-F10.2 Transport-Umlauf #10           40.0m    95.0m    135.0m   687.0m   727.0m   592.0m   592.0m   
 2-F11.1 Beladen #11                    8.0m     95.0m    103.0m   95.0m    103.0m   -0.0m    0.0m     JA
-2-F11.2 Transport-Umlauf #11           40.0m    103.0m   143.0m   103.0m   143.0m   0.0m     0.0m     JA
+2-F11.2 Transport-Umlauf #11           40.0m    103.0m   143.0m   642.0m   682.0m   539.0m   0.0m     
 2-F12.1 Beladen #12                    8.0m     103.0m   111.0m   103.0m   111.0m   -0.0m    0.0m     JA
-2-F12.2 Transport-Umlauf #12           40.0m    111.0m   151.0m   111.0m   151.0m   0.0m     0.0m     JA
+2-F12.2 Transport-Umlauf #12           40.0m    111.0m   151.0m   642.0m   682.0m   531.0m   0.0m     
 2-F13.1 Beladen #13                    8.0m     111.0m   119.0m   111.0m   119.0m   -0.0m    0.0m     JA
-2-F13.2 Transport-Umlauf #13           40.0m    119.0m   159.0m   119.0m   159.0m   0.0m     0.0m     JA
+2-F13.2 Transport-Umlauf #13           40.0m    119.0m   159.0m   687.0m   727.0m   568.0m   568.0m   
 2-F14.1 Beladen #14                    8.0m     119.0m   127.0m   119.0m   127.0m   -0.0m    0.0m     JA
-2-F14.2 Transport-Umlauf #14           40.0m    127.0m   167.0m   127.0m   167.0m   0.0m     0.0m     JA
+2-F14.2 Transport-Umlauf #14           40.0m    127.0m   167.0m   687.0m   727.0m   560.0m   560.0m   
 2-F15.1 Beladen #15                    8.0m     127.0m   135.0m   127.0m   135.0m   -0.0m    0.0m     JA
-2-F15.2 Transport-Umlauf #15           40.0m    135.0m   175.0m   135.0m   175.0m   0.0m     0.0m     JA
+2-F15.2 Transport-Umlauf #15           40.0m    135.0m   175.0m   657.0m   697.0m   522.0m   0.0m     
 2-F16.1 Beladen #16                    8.0m     135.0m   143.0m   135.0m   143.0m   -0.0m    0.0m     JA
-2-F16.2 Transport-Umlauf #16           40.0m    143.0m   183.0m   143.0m   183.0m   0.0m     0.0m     JA
+2-F16.2 Transport-Umlauf #16           40.0m    143.0m   183.0m   657.0m   697.0m   514.0m   0.0m     
 2-F17.1 Beladen #17                    8.0m     143.0m   151.0m   143.0m   151.0m   -0.0m    0.0m     JA
-2-F17.2 Transport-Umlauf #17           40.0m    151.0m   191.0m   151.0m   191.0m   0.0m     0.0m     JA
+2-F17.2 Transport-Umlauf #17           40.0m    151.0m   191.0m   687.0m   727.0m   536.0m   536.0m   
 2-F18.1 Beladen #18                    8.0m     151.0m   159.0m   151.0m   159.0m   -0.0m    0.0m     JA
-2-F18.2 Transport-Umlauf #18           40.0m    159.0m   199.0m   159.0m   199.0m   0.0m     0.0m     JA
+2-F18.2 Transport-Umlauf #18           40.0m    159.0m   199.0m   687.0m   727.0m   528.0m   528.0m   
 2-F19.1 Beladen #19                    8.0m     159.0m   167.0m   159.0m   167.0m   -0.0m    0.0m     JA
-2-F19.2 Transport-Umlauf #19           40.0m    167.0m   207.0m   167.0m   207.0m   0.0m     0.0m     JA
+2-F19.2 Transport-Umlauf #19           40.0m    167.0m   207.0m   687.0m   727.0m   520.0m   520.0m   
 2-F20.1 Beladen #20                    8.0m     167.0m   175.0m   167.0m   175.0m   -0.0m    0.0m     JA
-2-F20.2 Transport-Umlauf #20           40.0m    175.0m   215.0m   175.0m   215.0m   0.0m     0.0m     JA
+2-F20.2 Transport-Umlauf #20           40.0m    175.0m   215.0m   687.0m   727.0m   512.0m   512.0m   
 2-F21.1 Beladen #21                    8.0m     175.0m   183.0m   175.0m   183.0m   -0.0m    0.0m     JA
-2-F21.2 Transport-Umlauf #21           40.0m    183.0m   223.0m   183.0m   223.0m   0.0m     0.0m     JA
+2-F21.2 Transport-Umlauf #21           40.0m    183.0m   223.0m   687.0m   727.0m   504.0m   504.0m   
 2-F22.1 Beladen #22                    8.0m     183.0m   191.0m   183.0m   191.0m   -0.0m    0.0m     JA
-2-F22.2 Transport-Umlauf #22           40.0m    191.0m   231.0m   191.0m   231.0m   0.0m     0.0m     JA
+2-F22.2 Transport-Umlauf #22           40.0m    191.0m   231.0m   687.0m   727.0m   496.0m   496.0m   
 2-F23.1 Beladen #23                    8.0m     191.0m   199.0m   191.0m   199.0m   -0.0m    0.0m     JA
-2-F23.2 Transport-Umlauf #23           40.0m    199.0m   239.0m   199.0m   239.0m   0.0m     0.0m     JA
+2-F23.2 Transport-Umlauf #23           40.0m    199.0m   239.0m   687.0m   727.0m   488.0m   488.0m   
 2-F24.1 Beladen #24                    8.0m     199.0m   207.0m   199.0m   207.0m   -0.0m    0.0m     JA
-2-F24.2 Transport-Umlauf #24           40.0m    207.0m   247.0m   207.0m   247.0m   0.0m     0.0m     JA
+2-F24.2 Transport-Umlauf #24           40.0m    207.0m   247.0m   687.0m   727.0m   480.0m   480.0m   
 2-F25.1 Beladen #25                    8.0m     207.0m   215.0m   207.0m   215.0m   -0.0m    0.0m     JA
-2-F25.2 Transport-Umlauf #25           40.0m    215.0m   255.0m   215.0m   255.0m   0.0m     0.0m     JA
+2-F25.2 Transport-Umlauf #25           40.0m    215.0m   255.0m   687.0m   727.0m   472.0m   472.0m   
 2-F26.1 Beladen #26                    8.0m     215.0m   223.0m   215.0m   223.0m   -0.0m    0.0m     JA
-2-F26.2 Transport-Umlauf #26           40.0m    223.0m   263.0m   223.0m   263.0m   0.0m     0.0m     JA
+2-F26.2 Transport-Umlauf #26           40.0m    223.0m   263.0m   687.0m   727.0m   464.0m   464.0m   
 2-F27.1 Beladen #27                    8.0m     223.0m   231.0m   223.0m   231.0m   -0.0m    0.0m     JA
-2-F27.2 Transport-Umlauf #27           40.0m    231.0m   271.0m   231.0m   271.0m   0.0m     0.0m     JA
+2-F27.2 Transport-Umlauf #27           40.0m    231.0m   271.0m   687.0m   727.0m   456.0m   456.0m   
 2-F28.1 Beladen #28                    8.0m     231.0m   239.0m   231.0m   239.0m   -0.0m    0.0m     JA
-2-F28.2 Transport-Umlauf #28           40.0m    239.0m   279.0m   239.0m   279.0m   0.0m     0.0m     JA
+2-F28.2 Transport-Umlauf #28           40.0m    239.0m   279.0m   687.0m   727.0m   448.0m   448.0m   
 2-F29.1 Beladen #29                    8.0m     239.0m   247.0m   239.0m   247.0m   -0.0m    0.0m     JA
-2-F29.2 Transport-Umlauf #29           40.0m    247.0m   287.0m   247.0m   287.0m   0.0m     0.0m     JA
+2-F29.2 Transport-Umlauf #29           40.0m    247.0m   287.0m   687.0m   727.0m   440.0m   440.0m   
 2-F30.1 Beladen #30                    8.0m     247.0m   255.0m   247.0m   255.0m   -0.0m    0.0m     JA
-2-F30.2 Transport-Umlauf #30           40.0m    255.0m   295.0m   255.0m   295.0m   0.0m     0.0m     JA
+2-F30.2 Transport-Umlauf #30           40.0m    255.0m   295.0m   687.0m   727.0m   432.0m   432.0m   
 2-F31.1 Beladen #31                    8.0m     255.0m   263.0m   255.0m   263.0m   -0.0m    0.0m     JA
-2-F31.2 Transport-Umlauf #31           40.0m    263.0m   303.0m   263.0m   303.0m   0.0m     0.0m     JA
+2-F31.2 Transport-Umlauf #31           40.0m    263.0m   303.0m   687.0m   727.0m   424.0m   424.0m   
 2-F32.1 Beladen #32                    8.0m     263.0m   271.0m   263.0m   271.0m   -0.0m    0.0m     JA
-2-F32.2 Transport-Umlauf #32           40.0m    271.0m   311.0m   271.0m   311.0m   0.0m     0.0m     JA
+2-F32.2 Transport-Umlauf #32           40.0m    271.0m   311.0m   687.0m   727.0m   416.0m   416.0m   
 2-F33.1 Beladen #33                    8.0m     271.0m   279.0m   271.0m   279.0m   -0.0m    0.0m     JA
-2-F33.2 Transport-Umlauf #33           40.0m    279.0m   319.0m   279.0m   319.0m   0.0m     0.0m     JA
+2-F33.2 Transport-Umlauf #33           40.0m    279.0m   319.0m   687.0m   727.0m   408.0m   408.0m   
 2-F34.1 Beladen #34                    8.0m     279.0m   287.0m   279.0m   287.0m   -0.0m    0.0m     JA
-2-F34.2 Transport-Umlauf #34           40.0m    287.0m   327.0m   287.0m   327.0m   0.0m     0.0m     JA
+2-F34.2 Transport-Umlauf #34           40.0m    287.0m   327.0m   687.0m   727.0m   400.0m   400.0m   
 2-F35.1 Beladen #35                    8.0m     287.0m   295.0m   287.0m   295.0m   -0.0m    0.0m     JA
-2-F35.2 Transport-Umlauf #35           40.0m    295.0m   335.0m   295.0m   335.0m   0.0m     0.0m     JA
+2-F35.2 Transport-Umlauf #35           40.0m    295.0m   335.0m   687.0m   727.0m   392.0m   392.0m   
 2-F36.1 Beladen #36                    8.0m     295.0m   303.0m   295.0m   303.0m   -0.0m    0.0m     JA
-2-F36.2 Transport-Umlauf #36           40.0m    303.0m   343.0m   303.0m   343.0m   0.0m     0.0m     JA
+2-F36.2 Transport-Umlauf #36           40.0m    303.0m   343.0m   687.0m   727.0m   384.0m   384.0m   
 2-F37.1 Beladen #37                    8.0m     303.0m   311.0m   303.0m   311.0m   -0.0m    0.0m     JA
-2-F37.2 Transport-Umlauf #37           40.0m    311.0m   351.0m   311.0m   351.0m   0.0m     0.0m     JA
+2-F37.2 Transport-Umlauf #37           40.0m    311.0m   351.0m   687.0m   727.0m   376.0m   376.0m   
 2-F38.1 Beladen #38                    8.0m     311.0m   319.0m   311.0m   319.0m   -0.0m    0.0m     JA
-2-F38.2 Transport-Umlauf #38           40.0m    319.0m   359.0m   319.0m   359.0m   0.0m     0.0m     JA
+2-F38.2 Transport-Umlauf #38           40.0m    319.0m   359.0m   687.0m   727.0m   368.0m   368.0m   
 2-F39.1 Beladen #39                    8.0m     319.0m   327.0m   319.0m   327.0m   -0.0m    0.0m     JA
-2-F39.2 Transport-Umlauf #39           40.0m    327.0m   367.0m   327.0m   367.0m   0.0m     0.0m     JA
+2-F39.2 Transport-Umlauf #39           40.0m    327.0m   367.0m   687.0m   727.0m   360.0m   360.0m   
 2-F40.1 Beladen #40                    8.0m     327.0m   335.0m   327.0m   335.0m   -0.0m    0.0m     JA
-2-F40.2 Transport-Umlauf #40           40.0m    335.0m   375.0m   335.0m   375.0m   0.0m     0.0m     JA
+2-F40.2 Transport-Umlauf #40           40.0m    335.0m   375.0m   687.0m   727.0m   352.0m   352.0m   
 2-F41.1 Beladen #41                    8.0m     335.0m   343.0m   335.0m   343.0m   -0.0m    0.0m     JA
-2-F41.2 Transport-Umlauf #41           40.0m    343.0m   383.0m   343.0m   383.0m   0.0m     0.0m     JA
+2-F41.2 Transport-Umlauf #41           40.0m    343.0m   383.0m   687.0m   727.0m   344.0m   344.0m   
 2-F42.1 Beladen #42                    8.0m     343.0m   351.0m   343.0m   351.0m   -0.0m    0.0m     JA
-2-F42.2 Transport-Umlauf #42           40.0m    351.0m   391.0m   351.0m   391.0m   0.0m     0.0m     JA
+2-F42.2 Transport-Umlauf #42           40.0m    351.0m   391.0m   687.0m   727.0m   336.0m   336.0m   
 2-F43.1 Beladen #43                    8.0m     351.0m   359.0m   351.0m   359.0m   -0.0m    0.0m     JA
-2-F43.2 Transport-Umlauf #43           40.0m    359.0m   399.0m   359.0m   399.0m   0.0m     0.0m     JA
+2-F43.2 Transport-Umlauf #43           40.0m    359.0m   399.0m   687.0m   727.0m   328.0m   328.0m   
 2-F44.1 Beladen #44                    8.0m     359.0m   367.0m   359.0m   367.0m   -0.0m    0.0m     JA
-2-F44.2 Transport-Umlauf #44           40.0m    367.0m   407.0m   367.0m   407.0m   0.0m     0.0m     JA
+2-F44.2 Transport-Umlauf #44           40.0m    367.0m   407.0m   687.0m   727.0m   320.0m   320.0m   
 2-F45.1 Beladen #45                    8.0m     367.0m   375.0m   367.0m   375.0m   -0.0m    0.0m     JA
-2-F45.2 Transport-Umlauf #45           40.0m    375.0m   415.0m   375.0m   415.0m   0.0m     0.0m     JA
+2-F45.2 Transport-Umlauf #45           40.0m    375.0m   415.0m   687.0m   727.0m   312.0m   312.0m   
 2-F46.1 Beladen #46                    8.0m     375.0m   383.0m   375.0m   383.0m   -0.0m    0.0m     JA
-2-F46.2 Transport-Umlauf #46           40.0m    383.0m   423.0m   383.0m   423.0m   0.0m     0.0m     JA
+2-F46.2 Transport-Umlauf #46           40.0m    383.0m   423.0m   687.0m   727.0m   304.0m   304.0m   
 2-F47.1 Beladen #47                    8.0m     383.0m   391.0m   383.0m   391.0m   -0.0m    0.0m     JA
-2-F47.2 Transport-Umlauf #47           40.0m    391.0m   431.0m   391.0m   431.0m   0.0m     0.0m     JA
+2-F47.2 Transport-Umlauf #47           40.0m    391.0m   431.0m   687.0m   727.0m   296.0m   296.0m   
 2-F48.1 Beladen #48                    8.0m     391.0m   399.0m   391.0m   399.0m   -0.0m    0.0m     JA
-2-F48.2 Transport-Umlauf #48           40.0m    399.0m   439.0m   399.0m   439.0m   0.0m     0.0m     JA
+2-F48.2 Transport-Umlauf #48           40.0m    399.0m   439.0m   687.0m   727.0m   288.0m   288.0m   
 2-F49.1 Beladen #49                    8.0m     399.0m   407.0m   399.0m   407.0m   -0.0m    0.0m     JA
-2-F49.2 Transport-Umlauf #49           40.0m    407.0m   447.0m   407.0m   447.0m   0.0m     0.0m     JA
+2-F49.2 Transport-Umlauf #49           40.0m    407.0m   447.0m   687.0m   727.0m   280.0m   280.0m   
 2-F50.1 Beladen #50                    8.0m     407.0m   415.0m   407.0m   415.0m   -0.0m    0.0m     JA
-2-F50.2 Transport-Umlauf #50           40.0m    415.0m   455.0m   415.0m   455.0m   0.0m     0.0m     JA
+2-F50.2 Transport-Umlauf #50           40.0m    415.0m   455.0m   687.0m   727.0m   272.0m   272.0m   
 2-F51.1 Beladen #51                    8.0m     415.0m   423.0m   415.0m   423.0m   -0.0m    0.0m     JA
-2-F51.2 Transport-Umlauf #51           40.0m    423.0m   463.0m   423.0m   463.0m   0.0m     0.0m     JA
+2-F51.2 Transport-Umlauf #51           40.0m    423.0m   463.0m   687.0m   727.0m   264.0m   264.0m   
 2-F52.1 Beladen #52                    8.0m     423.0m   431.0m   423.0m   431.0m   -0.0m    0.0m     JA
-2-F52.2 Transport-Umlauf #52           40.0m    431.0m   471.0m   431.0m   471.0m   0.0m     0.0m     JA
+2-F52.2 Transport-Umlauf #52           40.0m    431.0m   471.0m   687.0m   727.0m   256.0m   256.0m   
 2-F53.1 Beladen #53                    8.0m     431.0m   439.0m   431.0m   439.0m   -0.0m    0.0m     JA
-2-F53.2 Transport-Umlauf #53           40.0m    439.0m   479.0m   439.0m   479.0m   0.0m     0.0m     JA
+2-F53.2 Transport-Umlauf #53           40.0m    439.0m   479.0m   687.0m   727.0m   248.0m   248.0m   
 2-F54.1 Beladen #54                    8.0m     439.0m   447.0m   439.0m   447.0m   -0.0m    0.0m     JA
-2-F54.2 Transport-Umlauf #54           40.0m    447.0m   487.0m   447.0m   487.0m   -0.0m    -0.0m    JA
+2-F54.2 Transport-Umlauf #54           40.0m    447.0m   487.0m   687.0m   727.0m   240.0m   240.0m   
 2-F55.1 Beladen #55                    8.0m     447.0m   455.0m   447.0m   455.0m   -0.0m    0.0m     JA
-2-F55.2 Transport-Umlauf #55           40.0m    455.0m   495.0m   455.0m   495.0m   0.0m     0.0m     JA
+2-F55.2 Transport-Umlauf #55           40.0m    455.0m   495.0m   687.0m   727.0m   232.0m   232.0m   
 2-F56.1 Beladen #56                    8.0m     455.0m   463.0m   455.0m   463.0m   -0.0m    0.0m     JA
-2-F56.2 Transport-Umlauf #56           40.0m    463.0m   503.0m   463.0m   503.0m   -0.0m    -0.0m    JA
+2-F56.2 Transport-Umlauf #56           40.0m    463.0m   503.0m   687.0m   727.0m   224.0m   224.0m   
 2-F57.1 Beladen #57                    8.0m     463.0m   471.0m   463.0m   471.0m   -0.0m    0.0m     JA
-2-F57.2 Transport-Umlauf #57           40.0m    471.0m   511.0m   471.0m   511.0m   0.0m     0.0m     JA
+2-F57.2 Transport-Umlauf #57           40.0m    471.0m   511.0m   687.0m   727.0m   216.0m   216.0m   
 2-F58.1 Beladen #58                    8.0m     471.0m   479.0m   471.0m   479.0m   -0.0m    0.0m     JA
-2-F58.2 Transport-Umlauf #58           40.0m    479.0m   519.0m   479.0m   519.0m   -0.0m    -0.0m    JA
+2-F58.2 Transport-Umlauf #58           40.0m    479.0m   519.0m   687.0m   727.0m   208.0m   208.0m   
 2-F59.1 Beladen #59                    8.0m     479.0m   487.0m   479.0m   487.0m   -0.0m    0.0m     JA
-2-F59.2 Transport-Umlauf #59           40.0m    487.0m   527.0m   487.0m   527.0m   0.0m     0.0m     JA
+2-F59.2 Transport-Umlauf #59           40.0m    487.0m   527.0m   687.0m   727.0m   200.0m   200.0m   
 2-F60.1 Beladen #60                    8.0m     487.0m   495.0m   487.0m   495.0m   0.0m     0.0m     JA
-2-F60.2 Transport-Umlauf #60           40.0m    495.0m   535.0m   495.0m   535.0m   0.0m     0.0m     JA
+2-F60.2 Transport-Umlauf #60           40.0m    495.0m   535.0m   687.0m   727.0m   192.0m   192.0m   
 2-F61.1 Beladen #61                    8.0m     495.0m   503.0m   495.0m   503.0m   0.0m     0.0m     JA
-2-F61.2 Transport-Umlauf #61           40.0m    503.0m   543.0m   503.0m   543.0m   0.0m     0.0m     JA
+2-F61.2 Transport-Umlauf #61           40.0m    503.0m   543.0m   687.0m   727.0m   184.0m   184.0m   
 2-F62.1 Beladen #62                    8.0m     503.0m   511.0m   503.0m   511.0m   0.0m     0.0m     JA
-2-F62.2 Transport-Umlauf #62           40.0m    511.0m   551.0m   511.0m   551.0m   0.0m     0.0m     JA
+2-F62.2 Transport-Umlauf #62           40.0m    511.0m   551.0m   687.0m   727.0m   176.0m   176.0m   
 2-F63.1 Beladen #63                    8.0m     511.0m   519.0m   511.0m   519.0m   0.0m     0.0m     JA
-2-F63.2 Transport-Umlauf #63           40.0m    519.0m   559.0m   519.0m   559.0m   0.0m     0.0m     JA
+2-F63.2 Transport-Umlauf #63           40.0m    519.0m   559.0m   687.0m   727.0m   168.0m   168.0m   
 2-F64.1 Beladen #64                    8.0m     519.0m   527.0m   519.0m   527.0m   0.0m     0.0m     JA
-2-F64.2 Transport-Umlauf #64           40.0m    527.0m   567.0m   527.0m   567.0m   0.0m     0.0m     JA
+2-F64.2 Transport-Umlauf #64           40.0m    527.0m   567.0m   687.0m   727.0m   160.0m   160.0m   
 2-F65.1 Beladen #65                    8.0m     527.0m   535.0m   527.0m   535.0m   0.0m     0.0m     JA
-2-F65.2 Transport-Umlauf #65           40.0m    535.0m   575.0m   535.0m   575.0m   0.0m     0.0m     JA
+2-F65.2 Transport-Umlauf #65           40.0m    535.0m   575.0m   687.0m   727.0m   152.0m   152.0m   
 2-F66.1 Beladen #66                    8.0m     535.0m   543.0m   535.0m   543.0m   0.0m     0.0m     JA
-2-F66.2 Transport-Umlauf #66           40.0m    543.0m   583.0m   543.0m   583.0m   0.0m     0.0m     JA
+2-F66.2 Transport-Umlauf #66           40.0m    543.0m   583.0m   687.0m   727.0m   144.0m   144.0m   
 2-F67.1 Beladen #67                    8.0m     543.0m   551.0m   543.0m   551.0m   0.0m     0.0m     JA
-2-F67.2 Transport-Umlauf #67           40.0m    551.0m   591.0m   551.0m   591.0m   0.0m     0.0m     JA
+2-F67.2 Transport-Umlauf #67           40.0m    551.0m   591.0m   687.0m   727.0m   136.0m   136.0m   
 2-F68.1 Beladen #68                    8.0m     551.0m   559.0m   551.0m   559.0m   0.0m     0.0m     JA
-2-F68.2 Transport-Umlauf #68           40.0m    559.0m   599.0m   559.0m   599.0m   0.0m     0.0m     JA
+2-F68.2 Transport-Umlauf #68           40.0m    559.0m   599.0m   687.0m   727.0m   128.0m   128.0m   
 2-F69.1 Beladen #69                    8.0m     559.0m   567.0m   559.0m   567.0m   0.0m     0.0m     JA
-2-F69.2 Transport-Umlauf #69           40.0m    567.0m   607.0m   567.0m   607.0m   0.0m     0.0m     JA
+2-F69.2 Transport-Umlauf #69           40.0m    567.0m   607.0m   687.0m   727.0m   120.0m   120.0m   
 2-F70.1 Beladen #70                    8.0m     567.0m   575.0m   567.0m   575.0m   0.0m     0.0m     JA
-2-F70.2 Transport-Umlauf #70           40.0m    575.0m   615.0m   575.0m   615.0m   0.0m     0.0m     JA
+2-F70.2 Transport-Umlauf #70           40.0m    575.0m   615.0m   687.0m   727.0m   112.0m   112.0m   
 2-F71.1 Beladen #71                    8.0m     575.0m   583.0m   575.0m   583.0m   0.0m     0.0m     JA
-2-F71.2 Transport-Umlauf #71           40.0m    583.0m   623.0m   583.0m   623.0m   0.0m     0.0m     JA
+2-F71.2 Transport-Umlauf #71           40.0m    583.0m   623.0m   687.0m   727.0m   104.0m   104.0m   
 2-F72.1 Beladen #72                    8.0m     583.0m   591.0m   583.0m   591.0m   0.0m     0.0m     JA
-2-F72.2 Transport-Umlauf #72           40.0m    591.0m   631.0m   591.0m   631.0m   0.0m     0.0m     JA
+2-F72.2 Transport-Umlauf #72           40.0m    591.0m   631.0m   687.0m   727.0m   96.0m    96.0m    
 2-F73.1 Beladen #73                    8.0m     591.0m   599.0m   591.0m   599.0m   0.0m     0.0m     JA
-2-F73.2 Transport-Umlauf #73           40.0m    599.0m   639.0m   599.0m   639.0m   0.0m     0.0m     JA
+2-F73.2 Transport-Umlauf #73           40.0m    599.0m   639.0m   687.0m   727.0m   88.0m    88.0m    
 2-F74.1 Beladen #74                    8.0m     599.0m   607.0m   599.0m   607.0m   0.0m     0.0m     JA
-2-F74.2 Transport-Umlauf #74           40.0m    607.0m   647.0m   607.0m   647.0m   0.0m     0.0m     JA
+2-F74.2 Transport-Umlauf #74           40.0m    607.0m   647.0m   687.0m   727.0m   80.0m    80.0m    
 2-F75.1 Beladen #75                    8.0m     607.0m   615.0m   607.0m   615.0m   0.0m     0.0m     JA
-2-F75.2 Transport-Umlauf #75           40.0m    615.0m   655.0m   615.0m   655.0m   0.0m     0.0m     JA
+2-F75.2 Transport-Umlauf #75           40.0m    615.0m   655.0m   687.0m   727.0m   72.0m    72.0m    
 2-F76.1 Beladen #76                    8.0m     615.0m   623.0m   615.0m   623.0m   0.0m     0.0m     JA
-2-F76.2 Transport-Umlauf #76           40.0m    623.0m   663.0m   623.0m   663.0m   0.0m     0.0m     JA
+2-F76.2 Transport-Umlauf #76           40.0m    623.0m   663.0m   687.0m   727.0m   64.0m    64.0m    
 2-F77.1 Beladen #77                    8.0m     623.0m   631.0m   623.0m   631.0m   0.0m     0.0m     JA
-2-F77.2 Transport-Umlauf #77           40.0m    631.0m   671.0m   631.0m   671.0m   0.0m     0.0m     JA
+2-F77.2 Transport-Umlauf #77           40.0m    631.0m   671.0m   687.0m   727.0m   56.0m    56.0m    
 2-F78.1 Beladen #78                    8.0m     631.0m   639.0m   631.0m   639.0m   0.0m     0.0m     JA
-2-F78.2 Transport-Umlauf #78           40.0m    639.0m   679.0m   639.0m   679.0m   0.0m     0.0m     JA
+2-F78.2 Transport-Umlauf #78           40.0m    639.0m   679.0m   687.0m   727.0m   48.0m    48.0m    
 2-F79.1 Beladen #79                    8.0m     639.0m   647.0m   639.0m   647.0m   0.0m     0.0m     JA
-2-F79.2 Transport-Umlauf #79           40.0m    647.0m   687.0m   647.0m   687.0m   0.0m     0.0m     JA
+2-F79.2 Transport-Umlauf #79           40.0m    647.0m   687.0m   687.0m   727.0m   40.0m    40.0m    
 2-F80.1 Beladen #80                    8.0m     647.0m   655.0m   647.0m   655.0m   0.0m     0.0m     JA
-2-F80.2 Transport-Umlauf #80           40.0m    655.0m   695.0m   655.0m   695.0m   0.0m     0.0m     JA
+2-F80.2 Transport-Umlauf #80           40.0m    655.0m   695.0m   687.0m   727.0m   32.0m    32.0m    
 2-F81.1 Beladen #81                    8.0m     655.0m   663.0m   655.0m   663.0m   0.0m     0.0m     JA
-2-F81.2 Transport-Umlauf #81           40.0m    663.0m   703.0m   663.0m   703.0m   0.0m     0.0m     JA
+2-F81.2 Transport-Umlauf #81           40.0m    663.0m   703.0m   687.0m   727.0m   24.0m    24.0m    
 2-F82.1 Beladen #82                    8.0m     663.0m   671.0m   663.0m   671.0m   0.0m     0.0m     JA
-2-F82.2 Transport-Umlauf #82           40.0m    671.0m   711.0m   671.0m   711.0m   0.0m     0.0m     JA
+2-F82.2 Transport-Umlauf #82           40.0m    671.0m   711.0m   687.0m   727.0m   16.0m    16.0m    
 2-F83.1 Beladen #83                    8.0m     671.0m   679.0m   671.0m   679.0m   0.0m     0.0m     JA
-2-F83.2 Transport-Umlauf #83           40.0m    679.0m   719.0m   679.0m   719.0m   0.0m     0.0m     JA
+2-F83.2 Transport-Umlauf #83           40.0m    679.0m   719.0m   687.0m   727.0m   8.0m     8.0m     
 2-F84.1 Beladen #84                    8.0m     679.0m   687.0m   679.0m   687.0m   0.0m     0.0m     JA
 2-F84.2 Transport-Umlauf #84           40.0m    687.0m   727.0m   687.0m   727.0m   0.0m     0.0m     JA
 ----------------------------------------------------------------------
@@ -643,348 +560,348 @@ VERANTWORTLICHE
   LKW 1                     [1, 2-F1.1, 2-F1.2, 2-F3.1, 2-F3.2, 2-F5.1, 2-F5.2, 2-F7.1 (+77)]
     [1] Initialisierung und Bereitst  FAZ: 0.0m     FEZ: 15.0m    Krit.
     [2-F1.1] Beladen #1                    FAZ: 15.0m    FEZ: 23.0m    Krit.
-    [2-F1.2] Transport-Umlauf #1           FAZ: 23.0m    FEZ: 63.0m    Krit.
+    [2-F1.2] Transport-Umlauf #1           FAZ: 23.0m    FEZ: 63.0m    
     [2-F3.1] Beladen #3                    FAZ: 31.0m    FEZ: 39.0m    Krit.
-    [2-F3.2] Transport-Umlauf #3           FAZ: 39.0m    FEZ: 79.0m    Krit.
+    [2-F3.2] Transport-Umlauf #3           FAZ: 39.0m    FEZ: 79.0m    
     [2-F5.1] Beladen #5                    FAZ: 47.0m    FEZ: 55.0m    Krit.
-    [2-F5.2] Transport-Umlauf #5           FAZ: 55.0m    FEZ: 95.0m    Krit.
+    [2-F5.2] Transport-Umlauf #5           FAZ: 55.0m    FEZ: 95.0m    
     [2-F7.1] Beladen #7                    FAZ: 63.0m    FEZ: 71.0m    Krit.
-    [2-F7.2] Transport-Umlauf #7           FAZ: 71.0m    FEZ: 111.0m   Krit.
+    [2-F7.2] Transport-Umlauf #7           FAZ: 71.0m    FEZ: 111.0m   
     [2-F9.1] Beladen #9                    FAZ: 79.0m    FEZ: 87.0m    Krit.
-    [2-F9.2] Transport-Umlauf #9           FAZ: 87.0m    FEZ: 127.0m   Krit.
+    [2-F9.2] Transport-Umlauf #9           FAZ: 87.0m    FEZ: 127.0m   
     [2-F11.1] Beladen #11                   FAZ: 95.0m    FEZ: 103.0m   Krit.
-    [2-F11.2] Transport-Umlauf #11          FAZ: 103.0m   FEZ: 143.0m   Krit.
+    [2-F11.2] Transport-Umlauf #11          FAZ: 103.0m   FEZ: 143.0m   
     [2-F13.1] Beladen #13                   FAZ: 111.0m   FEZ: 119.0m   Krit.
-    [2-F13.2] Transport-Umlauf #13          FAZ: 119.0m   FEZ: 159.0m   Krit.
+    [2-F13.2] Transport-Umlauf #13          FAZ: 119.0m   FEZ: 159.0m   
     [2-F15.1] Beladen #15                   FAZ: 127.0m   FEZ: 135.0m   Krit.
-    [2-F15.2] Transport-Umlauf #15          FAZ: 135.0m   FEZ: 175.0m   Krit.
+    [2-F15.2] Transport-Umlauf #15          FAZ: 135.0m   FEZ: 175.0m   
     [2-F17.1] Beladen #17                   FAZ: 143.0m   FEZ: 151.0m   Krit.
-    [2-F17.2] Transport-Umlauf #17          FAZ: 151.0m   FEZ: 191.0m   Krit.
+    [2-F17.2] Transport-Umlauf #17          FAZ: 151.0m   FEZ: 191.0m   
     [2-F19.1] Beladen #19                   FAZ: 159.0m   FEZ: 167.0m   Krit.
-    [2-F19.2] Transport-Umlauf #19          FAZ: 167.0m   FEZ: 207.0m   Krit.
+    [2-F19.2] Transport-Umlauf #19          FAZ: 167.0m   FEZ: 207.0m   
     [2-F21.1] Beladen #21                   FAZ: 175.0m   FEZ: 183.0m   Krit.
-    [2-F21.2] Transport-Umlauf #21          FAZ: 183.0m   FEZ: 223.0m   Krit.
+    [2-F21.2] Transport-Umlauf #21          FAZ: 183.0m   FEZ: 223.0m   
     [2-F23.1] Beladen #23                   FAZ: 191.0m   FEZ: 199.0m   Krit.
-    [2-F23.2] Transport-Umlauf #23          FAZ: 199.0m   FEZ: 239.0m   Krit.
+    [2-F23.2] Transport-Umlauf #23          FAZ: 199.0m   FEZ: 239.0m   
     [2-F25.1] Beladen #25                   FAZ: 207.0m   FEZ: 215.0m   Krit.
-    [2-F25.2] Transport-Umlauf #25          FAZ: 215.0m   FEZ: 255.0m   Krit.
+    [2-F25.2] Transport-Umlauf #25          FAZ: 215.0m   FEZ: 255.0m   
     [2-F27.1] Beladen #27                   FAZ: 223.0m   FEZ: 231.0m   Krit.
-    [2-F27.2] Transport-Umlauf #27          FAZ: 231.0m   FEZ: 271.0m   Krit.
+    [2-F27.2] Transport-Umlauf #27          FAZ: 231.0m   FEZ: 271.0m   
     [2-F29.1] Beladen #29                   FAZ: 239.0m   FEZ: 247.0m   Krit.
-    [2-F29.2] Transport-Umlauf #29          FAZ: 247.0m   FEZ: 287.0m   Krit.
+    [2-F29.2] Transport-Umlauf #29          FAZ: 247.0m   FEZ: 287.0m   
     [2-F31.1] Beladen #31                   FAZ: 255.0m   FEZ: 263.0m   Krit.
-    [2-F31.2] Transport-Umlauf #31          FAZ: 263.0m   FEZ: 303.0m   Krit.
+    [2-F31.2] Transport-Umlauf #31          FAZ: 263.0m   FEZ: 303.0m   
     [2-F33.1] Beladen #33                   FAZ: 271.0m   FEZ: 279.0m   Krit.
-    [2-F33.2] Transport-Umlauf #33          FAZ: 279.0m   FEZ: 319.0m   Krit.
+    [2-F33.2] Transport-Umlauf #33          FAZ: 279.0m   FEZ: 319.0m   
     [2-F35.1] Beladen #35                   FAZ: 287.0m   FEZ: 295.0m   Krit.
-    [2-F35.2] Transport-Umlauf #35          FAZ: 295.0m   FEZ: 335.0m   Krit.
+    [2-F35.2] Transport-Umlauf #35          FAZ: 295.0m   FEZ: 335.0m   
     [2-F37.1] Beladen #37                   FAZ: 303.0m   FEZ: 311.0m   Krit.
-    [2-F37.2] Transport-Umlauf #37          FAZ: 311.0m   FEZ: 351.0m   Krit.
+    [2-F37.2] Transport-Umlauf #37          FAZ: 311.0m   FEZ: 351.0m   
     [2-F39.1] Beladen #39                   FAZ: 319.0m   FEZ: 327.0m   Krit.
-    [2-F39.2] Transport-Umlauf #39          FAZ: 327.0m   FEZ: 367.0m   Krit.
+    [2-F39.2] Transport-Umlauf #39          FAZ: 327.0m   FEZ: 367.0m   
     [2-F41.1] Beladen #41                   FAZ: 335.0m   FEZ: 343.0m   Krit.
-    [2-F41.2] Transport-Umlauf #41          FAZ: 343.0m   FEZ: 383.0m   Krit.
+    [2-F41.2] Transport-Umlauf #41          FAZ: 343.0m   FEZ: 383.0m   
     [2-F43.1] Beladen #43                   FAZ: 351.0m   FEZ: 359.0m   Krit.
-    [2-F43.2] Transport-Umlauf #43          FAZ: 359.0m   FEZ: 399.0m   Krit.
+    [2-F43.2] Transport-Umlauf #43          FAZ: 359.0m   FEZ: 399.0m   
     [2-F45.1] Beladen #45                   FAZ: 367.0m   FEZ: 375.0m   Krit.
-    [2-F45.2] Transport-Umlauf #45          FAZ: 375.0m   FEZ: 415.0m   Krit.
+    [2-F45.2] Transport-Umlauf #45          FAZ: 375.0m   FEZ: 415.0m   
     [2-F47.1] Beladen #47                   FAZ: 383.0m   FEZ: 391.0m   Krit.
-    [2-F47.2] Transport-Umlauf #47          FAZ: 391.0m   FEZ: 431.0m   Krit.
+    [2-F47.2] Transport-Umlauf #47          FAZ: 391.0m   FEZ: 431.0m   
     [2-F49.1] Beladen #49                   FAZ: 399.0m   FEZ: 407.0m   Krit.
-    [2-F49.2] Transport-Umlauf #49          FAZ: 407.0m   FEZ: 447.0m   Krit.
+    [2-F49.2] Transport-Umlauf #49          FAZ: 407.0m   FEZ: 447.0m   
     [2-F51.1] Beladen #51                   FAZ: 415.0m   FEZ: 423.0m   Krit.
-    [2-F51.2] Transport-Umlauf #51          FAZ: 423.0m   FEZ: 463.0m   Krit.
+    [2-F51.2] Transport-Umlauf #51          FAZ: 423.0m   FEZ: 463.0m   
     [2-F53.1] Beladen #53                   FAZ: 431.0m   FEZ: 439.0m   Krit.
-    [2-F53.2] Transport-Umlauf #53          FAZ: 439.0m   FEZ: 479.0m   Krit.
+    [2-F53.2] Transport-Umlauf #53          FAZ: 439.0m   FEZ: 479.0m   
     [2-F55.1] Beladen #55                   FAZ: 447.0m   FEZ: 455.0m   Krit.
-    [2-F55.2] Transport-Umlauf #55          FAZ: 455.0m   FEZ: 495.0m   Krit.
+    [2-F55.2] Transport-Umlauf #55          FAZ: 455.0m   FEZ: 495.0m   
     [2-F57.1] Beladen #57                   FAZ: 463.0m   FEZ: 471.0m   Krit.
-    [2-F57.2] Transport-Umlauf #57          FAZ: 471.0m   FEZ: 511.0m   Krit.
+    [2-F57.2] Transport-Umlauf #57          FAZ: 471.0m   FEZ: 511.0m   
     [2-F59.1] Beladen #59                   FAZ: 479.0m   FEZ: 487.0m   Krit.
-    [2-F59.2] Transport-Umlauf #59          FAZ: 487.0m   FEZ: 527.0m   Krit.
+    [2-F59.2] Transport-Umlauf #59          FAZ: 487.0m   FEZ: 527.0m   
     [2-F61.1] Beladen #61                   FAZ: 495.0m   FEZ: 503.0m   Krit.
-    [2-F61.2] Transport-Umlauf #61          FAZ: 503.0m   FEZ: 543.0m   Krit.
+    [2-F61.2] Transport-Umlauf #61          FAZ: 503.0m   FEZ: 543.0m   
     [2-F63.1] Beladen #63                   FAZ: 511.0m   FEZ: 519.0m   Krit.
-    [2-F63.2] Transport-Umlauf #63          FAZ: 519.0m   FEZ: 559.0m   Krit.
+    [2-F63.2] Transport-Umlauf #63          FAZ: 519.0m   FEZ: 559.0m   
     [2-F65.1] Beladen #65                   FAZ: 527.0m   FEZ: 535.0m   Krit.
-    [2-F65.2] Transport-Umlauf #65          FAZ: 535.0m   FEZ: 575.0m   Krit.
+    [2-F65.2] Transport-Umlauf #65          FAZ: 535.0m   FEZ: 575.0m   
     [2-F67.1] Beladen #67                   FAZ: 543.0m   FEZ: 551.0m   Krit.
-    [2-F67.2] Transport-Umlauf #67          FAZ: 551.0m   FEZ: 591.0m   Krit.
+    [2-F67.2] Transport-Umlauf #67          FAZ: 551.0m   FEZ: 591.0m   
     [2-F69.1] Beladen #69                   FAZ: 559.0m   FEZ: 567.0m   Krit.
-    [2-F69.2] Transport-Umlauf #69          FAZ: 567.0m   FEZ: 607.0m   Krit.
+    [2-F69.2] Transport-Umlauf #69          FAZ: 567.0m   FEZ: 607.0m   
     [2-F71.1] Beladen #71                   FAZ: 575.0m   FEZ: 583.0m   Krit.
-    [2-F71.2] Transport-Umlauf #71          FAZ: 583.0m   FEZ: 623.0m   Krit.
+    [2-F71.2] Transport-Umlauf #71          FAZ: 583.0m   FEZ: 623.0m   
     [2-F73.1] Beladen #73                   FAZ: 591.0m   FEZ: 599.0m   Krit.
-    [2-F73.2] Transport-Umlauf #73          FAZ: 599.0m   FEZ: 639.0m   Krit.
+    [2-F73.2] Transport-Umlauf #73          FAZ: 599.0m   FEZ: 639.0m   
     [2-F75.1] Beladen #75                   FAZ: 607.0m   FEZ: 615.0m   Krit.
-    [2-F75.2] Transport-Umlauf #75          FAZ: 615.0m   FEZ: 655.0m   Krit.
+    [2-F75.2] Transport-Umlauf #75          FAZ: 615.0m   FEZ: 655.0m   
     [2-F77.1] Beladen #77                   FAZ: 623.0m   FEZ: 631.0m   Krit.
-    [2-F77.2] Transport-Umlauf #77          FAZ: 631.0m   FEZ: 671.0m   Krit.
+    [2-F77.2] Transport-Umlauf #77          FAZ: 631.0m   FEZ: 671.0m   
     [2-F79.1] Beladen #79                   FAZ: 639.0m   FEZ: 647.0m   Krit.
-    [2-F79.2] Transport-Umlauf #79          FAZ: 647.0m   FEZ: 687.0m   Krit.
+    [2-F79.2] Transport-Umlauf #79          FAZ: 647.0m   FEZ: 687.0m   
     [2-F81.1] Beladen #81                   FAZ: 655.0m   FEZ: 663.0m   Krit.
-    [2-F81.2] Transport-Umlauf #81          FAZ: 663.0m   FEZ: 703.0m   Krit.
+    [2-F81.2] Transport-Umlauf #81          FAZ: 663.0m   FEZ: 703.0m   
     [2-F83.1] Beladen #83                   FAZ: 671.0m   FEZ: 679.0m   Krit.
-    [2-F83.2] Transport-Umlauf #83          FAZ: 679.0m   FEZ: 719.0m   Krit.
+    [2-F83.2] Transport-Umlauf #83          FAZ: 679.0m   FEZ: 719.0m   
 
   LKW 2                     [1, 2-F2.1, 2-F2.2, 2-F4.1, 2-F4.2, 2-F6.1, 2-F6.2, 2-F8.1 (+77)]
     [1] Initialisierung und Bereitst  FAZ: 0.0m     FEZ: 15.0m    Krit.
     [2-F2.1] Beladen #2                    FAZ: 23.0m    FEZ: 31.0m    Krit.
-    [2-F2.2] Transport-Umlauf #2           FAZ: 31.0m    FEZ: 71.0m    Krit.
+    [2-F2.2] Transport-Umlauf #2           FAZ: 31.0m    FEZ: 71.0m    
     [2-F4.1] Beladen #4                    FAZ: 39.0m    FEZ: 47.0m    Krit.
-    [2-F4.2] Transport-Umlauf #4           FAZ: 47.0m    FEZ: 87.0m    Krit.
+    [2-F4.2] Transport-Umlauf #4           FAZ: 47.0m    FEZ: 87.0m    
     [2-F6.1] Beladen #6                    FAZ: 55.0m    FEZ: 63.0m    Krit.
-    [2-F6.2] Transport-Umlauf #6           FAZ: 63.0m    FEZ: 103.0m   Krit.
+    [2-F6.2] Transport-Umlauf #6           FAZ: 63.0m    FEZ: 103.0m   
     [2-F8.1] Beladen #8                    FAZ: 71.0m    FEZ: 79.0m    Krit.
-    [2-F8.2] Transport-Umlauf #8           FAZ: 79.0m    FEZ: 119.0m   Krit.
+    [2-F8.2] Transport-Umlauf #8           FAZ: 79.0m    FEZ: 119.0m   
     [2-F10.1] Beladen #10                   FAZ: 87.0m    FEZ: 95.0m    Krit.
-    [2-F10.2] Transport-Umlauf #10          FAZ: 95.0m    FEZ: 135.0m   Krit.
+    [2-F10.2] Transport-Umlauf #10          FAZ: 95.0m    FEZ: 135.0m   
     [2-F12.1] Beladen #12                   FAZ: 103.0m   FEZ: 111.0m   Krit.
-    [2-F12.2] Transport-Umlauf #12          FAZ: 111.0m   FEZ: 151.0m   Krit.
+    [2-F12.2] Transport-Umlauf #12          FAZ: 111.0m   FEZ: 151.0m   
     [2-F14.1] Beladen #14                   FAZ: 119.0m   FEZ: 127.0m   Krit.
-    [2-F14.2] Transport-Umlauf #14          FAZ: 127.0m   FEZ: 167.0m   Krit.
+    [2-F14.2] Transport-Umlauf #14          FAZ: 127.0m   FEZ: 167.0m   
     [2-F16.1] Beladen #16                   FAZ: 135.0m   FEZ: 143.0m   Krit.
-    [2-F16.2] Transport-Umlauf #16          FAZ: 143.0m   FEZ: 183.0m   Krit.
+    [2-F16.2] Transport-Umlauf #16          FAZ: 143.0m   FEZ: 183.0m   
     [2-F18.1] Beladen #18                   FAZ: 151.0m   FEZ: 159.0m   Krit.
-    [2-F18.2] Transport-Umlauf #18          FAZ: 159.0m   FEZ: 199.0m   Krit.
+    [2-F18.2] Transport-Umlauf #18          FAZ: 159.0m   FEZ: 199.0m   
     [2-F20.1] Beladen #20                   FAZ: 167.0m   FEZ: 175.0m   Krit.
-    [2-F20.2] Transport-Umlauf #20          FAZ: 175.0m   FEZ: 215.0m   Krit.
+    [2-F20.2] Transport-Umlauf #20          FAZ: 175.0m   FEZ: 215.0m   
     [2-F22.1] Beladen #22                   FAZ: 183.0m   FEZ: 191.0m   Krit.
-    [2-F22.2] Transport-Umlauf #22          FAZ: 191.0m   FEZ: 231.0m   Krit.
+    [2-F22.2] Transport-Umlauf #22          FAZ: 191.0m   FEZ: 231.0m   
     [2-F24.1] Beladen #24                   FAZ: 199.0m   FEZ: 207.0m   Krit.
-    [2-F24.2] Transport-Umlauf #24          FAZ: 207.0m   FEZ: 247.0m   Krit.
+    [2-F24.2] Transport-Umlauf #24          FAZ: 207.0m   FEZ: 247.0m   
     [2-F26.1] Beladen #26                   FAZ: 215.0m   FEZ: 223.0m   Krit.
-    [2-F26.2] Transport-Umlauf #26          FAZ: 223.0m   FEZ: 263.0m   Krit.
+    [2-F26.2] Transport-Umlauf #26          FAZ: 223.0m   FEZ: 263.0m   
     [2-F28.1] Beladen #28                   FAZ: 231.0m   FEZ: 239.0m   Krit.
-    [2-F28.2] Transport-Umlauf #28          FAZ: 239.0m   FEZ: 279.0m   Krit.
+    [2-F28.2] Transport-Umlauf #28          FAZ: 239.0m   FEZ: 279.0m   
     [2-F30.1] Beladen #30                   FAZ: 247.0m   FEZ: 255.0m   Krit.
-    [2-F30.2] Transport-Umlauf #30          FAZ: 255.0m   FEZ: 295.0m   Krit.
+    [2-F30.2] Transport-Umlauf #30          FAZ: 255.0m   FEZ: 295.0m   
     [2-F32.1] Beladen #32                   FAZ: 263.0m   FEZ: 271.0m   Krit.
-    [2-F32.2] Transport-Umlauf #32          FAZ: 271.0m   FEZ: 311.0m   Krit.
+    [2-F32.2] Transport-Umlauf #32          FAZ: 271.0m   FEZ: 311.0m   
     [2-F34.1] Beladen #34                   FAZ: 279.0m   FEZ: 287.0m   Krit.
-    [2-F34.2] Transport-Umlauf #34          FAZ: 287.0m   FEZ: 327.0m   Krit.
+    [2-F34.2] Transport-Umlauf #34          FAZ: 287.0m   FEZ: 327.0m   
     [2-F36.1] Beladen #36                   FAZ: 295.0m   FEZ: 303.0m   Krit.
-    [2-F36.2] Transport-Umlauf #36          FAZ: 303.0m   FEZ: 343.0m   Krit.
+    [2-F36.2] Transport-Umlauf #36          FAZ: 303.0m   FEZ: 343.0m   
     [2-F38.1] Beladen #38                   FAZ: 311.0m   FEZ: 319.0m   Krit.
-    [2-F38.2] Transport-Umlauf #38          FAZ: 319.0m   FEZ: 359.0m   Krit.
+    [2-F38.2] Transport-Umlauf #38          FAZ: 319.0m   FEZ: 359.0m   
     [2-F40.1] Beladen #40                   FAZ: 327.0m   FEZ: 335.0m   Krit.
-    [2-F40.2] Transport-Umlauf #40          FAZ: 335.0m   FEZ: 375.0m   Krit.
+    [2-F40.2] Transport-Umlauf #40          FAZ: 335.0m   FEZ: 375.0m   
     [2-F42.1] Beladen #42                   FAZ: 343.0m   FEZ: 351.0m   Krit.
-    [2-F42.2] Transport-Umlauf #42          FAZ: 351.0m   FEZ: 391.0m   Krit.
+    [2-F42.2] Transport-Umlauf #42          FAZ: 351.0m   FEZ: 391.0m   
     [2-F44.1] Beladen #44                   FAZ: 359.0m   FEZ: 367.0m   Krit.
-    [2-F44.2] Transport-Umlauf #44          FAZ: 367.0m   FEZ: 407.0m   Krit.
+    [2-F44.2] Transport-Umlauf #44          FAZ: 367.0m   FEZ: 407.0m   
     [2-F46.1] Beladen #46                   FAZ: 375.0m   FEZ: 383.0m   Krit.
-    [2-F46.2] Transport-Umlauf #46          FAZ: 383.0m   FEZ: 423.0m   Krit.
+    [2-F46.2] Transport-Umlauf #46          FAZ: 383.0m   FEZ: 423.0m   
     [2-F48.1] Beladen #48                   FAZ: 391.0m   FEZ: 399.0m   Krit.
-    [2-F48.2] Transport-Umlauf #48          FAZ: 399.0m   FEZ: 439.0m   Krit.
+    [2-F48.2] Transport-Umlauf #48          FAZ: 399.0m   FEZ: 439.0m   
     [2-F50.1] Beladen #50                   FAZ: 407.0m   FEZ: 415.0m   Krit.
-    [2-F50.2] Transport-Umlauf #50          FAZ: 415.0m   FEZ: 455.0m   Krit.
+    [2-F50.2] Transport-Umlauf #50          FAZ: 415.0m   FEZ: 455.0m   
     [2-F52.1] Beladen #52                   FAZ: 423.0m   FEZ: 431.0m   Krit.
-    [2-F52.2] Transport-Umlauf #52          FAZ: 431.0m   FEZ: 471.0m   Krit.
+    [2-F52.2] Transport-Umlauf #52          FAZ: 431.0m   FEZ: 471.0m   
     [2-F54.1] Beladen #54                   FAZ: 439.0m   FEZ: 447.0m   Krit.
-    [2-F54.2] Transport-Umlauf #54          FAZ: 447.0m   FEZ: 487.0m   Krit.
+    [2-F54.2] Transport-Umlauf #54          FAZ: 447.0m   FEZ: 487.0m   
     [2-F56.1] Beladen #56                   FAZ: 455.0m   FEZ: 463.0m   Krit.
-    [2-F56.2] Transport-Umlauf #56          FAZ: 463.0m   FEZ: 503.0m   Krit.
+    [2-F56.2] Transport-Umlauf #56          FAZ: 463.0m   FEZ: 503.0m   
     [2-F58.1] Beladen #58                   FAZ: 471.0m   FEZ: 479.0m   Krit.
-    [2-F58.2] Transport-Umlauf #58          FAZ: 479.0m   FEZ: 519.0m   Krit.
+    [2-F58.2] Transport-Umlauf #58          FAZ: 479.0m   FEZ: 519.0m   
     [2-F60.1] Beladen #60                   FAZ: 487.0m   FEZ: 495.0m   Krit.
-    [2-F60.2] Transport-Umlauf #60          FAZ: 495.0m   FEZ: 535.0m   Krit.
+    [2-F60.2] Transport-Umlauf #60          FAZ: 495.0m   FEZ: 535.0m   
     [2-F62.1] Beladen #62                   FAZ: 503.0m   FEZ: 511.0m   Krit.
-    [2-F62.2] Transport-Umlauf #62          FAZ: 511.0m   FEZ: 551.0m   Krit.
+    [2-F62.2] Transport-Umlauf #62          FAZ: 511.0m   FEZ: 551.0m   
     [2-F64.1] Beladen #64                   FAZ: 519.0m   FEZ: 527.0m   Krit.
-    [2-F64.2] Transport-Umlauf #64          FAZ: 527.0m   FEZ: 567.0m   Krit.
+    [2-F64.2] Transport-Umlauf #64          FAZ: 527.0m   FEZ: 567.0m   
     [2-F66.1] Beladen #66                   FAZ: 535.0m   FEZ: 543.0m   Krit.
-    [2-F66.2] Transport-Umlauf #66          FAZ: 543.0m   FEZ: 583.0m   Krit.
+    [2-F66.2] Transport-Umlauf #66          FAZ: 543.0m   FEZ: 583.0m   
     [2-F68.1] Beladen #68                   FAZ: 551.0m   FEZ: 559.0m   Krit.
-    [2-F68.2] Transport-Umlauf #68          FAZ: 559.0m   FEZ: 599.0m   Krit.
+    [2-F68.2] Transport-Umlauf #68          FAZ: 559.0m   FEZ: 599.0m   
     [2-F70.1] Beladen #70                   FAZ: 567.0m   FEZ: 575.0m   Krit.
-    [2-F70.2] Transport-Umlauf #70          FAZ: 575.0m   FEZ: 615.0m   Krit.
+    [2-F70.2] Transport-Umlauf #70          FAZ: 575.0m   FEZ: 615.0m   
     [2-F72.1] Beladen #72                   FAZ: 583.0m   FEZ: 591.0m   Krit.
-    [2-F72.2] Transport-Umlauf #72          FAZ: 591.0m   FEZ: 631.0m   Krit.
+    [2-F72.2] Transport-Umlauf #72          FAZ: 591.0m   FEZ: 631.0m   
     [2-F74.1] Beladen #74                   FAZ: 599.0m   FEZ: 607.0m   Krit.
-    [2-F74.2] Transport-Umlauf #74          FAZ: 607.0m   FEZ: 647.0m   Krit.
+    [2-F74.2] Transport-Umlauf #74          FAZ: 607.0m   FEZ: 647.0m   
     [2-F76.1] Beladen #76                   FAZ: 615.0m   FEZ: 623.0m   Krit.
-    [2-F76.2] Transport-Umlauf #76          FAZ: 623.0m   FEZ: 663.0m   Krit.
+    [2-F76.2] Transport-Umlauf #76          FAZ: 623.0m   FEZ: 663.0m   
     [2-F78.1] Beladen #78                   FAZ: 631.0m   FEZ: 639.0m   Krit.
-    [2-F78.2] Transport-Umlauf #78          FAZ: 639.0m   FEZ: 679.0m   Krit.
+    [2-F78.2] Transport-Umlauf #78          FAZ: 639.0m   FEZ: 679.0m   
     [2-F80.1] Beladen #80                   FAZ: 647.0m   FEZ: 655.0m   Krit.
-    [2-F80.2] Transport-Umlauf #80          FAZ: 655.0m   FEZ: 695.0m   Krit.
+    [2-F80.2] Transport-Umlauf #80          FAZ: 655.0m   FEZ: 695.0m   
     [2-F82.1] Beladen #82                   FAZ: 663.0m   FEZ: 671.0m   Krit.
-    [2-F82.2] Transport-Umlauf #82          FAZ: 671.0m   FEZ: 711.0m   Krit.
+    [2-F82.2] Transport-Umlauf #82          FAZ: 671.0m   FEZ: 711.0m   
     [2-F84.1] Beladen #84                   FAZ: 679.0m   FEZ: 687.0m   Krit.
     [2-F84.2] Transport-Umlauf #84          FAZ: 687.0m   FEZ: 727.0m   Krit.
 
   LKW-Fahrer Max            [1, 2-F1.1, 2-F1.2, 2-F3.1, 2-F3.2, 2-F5.1, 2-F5.2, 2-F7.1 (+77)]
     [1] Initialisierung und Bereitst  FAZ: 0.0m     FEZ: 15.0m    Krit.
     [2-F1.1] Beladen #1                    FAZ: 15.0m    FEZ: 23.0m    Krit.
-    [2-F1.2] Transport-Umlauf #1           FAZ: 23.0m    FEZ: 63.0m    Krit.
+    [2-F1.2] Transport-Umlauf #1           FAZ: 23.0m    FEZ: 63.0m    
     [2-F3.1] Beladen #3                    FAZ: 31.0m    FEZ: 39.0m    Krit.
-    [2-F3.2] Transport-Umlauf #3           FAZ: 39.0m    FEZ: 79.0m    Krit.
+    [2-F3.2] Transport-Umlauf #3           FAZ: 39.0m    FEZ: 79.0m    
     [2-F5.1] Beladen #5                    FAZ: 47.0m    FEZ: 55.0m    Krit.
-    [2-F5.2] Transport-Umlauf #5           FAZ: 55.0m    FEZ: 95.0m    Krit.
+    [2-F5.2] Transport-Umlauf #5           FAZ: 55.0m    FEZ: 95.0m    
     [2-F7.1] Beladen #7                    FAZ: 63.0m    FEZ: 71.0m    Krit.
-    [2-F7.2] Transport-Umlauf #7           FAZ: 71.0m    FEZ: 111.0m   Krit.
+    [2-F7.2] Transport-Umlauf #7           FAZ: 71.0m    FEZ: 111.0m   
     [2-F9.1] Beladen #9                    FAZ: 79.0m    FEZ: 87.0m    Krit.
-    [2-F9.2] Transport-Umlauf #9           FAZ: 87.0m    FEZ: 127.0m   Krit.
+    [2-F9.2] Transport-Umlauf #9           FAZ: 87.0m    FEZ: 127.0m   
     [2-F11.1] Beladen #11                   FAZ: 95.0m    FEZ: 103.0m   Krit.
-    [2-F11.2] Transport-Umlauf #11          FAZ: 103.0m   FEZ: 143.0m   Krit.
+    [2-F11.2] Transport-Umlauf #11          FAZ: 103.0m   FEZ: 143.0m   
     [2-F13.1] Beladen #13                   FAZ: 111.0m   FEZ: 119.0m   Krit.
-    [2-F13.2] Transport-Umlauf #13          FAZ: 119.0m   FEZ: 159.0m   Krit.
+    [2-F13.2] Transport-Umlauf #13          FAZ: 119.0m   FEZ: 159.0m   
     [2-F15.1] Beladen #15                   FAZ: 127.0m   FEZ: 135.0m   Krit.
-    [2-F15.2] Transport-Umlauf #15          FAZ: 135.0m   FEZ: 175.0m   Krit.
+    [2-F15.2] Transport-Umlauf #15          FAZ: 135.0m   FEZ: 175.0m   
     [2-F17.1] Beladen #17                   FAZ: 143.0m   FEZ: 151.0m   Krit.
-    [2-F17.2] Transport-Umlauf #17          FAZ: 151.0m   FEZ: 191.0m   Krit.
+    [2-F17.2] Transport-Umlauf #17          FAZ: 151.0m   FEZ: 191.0m   
     [2-F19.1] Beladen #19                   FAZ: 159.0m   FEZ: 167.0m   Krit.
-    [2-F19.2] Transport-Umlauf #19          FAZ: 167.0m   FEZ: 207.0m   Krit.
+    [2-F19.2] Transport-Umlauf #19          FAZ: 167.0m   FEZ: 207.0m   
     [2-F21.1] Beladen #21                   FAZ: 175.0m   FEZ: 183.0m   Krit.
-    [2-F21.2] Transport-Umlauf #21          FAZ: 183.0m   FEZ: 223.0m   Krit.
+    [2-F21.2] Transport-Umlauf #21          FAZ: 183.0m   FEZ: 223.0m   
     [2-F23.1] Beladen #23                   FAZ: 191.0m   FEZ: 199.0m   Krit.
-    [2-F23.2] Transport-Umlauf #23          FAZ: 199.0m   FEZ: 239.0m   Krit.
+    [2-F23.2] Transport-Umlauf #23          FAZ: 199.0m   FEZ: 239.0m   
     [2-F25.1] Beladen #25                   FAZ: 207.0m   FEZ: 215.0m   Krit.
-    [2-F25.2] Transport-Umlauf #25          FAZ: 215.0m   FEZ: 255.0m   Krit.
+    [2-F25.2] Transport-Umlauf #25          FAZ: 215.0m   FEZ: 255.0m   
     [2-F27.1] Beladen #27                   FAZ: 223.0m   FEZ: 231.0m   Krit.
-    [2-F27.2] Transport-Umlauf #27          FAZ: 231.0m   FEZ: 271.0m   Krit.
+    [2-F27.2] Transport-Umlauf #27          FAZ: 231.0m   FEZ: 271.0m   
     [2-F29.1] Beladen #29                   FAZ: 239.0m   FEZ: 247.0m   Krit.
-    [2-F29.2] Transport-Umlauf #29          FAZ: 247.0m   FEZ: 287.0m   Krit.
+    [2-F29.2] Transport-Umlauf #29          FAZ: 247.0m   FEZ: 287.0m   
     [2-F31.1] Beladen #31                   FAZ: 255.0m   FEZ: 263.0m   Krit.
-    [2-F31.2] Transport-Umlauf #31          FAZ: 263.0m   FEZ: 303.0m   Krit.
+    [2-F31.2] Transport-Umlauf #31          FAZ: 263.0m   FEZ: 303.0m   
     [2-F33.1] Beladen #33                   FAZ: 271.0m   FEZ: 279.0m   Krit.
-    [2-F33.2] Transport-Umlauf #33          FAZ: 279.0m   FEZ: 319.0m   Krit.
+    [2-F33.2] Transport-Umlauf #33          FAZ: 279.0m   FEZ: 319.0m   
     [2-F35.1] Beladen #35                   FAZ: 287.0m   FEZ: 295.0m   Krit.
-    [2-F35.2] Transport-Umlauf #35          FAZ: 295.0m   FEZ: 335.0m   Krit.
+    [2-F35.2] Transport-Umlauf #35          FAZ: 295.0m   FEZ: 335.0m   
     [2-F37.1] Beladen #37                   FAZ: 303.0m   FEZ: 311.0m   Krit.
-    [2-F37.2] Transport-Umlauf #37          FAZ: 311.0m   FEZ: 351.0m   Krit.
+    [2-F37.2] Transport-Umlauf #37          FAZ: 311.0m   FEZ: 351.0m   
     [2-F39.1] Beladen #39                   FAZ: 319.0m   FEZ: 327.0m   Krit.
-    [2-F39.2] Transport-Umlauf #39          FAZ: 327.0m   FEZ: 367.0m   Krit.
+    [2-F39.2] Transport-Umlauf #39          FAZ: 327.0m   FEZ: 367.0m   
     [2-F41.1] Beladen #41                   FAZ: 335.0m   FEZ: 343.0m   Krit.
-    [2-F41.2] Transport-Umlauf #41          FAZ: 343.0m   FEZ: 383.0m   Krit.
+    [2-F41.2] Transport-Umlauf #41          FAZ: 343.0m   FEZ: 383.0m   
     [2-F43.1] Beladen #43                   FAZ: 351.0m   FEZ: 359.0m   Krit.
-    [2-F43.2] Transport-Umlauf #43          FAZ: 359.0m   FEZ: 399.0m   Krit.
+    [2-F43.2] Transport-Umlauf #43          FAZ: 359.0m   FEZ: 399.0m   
     [2-F45.1] Beladen #45                   FAZ: 367.0m   FEZ: 375.0m   Krit.
-    [2-F45.2] Transport-Umlauf #45          FAZ: 375.0m   FEZ: 415.0m   Krit.
+    [2-F45.2] Transport-Umlauf #45          FAZ: 375.0m   FEZ: 415.0m   
     [2-F47.1] Beladen #47                   FAZ: 383.0m   FEZ: 391.0m   Krit.
-    [2-F47.2] Transport-Umlauf #47          FAZ: 391.0m   FEZ: 431.0m   Krit.
+    [2-F47.2] Transport-Umlauf #47          FAZ: 391.0m   FEZ: 431.0m   
     [2-F49.1] Beladen #49                   FAZ: 399.0m   FEZ: 407.0m   Krit.
-    [2-F49.2] Transport-Umlauf #49          FAZ: 407.0m   FEZ: 447.0m   Krit.
+    [2-F49.2] Transport-Umlauf #49          FAZ: 407.0m   FEZ: 447.0m   
     [2-F51.1] Beladen #51                   FAZ: 415.0m   FEZ: 423.0m   Krit.
-    [2-F51.2] Transport-Umlauf #51          FAZ: 423.0m   FEZ: 463.0m   Krit.
+    [2-F51.2] Transport-Umlauf #51          FAZ: 423.0m   FEZ: 463.0m   
     [2-F53.1] Beladen #53                   FAZ: 431.0m   FEZ: 439.0m   Krit.
-    [2-F53.2] Transport-Umlauf #53          FAZ: 439.0m   FEZ: 479.0m   Krit.
+    [2-F53.2] Transport-Umlauf #53          FAZ: 439.0m   FEZ: 479.0m   
     [2-F55.1] Beladen #55                   FAZ: 447.0m   FEZ: 455.0m   Krit.
-    [2-F55.2] Transport-Umlauf #55          FAZ: 455.0m   FEZ: 495.0m   Krit.
+    [2-F55.2] Transport-Umlauf #55          FAZ: 455.0m   FEZ: 495.0m   
     [2-F57.1] Beladen #57                   FAZ: 463.0m   FEZ: 471.0m   Krit.
-    [2-F57.2] Transport-Umlauf #57          FAZ: 471.0m   FEZ: 511.0m   Krit.
+    [2-F57.2] Transport-Umlauf #57          FAZ: 471.0m   FEZ: 511.0m   
     [2-F59.1] Beladen #59                   FAZ: 479.0m   FEZ: 487.0m   Krit.
-    [2-F59.2] Transport-Umlauf #59          FAZ: 487.0m   FEZ: 527.0m   Krit.
+    [2-F59.2] Transport-Umlauf #59          FAZ: 487.0m   FEZ: 527.0m   
     [2-F61.1] Beladen #61                   FAZ: 495.0m   FEZ: 503.0m   Krit.
-    [2-F61.2] Transport-Umlauf #61          FAZ: 503.0m   FEZ: 543.0m   Krit.
+    [2-F61.2] Transport-Umlauf #61          FAZ: 503.0m   FEZ: 543.0m   
     [2-F63.1] Beladen #63                   FAZ: 511.0m   FEZ: 519.0m   Krit.
-    [2-F63.2] Transport-Umlauf #63          FAZ: 519.0m   FEZ: 559.0m   Krit.
+    [2-F63.2] Transport-Umlauf #63          FAZ: 519.0m   FEZ: 559.0m   
     [2-F65.1] Beladen #65                   FAZ: 527.0m   FEZ: 535.0m   Krit.
-    [2-F65.2] Transport-Umlauf #65          FAZ: 535.0m   FEZ: 575.0m   Krit.
+    [2-F65.2] Transport-Umlauf #65          FAZ: 535.0m   FEZ: 575.0m   
     [2-F67.1] Beladen #67                   FAZ: 543.0m   FEZ: 551.0m   Krit.
-    [2-F67.2] Transport-Umlauf #67          FAZ: 551.0m   FEZ: 591.0m   Krit.
+    [2-F67.2] Transport-Umlauf #67          FAZ: 551.0m   FEZ: 591.0m   
     [2-F69.1] Beladen #69                   FAZ: 559.0m   FEZ: 567.0m   Krit.
-    [2-F69.2] Transport-Umlauf #69          FAZ: 567.0m   FEZ: 607.0m   Krit.
+    [2-F69.2] Transport-Umlauf #69          FAZ: 567.0m   FEZ: 607.0m   
     [2-F71.1] Beladen #71                   FAZ: 575.0m   FEZ: 583.0m   Krit.
-    [2-F71.2] Transport-Umlauf #71          FAZ: 583.0m   FEZ: 623.0m   Krit.
+    [2-F71.2] Transport-Umlauf #71          FAZ: 583.0m   FEZ: 623.0m   
     [2-F73.1] Beladen #73                   FAZ: 591.0m   FEZ: 599.0m   Krit.
-    [2-F73.2] Transport-Umlauf #73          FAZ: 599.0m   FEZ: 639.0m   Krit.
+    [2-F73.2] Transport-Umlauf #73          FAZ: 599.0m   FEZ: 639.0m   
     [2-F75.1] Beladen #75                   FAZ: 607.0m   FEZ: 615.0m   Krit.
-    [2-F75.2] Transport-Umlauf #75          FAZ: 615.0m   FEZ: 655.0m   Krit.
+    [2-F75.2] Transport-Umlauf #75          FAZ: 615.0m   FEZ: 655.0m   
     [2-F77.1] Beladen #77                   FAZ: 623.0m   FEZ: 631.0m   Krit.
-    [2-F77.2] Transport-Umlauf #77          FAZ: 631.0m   FEZ: 671.0m   Krit.
+    [2-F77.2] Transport-Umlauf #77          FAZ: 631.0m   FEZ: 671.0m   
     [2-F79.1] Beladen #79                   FAZ: 639.0m   FEZ: 647.0m   Krit.
-    [2-F79.2] Transport-Umlauf #79          FAZ: 647.0m   FEZ: 687.0m   Krit.
+    [2-F79.2] Transport-Umlauf #79          FAZ: 647.0m   FEZ: 687.0m   
     [2-F81.1] Beladen #81                   FAZ: 655.0m   FEZ: 663.0m   Krit.
-    [2-F81.2] Transport-Umlauf #81          FAZ: 663.0m   FEZ: 703.0m   Krit.
+    [2-F81.2] Transport-Umlauf #81          FAZ: 663.0m   FEZ: 703.0m   
     [2-F83.1] Beladen #83                   FAZ: 671.0m   FEZ: 679.0m   Krit.
-    [2-F83.2] Transport-Umlauf #83          FAZ: 679.0m   FEZ: 719.0m   Krit.
+    [2-F83.2] Transport-Umlauf #83          FAZ: 679.0m   FEZ: 719.0m   
 
   LKW-Fahrer Heinz          [1, 2-F2.1, 2-F2.2, 2-F4.1, 2-F4.2, 2-F6.1, 2-F6.2, 2-F8.1 (+77)]
     [1] Initialisierung und Bereitst  FAZ: 0.0m     FEZ: 15.0m    Krit.
     [2-F2.1] Beladen #2                    FAZ: 23.0m    FEZ: 31.0m    Krit.
-    [2-F2.2] Transport-Umlauf #2           FAZ: 31.0m    FEZ: 71.0m    Krit.
+    [2-F2.2] Transport-Umlauf #2           FAZ: 31.0m    FEZ: 71.0m    
     [2-F4.1] Beladen #4                    FAZ: 39.0m    FEZ: 47.0m    Krit.
-    [2-F4.2] Transport-Umlauf #4           FAZ: 47.0m    FEZ: 87.0m    Krit.
+    [2-F4.2] Transport-Umlauf #4           FAZ: 47.0m    FEZ: 87.0m    
     [2-F6.1] Beladen #6                    FAZ: 55.0m    FEZ: 63.0m    Krit.
-    [2-F6.2] Transport-Umlauf #6           FAZ: 63.0m    FEZ: 103.0m   Krit.
+    [2-F6.2] Transport-Umlauf #6           FAZ: 63.0m    FEZ: 103.0m   
     [2-F8.1] Beladen #8                    FAZ: 71.0m    FEZ: 79.0m    Krit.
-    [2-F8.2] Transport-Umlauf #8           FAZ: 79.0m    FEZ: 119.0m   Krit.
+    [2-F8.2] Transport-Umlauf #8           FAZ: 79.0m    FEZ: 119.0m   
     [2-F10.1] Beladen #10                   FAZ: 87.0m    FEZ: 95.0m    Krit.
-    [2-F10.2] Transport-Umlauf #10          FAZ: 95.0m    FEZ: 135.0m   Krit.
+    [2-F10.2] Transport-Umlauf #10          FAZ: 95.0m    FEZ: 135.0m   
     [2-F12.1] Beladen #12                   FAZ: 103.0m   FEZ: 111.0m   Krit.
-    [2-F12.2] Transport-Umlauf #12          FAZ: 111.0m   FEZ: 151.0m   Krit.
+    [2-F12.2] Transport-Umlauf #12          FAZ: 111.0m   FEZ: 151.0m   
     [2-F14.1] Beladen #14                   FAZ: 119.0m   FEZ: 127.0m   Krit.
-    [2-F14.2] Transport-Umlauf #14          FAZ: 127.0m   FEZ: 167.0m   Krit.
+    [2-F14.2] Transport-Umlauf #14          FAZ: 127.0m   FEZ: 167.0m   
     [2-F16.1] Beladen #16                   FAZ: 135.0m   FEZ: 143.0m   Krit.
-    [2-F16.2] Transport-Umlauf #16          FAZ: 143.0m   FEZ: 183.0m   Krit.
+    [2-F16.2] Transport-Umlauf #16          FAZ: 143.0m   FEZ: 183.0m   
     [2-F18.1] Beladen #18                   FAZ: 151.0m   FEZ: 159.0m   Krit.
-    [2-F18.2] Transport-Umlauf #18          FAZ: 159.0m   FEZ: 199.0m   Krit.
+    [2-F18.2] Transport-Umlauf #18          FAZ: 159.0m   FEZ: 199.0m   
     [2-F20.1] Beladen #20                   FAZ: 167.0m   FEZ: 175.0m   Krit.
-    [2-F20.2] Transport-Umlauf #20          FAZ: 175.0m   FEZ: 215.0m   Krit.
+    [2-F20.2] Transport-Umlauf #20          FAZ: 175.0m   FEZ: 215.0m   
     [2-F22.1] Beladen #22                   FAZ: 183.0m   FEZ: 191.0m   Krit.
-    [2-F22.2] Transport-Umlauf #22          FAZ: 191.0m   FEZ: 231.0m   Krit.
+    [2-F22.2] Transport-Umlauf #22          FAZ: 191.0m   FEZ: 231.0m   
     [2-F24.1] Beladen #24                   FAZ: 199.0m   FEZ: 207.0m   Krit.
-    [2-F24.2] Transport-Umlauf #24          FAZ: 207.0m   FEZ: 247.0m   Krit.
+    [2-F24.2] Transport-Umlauf #24          FAZ: 207.0m   FEZ: 247.0m   
     [2-F26.1] Beladen #26                   FAZ: 215.0m   FEZ: 223.0m   Krit.
-    [2-F26.2] Transport-Umlauf #26          FAZ: 223.0m   FEZ: 263.0m   Krit.
+    [2-F26.2] Transport-Umlauf #26          FAZ: 223.0m   FEZ: 263.0m   
     [2-F28.1] Beladen #28                   FAZ: 231.0m   FEZ: 239.0m   Krit.
-    [2-F28.2] Transport-Umlauf #28          FAZ: 239.0m   FEZ: 279.0m   Krit.
+    [2-F28.2] Transport-Umlauf #28          FAZ: 239.0m   FEZ: 279.0m   
     [2-F30.1] Beladen #30                   FAZ: 247.0m   FEZ: 255.0m   Krit.
-    [2-F30.2] Transport-Umlauf #30          FAZ: 255.0m   FEZ: 295.0m   Krit.
+    [2-F30.2] Transport-Umlauf #30          FAZ: 255.0m   FEZ: 295.0m   
     [2-F32.1] Beladen #32                   FAZ: 263.0m   FEZ: 271.0m   Krit.
-    [2-F32.2] Transport-Umlauf #32          FAZ: 271.0m   FEZ: 311.0m   Krit.
+    [2-F32.2] Transport-Umlauf #32          FAZ: 271.0m   FEZ: 311.0m   
     [2-F34.1] Beladen #34                   FAZ: 279.0m   FEZ: 287.0m   Krit.
-    [2-F34.2] Transport-Umlauf #34          FAZ: 287.0m   FEZ: 327.0m   Krit.
+    [2-F34.2] Transport-Umlauf #34          FAZ: 287.0m   FEZ: 327.0m   
     [2-F36.1] Beladen #36                   FAZ: 295.0m   FEZ: 303.0m   Krit.
-    [2-F36.2] Transport-Umlauf #36          FAZ: 303.0m   FEZ: 343.0m   Krit.
+    [2-F36.2] Transport-Umlauf #36          FAZ: 303.0m   FEZ: 343.0m   
     [2-F38.1] Beladen #38                   FAZ: 311.0m   FEZ: 319.0m   Krit.
-    [2-F38.2] Transport-Umlauf #38          FAZ: 319.0m   FEZ: 359.0m   Krit.
+    [2-F38.2] Transport-Umlauf #38          FAZ: 319.0m   FEZ: 359.0m   
     [2-F40.1] Beladen #40                   FAZ: 327.0m   FEZ: 335.0m   Krit.
-    [2-F40.2] Transport-Umlauf #40          FAZ: 335.0m   FEZ: 375.0m   Krit.
+    [2-F40.2] Transport-Umlauf #40          FAZ: 335.0m   FEZ: 375.0m   
     [2-F42.1] Beladen #42                   FAZ: 343.0m   FEZ: 351.0m   Krit.
-    [2-F42.2] Transport-Umlauf #42          FAZ: 351.0m   FEZ: 391.0m   Krit.
+    [2-F42.2] Transport-Umlauf #42          FAZ: 351.0m   FEZ: 391.0m   
     [2-F44.1] Beladen #44                   FAZ: 359.0m   FEZ: 367.0m   Krit.
-    [2-F44.2] Transport-Umlauf #44          FAZ: 367.0m   FEZ: 407.0m   Krit.
+    [2-F44.2] Transport-Umlauf #44          FAZ: 367.0m   FEZ: 407.0m   
     [2-F46.1] Beladen #46                   FAZ: 375.0m   FEZ: 383.0m   Krit.
-    [2-F46.2] Transport-Umlauf #46          FAZ: 383.0m   FEZ: 423.0m   Krit.
+    [2-F46.2] Transport-Umlauf #46          FAZ: 383.0m   FEZ: 423.0m   
     [2-F48.1] Beladen #48                   FAZ: 391.0m   FEZ: 399.0m   Krit.
-    [2-F48.2] Transport-Umlauf #48          FAZ: 399.0m   FEZ: 439.0m   Krit.
+    [2-F48.2] Transport-Umlauf #48          FAZ: 399.0m   FEZ: 439.0m   
     [2-F50.1] Beladen #50                   FAZ: 407.0m   FEZ: 415.0m   Krit.
-    [2-F50.2] Transport-Umlauf #50          FAZ: 415.0m   FEZ: 455.0m   Krit.
+    [2-F50.2] Transport-Umlauf #50          FAZ: 415.0m   FEZ: 455.0m   
     [2-F52.1] Beladen #52                   FAZ: 423.0m   FEZ: 431.0m   Krit.
-    [2-F52.2] Transport-Umlauf #52          FAZ: 431.0m   FEZ: 471.0m   Krit.
+    [2-F52.2] Transport-Umlauf #52          FAZ: 431.0m   FEZ: 471.0m   
     [2-F54.1] Beladen #54                   FAZ: 439.0m   FEZ: 447.0m   Krit.
-    [2-F54.2] Transport-Umlauf #54          FAZ: 447.0m   FEZ: 487.0m   Krit.
+    [2-F54.2] Transport-Umlauf #54          FAZ: 447.0m   FEZ: 487.0m   
     [2-F56.1] Beladen #56                   FAZ: 455.0m   FEZ: 463.0m   Krit.
-    [2-F56.2] Transport-Umlauf #56          FAZ: 463.0m   FEZ: 503.0m   Krit.
+    [2-F56.2] Transport-Umlauf #56          FAZ: 463.0m   FEZ: 503.0m   
     [2-F58.1] Beladen #58                   FAZ: 471.0m   FEZ: 479.0m   Krit.
-    [2-F58.2] Transport-Umlauf #58          FAZ: 479.0m   FEZ: 519.0m   Krit.
+    [2-F58.2] Transport-Umlauf #58          FAZ: 479.0m   FEZ: 519.0m   
     [2-F60.1] Beladen #60                   FAZ: 487.0m   FEZ: 495.0m   Krit.
-    [2-F60.2] Transport-Umlauf #60          FAZ: 495.0m   FEZ: 535.0m   Krit.
+    [2-F60.2] Transport-Umlauf #60          FAZ: 495.0m   FEZ: 535.0m   
     [2-F62.1] Beladen #62                   FAZ: 503.0m   FEZ: 511.0m   Krit.
-    [2-F62.2] Transport-Umlauf #62          FAZ: 511.0m   FEZ: 551.0m   Krit.
+    [2-F62.2] Transport-Umlauf #62          FAZ: 511.0m   FEZ: 551.0m   
     [2-F64.1] Beladen #64                   FAZ: 519.0m   FEZ: 527.0m   Krit.
-    [2-F64.2] Transport-Umlauf #64          FAZ: 527.0m   FEZ: 567.0m   Krit.
+    [2-F64.2] Transport-Umlauf #64          FAZ: 527.0m   FEZ: 567.0m   
     [2-F66.1] Beladen #66                   FAZ: 535.0m   FEZ: 543.0m   Krit.
-    [2-F66.2] Transport-Umlauf #66          FAZ: 543.0m   FEZ: 583.0m   Krit.
+    [2-F66.2] Transport-Umlauf #66          FAZ: 543.0m   FEZ: 583.0m   
     [2-F68.1] Beladen #68                   FAZ: 551.0m   FEZ: 559.0m   Krit.
-    [2-F68.2] Transport-Umlauf #68          FAZ: 559.0m   FEZ: 599.0m   Krit.
+    [2-F68.2] Transport-Umlauf #68          FAZ: 559.0m   FEZ: 599.0m   
     [2-F70.1] Beladen #70                   FAZ: 567.0m   FEZ: 575.0m   Krit.
-    [2-F70.2] Transport-Umlauf #70          FAZ: 575.0m   FEZ: 615.0m   Krit.
+    [2-F70.2] Transport-Umlauf #70          FAZ: 575.0m   FEZ: 615.0m   
     [2-F72.1] Beladen #72                   FAZ: 583.0m   FEZ: 591.0m   Krit.
-    [2-F72.2] Transport-Umlauf #72          FAZ: 591.0m   FEZ: 631.0m   Krit.
+    [2-F72.2] Transport-Umlauf #72          FAZ: 591.0m   FEZ: 631.0m   
     [2-F74.1] Beladen #74                   FAZ: 599.0m   FEZ: 607.0m   Krit.
-    [2-F74.2] Transport-Umlauf #74          FAZ: 607.0m   FEZ: 647.0m   Krit.
+    [2-F74.2] Transport-Umlauf #74          FAZ: 607.0m   FEZ: 647.0m   
     [2-F76.1] Beladen #76                   FAZ: 615.0m   FEZ: 623.0m   Krit.
-    [2-F76.2] Transport-Umlauf #76          FAZ: 623.0m   FEZ: 663.0m   Krit.
+    [2-F76.2] Transport-Umlauf #76          FAZ: 623.0m   FEZ: 663.0m   
     [2-F78.1] Beladen #78                   FAZ: 631.0m   FEZ: 639.0m   Krit.
-    [2-F78.2] Transport-Umlauf #78          FAZ: 639.0m   FEZ: 679.0m   Krit.
+    [2-F78.2] Transport-Umlauf #78          FAZ: 639.0m   FEZ: 679.0m   
     [2-F80.1] Beladen #80                   FAZ: 647.0m   FEZ: 655.0m   Krit.
-    [2-F80.2] Transport-Umlauf #80          FAZ: 655.0m   FEZ: 695.0m   Krit.
+    [2-F80.2] Transport-Umlauf #80          FAZ: 655.0m   FEZ: 695.0m   
     [2-F82.1] Beladen #82                   FAZ: 663.0m   FEZ: 671.0m   Krit.
-    [2-F82.2] Transport-Umlauf #82          FAZ: 671.0m   FEZ: 711.0m   Krit.
+    [2-F82.2] Transport-Umlauf #82          FAZ: 671.0m   FEZ: 711.0m   
     [2-F84.1] Beladen #84                   FAZ: 679.0m   FEZ: 687.0m   Krit.
     [2-F84.2] Transport-Umlauf #84          FAZ: 687.0m   FEZ: 727.0m   Krit.
 

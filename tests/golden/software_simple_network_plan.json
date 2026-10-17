@@ -432,6 +432,8 @@
     "total_person_costs": 13960.0,
     "total_machine_costs": 0,
     "total_provisioning_costs": 0,
+    "total_fixed_costs": 0,
+    "fixed_costs": [],
     "total_costs": 13960.0
   },
   "settings": {

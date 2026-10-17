@@ -288,6 +288,11 @@ def _generate_cost_overview(result: CPMResult, heading: str,
             f"  {'Bereitstellungskosten:':<{pad}} "
             f"{costs.total_provisioning_costs:>{col_prov}.2f} {'':>{col_labor}} {'':>{col_total}}"
         )
+    if costs.total_fixed_costs > 0:
+        lines.append(
+            f"  {'Feste Task-Kosten:':<{pad}} "
+            f"{'':>{col_prov}} {'':>{col_labor}} {costs.total_fixed_costs:>{col_total}.2f}"
+        )
     lines.append("  " + _SEP_THIN)
     lines.append(
         f"  {'GESAMTKOSTEN:':<{pad}} "

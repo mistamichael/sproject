@@ -30,9 +30,12 @@ NETZPLAN TABELLE
 
 ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
 ----------------------------------------------------------------------
-1       Erdarbeiten & Freilegung       1.0      0.0      1.0      0.0      1.0      0.0      0.0      2                    JA
-2       Kellerisolierung (Perimeter)   0.8      1.0      1.8      1.0      1.8      0.0      0.0      3                    JA
-3       Holzständerwerk & Holzfaser... 2.0      1.8      3.8      1.8      3.8      0.0      0.0      4                    JA
+1       Erdarbeiten & Freilegung       1.0      0.0      1.0      0.0      1.0      0.0      0.0      2, 1-BRK-P_ERD       JA
+1-BRK-P_ERD Pause: Thomas Tiefbau (Lenk... 0.1      1.0      1.1      1.0      1.1      0.0      0.0                           JA
+2       Kellerisolierung (Perimeter)   0.8      1.0      1.8      1.0      1.8      0.0      0.0      3, 2-BRK-P_ERD       JA
+2-BRK-P_ERD Pause: Thomas Tiefbau (Vors... 0.1      1.8      1.8      1.8      1.8      0.0      0.0                           JA
+3       Holzständerwerk & Holzfaser... 2.0      1.8      3.8      1.8      3.8      0.0      0.0      4, 3-BRK-P_ZIM       JA
+3-BRK-P_ZIM Pause: Stefan Schnitt (Lenk... 0.1      3.8      3.8      3.8      3.8      0.0      0.0                           JA
 4       Zellulose Einblasdämmung       0.5      3.8      4.2      3.8      4.2      0.0      0.0      5                    JA
 5       Verfüllen & Abschluss          0.5      4.2      4.8      4.2      4.8      0.0      0.0                           JA
 ----------------------------------------------------------------------

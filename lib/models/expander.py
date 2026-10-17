@@ -58,16 +58,17 @@ def expand_project(project: 'Project') -> 'Project':
     """
     Expandiert alle InstanceTasks und LoopTasks eines Projekts in SimpleTasks.
 
-    - Verweise auf einen InstanceTask zeigen danach auf seine letzte Instanz,
-      Verweise auf einen LoopTask auf seinen ersten Zyklus.
-    - Bei Loop-Projekten mit Personen und resting_times werden Pausen eingefügt.
+    - Verweise auf einen Instance- oder Loop-Task zeigen danach auf die erste
+      Instanz bzw. den ersten Zyklus (die Instanzen sind untereinander verkettet).
+    - Bei Projekten mit Personen und resting_times werden Pausen eingefügt.
     - Alle übrigen Projektfelder bleiben erhalten.
 
-    Gibt project unverändert zurück, wenn nichts zu expandieren ist.
+    Gibt project unverändert zurück, wenn nichts zu tun ist.
     """
     has_instances = any(isinstance(t, InstanceTask) for t in project.tasks)
     has_loops = any(isinstance(t, LoopTask) for t in project.tasks)
-    if not (has_instances or has_loops):
+    needs_breaks = bool(project.persons and project.resting_times)
+    if not (has_instances or has_loops or needs_breaks):
         return project
     if has_instances and project.order_volume is None:
         raise ValueError("order_volume muss für Cycle-Expansion gesetzt sein")
@@ -83,7 +84,7 @@ def expand_project(project: 'Project') -> 'Project':
         if isinstance(task, InstanceTask):
             parts = expand_instance_task(task, order_volume, project.tasks)
             if parts:
-                redirect[task.id] = parts[-1].id
+                redirect[task.id] = parts[0].id
         elif isinstance(task, LoopTask):
             parts = expand_loop_task(task, total_volume, project.resources or [])
             if parts:
@@ -96,7 +97,7 @@ def expand_project(project: 'Project') -> 'Project':
         for field in SUCCESSOR_FIELDS.values():
             setattr(task, field, [redirect.get(dep, dep) for dep in getattr(task, field)])
 
-    if has_loops and project.persons and project.resting_times:
+    if needs_breaks:
         from .rest_breaks import insert_rest_breaks
         expanded = insert_rest_breaks(expanded, project)
 

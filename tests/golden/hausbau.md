@@ -11,7 +11,7 @@
 - **Enddatum (geschätzt):** 2026-05-02 00:00
 - **Zeiteinheit:** days
 - **Anzahl Tasks:** 10
-- **Kritische Tasks:** 9
+- **Kritische Tasks:** 8
 
 ---
 
@@ -20,7 +20,6 @@
 Der kritische Pfad besteht aus folgenden Tasks:
 
 - **[1]** Grube ausheben (Dauer: 3.0d)
-- **[2]** Erde abtransportieren (Dauer: 4.0d)
 - **[3]** Fundament gießen (Dauer: 2.0d)
 - **[4]** Fundament trocknen (Dauer: 7.0d)
 - **[5]** Mauerwerk errichten (Dauer: 10.0d)
@@ -37,7 +36,7 @@ Der kritische Pfad besteht aus folgenden Tasks:
 graph TD
 
     N1["<b>[1] | Grube ausheben<br/>GP:0.0d | FP:-3.0d</b>"]:::critical
-    N2["<b>[2] | Erde abtransportieren<br/>GP:0.0d | FP:0.0d</b>"]:::critical
+    N2["[2] | Erde abtransportieren<br/>GP:27.0d | FP:27.0d"]
     N3["<b>[3] | Fundament gießen<br/>GP:0.0d | FP:0.0d</b>"]:::critical
     N4["<b>[4] | Fundament trocknen<br/>GP:0.0d | FP:0.0d</b>"]:::critical
     N5["<b>[5] | Mauerwerk errichten<br/>GP:0.0d | FP:-10.0d</b>"]:::critical
@@ -71,7 +70,7 @@ graph TD
 | ID | Name | Dauer | FAZ | FEZ | SAZ | SEZ | GP | FP | Krit. |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Grube ausheben | 3.0d | 0.0d | 3.0d | 0.0d | 3.0d | 0.0d | -3.0d | JA |
-| 2 | Erde abtransportieren | 4.0d | 0.0d | 4.0d | 0.0d | 4.0d | 0.0d | 0.0d | JA |
+| 2 | Erde abtransportieren | 4.0d | 0.0d | 4.0d | 27.0d | 31.0d | 27.0d | 27.0d |  |
 | 3 | Fundament gießen | 2.0d | 3.0d | 5.0d | 3.0d | 5.0d | 0.0d | 0.0d | JA |
 | 4 | Fundament trocknen | 7.0d | 5.0d | 12.0d | 5.0d | 12.0d | 0.0d | 0.0d | JA |
 | 5 | Mauerwerk errichten | 10.0d | 12.0d | 22.0d | 12.0d | 22.0d | 0.0d | -10.0d | JA |
@@ -103,7 +102,7 @@ gantt
     01.05 Tag der Arbeit :crit, 2026-05-01, 2026-05-01
     section Tasks
     [1] Grube ausheben (KRIT) :crit, 2026-04-01, 2026-04-04
-    [2] Erde abtransportieren (KRIT) :crit, 2026-04-01, 2026-04-05
+    [2] Erde abtransportieren :2026-04-01, 2026-04-05
     [3] Fundament gießen (KRIT) :crit, 2026-04-04, 2026-04-06
     [4] Fundament trocknen (KRIT) :crit, 2026-04-06, 2026-04-13
     [5] Mauerwerk errichten (KRIT) :crit, 2026-04-13, 2026-04-23

@@ -4,7 +4,7 @@
     "project_duration": "31.0d",
     "time_unit": "days",
     "num_tasks": 10,
-    "num_critical": 9,
+    "num_critical": 8,
     "project_start": "2026-04-01",
     "project_end": "2026-05-20",
   },
@@ -13,11 +13,6 @@
       "id": "1",
       "name": "Grube ausheben",
       "duration": "3.0d"
-    },
-    {
-      "id": "2",
-      "name": "Erde abtransportieren",
-      "duration": "4.0d"
     },
     {
       "id": "3",
@@ -80,19 +75,19 @@
       "id": "2",
       "name": "Erde abtransportieren",
       "duration": "4.0d",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "2026-04-01",
         "fez": "2026-04-09",
-        "saz": "2026-04-01",
-        "sez": "2026-04-09",
-        "gp": "0.0d",
-        "fp": "0.0d",
+        "saz": "2026-05-13",
+        "sez": "2026-05-20",
+        "gp": "27.0d",
+        "fp": "27.0d",
         "dates": {
           "faz_date": "2026-04-01",
           "fez_date": "2026-04-09",
-          "saz_date": "2026-04-01",
-          "sez_date": "2026-04-09"
+          "saz_date": "2026-05-13",
+          "sez_date": "2026-05-20"
         }
       }
     },
@@ -283,8 +278,8 @@
         "calendar_end_date": "2026-04-08T00:00:00",
         "working_days": 4.0,
         "calendar_days": 8,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 27.0
       },
       "3": {
         "id": "3",

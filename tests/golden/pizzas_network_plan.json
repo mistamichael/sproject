@@ -4,7 +4,7 @@
     "project_duration": "100.0m",
     "time_unit": "minutes",
     "num_tasks": 51,
-    "num_critical": 51,
+    "num_critical": 15,
     "project_start": "2026-03-03",
     "project_end": "2026-03-03",
   },
@@ -20,24 +20,9 @@
       "duration": "3.0m"
     },
     {
-      "id": "2-P1.2",
-      "name": "Pizza in den Ofen #1",
-      "duration": "0.5m"
-    },
-    {
       "id": "2-P2.1",
       "name": "Pizza formen & belegen #2",
       "duration": "3.0m"
-    },
-    {
-      "id": "2-P1.3",
-      "name": "Pizza backen #1",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P2.2",
-      "name": "Pizza in den Ofen #2",
-      "duration": "0.5m"
     },
     {
       "id": "2-P3.1",
@@ -45,39 +30,9 @@
       "duration": "3.0m"
     },
     {
-      "id": "2-P2.3",
-      "name": "Pizza backen #2",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P3.2",
-      "name": "Pizza in den Ofen #3",
-      "duration": "0.5m"
-    },
-    {
       "id": "2-P4.1",
       "name": "Pizza formen & belegen #4",
       "duration": "3.0m"
-    },
-    {
-      "id": "2-P3.3",
-      "name": "Pizza backen #3",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P1.4",
-      "name": "Pizza aus dem Ofen holen #1",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P1.5",
-      "name": "Pizza verkaufen #1",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P4.2",
-      "name": "Pizza in den Ofen #4",
-      "duration": "0.5m"
     },
     {
       "id": "2-P5.1",
@@ -85,49 +40,9 @@
       "duration": "3.0m"
     },
     {
-      "id": "2-P4.3",
-      "name": "Pizza backen #4",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P2.4",
-      "name": "Pizza aus dem Ofen holen #2",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P2.5",
-      "name": "Pizza verkaufen #2",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P5.2",
-      "name": "Pizza in den Ofen #5",
-      "duration": "0.5m"
-    },
-    {
       "id": "2-P6.1",
       "name": "Pizza formen & belegen #6",
       "duration": "3.0m"
-    },
-    {
-      "id": "2-P5.3",
-      "name": "Pizza backen #5",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P3.4",
-      "name": "Pizza aus dem Ofen holen #3",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P3.5",
-      "name": "Pizza verkaufen #3",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P6.2",
-      "name": "Pizza in den Ofen #6",
-      "duration": "0.5m"
     },
     {
       "id": "2-P7.1",
@@ -135,49 +50,9 @@
       "duration": "3.0m"
     },
     {
-      "id": "2-P6.3",
-      "name": "Pizza backen #6",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P4.4",
-      "name": "Pizza aus dem Ofen holen #4",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P4.5",
-      "name": "Pizza verkaufen #4",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P7.2",
-      "name": "Pizza in den Ofen #7",
-      "duration": "0.5m"
-    },
-    {
       "id": "2-P8.1",
       "name": "Pizza formen & belegen #8",
       "duration": "3.0m"
-    },
-    {
-      "id": "2-P7.3",
-      "name": "Pizza backen #7",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P5.4",
-      "name": "Pizza aus dem Ofen holen #5",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P5.5",
-      "name": "Pizza verkaufen #5",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P8.2",
-      "name": "Pizza in den Ofen #8",
-      "duration": "0.5m"
     },
     {
       "id": "2-P9.1",
@@ -185,44 +60,9 @@
       "duration": "3.0m"
     },
     {
-      "id": "2-P8.3",
-      "name": "Pizza backen #8",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P6.4",
-      "name": "Pizza aus dem Ofen holen #6",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P6.5",
-      "name": "Pizza verkaufen #6",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P9.2",
-      "name": "Pizza in den Ofen #9",
-      "duration": "0.5m"
-    },
-    {
       "id": "2-P10.1",
       "name": "Pizza formen & belegen #10",
       "duration": "3.0m"
-    },
-    {
-      "id": "2-P9.3",
-      "name": "Pizza backen #9",
-      "duration": "7.0m"
-    },
-    {
-      "id": "2-P7.4",
-      "name": "Pizza aus dem Ofen holen #7",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P7.5",
-      "name": "Pizza verkaufen #7",
-      "duration": "2.0m"
     },
     {
       "id": "2-P10.2",
@@ -233,26 +73,6 @@
       "id": "2-P10.3",
       "name": "Pizza backen #10",
       "duration": "7.0m"
-    },
-    {
-      "id": "2-P8.4",
-      "name": "Pizza aus dem Ofen holen #8",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P8.5",
-      "name": "Pizza verkaufen #8",
-      "duration": "2.0m"
-    },
-    {
-      "id": "2-P9.4",
-      "name": "Pizza aus dem Ofen holen #9",
-      "duration": "0.5m"
-    },
-    {
-      "id": "2-P9.5",
-      "name": "Pizza verkaufen #9",
-      "duration": "2.0m"
     },
     {
       "id": "2-P10.4",
@@ -310,13 +130,13 @@
       "id": "2-P1.2",
       "name": "Pizza in den Ofen #1",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.05h",
         "fez": "1.06h",
-        "saz": "1.05h",
-        "sez": "1.06h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "27.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -330,13 +150,13 @@
       "id": "2-P1.3",
       "name": "Pizza backen #1",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.06h",
         "fez": "1.18h",
-        "saz": "1.06h",
-        "sez": "1.18h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "27.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -350,13 +170,13 @@
       "id": "2-P1.4",
       "name": "Pizza aus dem Ofen holen #1",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.18h",
         "fez": "1.18h",
-        "saz": "1.18h",
-        "sez": "1.18h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "27.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -370,14 +190,14 @@
       "id": "2-P1.5",
       "name": "Pizza verkaufen #1",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.18h",
         "fez": "1.22h",
-        "saz": "1.18h",
-        "sez": "1.22h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "27.0m",
+        "fp": "27.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -410,13 +230,13 @@
       "id": "2-P2.2",
       "name": "Pizza in den Ofen #2",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.10h",
         "fez": "1.11h",
-        "saz": "1.10h",
-        "sez": "1.11h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "24.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -430,13 +250,13 @@
       "id": "2-P2.3",
       "name": "Pizza backen #2",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.11h",
         "fez": "1.23h",
-        "saz": "1.11h",
-        "sez": "1.23h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "24.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -450,13 +270,13 @@
       "id": "2-P2.4",
       "name": "Pizza aus dem Ofen holen #2",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.23h",
         "fez": "1.23h",
-        "saz": "1.23h",
-        "sez": "1.23h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "24.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -470,14 +290,14 @@
       "id": "2-P2.5",
       "name": "Pizza verkaufen #2",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.23h",
         "fez": "1.27h",
-        "saz": "1.23h",
-        "sez": "1.27h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "24.0m",
+        "fp": "24.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -510,13 +330,13 @@
       "id": "2-P3.2",
       "name": "Pizza in den Ofen #3",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.15h",
         "fez": "1.16h",
-        "saz": "1.15h",
-        "sez": "1.16h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "21.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -530,13 +350,13 @@
       "id": "2-P3.3",
       "name": "Pizza backen #3",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.16h",
         "fez": "1.28h",
-        "saz": "1.16h",
-        "sez": "1.28h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "21.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -550,13 +370,13 @@
       "id": "2-P3.4",
       "name": "Pizza aus dem Ofen holen #3",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.28h",
         "fez": "1.28h",
-        "saz": "1.28h",
-        "sez": "1.28h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "21.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -570,14 +390,14 @@
       "id": "2-P3.5",
       "name": "Pizza verkaufen #3",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.28h",
         "fez": "1.32h",
-        "saz": "1.28h",
-        "sez": "1.32h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "21.0m",
+        "fp": "21.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -610,13 +430,13 @@
       "id": "2-P4.2",
       "name": "Pizza in den Ofen #4",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.20h",
         "fez": "1.21h",
-        "saz": "1.20h",
-        "sez": "1.21h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "18.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -630,13 +450,13 @@
       "id": "2-P4.3",
       "name": "Pizza backen #4",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.21h",
         "fez": "1.33h",
-        "saz": "1.21h",
-        "sez": "1.33h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "18.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -650,13 +470,13 @@
       "id": "2-P4.4",
       "name": "Pizza aus dem Ofen holen #4",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.33h",
         "fez": "1.33h",
-        "saz": "1.33h",
-        "sez": "1.33h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "18.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -670,14 +490,14 @@
       "id": "2-P4.5",
       "name": "Pizza verkaufen #4",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.33h",
         "fez": "1.37h",
-        "saz": "1.33h",
-        "sez": "1.37h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "18.0m",
+        "fp": "18.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -710,13 +530,13 @@
       "id": "2-P5.2",
       "name": "Pizza in den Ofen #5",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.25h",
         "fez": "1.26h",
-        "saz": "1.25h",
-        "sez": "1.26h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "15.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -730,13 +550,13 @@
       "id": "2-P5.3",
       "name": "Pizza backen #5",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.26h",
         "fez": "1.38h",
-        "saz": "1.26h",
-        "sez": "1.38h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "15.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -750,13 +570,13 @@
       "id": "2-P5.4",
       "name": "Pizza aus dem Ofen holen #5",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.38h",
         "fez": "1.38h",
-        "saz": "1.38h",
-        "sez": "1.38h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "15.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -770,14 +590,14 @@
       "id": "2-P5.5",
       "name": "Pizza verkaufen #5",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.38h",
         "fez": "1.42h",
-        "saz": "1.38h",
-        "sez": "1.42h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "15.0m",
+        "fp": "15.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -810,13 +630,13 @@
       "id": "2-P6.2",
       "name": "Pizza in den Ofen #6",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.30h",
         "fez": "1.31h",
-        "saz": "1.30h",
-        "sez": "1.31h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "12.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -830,13 +650,13 @@
       "id": "2-P6.3",
       "name": "Pizza backen #6",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.31h",
         "fez": "1.43h",
-        "saz": "1.31h",
-        "sez": "1.43h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "12.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -850,13 +670,13 @@
       "id": "2-P6.4",
       "name": "Pizza aus dem Ofen holen #6",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.43h",
         "fez": "1.43h",
-        "saz": "1.43h",
-        "sez": "1.43h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "12.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -870,14 +690,14 @@
       "id": "2-P6.5",
       "name": "Pizza verkaufen #6",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.43h",
         "fez": "1.47h",
-        "saz": "1.43h",
-        "sez": "1.47h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "12.0m",
+        "fp": "12.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -910,13 +730,13 @@
       "id": "2-P7.2",
       "name": "Pizza in den Ofen #7",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.35h",
         "fez": "1.36h",
-        "saz": "1.35h",
-        "sez": "1.36h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "9.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -930,13 +750,13 @@
       "id": "2-P7.3",
       "name": "Pizza backen #7",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.36h",
         "fez": "1.48h",
-        "saz": "1.36h",
-        "sez": "1.48h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "9.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -950,13 +770,13 @@
       "id": "2-P7.4",
       "name": "Pizza aus dem Ofen holen #7",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.48h",
         "fez": "1.48h",
-        "saz": "1.48h",
-        "sez": "1.48h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "9.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -970,14 +790,14 @@
       "id": "2-P7.5",
       "name": "Pizza verkaufen #7",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.48h",
         "fez": "1.52h",
-        "saz": "1.48h",
-        "sez": "1.52h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "9.0m",
+        "fp": "9.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -1010,13 +830,13 @@
       "id": "2-P8.2",
       "name": "Pizza in den Ofen #8",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.40h",
         "fez": "1.41h",
-        "saz": "1.40h",
-        "sez": "1.41h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "6.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -1030,13 +850,13 @@
       "id": "2-P8.3",
       "name": "Pizza backen #8",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.41h",
         "fez": "1.53h",
-        "saz": "1.41h",
-        "sez": "1.53h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "6.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -1050,13 +870,13 @@
       "id": "2-P8.4",
       "name": "Pizza aus dem Ofen holen #8",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.53h",
         "fez": "1.53h",
-        "saz": "1.53h",
-        "sez": "1.53h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "6.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -1070,14 +890,14 @@
       "id": "2-P8.5",
       "name": "Pizza verkaufen #8",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.53h",
         "fez": "1.57h",
-        "saz": "1.53h",
-        "sez": "1.57h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "6.0m",
+        "fp": "6.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -1110,13 +930,13 @@
       "id": "2-P9.2",
       "name": "Pizza in den Ofen #9",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.45h",
         "fez": "1.46h",
-        "saz": "1.45h",
-        "sez": "1.46h",
-        "gp": "0.0m",
+        "saz": "1.50h",
+        "sez": "1.51h",
+        "gp": "3.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -1130,13 +950,13 @@
       "id": "2-P9.3",
       "name": "Pizza backen #9",
       "duration": "7.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.46h",
         "fez": "1.58h",
-        "saz": "1.46h",
-        "sez": "1.58h",
-        "gp": "0.0m",
+        "saz": "1.51h",
+        "sez": "1.63h",
+        "gp": "3.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -1150,13 +970,13 @@
       "id": "2-P9.4",
       "name": "Pizza aus dem Ofen holen #9",
       "duration": "0.5m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.58h",
         "fez": "1.58h",
-        "saz": "1.58h",
-        "sez": "1.58h",
-        "gp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.63h",
+        "gp": "3.0m",
         "fp": "0.0m",
         "dates": {
           "faz_date": "2026-03-03",
@@ -1170,14 +990,14 @@
       "id": "2-P9.5",
       "name": "Pizza verkaufen #9",
       "duration": "2.0m",
-      "is_critical": true,
+      "is_critical": false,
       "cpm": {
         "faz": "1.58h",
         "fez": "1.62h",
-        "saz": "1.58h",
-        "sez": "1.62h",
-        "gp": "0.0m",
-        "fp": "0.0m",
+        "saz": "1.63h",
+        "sez": "1.67h",
+        "gp": "3.0m",
+        "fp": "3.0m",
         "dates": {
           "faz_date": "2026-03-03",
           "fez_date": "2026-03-03",
@@ -1324,8 +1144,8 @@
         "calendar_end_date": "2026-03-03T12:09:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.056
       },
       "2-P1.3": {
         "id": "2-P1.3",
@@ -1335,8 +1155,8 @@
         "calendar_end_date": "2026-03-03T12:10:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.056
       },
       "2-P1.4": {
         "id": "2-P1.4",
@@ -1346,8 +1166,8 @@
         "calendar_end_date": "2026-03-03T12:31:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.056
       },
       "2-P1.5": {
         "id": "2-P1.5",
@@ -1357,8 +1177,8 @@
         "calendar_end_date": "2026-03-03T12:33:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.056
       },
       "2-P2.1": {
         "id": "2-P2.1",
@@ -1379,8 +1199,8 @@
         "calendar_end_date": "2026-03-03T12:18:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.05
       },
       "2-P2.3": {
         "id": "2-P2.3",
@@ -1390,8 +1210,8 @@
         "calendar_end_date": "2026-03-03T12:19:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.05
       },
       "2-P2.4": {
         "id": "2-P2.4",
@@ -1401,8 +1221,8 @@
         "calendar_end_date": "2026-03-03T12:40:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.05
       },
       "2-P2.5": {
         "id": "2-P2.5",
@@ -1412,8 +1232,8 @@
         "calendar_end_date": "2026-03-03T12:42:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.05
       },
       "2-P3.1": {
         "id": "2-P3.1",
@@ -1434,8 +1254,8 @@
         "calendar_end_date": "2026-03-03T12:27:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.044
       },
       "2-P3.3": {
         "id": "2-P3.3",
@@ -1445,8 +1265,8 @@
         "calendar_end_date": "2026-03-03T12:28:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.044
       },
       "2-P3.4": {
         "id": "2-P3.4",
@@ -1456,8 +1276,8 @@
         "calendar_end_date": "2026-03-03T12:49:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.044
       },
       "2-P3.5": {
         "id": "2-P3.5",
@@ -1467,8 +1287,8 @@
         "calendar_end_date": "2026-03-03T12:51:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.044
       },
       "2-P4.1": {
         "id": "2-P4.1",
@@ -1489,8 +1309,8 @@
         "calendar_end_date": "2026-03-03T12:36:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.038
       },
       "2-P4.3": {
         "id": "2-P4.3",
@@ -1500,8 +1320,8 @@
         "calendar_end_date": "2026-03-03T12:37:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.038
       },
       "2-P4.4": {
         "id": "2-P4.4",
@@ -1511,8 +1331,8 @@
         "calendar_end_date": "2026-03-03T12:58:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.038
       },
       "2-P4.5": {
         "id": "2-P4.5",
@@ -1522,8 +1342,8 @@
         "calendar_end_date": "2026-03-03T13:00:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.038
       },
       "2-P5.1": {
         "id": "2-P5.1",
@@ -1544,8 +1364,8 @@
         "calendar_end_date": "2026-03-03T12:45:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.031
       },
       "2-P5.3": {
         "id": "2-P5.3",
@@ -1555,8 +1375,8 @@
         "calendar_end_date": "2026-03-03T12:46:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.031
       },
       "2-P5.4": {
         "id": "2-P5.4",
@@ -1566,8 +1386,8 @@
         "calendar_end_date": "2026-03-03T13:07:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.031
       },
       "2-P5.5": {
         "id": "2-P5.5",
@@ -1577,8 +1397,8 @@
         "calendar_end_date": "2026-03-03T13:09:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.031
       },
       "2-P6.1": {
         "id": "2-P6.1",
@@ -1599,8 +1419,8 @@
         "calendar_end_date": "2026-03-03T12:54:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.025
       },
       "2-P6.3": {
         "id": "2-P6.3",
@@ -1610,8 +1430,8 @@
         "calendar_end_date": "2026-03-03T12:55:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.025
       },
       "2-P6.4": {
         "id": "2-P6.4",
@@ -1621,8 +1441,8 @@
         "calendar_end_date": "2026-03-03T13:16:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.025
       },
       "2-P6.5": {
         "id": "2-P6.5",
@@ -1632,8 +1452,8 @@
         "calendar_end_date": "2026-03-03T13:18:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.025
       },
       "2-P7.1": {
         "id": "2-P7.1",
@@ -1654,8 +1474,8 @@
         "calendar_end_date": "2026-03-03T13:03:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.019
       },
       "2-P7.3": {
         "id": "2-P7.3",
@@ -1665,8 +1485,8 @@
         "calendar_end_date": "2026-03-03T13:04:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.019
       },
       "2-P7.4": {
         "id": "2-P7.4",
@@ -1676,8 +1496,8 @@
         "calendar_end_date": "2026-03-03T13:25:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.019
       },
       "2-P7.5": {
         "id": "2-P7.5",
@@ -1687,8 +1507,8 @@
         "calendar_end_date": "2026-03-03T13:27:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.019
       },
       "2-P8.1": {
         "id": "2-P8.1",
@@ -1709,8 +1529,8 @@
         "calendar_end_date": "2026-03-03T13:12:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.013
       },
       "2-P8.3": {
         "id": "2-P8.3",
@@ -1720,8 +1540,8 @@
         "calendar_end_date": "2026-03-03T13:13:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.013
       },
       "2-P8.4": {
         "id": "2-P8.4",
@@ -1731,8 +1551,8 @@
         "calendar_end_date": "2026-03-03T13:34:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.013
       },
       "2-P8.5": {
         "id": "2-P8.5",
@@ -1742,8 +1562,8 @@
         "calendar_end_date": "2026-03-03T13:36:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.013
       },
       "2-P9.1": {
         "id": "2-P9.1",
@@ -1764,8 +1584,8 @@
         "calendar_end_date": "2026-03-03T13:21:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.006
       },
       "2-P9.3": {
         "id": "2-P9.3",
@@ -1775,8 +1595,8 @@
         "calendar_end_date": "2026-03-03T13:22:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.006
       },
       "2-P9.4": {
         "id": "2-P9.4",
@@ -1786,8 +1606,8 @@
         "calendar_end_date": "2026-03-03T13:43:30",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.006
       },
       "2-P9.5": {
         "id": "2-P9.5",
@@ -1797,8 +1617,8 @@
         "calendar_end_date": "2026-03-03T13:45:00",
         "working_days": 1.0,
         "calendar_days": 1,
-        "is_critical": true,
-        "puffer_days": 0.0
+        "is_critical": false,
+        "puffer_days": 0.006
       },
       "2-P10.1": {
         "id": "2-P10.1",
@@ -1984,6 +1804,8 @@
     "total_person_costs": 86.67,
     "total_machine_costs": 0,
     "total_provisioning_costs": 0,
+    "total_fixed_costs": 0,
+    "fixed_costs": [],
     "total_costs": 86.67
   },
   "settings": {

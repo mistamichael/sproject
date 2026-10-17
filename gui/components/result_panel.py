@@ -149,7 +149,8 @@ def _costs(schedule: Schedule) -> None:
         sum_color = _COLORS.get("result_duration", (100, 180, 255))
         for key, amount in [("person_costs", costs.total_person_costs),
                             ("machine_costs", costs.total_machine_costs),
-                            ("provisioning_costs", costs.total_provisioning_costs)]:
+                            ("provisioning_costs", costs.total_provisioning_costs),
+                            ("fixed_costs", costs.total_fixed_costs)]:
             if amount > 0:
                 dpg.add_text(f"{t('result.cost.' + key)}: {amount:.2f} €", color=sum_color)
         dpg.add_text(f"{t('result.cost.total_costs')}: {costs.total_costs:.2f} €",
