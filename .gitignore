@@ -165,3 +165,7 @@ cython_debug/
 /data
 /work
 /log
+/results
+
+# Versehentliche Windows-Umleitung "> nul" in Git Bash
+nul
