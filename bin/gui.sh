@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Startet den sproject GUI-Editor (NiceGUI) und öffnet den Browser
+# Startet den sproject GUI-Editor (Dear PyGui)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
