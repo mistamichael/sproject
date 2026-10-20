@@ -103,11 +103,20 @@ def _swatch_tag(input_tag: str) -> str:
     return f"{input_tag}_swatch"
 
 
+def _current_rgb(input_tag: str) -> Tuple[int, int, int]:
+    """Farbe aus dem Hex-Feld, sonst die des Farbfelds (z. B. Palettenfarbe), sonst Grau."""
+    rgb = _parse_hex(dpg.get_value(input_tag))
+    if rgb is None and dpg.does_item_exist(_swatch_tag(input_tag)):
+        r, g, b = (int(round(v)) for v in dpg.get_value(_swatch_tag(input_tag))[:3])
+        rgb = (r, g, b)
+    return rgb or _SWATCH_FALLBACK
+
+
 def open_color_dialog(input_tag: str, on_change: Optional[Callable[[], None]] = None) -> None:
     """Modaler Farbwähler; OK schreibt die Farbe als Hex (ohne #) ins Textfeld input_tag."""
     if dpg.does_item_exist(_COLOR_DIALOG):
         dpg.delete_item(_COLOR_DIALOG)
-    rgb = _parse_hex(dpg.get_value(input_tag)) or _SWATCH_FALLBACK
+    rgb = _current_rgb(input_tag)
 
     def _confirm() -> None:
         r, g, b = (int(round(v)) for v in dpg.get_value(f"{_COLOR_DIALOG}_picker")[:3])
@@ -127,6 +136,75 @@ def open_color_dialog(input_tag: str, on_change: Optional[Callable[[], None]] = 
             dpg.add_button(label=t("button.ok"), width=80, callback=_confirm)
             dpg.add_button(label=t("button.cancel"), width=80,
                            callback=lambda: dpg.delete_item(_COLOR_DIALOG))
+
+
+# Doppelklick-Handler je on_change-Callback; wird neu angelegt, wenn der DPG-Kontext neu ist
+_color_handlers: Dict[Any, Union[int, str]] = {}
+
+
+def _color_dblclick_handler(on_change: Optional[Callable[[], None]]) -> Union[int, str]:
+    registry = _color_handlers.get(on_change)
+    if registry is None or not dpg.does_item_exist(registry):
+        registry = dpg.add_item_handler_registry()
+        dpg.add_item_double_clicked_handler(
+            parent=registry,
+            callback=lambda s, a: open_color_dialog(dpg.get_item_alias(a[1]) or a[1], on_change))
+        _color_handlers[on_change] = registry
+    return registry
+
+
+_INLINE_PICKER_HEIGHT = 210
+
+
+def _root_window(item: Union[int, str]) -> Union[int, str]:
+    while (parent := dpg.get_item_parent(item)) is not None:
+        item = parent
+    return item
+
+
+def _toggle_inline_picker(input_tag: str) -> None:
+    """Farbwähler unter dem Feld ein-/ausblenden; das Dialogfenster wächst bzw. schrumpft mit."""
+    picker = f"{input_tag}_picker"
+    show = not dpg.is_item_shown(picker)
+    if show:
+        dpg.set_value(picker, (*_current_rgb(input_tag), 255))
+    dpg.configure_item(picker, show=show)
+    window = _root_window(picker)
+    height = dpg.get_item_height(window) or 0
+    dpg.set_item_height(window, height + (_INLINE_PICKER_HEIGHT if show else -_INLINE_PICKER_HEIGHT))
+
+
+def _inline_color_picked(input_tag: str) -> None:
+    r, g, b = (int(round(v)) for v in dpg.get_value(f"{input_tag}_picker")[:3])
+    dpg.set_value(input_tag, rgb_to_hex((r, g, b)))
+    dpg.set_value(_swatch_tag(input_tag), (r, g, b, 255))
+
+
+def add_color_input(tag: str, value: str, on_change: Optional[Callable[[], None]] = None,
+                    inline: bool = False, fallback: Optional[Tuple[int, int, int]] = None,
+                    **input_kwargs: Any) -> None:
+    """
+    Farbfeld + Hex-Textfeld.
+
+    inline=False: Klick aufs Farbfeld oder Doppelklick ins Textfeld öffnet den modalen Farbwähler.
+    inline=True:  für modale Dialoge – Dear PyGui zeigt kein zweites modales Fenster darüber;
+                  der Klick aufs Farbfeld klappt den Farbwähler direkt unter dem Feld auf.
+    """
+    rgb = _parse_hex(value) or fallback or _SWATCH_FALLBACK   # fallback: Farbe ohne eigenen Wert
+    with dpg.group():   # ein Element = eine Tabellenzelle (Feld und aufklappbarer Farbwähler)
+        with dpg.group(horizontal=True, horizontal_spacing=4):
+            swatch = dpg.add_color_button(
+                tag=_swatch_tag(tag), default_value=(*rgb, 255), no_alpha=True, width=20, height=20,
+                callback=(lambda: _toggle_inline_picker(tag)) if inline
+                else (lambda: open_color_dialog(tag, on_change)))
+            with dpg.tooltip(swatch):
+                dpg.add_text(t("tooltip.pick_color_inline" if inline else "tooltip.pick_color"))
+            dpg.add_input_text(tag=tag, default_value=value, width=-1, **input_kwargs)
+        if inline:
+            dpg.add_color_picker(tag=f"{tag}_picker", default_value=(*rgb, 255), show=False, no_alpha=True,
+                                 display_hex=True, width=200, callback=lambda: _inline_color_picked(tag))
+    if not inline:
+        dpg.bind_item_handler_registry(tag, _color_dblclick_handler(on_change))
 
 
 class ListSection:
@@ -161,7 +239,6 @@ class ListSection:
         self.on_double_click = on_double_click
         self.warning = warning
         self._themes: Dict[Tuple[int, int, int], int] = {}
-        self._color_handler: Optional[Union[int, str]] = None
         self._row_handler: Optional[Union[int, str]] = None
         self._row_of_item: Dict[Union[int, str], int] = {}
         self._shown_rows: List[Any] = []
@@ -181,17 +258,6 @@ class ListSection:
                     dpg.add_theme_color(dpg.mvThemeCol_Text, [*rgb, 255])
             self._themes[rgb] = theme
         return self._themes[rgb]
-
-    def _color_dblclick_handler(self) -> Union[int, str]:
-        """Ein Handler für alle Farb-Textfelder der Sektion (überlebt refresh())."""
-        if self._color_handler is None:
-            registry = dpg.add_item_handler_registry()
-            dpg.add_item_double_clicked_handler(
-                parent=registry,
-                callback=lambda s, a: open_color_dialog(dpg.get_item_alias(a[1]) or a[1],
-                                                        self.on_change))
-            self._color_handler = registry
-        return self._color_handler
 
     def _row_dblclick_handler(self) -> Union[int, str]:
         """Ein Handler für alle Zellen der Sektion; die Zeile kommt aus _row_of_item."""
@@ -259,26 +325,14 @@ class ListSection:
             return dpg.add_combo(tag=tag, items=list(col.items), default_value=value, width=-1)
         next_tag = self._widget_tag(i + 1, col.key) if i + 1 < n else None
         if col.color:
-            self._add_color_cell(tag, value, next_tag)
+            add_color_input(tag, value, self.on_change, fallback=rgb, on_enter=True,
+                            callback=_focus_next, user_data=next_tag)
             return None
         widget = dpg.add_input_text(tag=tag, default_value=value, width=-1, on_enter=True,
                                     callback=_focus_next, user_data=next_tag)
         if rgb:
             dpg.bind_item_theme(widget, self._color_theme(rgb))
         return widget
-
-    def _add_color_cell(self, tag: str, value: str, next_tag: Optional[str]) -> None:
-        """Farbfeld + Hex-Textfeld; Klick aufs Farbfeld oder Doppelklick ins Textfeld → Farbwähler."""
-        with dpg.group(horizontal=True, horizontal_spacing=4):
-            swatch = dpg.add_color_button(tag=_swatch_tag(tag),
-                                          default_value=(*(_parse_hex(value) or _SWATCH_FALLBACK), 255),
-                                          no_alpha=True, width=20, height=20,
-                                          callback=lambda: open_color_dialog(tag, self.on_change))
-            with dpg.tooltip(swatch):
-                dpg.add_text(t("tooltip.pick_color"))
-            dpg.add_input_text(tag=tag, default_value=value, width=-1, on_enter=True,
-                               callback=_focus_next, user_data=next_tag)
-        dpg.bind_item_handler_registry(tag, self._color_dblclick_handler())
 
     def sync(self) -> bool:
         """Schreibt geänderte Widget-Werte ins Modell. True, wenn sich etwas geändert hat."""
@@ -307,6 +361,7 @@ class FormField:
     items: Sequence[str] = ()     # gesetzt → Combo-Box
     hint: str = ""
     no_spaces: bool = False
+    color: bool = False           # Hex-Farbe → Farbfeld + Farbwähler
 
 
 @dataclass
@@ -346,6 +401,8 @@ def open_form_dialog(tag: str, title: str, fields: List[FormField],
                     if f.items:
                         dpg.add_combo(tag=f"{tag}_{f.key}", items=list(f.items),
                                       default_value=f.default, width=-1)
+                    elif f.color:
+                        add_color_input(f"{tag}_{f.key}", f.default, inline=True, hint=f.hint)
                     else:
                         dpg.add_input_text(tag=f"{tag}_{f.key}", default_value=f.default,
                                            hint=f.hint, no_spaces=f.no_spaces, width=-1)

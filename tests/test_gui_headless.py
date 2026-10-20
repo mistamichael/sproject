@@ -164,6 +164,35 @@ def test_double_click_opens_prefilled_edit_dialogs(editor, tmp_path):
     assert data["scenarios"][2]["changes"][-1] == {"task": 4, "duration_factor": 2.0}
 
 
+def test_add_resource_dialog_has_inline_color_picker(editor, tmp_path):
+    """Im modalen Dialog klappt der Farbwähler auf (kein zweites modales Fenster)."""
+    from gui.i18n import t
+    editor.load_from_file(EXAMPLES / "fassadenbau.json")
+    editor.sections.add_resource()
+    picker, height = "add_resource_dialog_color_picker", dpg.get_item_height("add_resource_dialog")
+    assert not dpg.is_item_shown(picker)
+
+    dpg.set_value("add_resource_dialog_id", "R_KRAN")
+    dpg.get_item_callback("add_resource_dialog_color_swatch")()          # Klick aufs Farbfeld
+    assert dpg.is_item_shown(picker) and dpg.get_item_height("add_resource_dialog") > height
+    dpg.set_value(picker, (200, 30, 40, 255))
+    dpg.get_item_callback(picker)()                                      # Farbe gewählt
+    assert dpg.get_value("add_resource_dialog_color") == "C81E28"
+    _press("add_resource_dialog", t("button.add"))
+
+    data = json.loads(editor.save_to_file(tmp_path / "out.json").read_text(encoding="utf-8"))
+    assert next(r for r in data["resources"] if r["id"] == "R_KRAN")["color"] == "C81E28"
+
+
+def test_swatch_without_own_color_shows_palette_color(editor):
+    from gui.colors import resource_color_map
+    editor.load_from_file(EXAMPLES / "software_simple.json")
+    resource = editor.project.resources[0]
+    assert not resource.color
+    swatch = [round(v) for v in dpg.get_value("resources_content_0_color_swatch")[:3]]
+    assert tuple(swatch) == resource_color_map(editor.project)[resource.id]
+
+
 def test_range_warning_follows_task_table_edits(editor):
     """Dauer in der Aufgaben-Tabelle ändern → nach dem Berechnen warnt Sektion 6."""
     editor.load_from_file(EXAMPLES / "software_simple.json")

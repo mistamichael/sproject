@@ -345,7 +345,8 @@ class OptionalSections:
             FormField("id", "col.id", default="R_NEW", no_spaces=True),
             FormField("name", "col.name", hint=t("hint.resource_name")),
             FormField("type", "col.type", default="person", items=RESOURCE_TYPES),
-            FormField("color", "col.color", default=next_resource_color(self.project), hint=t("hint.color")),
+            FormField("color", "col.color", default=next_resource_color(self.project), hint=t("hint.color"),
+                      color=True),
         ], self._confirm_resource, width=360)
 
     def _confirm_resource(self, v: Dict[str, str]) -> None:

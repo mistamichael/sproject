@@ -210,6 +210,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "dlg.pick_color": "Farbe wählen",
         "button.ok": "OK",
         "tooltip.pick_color": "Klick oder Doppelklick ins Feld: Farbe wählen",
+        "tooltip.pick_color_inline": "Klick: Farbauswahl ein-/ausblenden",
         # ── Unsicherheiten und Szenarien ──────────────────────────────────
         "hint.section.uncertainty": "Für die Monte-Carlo-Simulation. Min/Max: Dauer schwankt zwischen "
                                     "Minimum und Maximum, am häufigsten die geplante Dauer. Risiko: tritt mit "
@@ -479,6 +480,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "dlg.pick_color": "Pick color",
         "button.ok": "OK",
         "tooltip.pick_color": "Click, or double-click the field: pick a color",
+        "tooltip.pick_color_inline": "Click: show/hide the color picker",
         # ── Uncertainties and scenarios ───────────────────────────────────
         "hint.section.uncertainty": "For the Monte Carlo simulation. Min/Max: the duration varies between "
                                     "minimum and maximum, most often the planned duration. Risk: occurs with "
