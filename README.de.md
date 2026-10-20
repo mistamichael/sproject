@@ -10,7 +10,10 @@
 - **Kalender-Integration**: Wochenenden und Feiertage werden bei Datumsberechnung übersprungen
 - **Ressourcenverwaltung**: Optional Personen, Stundensätze und Kostenübersicht
 - **Gantt-Diagramm**: Terminplanung mit Arbeitstagen
-- **Mehrere Exportformate**: JSON, TXT, XLSX, Markdown, HTML, SVG-ZIP
+- **Szenarien**: Was-wäre-wenn-Varianten (z. B. „Task dauert 50 % länger“, „Person eine Woche krank“) im Vergleich zum Basisplan
+- **Monte-Carlo-Simulation**: Dauer-Bandbreiten, Risiken und Szenario-Wahrscheinlichkeiten → „zu 80 % fertig bis …“
+- **GUI-Editor**: Projekte in einer Desktop-App (Dear PyGui) bearbeiten, berechnen und exportieren
+- **Mehrere Exportformate**: JSON, TXT, XLSX, Markdown, HTML, SVG-ZIP, interaktive Charts
 
 ## Projektstruktur
 
@@ -20,6 +23,7 @@ sproject/
 │   ├── setenv.bat              # Umgebungsvariablen setzen
 │   ├── activate_venv.bat       # Virtuelle Umgebung aktivieren
 │   ├── create_reports.bat      # Reports erzeugen
+│   ├── gui.bat                 # GUI-Editor starten
 │   └── run_unittests.bat       # Unit-Tests starten
 ├── cfg/                        # Konfigurationsdateien
 │   ├── defaults.cfg            # Haupt-Konfiguration (Kalender, CPM, Kosten)
@@ -36,9 +40,18 @@ sproject/
 │   ├── software_simple.json    # Software-Projekt mit Ressourcen
 │   ├── tankdesign.json         # Ingenieurprojekt
 │   └── results/                # Vorberechnete Beispiel-Ergebnisse
+├── gui/                        # GUI-Editor (Dear PyGui)
+│   ├── app.py                  # Layout, Menüs, Toolbar, Dialoge
+│   ├── editor.py               # Editor-State, Datei-Operationen, Berechnung, Exporte
+│   ├── task_rows.py            # Verlustfreie Umwandlung Tasks ↔ Tabellenzeilen
+│   ├── analysis_rows.py        # Text ↔ Modell für Unsicherheiten und Szenarien
+│   └── components/             # Sektionen, Tabellen, Ergebnis-Panel, Sidebar
 ├── lib/                        # Python-Quellcode (Paket "lib")
 │   ├── sproject.py             # CLI-Einstiegspunkt
 │   ├── schedule.py             # build_schedule(): Expansion → CPM → Gantt → Kosten
+│   ├── scenarios.py            # Szenarien anwenden und vergleichen
+│   ├── simulation.py           # Monte-Carlo-Simulation
+│   ├── charts.py               # Plotly-Charts (Gantt, Ressourcen, Simulation)
 │   ├── exporters.py            # Export-Registry (gemeinsam für CLI und GUI)
 │   ├── models/                 # Pydantic-Modelle
 │   │   ├── project.py          # Projekt-Wurzelmodell (Daten + Validierung)
@@ -139,6 +152,13 @@ python lib/sproject.py --project examples/pizza.json --cfg-dir ./cfg
 # Ausführliche Ausgabe
 python lib/sproject.py --project examples/pizza.json --verbose
 
+# Alle Szenarien mit dem Basisplan vergleichen / ein Szenario statt des Basisplans rechnen
+python lib/sproject.py --project examples/software_simple.json --scenarios
+python lib/sproject.py --project examples/software_simple.json --scenario "Alice eine Woche krank" --export xlsx
+
+# Monte-Carlo-Simulation mit 500 Läufen (reproduzierbar mit --seed)
+python lib/sproject.py --project examples/software_simple.json --simulate 500 --seed 42
+
 # Hilfe
 python lib/sproject.py --help
 ```
@@ -153,6 +173,31 @@ python lib/sproject.py --help
 | `md` | Markdown-Report mit eingebetteten Mermaid-Diagrammen |
 | `html` | HTML-Report, Mermaid-Diagramme werden im Browser gerendert |
 | `zip` | Alle Diagramme als SVG in einem ZIP-Archiv (via Mermaid/kroki.io) |
+| `plotly` | Interaktive HTML-Charts (Gantt, Ressourcen) |
+| `plotly_svg` | Die Plotly-Charts als SVG-Bilder (braucht kaleido und ein lokales Chrome) |
+| `scenarios` | Szenario-Vergleich als HTML |
+| `simulation` | Monte-Carlo-Simulation als HTML (Histogramm, Kritikalität, Kennzahlen) |
+
+## Grafischer Editor (GUI)
+
+Start mit `bin/gui.bat` (Windows) oder `bash bin/gui.sh` (Linux/Mac). Ein Beispiel öffnet man über die Sidebar, eine eigene Datei über *Datei → Öffnen*.
+
+| Sektion | Inhalt |
+| ------- | ------ |
+| 1. Projekt-Stammdaten | Name, Startdatum, Einheit, Volumen, Stichtag |
+| 2. Aufgaben | Einfache, Loop- und Subtasks mit Dauer, Ressourcen, Nachfolgern, Kosten |
+| 3. Ressourcen | ID, Name, Typ, Farbe – Farbfeld mit Farbwähler (Klick aufs Farbfeld oder Doppelklick auf den Hex-Wert) |
+| 4. Personen | Name, Rolle, Stundensatz |
+| 5. Ruhezeiten und Urlaub | Ruhezeitregeln, Urlaub, Teilzeit |
+| 6. Unsicherheiten | Je Task Min/Max-Dauer und Risiko (Wahrscheinlichkeit, Verzögerung, Hinweis) für die Monte-Carlo-Simulation |
+| 7. Szenarien | Was-wäre-wenn-Varianten mit Wahrscheinlichkeit und ihre Änderungen (Task, Ressource, Person) |
+
+Die Sektionen 3–7 sind optional und lassen sich in der Sidebar einschalten; sie erscheinen automatisch, wenn das geladene Projekt sie nutzt.
+
+- **Bearbeiten:** direkt in den Tabellen tippen oder in den Sektionen 6 und 7 per Doppelklick auf eine Zeile das Formular öffnen.
+- **Warnung:** Liegt die geplante Dauer eines Tasks außerhalb von Min–Max, markiert Sektion 6 sie rot (die Simulation würde mit dem Rand des Bereichs rechnen).
+- **Menü Analyse / Toolbar:** berechnen, Szenarien vergleichen, Monte-Carlo-Simulation starten. Ergebnisse erscheinen im Tab *Ergebnis*, Reports landen in `results/`.
+- **Sprache:** Deutsch / Englisch über *Einstellungen*.
 
 ## Projektdatei-Format (JSON)
 
@@ -282,6 +327,35 @@ Für sich wiederholende Zyklen (z. B. Produktionsschleifen) können `is_loop`-Ta
 ```
 
 Das Programm expandiert Loop-Tasks automatisch vor der CPM-Berechnung.
+
+### Unsicherheiten und Szenarien
+
+Unsicherheiten für die Monte-Carlo-Simulation stehen am Task; Szenarien sind benannte Listen von Änderungen am Basisplan:
+
+```json
+{
+  "tasks": [
+    { "id": 4, "name": "Backend", "duration": "40h",
+      "duration_range": ["32h", "72h"],
+      "risk": { "probability": 0.2, "delay": "16h", "note": "API des Kunden noch instabil" } }
+  ],
+  "scenarios": [
+    { "name": "Alice eine Woche krank", "probability": 0.15,
+      "changes": [ { "person": "DEV1", "vacation": [ { "from": "2026-03-09", "to": "2026-03-13", "description": "krank" } ] } ] },
+    { "name": "Backend 50 % aufwendiger",
+      "changes": [ { "task": 4, "duration_factor": 1.5 } ] }
+  ]
+}
+```
+
+| Feld | Wirkung |
+| ---- | ------- |
+| `duration_range` | Dauer schwankt zwischen Minimum und Maximum, am häufigsten die geplante Dauer (Dreiecksverteilung) |
+| `risk` | Mit `probability` verschiebt sich der Start um `delay` |
+| `scenarios[].changes` | Genau eines von `task` (ID oder Muster wie `2-F*.1`), `resource` (`unavailable`), `person` (`vacation`); Task-Änderungen: `duration_factor` oder beliebige Task-Felder |
+| `scenarios[].probability` | Das Szenario tritt in der Simulation mit dieser Wahrscheinlichkeit ein; ohne wird es nur verglichen |
+
+Details: [doc/de/termine-und-ist.md](doc/de/termine-und-ist.md). Beispiel: `examples/software_simple.json`.
 
 ## Konfiguration
 

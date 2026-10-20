@@ -17,12 +17,13 @@ sproject/
 │   ├── app.py        # Hauptlayout, Menüs, Toolbar, Dialoge, Viewport-Aufbau
 │   ├── editor.py     # ProjectEditorApp – State, Datei-Ops, sync/refresh, Exporte
 │   ├── task_rows.py  # TaskRow: verlustfreie Umwandlung Tasks ↔ Tabellenzeilen (ohne DPG)
-│   ├── colors.py     # Ressourcen-Farbzuordnung
+│   ├── analysis_rows.py # Text ↔ Modell für Unsicherheiten und Szenarien (ohne DPG)
+│   ├── colors.py     # Ressourcen-Farbzuordnung (eigene Farbe vor Palette)
 │   ├── i18n.py       # Internationalisierung (de/en), t()-Funktion
 │   ├── gui_config.py # Konfigurationslader (gui.cfg → Farben, Größen, Themes)
 │   └── components/   # UI-Komponenten
-│       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection) + Formular-Dialog
-│       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit
+│       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection), Formular-Dialog, Farbwähler
+│       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit, Unsicherheiten, Szenarien
 │       ├── task_table.py   # Aufgaben-Tabelle
 │       ├── result_panel.py # Ergebnis-Tab
 │       ├── sidebar.py      # Wizard-Navigation + Beispielliste
@@ -59,7 +60,7 @@ sproject/
    - Ruhepausen werden nach dem berechneten Zeitplan eingefügt (zweiter CPM-Lauf).
    - Plan gegen Ist: `status_date`, `actuals`, `baseline` im Projekt (`lib/models/tracking.py`, `lib/baseline.py`); Doku: `doc/de/termine-und-ist.md`.
    - Szenarien: `scenarios` im Projekt (`lib/models/scenario.py`), angewendet und verglichen in `lib/scenarios.py`.
-   - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `lib/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel).
+   - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `lib/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel). Liegt die geplante Dauer außerhalb von `duration_range`, nimmt die Simulation den Rand und meldet den Task (`planned_outside_range()`, `SimulationResult.clamped`); die GUI markiert ihn in Sektion 6.
 6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
 7. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 
@@ -78,6 +79,8 @@ Viewport
         ├── 3. Ressourcen (optional, togglebar)
         ├── 4. Personen (optional, togglebar)
         ├── 5. Ruhezeiten/Urlaub/Teilzeit (optional, togglebar)
+        ├── 6. Unsicherheiten: duration_range, risk je Task (optional, togglebar)
+        ├── 7. Szenarien + Szenario-Änderungen (optional, togglebar)
         └── Ergebnis-Panel (nach Berechnung)
 ```
 
@@ -127,13 +130,26 @@ Datei
 ### Konventionen für GUI-Erweiterungen
 
 - **Neue Tabellen-Sektion:** `ListSection` mit `Column`-Liste in `gui/components/sections.py` – nicht von Hand bauen
+  - Neue optionale Sektion zusätzlich eintragen in: `SECTIONS` (`gui/editor.py`), `_detect_active_sections()`, `SECTIONS`/`TOGGLE_TAGS` (`gui/components/sidebar.py`), `_build_*_section()` + `_label_map` (`gui/app.py`)
+  - Optionen: `Column(color=True)` = Farbfeld + Farbwähler, `Column(text_color=…)` = Warnfarbe je Spalte, `ListSection(on_double_click=…)` = Zeile im Formular bearbeiten, `ListSection(warning=…)` = Hinweis unter der Tabelle
+  - Hinzufügen und Bearbeiten nutzen dasselbe `open_form_dialog()` (`confirm_label="button.apply"` beim Bearbeiten)
 - **IDs** in Sektionstabellen sind nur Anzeige (andere Objekte verweisen darauf)
+- **Text ↔ Modell** ohne DPG in eigene Module (`task_rows.py`, `analysis_rows.py`), damit testbar
 
 - **i18n:** Jeder sichtbare Text nutzt `t("key")` aus `gui/i18n.py` – immer de + en pflegen
 - **Tags:** DPG-Items erhalten sprechende Tags (z.B. `mi_new`, `inp_project_name`)
 - **Shortcuts:** Werden als `shortcut=`-Label am Menüeintrag deklariert (nur Display)
 - **State:** Änderungen am Projekt setzen `self.dirty = True`
 - **Refresh:** Nach Modelländerungen `refresh_all()` oder spezifische `_refresh_*()` aufrufen
+
+### Fallstricke (GUI und Modell)
+
+- **Tasks werden bei jedem `sync_to_model()` neu aufgebaut** (`rows_to_tasks`). Was an Task-Objekten hängt (Unsicherheiten), wird vorher übernommen und danach per `sections.retarget_tasks()` auf die neuen Objekte umgehängt – sonst gehen Eingaben nach dem ersten Berechnen verloren.
+- **`save_project()` nutzt `exclude_unset`:** Listen in Modellen nicht in place ändern (`append`, `remove`), sondern neu zuweisen (`x.changes = x.changes + [c]`) – sonst gilt das Feld als ungesetzt und wird nicht gespeichert.
+- **Dear PyGui: kein zweites modales Fenster über einem offenen modalen Dialog** – es bleibt unsichtbar. In Formular-Dialogen deshalb Inhalte aufklappen (`add_color_input(inline=True)`).
+- **Dear PyGui-Tabellen:** Jedes Kind einer `table_row` ist eine eigene Spalte – mehrere Widgets für eine Zelle in eine `dpg.group()` packen.
+- **Dear PyGui-Tabellen mit `mvTable_SizingStretchProp`:** Dehnbare Spalten brauchen ein festes Gewicht (`init_width_or_weight=1.0`), sonst wandert bei jeder Größenänderung Breite in die letzte Spalte.
+- **Headless-Tests rendern nicht:** Ob etwas sichtbar ist (Modals, Layout), nur per Screenshot prüfbar (`dpg.output_frame_buffer()` mit Viewport).
 
 ## Code-Qualität / Linting
 
