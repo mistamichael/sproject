@@ -2,7 +2,7 @@
 Sidebar – Wizard-Navigation (Dear PyGui)
 =========================================
 
-Linke Sidebar mit 5 Wizard-Schritten.  Optionale Abschnitte können
+Linke Sidebar mit 7 Wizard-Schritten.  Optionale Abschnitte können
 per Checkbox ein- und ausgeschaltet werden.
 """
 
@@ -23,13 +23,17 @@ SECTIONS = [
     ("resources",     t("section.resources"),  False),
     ("persons",       t("section.persons"),    False),
     ("resting_times", t("section.resting_times"),  False),
+    ("uncertainty",   t("section.uncertainty"),  False),
+    ("scenarios",     t("section.scenarios"),  False),
 ]
 
-# Toggle-Tag-Map für die drei optionalen Abschnitte
-_TOGGLE_TAGS = {
+# Toggle-Tag-Map für die optionalen Abschnitte
+TOGGLE_TAGS = {
     "resources":     "sidebar_res_toggle",
     "persons":       "sidebar_pers_toggle",
     "resting_times": "sidebar_rest_toggle",
+    "uncertainty":   "sidebar_uncertainty_toggle",
+    "scenarios":     "sidebar_scenarios_toggle",
 }
 
 
@@ -49,7 +53,7 @@ def build_sidebar(app) -> None:
                 user_data=f"section_{section_id}",
             )
         else:
-            toggle_tag = _TOGGLE_TAGS[section_id]
+            toggle_tag = TOGGLE_TAGS[section_id]
             is_active = app.active_sections.get(section_id, False)
             with dpg.group(horizontal=True):
                 dpg.add_checkbox(

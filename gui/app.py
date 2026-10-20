@@ -147,6 +147,8 @@ def _update_ui_language() -> None:
         "section_resources_header":     "section.resources",
         "section_persons_header":       "section.persons",
         "section_resting_times_header": "section.resting_times",
+        "section_uncertainty_header":   "section.uncertainty",
+        "section_scenarios_header":     "section.scenarios",
         "section_result_header":        "section.result",
         "tab_input":                    "result.tab.input",
         "tab_result":                   "result.tab.result",
@@ -170,6 +172,8 @@ def _update_ui_language() -> None:
         "lbl_total_volume": "label.total_volume",
         "lbl_order_volume": "label.order_volume",
         "lbl_status_date":  "label.status_date",
+        "section_uncertainty_hint": "hint.section.uncertainty",
+        "section_scenarios_hint":   "hint.section.scenarios",
     }
     for tag, key in _text_map.items():
         if dpg.does_item_exist(tag):
@@ -512,10 +516,12 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
             policy=dpg.mvTable_SizingStretchProp,
         ):
             _st = CFG.section("stammdaten_table")
+            # Feste Gewichte: ohne sie leitet StretchProp die Gewichte aus der aktuellen
+            # Breite ab, und bei jeder Größenänderung wandert Breite in die letzte Spalte.
             dpg.add_table_column(width_fixed=True,  init_width_or_weight=_st.get("col_label_width", 130))
-            dpg.add_table_column(width_stretch=True)
+            dpg.add_table_column(width_stretch=True, init_width_or_weight=1.0)
             dpg.add_table_column(width_fixed=True,  init_width_or_weight=_st.get("col_label2_width", 120))
-            dpg.add_table_column(width_stretch=True)
+            dpg.add_table_column(width_stretch=True, init_width_or_weight=1.0)
 
             with dpg.table_row():
                 dpg.add_text(t("label.project_name"), tag="lbl_project_name")
@@ -548,11 +554,14 @@ def _build_stammdaten(app: ProjectEditorApp) -> None:
 # Abschnitts-Builder: optionale Sektionen
 # ---------------------------------------------------------------------------
 
-def _build_optional_section(section: str, buttons, contents) -> None:
+def _build_optional_section(section: str, buttons, contents, hint: str = "") -> None:
     """Ein- und ausblendbare Sektion mit Hinzufügen-Buttons und Tabellen-Containern."""
     with dpg.group(tag=f"section_{section}", show=False):
         with dpg.collapsing_header(label=t(f"section.{section}"), tag=f"section_{section}_header",
                                    default_open=True):
+            if hint:
+                dpg.add_text(t(hint), tag=f"section_{section}_hint", wrap=0,
+                             color=CFG.section("colors").get("hint_text", (140, 140, 150)))
             with dpg.group(horizontal=True):
                 for label_key, callback in buttons:
                     dpg.add_button(label=t(label_key), callback=callback)
@@ -578,6 +587,19 @@ def _build_resting_times_section(app: ProjectEditorApp) -> None:
         ("button.add_vacation", lambda: app.sections.add_vacation()),
         ("button.add_workinghours", lambda: app.sections.add_workinghours()),
     ], ["resting_times_content", "vacation_content", "workinghours_content"])
+
+
+def _build_uncertainty_section(app: ProjectEditorApp) -> None:
+    _build_optional_section("uncertainty", [
+        ("button.add_uncertainty", lambda: app.sections.add_uncertainty()),
+    ], ["uncertainty_content"], hint="hint.section.uncertainty")
+
+
+def _build_scenarios_section(app: ProjectEditorApp) -> None:
+    _build_optional_section("scenarios", [
+        ("button.add_scenario", lambda: app.sections.add_scenario()),
+        ("button.add_change", lambda: app.sections.add_change()),
+    ], ["scenarios_content", "scenario_changes_content"], hint="hint.section.scenarios")
 
 
 # ---------------------------------------------------------------------------
@@ -788,6 +810,8 @@ def create_app() -> ProjectEditorApp:
                         _build_resources_section(editor)
                         _build_persons_section(editor)
                         _build_resting_times_section(editor)
+                        _build_uncertainty_section(editor)
+                        _build_scenarios_section(editor)
 
                     # ── Tab 2: Ergebnis (initial unsichtbar) ──
                     with dpg.tab(

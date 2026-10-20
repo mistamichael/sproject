@@ -22,6 +22,7 @@ import dearpygui.dearpygui as dpg
 
 from gui.components import result_panel
 from gui.components.sections import OptionalSections
+from gui.components.sidebar import TOGGLE_TAGS
 from gui.components.task_table import rebuild_task_table
 from gui.i18n import get_language, t
 from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
@@ -34,7 +35,7 @@ from lib.scenarios import compare_scenarios
 from lib.simulation import SimulationResult, has_uncertainty, simulate
 from lib.schedule import Schedule, build_schedule
 
-SECTIONS = ("resources", "persons", "resting_times")
+SECTIONS = ("resources", "persons", "resting_times", "uncertainty", "scenarios")
 
 # Report-Formate, die die GUI anbietet (Schlüssel aus lib.exporters.EXPORTERS)
 REPORT_FORMATS: Dict[str, str] = {
@@ -210,9 +211,16 @@ class ProjectEditorApp:
             except ValueError:
                 pass
         self._read_task_rows_from_ui()
+        # Unsicherheiten stehen in den Task-Objekten der Zeilen – vor dem Neuaufbau übernehmen
+        self.sections.uncertainty.sync()
+        sources = [row.source for row in self.task_rows if not row.is_subtask]
         self.project.tasks = rows_to_tasks(self.task_rows)
         self.task_rows = tasks_to_rows(self.project.tasks)
+        self.sections.retarget_tasks({id(old): new for old, new in zip(sources, self.project.tasks)
+                                      if old is not None})
         self.sections.sync()
+        # Geplante Dauer kann sich in der Aufgaben-Tabelle geändert haben → Min/Max-Warnung neu prüfen
+        self.sections.uncertainty.refresh()
 
     # Name aus früheren Versionen
     _sync_to_model = sync_to_model
@@ -238,6 +246,8 @@ class ProjectEditorApp:
             "persons": bool(persons),
             "resting_times": bool(p.resting_times)
                              or any(x.vacation or x.workinghours_override for x in persons),
+            "uncertainty": any(task.duration_range or task.risk for task in p.tasks),
+            "scenarios": bool(p.scenarios),
         }
 
     def _update_section_visibility(self) -> None:
@@ -246,9 +256,7 @@ class ProjectEditorApp:
                 dpg.configure_item(f"section_{section}", show=self.active_sections[section])
 
     def _update_sidebar(self) -> None:
-        toggles = {"resources": "sidebar_res_toggle", "persons": "sidebar_pers_toggle",
-                   "resting_times": "sidebar_rest_toggle"}
-        for section, tag in toggles.items():
+        for section, tag in TOGGLE_TAGS.items():
             _set_value(tag, self.active_sections[section])
 
     def toggle_section(self, section: str) -> None:

@@ -52,3 +52,12 @@ def test_scenario_probability():
     assert set(rare.ends) == {5.0} and rare.scenario_hits["B länger"] == 0.0
     rows = dict((r[0], r[1]) for r in summary_rows(rare))
     assert rows["Läufe"] == "50" and rows["Plan wird gehalten mit"] == "100%"
+
+
+def test_planned_duration_outside_range_is_reported():
+    inside = simulate(_project(duration_range=["1d", "6d"]), runs=5, seed=1)
+    assert inside.clamped == [] and not any("Min–Max" in label for label, _ in summary_rows(inside))
+
+    outside = simulate(_project(duration_range=["3d", "6d"]), runs=5, seed=1)   # geplant 2d < Min
+    assert outside.clamped == [1]
+    assert ["Achtung: geplante Dauer außerhalb Min–Max (Rand verwendet)", "Task 1"] in summary_rows(outside)

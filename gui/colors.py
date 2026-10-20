@@ -7,7 +7,7 @@ gui.cfg [resources_colours] (Fallback: defaults.cfg [ResourceAutoColor]).
 """
 
 import configparser
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from lib.colors import DEFAULT_PALETTE, hex_to_rgb, interpolate_palette
 from lib.paths import get_cfg_dir
@@ -36,16 +36,24 @@ def _palette() -> List[str]:
     return list(DEFAULT_PALETTE)
 
 
+def _own_color(resource) -> Optional[RGB]:
+    try:
+        return hex_to_rgb(resource.color) if resource.color else None
+    except ValueError:
+        return None
+
+
 def resource_color_map(project) -> Dict[str, RGB]:
-    """resource_id → (R, G, B), gleichmäßig über die Palette verteilt (sortiert nach ID)."""
+    """resource_id → (R, G, B): eigene Farbe der Ressource, sonst gleichmäßig über die
+    Palette verteilt (sortiert nach ID)."""
     if not project or not project.resources:
         return {}
     palette = _palette()
-    res_ids = sorted(r.id for r in project.resources)
-    n = len(res_ids)
+    resources = sorted(project.resources, key=lambda r: r.id)
+    n = len(resources)
     return {
-        rid: hex_to_rgb(interpolate_palette(palette, i / (n - 1) if n > 1 else 0.0))
-        for i, rid in enumerate(res_ids)
+        r.id: _own_color(r) or hex_to_rgb(interpolate_palette(palette, i / (n - 1) if n > 1 else 0.0))
+        for i, r in enumerate(resources)
     }
 
 

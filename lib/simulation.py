@@ -42,6 +42,7 @@ class SimulationResult:
     criticality: Dict[TaskId, float]                 # Anteil der Läufe, in denen der Task kritisch war
     deadline_hit: Dict[TaskId, float] = field(default_factory=dict)   # Anteil der Läufe mit gehaltener Deadline
     scenario_hits: Dict[str, float] = field(default_factory=dict)     # tatsächliche Eintrittshäufigkeit
+    clamped: List[TaskId] = field(default_factory=list)               # Dauer außerhalb duration_range
 
     @property
     def result(self) -> CPMResult:
@@ -62,6 +63,25 @@ class SimulationResult:
 
     def date(self, workdays: float) -> Optional[datetime]:
         return point_in_time(self.result, workdays, is_end=True) if self.result.project_start else None
+
+
+def planned_outside_range(task) -> bool:
+    """True, wenn die geplante Dauer außerhalb von duration_range liegt – _sample nimmt dann den Rand."""
+    if not task.duration_range:
+        return False
+    planned = parse_duration_to_days(task.duration or 0)
+    low, high = (parse_duration_to_days(x) for x in task.duration_range)
+    return not low - 1e-9 <= planned <= high + 1e-9
+
+
+def clamped_tasks(tasks) -> List[TaskId]:
+    """IDs der Tasks mit Dauer außerhalb von duration_range (expandierte Tasks: ID des Originals)."""
+    ids: List[TaskId] = []
+    for task in tasks:
+        tid = getattr(task, "original_id", None) or task.id
+        if planned_outside_range(task) and tid not in ids:
+            ids.append(tid)
+    return ids
 
 
 def has_uncertainty(project: Project) -> bool:
@@ -117,6 +137,7 @@ def simulate(project: Project, runs: int = 300, seed: Optional[int] = None,
         criticality={tid: n / runs for tid, n in critical_count.items()},
         deadline_hit={tid: n / runs for tid, n in deadline_ok.items()},
         scenario_hits={name: n / runs for name, n in scenario_count.items()},
+        clamped=clamped_tasks(expanded.tasks),
     )
 
 
@@ -158,6 +179,9 @@ def summary_rows(sim: SimulationResult) -> List[List[str]]:
         rows.append([f"Deadline Task {tid} wird gehalten mit", f"{rate:.0%}"])
     for name, rate in sim.scenario_hits.items():
         rows.append([f"Szenario '{name}' eingetreten", f"{rate:.0%}"])
+    if sim.clamped:
+        rows.append(["Achtung: geplante Dauer außerhalb Min–Max (Rand verwendet)",
+                     "Task " + ", ".join(str(tid) for tid in sim.clamped)])
     return rows
 
 
