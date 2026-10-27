@@ -1,6 +1,6 @@
 # Rechenkern: CPM, Ressourcenplanung, Simulation, Szenarien, Exporte, MCP-Server
-# (eigenes Paket, https://github.com/mistamichael/moncapro; nach der PyPI-Veröffentlichung: moncapro[all]>=0.1)
-moncapro[all] @ git+https://github.com/mistamichael/moncapro.git
+# (eigenes Paket, https://pypi.org/project/moncapro/)
+moncapro[all]>=0.1,<0.2
 
 # GUI (Dear PyGui-basierter Editor)
 dearpygui>=1.11.0
