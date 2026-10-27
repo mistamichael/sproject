@@ -14,6 +14,7 @@
 - **Monte-Carlo-Simulation**: Dauer-Bandbreiten, Risiken und Szenario-Wahrscheinlichkeiten → „zu 80 % fertig bis …“
 - **GUI-Editor**: Projekte in einer Desktop-App (Dear PyGui) bearbeiten, berechnen und exportieren
 - **Mehrere Exportformate**: JSON, TXT, XLSX, Markdown, HTML, SVG-ZIP, interaktive Charts
+- **KI-Schnittstelle (MCP)**: Claude Code, Claude Desktop oder ein Chatbot bauen Projekte auf, prüfen und rechnen sie – allein oder gemeinsam mit der GUI, über einen gemeinsamen sproject-Server
 
 ## Projektstruktur
 
@@ -24,6 +25,7 @@ sproject/
 │   ├── activate_venv.bat       # Virtuelle Umgebung aktivieren
 │   ├── create_reports.bat      # Reports erzeugen
 │   ├── gui.bat                 # GUI-Editor starten
+│   ├── mcp_server.bat          # sproject-Server (KI-Schnittstelle) starten: --port [N] | --claude
 │   └── run_unittests.bat       # Unit-Tests starten
 ├── cfg/                        # Konfigurationsdateien
 │   ├── defaults.cfg            # Haupt-Konfiguration (Kalender, CPM, Kosten)
@@ -45,9 +47,11 @@ sproject/
 │   ├── editor.py               # Editor-State, Datei-Operationen, Berechnung, Exporte
 │   ├── task_rows.py            # Verlustfreie Umwandlung Tasks ↔ Tabellenzeilen
 │   ├── analysis_rows.py        # Text ↔ Modell für Unsicherheiten und Szenarien
+│   ├── server_link.py          # Verbindung der GUI zum sproject-Server (Menü Server)
 │   └── components/             # Sektionen, Tabellen, Ergebnis-Panel, Sidebar
 ├── lib/                        # Python-Quellcode (Paket "lib")
 │   ├── sproject.py             # CLI-Einstiegspunkt
+│   ├── api.py                  # ProjectSession: Projekt-Operationen für KI-Werkzeuge und Skripte
 │   ├── schedule.py             # build_schedule(): Expansion → CPM → Gantt → Kosten
 │   ├── scenarios.py            # Szenarien anwenden und vergleichen
 │   ├── simulation.py           # Monte-Carlo-Simulation
@@ -73,7 +77,9 @@ sproject/
 │   ├── markdown_export.py      # Markdown/HTML/ZIP-Export
 │   ├── mermaid_export.py       # SVG via Mermaid/kroki
 │   ├── colors.py, paths.py, export_config.py, config_loader.py
+├── mcp_server/                 # MCP-Server (KI-Schnittstelle): Werkzeuge auf Basis von lib/api.py
 ├── tests/                      # pytest (inkl. Golden-File-Tests in tests/golden/)
+├── .mcp.json                   # meldet den MCP-Server bei Claude Code an
 ├── requirements.txt            # Python-Abhängigkeiten
 ├── log/                        # Logdateien (automatisch erstellt)
 ├── results/                    # Generierte Reports (automatisch erstellt)
@@ -198,13 +204,47 @@ Die Sektionen 3–7 sind optional und lassen sich in der Sidebar einschalten; si
 - **Warnung:** Liegt die geplante Dauer eines Tasks außerhalb von Min–Max, markiert Sektion 6 sie rot (die Simulation würde mit dem Rand des Bereichs rechnen).
 - **Menü Analyse / Toolbar:** berechnen, Szenarien vergleichen, Monte-Carlo-Simulation starten. Ergebnisse erscheinen im Tab *Ergebnis*, Reports landen in `results/`.
 - **Sprache:** Deutsch / Englisch über *Einstellungen*.
+- **KI-Schnittstelle:** *Server → Mit sproject-Server verbinden …* teilt das Projekt mit Claude (siehe unten).
 
 ## KI-Schnittstelle (MCP)
 
-Claude Code, Claude Desktop oder ein Chatbot können Projekte über einen MCP-Server aufbauen,
-prüfen, berechnen und speichern – ohne GUI (`.mcp.json` / `bin\mcp_server.bat`) oder live in der
-laufenden GUI (*Einstellungen → KI-Schnittstelle (MCP) aktiv*, `http://127.0.0.1:8765/mcp`).
-Python-Skripte nutzen direkt `lib.api.ProjectSession`. Details: [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md).
+Ein KI-Werkzeug wie Claude Code oder Claude Desktop kann Projekte anlegen, aus Excel-Listen oder anderen
+Quellen aufbauen, prüfen, berechnen und speichern. Es verbindet sich über einen MCP-Server (Model Context
+Protocol); Python-Skripte nutzen dieselben Operationen über `lib.api.ProjectSession`. Jede Änderung wird
+sofort validiert – ungültige Eingaben ändern nichts und liefern eine Fehlermeldung.
+
+Genau **ein** sproject-Server hält das Projekt; Claude Code und die GUI sind beide Clients und sehen
+immer denselben Stand:
+
+| Schritt | Wie |
+| --- | --- |
+| 1. Server starten | `bin\mcp_server.bat` → `http://127.0.0.1:8765/mcp` (ein zweiter Start auf demselben Port wird abgelehnt) |
+| 2. Claude Code verbinden | automatisch über `.mcp.json` im Projektordner (HTTP); Kontrolle mit `/mcp` |
+| 3. GUI verbinden (optional) | *Server → Mit sproject-Server verbinden …*; läuft keiner, bietet die GUI an, ihn zu starten |
+
+Solange die GUI verbunden ist, gehen ihre Änderungen etwa jede Sekunde an den Server, und Änderungen von
+Claude erscheinen in der GUI. Ändern beide gleichzeitig, gewinnt der Server-Stand; die Statuszeile meldet den Konflikt.
+
+Schalter: `--port [N]` (HTTP auf Port N, Standard 8765), `--project DATEI` (Projekt beim Start öffnen),
+`--claude` (stdio nur für Skripte/Tests – die GUI kann sich damit nicht verbinden), `--help`;
+unter Linux/macOS `bin/mcp_server.sh`.
+
+Beispiel-Anfrage an Claude: *„Lies `data/bauplan.xlsx` und baue daraus ein sproject-Projekt mit Start am
+4. Mai 2026. Prüfe es, berechne es und speichere es als `bauplan.json`.“*
+
+```python
+from lib.api import ProjectSession
+
+s = ProjectSession()
+s.new_project("Garage", project_start="2026-04-01")
+fundament = s.add_task({"name": "Fundament", "duration": "3d"})   # gibt die Task-ID zurück
+mauern = s.add_task({"name": "Mauern", "duration": "5d"})
+s.add_dependency(fundament, mauern)
+print(s.calculate()["end"])
+s.save("work/garage.json")
+```
+
+Werkzeuge, Rückgabewerte, GUI-Einstellungen und Fehlerbehebung: [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md).
 
 ## Projektdatei-Format (JSON)
 
@@ -435,6 +475,13 @@ Nach einer gewollten Ergebnisänderung die Referenzdateien in `tests/golden/` ne
 
 ```bash
 UPDATE_GOLDEN=1 python -m pytest tests/test_golden.py
+```
+
+Nur die KI-Schnittstelle (API, MCP-Werkzeuge, GUI-Anbindung über HTTP):
+
+```bash
+python -m pytest tests/test_api.py
+python -m pytest tests/test_gui_headless.py -k server_link
 ```
 
 Oder über das Batch-Skript (Windows):

@@ -20,11 +20,11 @@ EXAMPLES = sorted((ROOT / "examples").glob("*.json"))
 def session() -> ProjectSession:
     s = ProjectSession()
     s.new_project("Garage", project_start="2026-04-01")
-    s.add_task({"name": "Fundament", "duration": "3d"})
-    s.add_task({"name": "Mauern", "duration": "5d"})
-    s.add_task({"name": "Dach", "duration": "2d"})
-    s.add_dependency(1, 2)
-    s.add_dependency("2", 3)
+    fundament = s.add_task({"name": "Fundament", "duration": "3d"})
+    mauern = s.add_task({"name": "Mauern", "duration": "5d"})
+    dach = s.add_task({"name": "Dach", "duration": "2d"})
+    s.add_dependency(fundament, mauern)
+    s.add_dependency(str(mauern), dach)       # IDs dürfen auch als Text kommen
     return s
 
 
@@ -36,10 +36,20 @@ def test_build_and_calculate(session):
     assert session.validate() == []
 
 
-def test_auto_ids_and_duplicates(session):
-    assert session.add_task({"name": "Abnahme"})["id"] == 4
+def test_add_task_returns_id(session):
+    assert session.add_task({"name": "Abnahme"}) == 4
+    assert session.add_task({"id": "A-1", "name": "eigene ID"}) == "A-1"
+    assert session.add_task({"id": "10", "name": "Zahl als Text"}) == 10
     with pytest.raises(ApiError):
         session.add_task({"id": 2, "name": "doppelt"})
+
+
+def test_get_task_is_normalized(session):
+    tid = session.add_task({"name": "Prüfung", "duration": "5"})
+    assert session.get_task(tid) == {"id": tid, "name": "Prüfung", "duration": "5d"}
+    assert session.update_task(tid, {"duration": "2"})["duration"] == "2d"
+    with pytest.raises(ApiError):
+        session.get_task(99)
 
 
 def test_invalid_input_changes_nothing(session):
@@ -111,11 +121,50 @@ def test_mcp_server_tools():
 
     async def run():
         names = {t.name for t in await mcp.list_tools()}
-        assert {"new_project", "add_task", "add_dependency", "calculate", "save_project"} <= names
+        assert {"new_project", "add_task", "add_dependency", "calculate", "save_project",
+                "get_revision", "get_state"} <= names
         await mcp.call_tool("new_project", {"name": "X", "project_start": "2026-04-01"})
-        await mcp.call_tool("add_task", {"task": {"name": "A", "duration": "2d"}})
+        _, a = await mcp.call_tool("add_task", {"task": {"name": "A", "duration": "2"}})
+        _, b = await mcp.call_tool("add_task", {"task": {"name": "B", "duration": "1d"}})
+        assert a["result"] == {"id": 1, "name": "A", "duration": "2d"}   # gespeicherter Task samt ID
+        await mcp.call_tool("add_dependency", {"predecessor": a["result"]["id"], "successor": b["result"]["id"]})
         _, result = await mcp.call_tool("calculate", {})
         return result
 
     result = asyncio.run(run())
-    assert result["result"]["duration_days"] == 2.0
+    assert result["result"]["duration_days"] == 3.0
+
+
+def test_revision_and_conflict(session):
+    rev = session.revision
+    session.update_task(1, {"duration": "4d"})
+    assert session.revision == rev + 1
+    state = session.state()
+    assert state["revision"] == rev + 1 and state["project"]["tasks"][0]["duration"] == "4d"
+
+    data = state["project"]
+    data["project"] = "von der GUI"
+    session.replace_project(data, base_revision=state["revision"])      # passender Stand → übernommen
+    assert session.get_project()["project"] == "von der GUI"
+
+    data["project"] = "veraltet"
+    with pytest.raises(ApiError, match="Konflikt"):
+        session.replace_project(data, base_revision=state["revision"])  # inzwischen geändert
+    assert session.get_project()["project"] == "von der GUI"
+
+
+def test_state_without_project():
+    assert ProjectSession().state() == {"revision": 0, "project": None, "path": None}
+
+
+def test_second_http_server_refuses_busy_port():
+    import socket
+
+    from mcp_server.server import main, port_in_use
+
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        sock.listen()
+        port = sock.getsockname()[1]
+        assert port_in_use("127.0.0.1", port)
+        assert main(["--http", "--port", str(port)]) == 1

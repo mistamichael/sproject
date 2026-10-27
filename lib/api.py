@@ -9,9 +9,9 @@ Skripte) – ohne GUI. Alle Ein- und Ausgaben sind JSON-taugliche dicts/Listen.
 
     s = ProjectSession()
     s.new_project("Garage", project_start="2026-04-01")
-    s.add_task({"name": "Fundament", "duration": "3d"})
-    s.add_task({"name": "Mauern", "duration": "5d"})
-    s.add_dependency(1, 2)
+    fundament = s.add_task({"name": "Fundament", "duration": "3d"})   # gibt die Task-ID zurück
+    mauern = s.add_task({"name": "Mauern", "duration": "5d"})
+    s.add_dependency(fundament, mauern)
     print(s.calculate()["end"])
 
 Änderungen laufen über das dict des Projekts (exclude_unset) und werden danach
@@ -60,6 +60,8 @@ class ProjectSession:
         self.path = path
         self.cfg_dir = cfg_dir or get_cfg_dir()
         self.on_change = on_change
+        # Zählt jede Änderung – Clients (z. B. die GUI) erkennen daran neue Stände und Konflikte
+        self.revision = 0
 
     # ------------------------------------------------------------------
     # Projekt anlegen, laden, speichern
@@ -99,10 +101,22 @@ class ProjectSession:
         """Projekt als JSON-dict (so wie es gespeichert würde)."""
         return self._data()
 
-    def replace_project(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Ersetzt das ganze Projekt durch data (Format wie die JSON-Datei)."""
+    def replace_project(self, data: Dict[str, Any], base_revision: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Ersetzt das ganze Projekt durch data (Format wie die JSON-Datei).
+        Mit base_revision nur, wenn seitdem niemand anders geändert hat – sonst ApiError (Konflikt).
+        """
+        if base_revision is not None and base_revision != self.revision:
+            raise ApiError(f"Konflikt: Projekt wurde inzwischen geändert "
+                           f"(Stand {self.revision}, erwartet {base_revision})")
         self._commit(dict(data))
         return self.overview()
+
+    def state(self) -> Dict[str, Any]:
+        """Revision, Projekt-JSON (None ohne Projekt) und Dateipfad – für Clients, die den Stand spiegeln."""
+        return {"revision": self.revision,
+                "project": self._data() if self.project is not None else None,
+                "path": str(self.path) if self.path else None}
 
     def patch_project(self, fields: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -156,9 +170,15 @@ class ProjectSession:
             rows.append(row)
         return rows
 
-    def add_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    def get_task(self, task_id: TaskId) -> Dict[str, Any]:
+        """Ein Task so, wie er gespeichert würde (validiert, z. B. Dauer "5" → "5d")."""
+        tasks = self._data().get("tasks", [])
+        return tasks[self._task_index(tasks, task_id)]
+
+    def add_task(self, task: Dict[str, Any]) -> TaskId:
         """
-        Fügt einen Task hinzu. Ohne "id" wird die nächste freie Zahl vergeben.
+        Fügt einen Task hinzu und gibt seine ID zurück (für add_dependency).
+        Ohne "id" wird die nächste freie Zahl vergeben.
         Felder wie in der JSON-Datei: name, duration ("3d", "4h", "30m"), successors,
         resources, not_before, deadline, delay, cost, description, subtasks (Loop) …
         """
@@ -173,10 +193,10 @@ class ProjectSession:
             raise ApiError(f"Task-ID {task['id']} existiert bereits")
         data["tasks"] = tasks + [task]
         self._commit(data)
-        return task
+        return task["id"]
 
     def update_task(self, task_id: TaskId, fields: Dict[str, Any]) -> Dict[str, Any]:
-        """Ändert Felder eines Tasks; None entfernt ein Feld."""
+        """Ändert Felder eines Tasks; None entfernt ein Feld. Gibt den geänderten Task zurück."""
         data = self._data()
         tasks = list(data.get("tasks", []))
         index = self._task_index(tasks, task_id)
@@ -191,7 +211,7 @@ class ProjectSession:
         tasks[index] = task
         data["tasks"] = tasks
         self._commit(data)
-        return task
+        return self.get_task(task_id)
 
     def remove_task(self, task_id: TaskId) -> List[TaskId]:
         """Löscht einen Task und entfernt ihn aus allen Nachfolgerlisten. Gibt die übrigen IDs zurück."""
@@ -372,6 +392,7 @@ class ProjectSession:
         except Exception as e:
             raise ApiError(f"Ungültige Projektdaten: {e}") from None
         self.project = project
+        self.revision += 1
         if self.on_change:
             self.on_change(project)
 

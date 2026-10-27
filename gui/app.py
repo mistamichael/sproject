@@ -30,8 +30,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import dearpygui.dearpygui as dpg
 
-from gui.ai_bridge import AiBridge
 from gui.editor import ProjectEditorApp, REPORT_FORMATS
+from gui.server_link import ServerLink
 from lib.paths import get_results_dir
 from gui.icons import setup_icon_textures, add_icon_button
 from gui.components.sidebar import build_sidebar
@@ -135,7 +135,9 @@ def _update_ui_language() -> None:
         "menu_help":        "menu.help",
         "menu_theme":       "menu.settings.theme",
         "menu_language":    "menu.settings.language",
-        "mi_ai_server":     "menu.settings.ai_server",
+        "menu_server":      "menu.server",
+        "mi_server_connect":    "menu.server.connect",
+        "mi_server_disconnect": "menu.server.disconnect",
         # Menuepunkte
         "mi_open":          "menu.file.open",
         "mi_save":          "menu.file.save",
@@ -196,27 +198,73 @@ def _switch_language(editor: ProjectEditorApp, lang: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# KI-Schnittstelle (MCP-Server, gui/ai_bridge.py)
+# Verbindung zum sproject-Server (gui/server_link.py)
 # ---------------------------------------------------------------------------
 
-_ai_bridge: Optional[AiBridge] = None
+_server_link: Optional[ServerLink] = None
+_VIEWPORT_TITLE = CFG.get("viewport", "title", "sproject Editor")
 
 
-def _toggle_ai_server(editor: ProjectEditorApp, enable: bool) -> None:
-    """Startet/stoppt den MCP-Server, über den Claude das geöffnete Projekt bearbeitet."""
-    if _ai_bridge is None:
+def _open_confirm_dialog(message: str, on_yes: Callable[[], None],
+                         on_no: Optional[Callable[[], None]] = None) -> None:
+    """Modale Ja/Nein-Rückfrage."""
+    tag = "dlg_confirm"
+    if dpg.does_item_exist(tag):
+        dpg.delete_item(tag)
+
+    def answer(callback: Optional[Callable[[], None]]) -> None:
+        dpg.delete_item(tag)
+        if callback:
+            callback()
+
+    with dpg.window(label=t("dialog.confirm.title"), tag=tag, modal=True, width=460,
+                    pos=[400, 280], no_resize=True, autosize=True):
+        dpg.add_text(message, wrap=430)
+        dpg.add_spacer(height=6)
+        with dpg.group(horizontal=True):
+            dpg.add_button(label=t("button.yes"), width=90, callback=lambda: answer(on_yes))
+            dpg.add_button(label=t("button.no"), width=90, callback=lambda: answer(on_no))
+
+
+def _open_connect_dialog(editor: ProjectEditorApp) -> None:
+    """Server → Verbinden: Host und Port abfragen, dann verbinden (oder Start anbieten)."""
+    link = _server_link
+    if link is None:
+        return
+    fields = [FormField("host", "label.server_host", default=link.host),
+              FormField("port", "label.server_port", default=str(link.port))]
+    open_form_dialog("dlg_server_connect", "dialog.server.title", fields,
+                     lambda values: _connect_server(editor, values), confirm_label="button.connect")
+
+
+def _connect_server(editor: ProjectEditorApp, values: dict) -> None:
+    link = _server_link
+    if link is None:
         return
     try:
-        if enable:
-            _ai_bridge.start()
-            editor._set_status(t("status.ai_started", url=_ai_bridge.url))
-        else:
-            _ai_bridge.stop()
-            editor._set_status(t("status.ai_stopped"))
-    except Exception as e:
-        editor._set_status(t("status.ai_error", error=e))
-    if dpg.does_item_exist("mi_ai_server"):
-        dpg.set_value("mi_ai_server", _ai_bridge.running)
+        port = int(values.get("port", "").strip())
+    except ValueError:
+        editor._set_status(t("status.server_bad_port", port=values.get("port", "")))
+        return
+    if link.state != "disconnected":
+        link.disconnect()
+    link.host = values.get("host", "").strip() or "127.0.0.1"
+    link.port = port
+    if not link.connect():
+        _open_confirm_dialog(t("dialog.server.start", url=link.url), link.start_server)
+
+
+def _update_server_ui(connected: bool) -> None:
+    """Menü und Fenstertitel zeigen, ob und womit die GUI verbunden ist."""
+    if dpg.does_item_exist("mi_server_disconnect"):
+        dpg.configure_item("mi_server_disconnect", enabled=connected)
+    title = _VIEWPORT_TITLE
+    if connected and _server_link is not None:
+        title = t("viewport.title_connected", title=_VIEWPORT_TITLE, url=_server_link.url)
+    try:
+        dpg.set_viewport_title(title)
+    except Exception:
+        pass        # ohne Viewport (Tests)
 
 
 VIEWPORT_W = CFG.base_width
@@ -635,9 +683,11 @@ def _build_scenarios_section(app: ProjectEditorApp) -> None:
 
 def create_app() -> ProjectEditorApp:
     """Baut das vollständige DPG-Layout auf."""
-    global _ai_bridge
+    global _server_link
     editor = ProjectEditorApp()
-    _ai_bridge = AiBridge(editor, port=int(CFG.get("ai", "mcp_port", 8765)))
+    _server_link = ServerLink(editor, host=str(CFG.get("server", "host", "127.0.0.1")),
+                              port=int(CFG.get("server", "port", 8765)),
+                              confirm=_open_confirm_dialog, on_status_change=_update_server_ui)
 
     # --- About-Fenster ---
     _s = "dialog.about"
@@ -751,12 +801,18 @@ def create_app() -> ProjectEditorApp:
                             callback=lambda s, a, u: _switch_language(editor, u),
                             user_data=lang_code,
                         )
+
+            with dpg.menu(label=t("menu.server"), tag="menu_server"):
                 dpg.add_menu_item(
-                    label=t("menu.settings.ai_server"),
-                    tag="mi_ai_server",
-                    check=True,
-                    default_value=False,
-                    callback=lambda s, a: _toggle_ai_server(editor, a),
+                    label=t("menu.server.connect"),
+                    tag="mi_server_connect",
+                    callback=lambda: _open_connect_dialog(editor),
+                )
+                dpg.add_menu_item(
+                    label=t("menu.server.disconnect"),
+                    tag="mi_server_disconnect",
+                    enabled=False,
+                    callback=lambda: _server_link.disconnect() if _server_link else None,
                 )
 
             with dpg.menu(label=t("menu.help"), tag="menu_help"):
@@ -899,7 +955,7 @@ def main() -> None:
                     dpg.add_font_range(start, end)
         dpg.bind_font(default_font)
 
-    editor = create_app()
+    create_app()
 
     dpg.create_viewport(
         title=CFG.get("viewport", "title", "sproject Editor"),
@@ -912,15 +968,13 @@ def main() -> None:
     dpg.set_primary_window(TAG_MAIN_WIN, True)
     dpg.set_viewport_resize_callback(_resize_callback)
     dpg.show_viewport()
-    if str(CFG.get("ai", "mcp_autostart", "false")).lower() in ("1", "true", "yes"):
-        _toggle_ai_server(editor, True)
-    # Eigene Render-Schleife statt start_dearpygui(): Aufträge der KI-Schnittstelle im Hauptthread abarbeiten
+    # Eigene Render-Schleife statt start_dearpygui(): Abgleich mit dem sproject-Server im Hauptthread
     while dpg.is_dearpygui_running():
-        if _ai_bridge is not None:
-            _ai_bridge.process_pending()
+        if _server_link is not None:
+            _server_link.process()
         dpg.render_dearpygui_frame()
-    if _ai_bridge is not None:
-        _ai_bridge.stop()
+    if _server_link is not None:
+        _server_link.disconnect(status_key=None)      # nur trennen – der Server läuft weiter
     dpg.destroy_context()
 
 

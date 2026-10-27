@@ -21,7 +21,7 @@ sproject/
 │   ├── colors.py     # Ressourcen-Farbzuordnung (eigene Farbe vor Palette)
 │   ├── i18n.py       # Internationalisierung (de/en), t()-Funktion
 │   ├── gui_config.py # Konfigurationslader (gui.cfg → Farben, Größen, Themes)
-│   ├── ai_bridge.py  # MCP-Server aus der laufenden GUI (HTTP), Aufträge im DPG-Hauptthread
+│   ├── server_link.py # Explizite Verbindung zum sproject-Server (MCP-Client), Abgleich im DPG-Hauptthread
 │   └── components/   # UI-Komponenten
 │       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection), Formular-Dialog, Farbwähler
 │       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit, Unsicherheiten, Szenarien
@@ -38,7 +38,7 @@ sproject/
 │   ├── *_export.py, excel_reports.py  # Exporte
 │   ├── api.py        # ProjectSession: Operationen für KI/Skripte (dict rein/raus, validiert)
 │   └── sproject.py   # CLI
-├── mcp_server/       # MCP-Server (KI-Schnittstelle): Tools = lib/api.py, stdio oder HTTP
+├── mcp_server/       # sproject-Server (KI-Schnittstelle): Tools = lib/api.py, HTTP (stdio nur Skripte/Tests)
 ├── results/          # Export-Ausgaben (in .gitignore)
 ├── tests/            # pytest; tests/golden/ = Referenz-Exporte aller Beispiele
 └── work/             # Arbeitsdateien, Default-Speicherort für neue Projekte (PV_WORK)
@@ -65,9 +65,10 @@ sproject/
    - Szenarien: `scenarios` im Projekt (`lib/models/scenario.py`), angewendet und verglichen in `lib/scenarios.py`.
    - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `lib/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel). Liegt die geplante Dauer außerhalb von `duration_range`, nimmt die Simulation den Rand und meldet den Task (`planned_outside_range()`, `SimulationResult.clamped`); die GUI markiert ihn in Sektion 6.
 6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
-7. **KI-Schnittstelle:** `lib/api.py` (`ProjectSession`) → `mcp_server/server.py` (`build_server(session, runner)`); Doku: `doc/de/ki-schnittstelle.md`
-   - Änderungen laufen über das Projekt-dict und werden neu validiert (`_commit`) – ungültige Eingaben ändern nichts.
-   - GUI: `gui/ai_bridge.py` stellt Tool-Aufrufe in eine Queue; `gui/app.py` arbeitet sie in der eigenen Render-Schleife ab (`process_pending()`), danach `editor.apply_external_project()`.
+7. **KI-Schnittstelle:** `lib/api.py` (`ProjectSession`) → `mcp_server/server.py` (`build_server(session)`); Doku: `doc/de/ki-schnittstelle.md`
+   - **Genau ein sproject-Server** (HTTP, `bin/mcp_server.* --port`, Standard 8765) hält das Projekt. Claude Code (`.mcp.json`, HTTP) und GUI sind nur Clients. Ein zweiter Start auf demselben Port bricht ab (`port_in_use`). Nie wieder einen Server im GUI-Prozess starten – das ergibt zwei Projekte.
+   - Änderungen laufen über das Projekt-dict und werden neu validiert (`_commit`, zählt `revision` hoch) – ungültige Eingaben ändern nichts.
+   - GUI: `gui/server_link.py` (`ServerLink`) verbindet sich nur explizit (Menü *Server*), MCP-Client im Hintergrund-Thread; `process()` läuft pro Frame in der Render-Schleife von `gui/app.py`. Abgleich ca. 1 s: GUI → `replace_project(data, base_revision)`, Server → `get_revision()`/`get_state()` → `editor.apply_external_project()`. Konflikt: Server gewinnt. Nicht synchronisieren, solange ein Eingabefeld aktiv ist.
    - Im stdio-Modus nichts auf stdout schreiben – `print()` der Bibliothek wird im Server nach stderr umgeleitet.
 8. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 
@@ -75,7 +76,7 @@ sproject/
 
 ```text
 Viewport
-├── Menüleiste (Datei, Einstellungen, Hilfe)
+├── Menüleiste (Datei, Analyse, Einstellungen, Server, Hilfe)
 ├── Icon-Toolbar (Öffnen, Speichern, Speichern unter, Export, Berechnen)
 ├── Statuszeile
 └── Hauptbereich (2-spaltig)
@@ -156,7 +157,8 @@ Datei
 - **Dear PyGui: kein zweites modales Fenster über einem offenen modalen Dialog** – es bleibt unsichtbar. In Formular-Dialogen deshalb Inhalte aufklappen (`add_color_input(inline=True)`).
 - **Dear PyGui-Tabellen:** Jedes Kind einer `table_row` ist eine eigene Spalte – mehrere Widgets für eine Zelle in eine `dpg.group()` packen.
 - **Dear PyGui-Tabellen mit `mvTable_SizingStretchProp`:** Dehnbare Spalten brauchen ein festes Gewicht (`init_width_or_weight=1.0`), sonst wandert bei jeder Größenänderung Breite in die letzte Spalte.
-- **Dear PyGui nie aus einem Fremd-Thread ändern:** Hintergrund-Threads (MCP-Server) übergeben Arbeit per Queue an den Hauptthread (`AiBridge.process_pending()`).
+- **Dear PyGui nie aus einem Fremd-Thread ändern:** Der MCP-Client in `ServerLink` läuft im Hintergrund-Thread und liefert nur Futures; DPG-Zugriffe (`sync_to_model`, `apply_external_project`) passieren ausschließlich in `ServerLink.process()` im Hauptthread.
+- **Lokalisierte Windows-Ausgaben:** `netstat` schreibt auf deutschem Windows „ABHÖREN“ statt „LISTEN“ – Ports nicht per `netstat`-Text prüfen, sondern mit `port_in_use()` bzw. `Get-NetTCPConnection`.
 - **Headless-Tests rendern nicht:** Ob etwas sichtbar ist (Modals, Layout), nur per Screenshot prüfbar (`dpg.output_frame_buffer()` mit Viewport).
 
 ## Code-Qualität / Linting

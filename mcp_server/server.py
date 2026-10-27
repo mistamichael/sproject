@@ -5,16 +5,18 @@ sproject MCP-Server
 Stellt die Operationen aus lib/api.py (ProjectSession) als MCP-Werkzeuge bereit,
 damit Claude Code, Claude Desktop oder ein Chatbot Projekte aufbauen und rechnen kann.
 
-    python -m mcp_server                       # stdio (Claude Code / Desktop)
-    python -m mcp_server --http --port 8765    # HTTP: http://127.0.0.1:8765/mcp
+    python -m mcp_server --http --port 8765    # HTTP: http://127.0.0.1:8765/mcp (Normalfall)
+    python -m mcp_server                       # stdio (nur für Skripte/Tests)
 
-build_server(session, runner) ist auch für die GUI gedacht: runner führt jeden
-Aufruf aus (z. B. im DPG-Hauptthread) – ohne runner wird direkt aufgerufen.
+Im Normalfall läuft genau ein Server per HTTP; Claude Code (.mcp.json) und die GUI
+(gui/server_link.py) sind Clients und teilen sich dessen Projekt. Die GUI erkennt
+neue Stände an get_revision() und schreibt mit replace_project(..., base_revision).
 """
 
 import argparse
 import contextlib
 import json
+import socket
 import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
@@ -30,7 +32,6 @@ from lib.exporters import EXPORTERS
 from lib.paths import PROJECT_ROOT, get_work_dir
 
 T = TypeVar("T")
-Runner = Callable[[Callable[[], Any]], Any]
 TaskId = Union[int, str]
 
 EXAMPLES_DIR = PROJECT_ROOT / "examples"
@@ -62,15 +63,22 @@ def _quiet(func: Callable[[], T]) -> T:
         return func()
 
 
-def build_server(session: Optional[ProjectSession] = None, runner: Optional[Runner] = None,
-                 host: str = "127.0.0.1", port: int = 8765) -> FastMCP:
-    """MCP-Server für eine ProjectSession; runner(func) führt jeden Werkzeugaufruf aus."""
-    s = session or ProjectSession()
-    run: Runner = runner or (lambda func: func())
-    mcp = FastMCP("sproject", instructions=INSTRUCTIONS, host=host, port=port)
+SERVER_NAME = "sproject"
 
-    def call(func: Callable[[], T]) -> T:
-        return run(lambda: _quiet(func))
+
+def port_in_use(host: str, port: int) -> bool:
+    """True, wenn auf host:port schon etwas lauscht (z. B. ein laufender sproject-Server)."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(0.5)
+        return sock.connect_ex((host, port)) == 0
+
+
+def build_server(session: Optional[ProjectSession] = None,
+                 host: str = "127.0.0.1", port: int = 8765) -> FastMCP:
+    """MCP-Server für eine ProjectSession."""
+    s = session or ProjectSession()
+    mcp = FastMCP(SERVER_NAME, instructions=INSTRUCTIONS, host=host, port=port)
+    call = _quiet
 
     # --- Projekt -------------------------------------------------------
 
@@ -103,9 +111,20 @@ def build_server(session: Optional[ProjectSession] = None, runner: Optional[Runn
         return call(s.get_project)
 
     @mcp.tool()
-    def replace_project(data: Dict[str, Any]) -> Dict[str, Any]:
-        """Ersetzt das ganze Projekt durch data (Format wie die JSON-Datei, siehe sproject://schema)."""
-        return call(lambda: s.replace_project(data))
+    def replace_project(data: Dict[str, Any], base_revision: Optional[int] = None) -> Dict[str, Any]:
+        """Ersetzt das ganze Projekt durch data (Format wie die JSON-Datei, siehe sproject://schema).
+        base_revision (optional): nur ersetzen, wenn der Stand seitdem unverändert ist."""
+        return call(lambda: s.replace_project(data, base_revision))
+
+    @mcp.tool()
+    def get_revision() -> int:
+        """Änderungszähler des Projekts – steigt bei jeder Änderung (für Clients wie die GUI)."""
+        return s.revision
+
+    @mcp.tool()
+    def get_state() -> Dict[str, Any]:
+        """Revision, vollständiges Projekt-JSON (null ohne Projekt) und Dateipfad."""
+        return call(s.state)
 
     @mcp.tool()
     def patch_project(fields: Dict[str, Any]) -> Dict[str, Any]:
@@ -119,8 +138,14 @@ def build_server(session: Optional[ProjectSession] = None, runner: Optional[Runn
     def add_task(task: Dict[str, Any]) -> Dict[str, Any]:
         """Fügt einen Task hinzu, z. B. {"name": "Fundament", "duration": "3d", "resources": ["R1"]}.
         Ohne id wird die nächste freie Zahl vergeben. Weitere Felder: successors, not_before,
-        deadline, delay, cost, description; Loop-Tasks: loop_until, subtasks."""
-        return call(lambda: s.add_task(task))
+        deadline, delay, cost, description; Loop-Tasks: loop_until, subtasks.
+        Gibt den gespeicherten Task zurück – seine "id" ist für add_dependency nötig."""
+        return call(lambda: s.get_task(s.add_task(task)))
+
+    @mcp.tool()
+    def get_task(task_id: TaskId) -> Dict[str, Any]:
+        """Ein Task mit allen Feldern (wie in der JSON-Datei)."""
+        return call(lambda: s.get_task(task_id))
 
     @mcp.tool()
     def update_task(task_id: TaskId, fields: Dict[str, Any]) -> Dict[str, Any]:
@@ -233,6 +258,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--project", type=Path, help="Projektdatei beim Start öffnen")
     args = parser.parse_args(argv)
 
+    url = f"http://{args.host}:{args.port}/mcp"
+    if args.http and port_in_use(args.host, args.port):
+        print(f"Port {args.port} ist belegt – läuft schon ein sproject-Server? ({url})", file=sys.stderr)
+        return 1
+    if args.http:
+        print(f"sproject-Server: {url}\n"
+              f"Claude Code:     .mcp.json im Projektordner (Port 8765) oder "
+              f"claude mcp add --transport http sproject {url}\n"
+              f"GUI:             Server -> Mit sproject-Server verbinden ...\n"
+              f"Beenden mit Strg+C", flush=True)
     session = ProjectSession()
     if args.project:
         _quiet(lambda: session.load(args.project))

@@ -122,29 +122,21 @@ class ProjectEditorApp:
         self.refresh_all()
 
     # ------------------------------------------------------------------
-    # Änderungen von außen (KI-Schnittstelle, gui/ai_bridge.py)
+    # Änderungen vom sproject-Server (gui/server_link.py)
     # ------------------------------------------------------------------
 
-    @property
-    def last_save_path(self) -> Optional[Path]:
-        return self._last_save_path
-
     def apply_external_project(self, project: Project, path: Optional[Path]) -> None:
-        """Übernimmt ein von außen geändertes Projekt; eingeblendete Sektionen bleiben sichtbar."""
+        """Übernimmt den Projektstand des Servers; eingeblendete Sektionen bleiben sichtbar."""
         shown = dict(self.active_sections)
         self.project = project
         self.task_rows = tasks_to_rows(project.tasks)
         self._detect_active_sections()
         self.active_sections = {k: v or shown.get(k, False) for k, v in self.active_sections.items()}
-        self._last_save_path = path
+        if path is not None:
+            self._last_save_path = path
         self.refresh_all()
         self.dirty = True
-        self._set_status(t("status.ai_changed", name=project.project))
-
-    def mark_saved(self, path: Path) -> None:
-        self._last_save_path = path
-        self._dirty = False
-        self._set_status(t("status.saved", path=path))
+        self._set_status(t("status.server_changed", name=project.project))
 
     # ------------------------------------------------------------------
     # Datei-Operationen

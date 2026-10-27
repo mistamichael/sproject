@@ -218,65 +218,142 @@ def test_report_export_uses_shared_exporters(editor, tmp_path):
         editor.export_report("txt", tmp_path)
 
 
-def test_ai_bridge_edits_open_project_over_http(editor):
-    """KI-Schnittstelle: ein MCP-Client ändert das geöffnete Projekt, die GUI übernimmt es."""
-    import asyncio
-    import socket
-    import threading
+# ---------------------------------------------------------------------------
+# Verbindung zum sproject-Server (gui/server_link.py)
+# ---------------------------------------------------------------------------
+
+class _Server:
+    """Echter sproject-Server (uvicorn) auf freiem Port in einem Hintergrund-Thread."""
+
+    def __init__(self):
+        import socket
+        import threading
+
+        import uvicorn
+
+        from lib.api import ProjectSession
+        from mcp_server.server import build_server
+
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            self.port = sock.getsockname()[1]
+        self.session = ProjectSession()
+        app = build_server(self.session, port=self.port).streamable_http_app()
+        self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=self.port, log_level="warning"))
+        self.thread = threading.Thread(target=self.server.run, daemon=True)
+        self.thread.start()
+        self._wait(lambda: self.server.started, "Server startet nicht")
+
+    @staticmethod
+    def _wait(condition, message, timeout=15.0):
+        import time
+        deadline = time.time() + timeout
+        while not condition():
+            assert time.time() < deadline, message
+            time.sleep(0.02)
+
+    def stop(self):
+        self.server.should_exit = True
+        self.server.force_exit = True      # nicht auf offene Streams warten
+        self.thread.join(timeout=5)
+
+
+def _pump(link, condition, message, timeout=15.0):
+    """Wie die Render-Schleife: process() aufrufen, bis condition() gilt (Abfrage sofort statt jede Sekunde)."""
     import time
+    deadline = time.time() + timeout
+    while not condition():
+        assert time.time() < deadline, message
+        link.process(now=time.monotonic() + 3600)
+        time.sleep(0.01)
+
+
+def _claude(port, *calls):
+    """Zweiter MCP-Client (wie Claude Code): ruft Werkzeuge nacheinander auf, gibt die Ergebnisse zurück."""
+    import asyncio
 
     from mcp import ClientSession
     from mcp.client.streamable_http import streamable_http_client
 
-    from gui.ai_bridge import AiBridge
+    async def run():
+        results = []
+        async with streamable_http_client(f"http://127.0.0.1:{port}/mcp") as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                for tool, args in calls:
+                    res = await session.call_tool(tool, args)
+                    results.append(res)
+        return results
+
+    return asyncio.run(run())
+
+
+@pytest.fixture
+def server():
+    srv = _Server()
+    yield srv
+    srv.stop()
+
+
+def test_server_link_shares_one_project(editor, server):
+    """GUI und Claude arbeiten über den einen Server am selben Projekt – in beide Richtungen."""
+    from gui.server_link import ServerLink
 
     editor.load_from_file(EXAMPLES / "tankdesign.json")
-    dpg.set_value("inp_project_name", "Aus der GUI")      # ungespeicherte Eingabe muss die KI sehen
-    task_count = len(editor.project.tasks)
+    link = ServerLink(editor, port=server.port)
+    assert link.connect()
+    _pump(link, lambda: link.connected, "verbindet nicht")
+
+    # 1. Server war leer → das GUI-Projekt landet auf dem Server
+    _pump(link, lambda: server.session.project is not None, "GUI-Projekt nicht übertragen")
+    assert server.session.project.project == "Tank Design Project"
+    count = len(server.session.project.tasks)
+
+    # 2. Claude fügt einen Task hinzu → erscheint in der GUI
+    added, = _claude(server.port, ("add_task", {"task": {"name": "Abnahme durch Claude", "duration": "1d"}}))
+    assert not added.isError
+    _pump(link, lambda: any(r.name == "Abnahme durch Claude" for r in editor.task_rows), "Claude-Task fehlt in der GUI")
+    assert len(editor.project.tasks) == count + 1
+
+    # 3. Eingabe in der GUI → landet auf dem Server
+    dpg.set_value("inp_project_name", "In der GUI umbenannt")
+    _pump(link, lambda: server.session.project.project == "In der GUI umbenannt", "GUI-Eingabe nicht übertragen")
+
+    link.disconnect()
+    assert link.state == "disconnected"
+
+
+def test_server_link_takes_server_project_and_resolves_conflict(editor, server):
+    """Hat der Server schon ein Projekt, übernimmt die GUI es; bei gleichzeitiger Änderung gewinnt der Server."""
+    from gui.server_link import ServerLink
+
+    server.session.load(EXAMPLES / "pizza.json")
+    editor.load_from_file(EXAMPLES / "tankdesign.json")
+    editor.dirty = True
+    asked = []
+    link = ServerLink(editor, port=server.port, confirm=lambda msg, yes, no: (asked.append(msg), yes()))
+    link.connect()
+    _pump(link, lambda: link.connected, "verbindet nicht")
+    assert asked, "ungespeicherte GUI-Änderungen ohne Rückfrage verworfen"
+    assert editor.project.project == "Pizza Project"
+
+    # gleichzeitig: GUI ändert lokal, Claude ändert auf dem Server
+    dpg.set_value("inp_project_name", "GUI-Name")
+    _claude(server.port, ("patch_project", {"fields": {"project": "Claude-Name"}}))
+    _pump(link, lambda: editor.project.project == "Claude-Name", "Server-Stand nicht übernommen")
+    assert server.session.project.project == "Claude-Name"
+    assert "Konflikt" in dpg.get_value("statusbar_text")
+    link.disconnect()
+
+
+def test_server_link_without_server_offers_start(editor):
+    from gui.server_link import ServerLink
+    import socket
 
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-    bridge = AiBridge(editor, port=port)
-    bridge.start()
-    results: dict = {}
-
-    async def client() -> None:
-        for _ in range(50):                               # warten, bis uvicorn lauscht
-            try:
-                with socket.create_connection(("127.0.0.1", port), timeout=0.2):
-                    break
-            except OSError:
-                await asyncio.sleep(0.1)
-        async with streamable_http_client(bridge.url) as (read, write, _):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                overview = await session.call_tool("get_overview", {})
-                results["name"] = overview.structuredContent["result"]["project"]
-                added = await session.call_tool("add_task", {"task": {"name": "Abnahme durch KI", "duration": "1d"}})
-                results["added"] = added.structuredContent["result"]
-                bad = await session.call_tool("add_dependency", {"predecessor": 1, "successor": 999})
-                results["bad_is_error"] = bad.isError
-
-    def run_client() -> None:
-        try:
-            asyncio.run(client())
-        except BaseException as e:      # noqa: BLE001 – im Testthread sammeln
-            results["error"] = e
-
-    thread = threading.Thread(target=run_client)
-    thread.start()
-    deadline = time.time() + 30
-    while thread.is_alive() and time.time() < deadline:
-        bridge.process_pending()                          # wie die Render-Schleife in gui/app.py
-        time.sleep(0.01)
-    bridge.stop()
-    thread.join(timeout=5)
-
-    assert "error" not in results, results.get("error")
-    assert results["name"] == "Aus der GUI"
-    assert results["bad_is_error"] is True
-    assert len(editor.project.tasks) == task_count + 1
-    assert editor.project.tasks[-1].name == "Abnahme durch KI"
-    assert editor.dirty
-    assert any(row.name == "Abnahme durch KI" for row in editor.task_rows)
+    link = ServerLink(editor, port=port)
+    assert link.connect() is False
+    assert link.state == "disconnected"
+    assert "Kein sproject-Server" in dpg.get_value("statusbar_text")

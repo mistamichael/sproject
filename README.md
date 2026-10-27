@@ -16,6 +16,7 @@
 - **Monte Carlo Simulation**: Duration ranges, risks and scenario probabilities → "80 % finished by …"
 - **GUI Editor**: Edit projects in a desktop app (Dear PyGui), calculate and export
 - **Multiple Export Formats**: JSON, TXT, XLSX, Markdown, HTML, SVG-ZIP, interactive charts
+- **AI Interface (MCP)**: Claude Code, Claude Desktop or a chatbot builds, checks and calculates projects – on its own or together with the GUI, via one shared sproject server
 
 ## Project Structure
 
@@ -26,6 +27,7 @@ sproject/
 │   ├── activate_venv.bat       # Activate virtual environment
 │   ├── create_reports.bat      # Generate reports
 │   ├── gui.bat                 # Start the GUI editor
+│   ├── mcp_server.bat          # Start the sproject server (AI interface): --port [N] | --claude
 │   └── run_unittests.bat       # Run unit tests
 ├── cfg/                        # Configuration files
 │   ├── defaults.cfg            # Main config (calendar, CPM, costs)
@@ -47,9 +49,11 @@ sproject/
 │   ├── editor.py               # Editor state, file operations, calculation, exports
 │   ├── task_rows.py            # Lossless conversion tasks ↔ table rows
 │   ├── analysis_rows.py        # Text ↔ model for uncertainties and scenarios
+│   ├── server_link.py          # GUI connection to the sproject server (menu Server)
 │   └── components/             # Sections, tables, result panel, sidebar
 ├── lib/                        # Python source code (package "lib")
 │   ├── sproject.py             # CLI entry point
+│   ├── api.py                  # ProjectSession: project operations for AI tools and scripts
 │   ├── schedule.py             # build_schedule(): expand → CPM → Gantt → costs
 │   ├── scenarios.py            # Apply and compare scenarios
 │   ├── simulation.py           # Monte Carlo simulation
@@ -75,7 +79,9 @@ sproject/
 │   ├── markdown_export.py      # Markdown/HTML/ZIP export
 │   ├── mermaid_export.py       # SVG via Mermaid/kroki
 │   ├── colors.py, paths.py, export_config.py, config_loader.py
+├── mcp_server/                 # MCP server (AI interface): tools on top of lib/api.py
 ├── tests/                      # pytest (incl. golden-file tests in tests/golden/)
+├── .mcp.json                   # Registers the MCP server for Claude Code
 ├── requirements.txt            # Python dependencies
 ├── log/                        # Log files (auto-created)
 ├── results/                    # Generated reports (auto-created)
@@ -200,13 +206,48 @@ Sections 3–7 are optional and can be switched on in the sidebar; they appear a
 - **Warning:** if a task's planned duration lies outside its Min–Max range, section 6 marks it red (the simulation would use the edge of the range).
 - **Analysis menu / toolbar:** calculate, compare scenarios, run the Monte Carlo simulation. Results appear in the *Result* tab; reports go to `results/`.
 - **Language:** German / English via *Settings*.
+- **AI interface:** *Server → Connect to sproject server …* shares the project with Claude (see below).
 
 ## AI Interface (MCP)
 
-Claude Code, Claude Desktop or a chatbot can build, check, calculate and save projects through an
-MCP server – headless (`.mcp.json` / `bin/mcp_server.bat`) or live in the running GUI
-(*Settings → AI interface (MCP) active*, `http://127.0.0.1:8765/mcp`). Python scripts can use
-`lib.api.ProjectSession` directly. Details (in German): [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md).
+An AI tool such as Claude Code or Claude Desktop can create projects, build them from Excel lists or other
+sources, check, calculate and save them. It connects through an MCP server (Model Context Protocol); Python
+scripts use the same operations via `lib.api.ProjectSession`. Every change is validated immediately –
+invalid input changes nothing and returns an error message.
+
+Exactly **one** sproject server holds the project; Claude Code and the GUI are both clients of it and
+always see the same state:
+
+| Step | How |
+| --- | --- |
+| 1. Start the server | `bin\mcp_server.bat` → `http://127.0.0.1:8765/mcp` (a second start on the same port is refused) |
+| 2. Connect Claude Code | automatically via `.mcp.json` in the project folder (HTTP); check with `/mcp` |
+| 3. Connect the GUI (optional) | *Server → Connect to sproject server …*; if none is running, the GUI offers to start it |
+
+While connected, GUI changes go to the server about once per second and Claude's changes appear in the GUI.
+If both change at the same time, the server version wins and the status bar reports the conflict.
+
+Switches: `--port [N]` (HTTP on port N, default 8765), `--project FILE` (open a project at startup),
+`--claude` (stdio for scripts/tests only – the GUI cannot connect to it), `--help`;
+on Linux/macOS `bin/mcp_server.sh`.
+
+Example request to Claude: *"Read `data/bauplan.xlsx` and build an sproject project starting on 4 May 2026.
+Check it, calculate it and save it as `bauplan.json`."*
+
+```python
+from lib.api import ProjectSession
+
+s = ProjectSession()
+s.new_project("Garage", project_start="2026-04-01")
+foundation = s.add_task({"name": "Foundation", "duration": "3d"})   # returns the task id
+walls = s.add_task({"name": "Walls", "duration": "5d"})
+s.add_dependency(foundation, walls)
+print(s.calculate()["end"])
+s.save("work/garage.json")
+```
+
+Tools, return values, GUI settings and troubleshooting: [doc/en/ai-interface.md](doc/en/ai-interface.md)
+(German: [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md)).
 
 ## Project File Format (JSON)
 
@@ -436,6 +477,13 @@ After an intended change of results, regenerate the reference files in `tests/go
 
 ```bash
 UPDATE_GOLDEN=1 python -m pytest tests/test_golden.py
+```
+
+Only the AI interface (API, MCP tools, GUI connection over HTTP):
+
+```bash
+python -m pytest tests/test_api.py
+python -m pytest tests/test_gui_headless.py -k server_link
 ```
 
 Or via batch script (Windows):
