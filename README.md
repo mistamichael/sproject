@@ -3,10 +3,11 @@
 **When will the project really be done?** sproject plans projects with the critical path method (CPM), levels
 resources, vacations and part-time work – and then answers with a **Monte Carlo simulation**: *"done by 16 April
 with 80 % probability"* instead of a single, usually too optimistic date. What-if **scenarios** show the effect
-of a sick colleague or a late delivery. A desktop GUI, a CLI and an **MCP server** let you – or Claude – build
-plans, e.g. straight from an Excel task list.
+of a sick colleague or a late delivery. The desktop editor sproject – and, through the [moncapro](https://github.com/mistamichael/moncapro) package it is built on, a CLI and an
+**MCP server** – let you, or Claude, build plans, e.g. straight from an Excel task list.
 
 [![tests](https://github.com/mistamichael/sproject/actions/workflows/tests.yml/badge.svg)](https://github.com/mistamichael/sproject/actions/workflows/tests.yml)
+[![moncapro on PyPI](https://img.shields.io/pypi/v/moncapro.svg?label=moncapro)](https://pypi.org/project/moncapro/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 
@@ -43,11 +44,14 @@ separate package [moncapro](https://github.com/mistamichael/moncapro) and are in
    (creates `.venv` and installs everything from `requirements.txt`)
 3. Start: double-click `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – and open an example from the sidebar (English files in `examples/en`, German ones in `examples/de`)
 
-Command line instead of the GUI (with `.venv` active):
+Command line instead of the GUI (activate `.venv` first: `bin\activate_venv.bat` – Linux/macOS: `source bin/activate_venv.sh`):
 
 ```bash
 moncapro --project my_project.json --export md,html --simulate 300
 ```
+
+No GUI needed? The calculation core, CLI and MCP server are a package of their own:
+`pip install "moncapro[all]"` ([moncapro on PyPI](https://pypi.org/project/moncapro/)).
 
 Building a project with Claude: see [Three ways to use sproject](#three-ways-to-use-sproject).
 
@@ -57,7 +61,7 @@ Building a project with Claude: see [Three ways to use sproject](#three-ways-to-
 | --- | --- |
 | **Desktop GUI** | `bin\gui.bat` – edit tasks, resources, uncertainties and scenarios, calculate, export. [GUI guide](doc/en/gui.md) |
 | **Command line** | `moncapro --project <file> --export md,html,xlsx --simulate 300` – batch reports. [CLI guide](https://github.com/mistamichael/moncapro/blob/main/doc/en/cli.md) |
-| **AI / Claude (MCP)** | start `bin\mcp_server.bat`, then ask Claude Code e.g. *"Read `data/simple_software_project.xlsx` and build a sproject project from it"* – the GUI can watch live. [AI interface](https://github.com/mistamichael/moncapro/blob/main/doc/en/ai-interface.md) |
+| **AI / Claude (MCP)** | start `bin\mcp_server.bat`, then ask Claude Code e.g. *"Read `data/simple_software_project.xlsx` and build a project from it"* – the GUI can watch live. [AI interface](https://github.com/mistamichael/moncapro/blob/main/doc/en/ai-interface.md) |
 
 ![What-if scenarios compared with the base plan](doc/img/scenarios_en.svg)
 
@@ -91,6 +95,7 @@ browser. The interactive pages load the Plotly library from the internet.
 | Project file format: durations, dependencies, resources, loops, uncertainties, scenarios | [doc/en/project-format.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/project-format.md) |
 | Configuration, public holidays | [doc/en/configuration.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/configuration.md) |
 | Example projects | [`examples/`](examples/) – `en/` English, `de/` German; description: [doc/en/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/examples.md) |
+| Calculation core, CLI, MCP server (separate package) | [moncapro](https://github.com/mistamichael/moncapro) · [PyPI](https://pypi.org/project/moncapro/) |
 | Tests, development, project structure | [doc/en/development.md](doc/en/development.md) |
 | Dates, resources, plan vs. actual, scenarios, Monte Carlo (German) | [doc/de/termine-und-ist.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/termine-und-ist.md) |
 

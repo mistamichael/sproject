@@ -3,10 +3,11 @@
 **Wann ist das Projekt wirklich fertig?** sproject plant Projekte mit der Netzplantechnik (CPM), berücksichtigt
 Ressourcen, Urlaub und Teilzeit – und antwortet mit einer **Monte-Carlo-Simulation**: *„zu 80 % fertig bis
 16. April“* statt eines einzelnen, meist zu optimistischen Termins. **Szenarien** zeigen, was eine kranke
-Kollegin oder eine verspätete Lieferung bewirkt. Eine Desktop-GUI, eine CLI und ein **MCP-Server** lassen dich –
-oder Claude – Pläne aufbauen, z. B. direkt aus einer Excel-Aufgabenliste.
+Kollegin oder eine verspätete Lieferung bewirkt. Der Desktop-Editor sproject – und über das zugrunde liegende Paket [moncapro](https://github.com/mistamichael/moncapro) eine CLI und ein
+**MCP-Server** – lassen dich oder Claude Pläne aufbauen, z. B. direkt aus einer Excel-Aufgabenliste.
 
 [![tests](https://github.com/mistamichael/sproject/actions/workflows/tests.yml/badge.svg)](https://github.com/mistamichael/sproject/actions/workflows/tests.yml)
+[![moncapro on PyPI](https://img.shields.io/pypi/v/moncapro.svg?label=moncapro)](https://pypi.org/project/moncapro/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 
@@ -44,11 +45,14 @@ sproject ist der Desktop-Editor. Rechenkern, Kommandozeile und MCP-Server stamme
    (legt `.venv` an und installiert alles aus `requirements.txt`)
 3. Starten: Doppelklick auf `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – und links ein Beispiel öffnen (deutsche Dateien in `examples/de`, englische in `examples/en`)
 
-Kommandozeile statt GUI (mit aktivem `.venv`):
+Kommandozeile statt GUI (vorher `.venv` aktivieren: `bin\activate_venv.bat` – Linux/macOS: `source bin/activate_venv.sh`):
 
 ```bash
 moncapro --project my_project.json --export md,html --simulate 300
 ```
+
+Keine GUI nötig? Rechenkern, CLI und MCP-Server gibt es auch als eigenes Paket:
+`pip install "moncapro[all]"` ([moncapro auf PyPI](https://pypi.org/project/moncapro/)).
 
 Projekt mit Claude aufbauen: siehe [Drei Wege, sproject zu nutzen](#drei-wege-sproject-zu-nutzen).
 
@@ -58,7 +62,7 @@ Projekt mit Claude aufbauen: siehe [Drei Wege, sproject zu nutzen](#drei-wege-sp
 | --- | --- |
 | **Desktop-GUI** | `bin\gui.bat` – Aufgaben, Ressourcen, Unsicherheiten und Szenarien bearbeiten, berechnen, exportieren. [Anleitung GUI](doc/de/gui.md) |
 | **Kommandozeile** | `moncapro --project <datei> --export md,html,xlsx --simulate 300` – Berichte im Stapel. [Anleitung CLI](https://github.com/mistamichael/moncapro/blob/main/doc/de/cli.md) |
-| **KI / Claude (MCP)** | `bin\mcp_server.bat` starten, dann Claude Code z. B. bitten: *„Lies `data/simple_software_project.xlsx` und baue daraus ein sproject-Projekt“* – die GUI kann live zusehen. [KI-Schnittstelle](https://github.com/mistamichael/moncapro/blob/main/doc/de/ki-schnittstelle.md) |
+| **KI / Claude (MCP)** | `bin\mcp_server.bat` starten, dann Claude Code z. B. bitten: *„Lies `data/simple_software_project.xlsx` und baue daraus ein Projekt“* – die GUI kann live zusehen. [KI-Schnittstelle](https://github.com/mistamichael/moncapro/blob/main/doc/de/ki-schnittstelle.md) |
 
 ![Was-wäre-wenn-Szenarien im Vergleich zum Basisplan](doc/img/scenarios_de.svg)
 
@@ -94,6 +98,7 @@ und im Browser öffnen. Die interaktiven Seiten laden die Plotly-Bibliothek aus 
 | Abhängigkeitstypen EA/AA/EE/AE | [doc/de/dependency_types.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/dependency_types.md) |
 | Konfiguration, Feiertage | [doc/de/config_doc.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/config_doc.md) |
 | Beispielprojekte | [`examples/`](examples/) – `de/` deutsch, `en/` englisch; Beschreibung: [doc/de/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/examples.md) |
+| Rechenkern, CLI, MCP-Server (eigenes Paket) | [moncapro](https://github.com/mistamichael/moncapro) · [PyPI](https://pypi.org/project/moncapro/) |
 | Tests, Entwicklung, Projektstruktur | [doc/de/entwicklung.md](doc/de/entwicklung.md) |
 
 ## Lizenz

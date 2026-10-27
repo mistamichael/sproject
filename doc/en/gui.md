@@ -22,4 +22,4 @@ Sections 3–7 are optional and can be switched on in the sidebar; they appear a
 - **Warning:** if a task's planned duration lies outside its Min–Max range, section 6 marks it red (the simulation would use the edge of the range).
 - **Analysis menu / toolbar:** calculate, compare scenarios, run the Monte Carlo simulation. Results appear in the *Result* tab; reports go to `results/`.
 - **Language:** German / English via *Settings*.
-- **AI interface:** *Server → Connect to sproject server …* shares the project with Claude (see below).
+- **AI interface:** *Server → Connect to moncapro server …* shares the project with Claude (see below).

@@ -22,4 +22,4 @@ Die Sektionen 3–7 sind optional und lassen sich in der Sidebar einschalten; si
 - **Warnung:** Liegt die geplante Dauer eines Tasks außerhalb von Min–Max, markiert Sektion 6 sie rot (die Simulation würde mit dem Rand des Bereichs rechnen).
 - **Menü Analyse / Toolbar:** berechnen, Szenarien vergleichen, Monte-Carlo-Simulation starten. Ergebnisse erscheinen im Tab *Ergebnis*, Reports landen in `results/`.
 - **Sprache:** Deutsch / Englisch über *Einstellungen*.
-- **KI-Schnittstelle:** *Server → Mit sproject-Server verbinden …* teilt das Projekt mit Claude (siehe unten).
+- **KI-Schnittstelle:** *Server → Mit moncapro-Server verbinden …* teilt das Projekt mit Claude (siehe unten).
