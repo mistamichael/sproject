@@ -7,7 +7,7 @@ if errorlevel 1 (
 
 pushd "%PROJECT%"
 
-"%VIRTUAL_ENV%\Scripts\python.exe" -m lib.sproject %*
+"%VIRTUAL_ENV%\Scripts\python.exe" -m moncapro %*
 set PYTHON_EXIT=%ERRORLEVEL%
 
 popd

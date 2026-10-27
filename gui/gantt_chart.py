@@ -16,9 +16,9 @@ import matplotlib.patches as mpatches
 from matplotlib.figure import Figure
 
 from gui.i18n import get_language, t as tr
-from lib.durations import format_time_value
-from lib.models.cpm import CPMResult
-from lib.time_axis import axis_ticks
+from moncapro.durations import format_time_value
+from moncapro.models.cpm import CPMResult
+from moncapro.time_axis import axis_ticks
 
 
 def _hex_to_mpl(hex_str: str) -> str:
@@ -30,7 +30,7 @@ def _hex_to_mpl(hex_str: str) -> str:
 def _apply_time_axis(ax, result: CPMResult) -> None:
     """
     x-Achse: CPM-Zeit in Arbeitstagen, beschriftet mit Kalenderdaten
-    (dieselbe Achse wie die Plotly-Charts, siehe lib/time_axis.py).
+    (dieselbe Achse wie die Plotly-Charts, siehe moncapro/time_axis.py).
     """
     values, labels = axis_ticks(result, get_language())
     ax.set_xticks(values)

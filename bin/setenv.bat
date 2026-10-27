@@ -13,33 +13,28 @@ if "%PROJECT:~-1%"=="\" set "PROJECT=%PROJECT:~0,-1%"
 
 REM Pfade für verschiedene Komponenten
 set "PV_BIN=%PROJECT%\bin"
-set "PV_LIB=%PROJECT%\lib"
 set "PV_DATA=%PROJECT%\data"
 set "PV_CFG=%PROJECT%\cfg"
 set "PV_THEMES=%PROJECT%\cfg\themes"
 set "PV_LOG=%PROJECT%\log"
 set "PV_TESTS=%PROJECT%\tests"
 set "PV_RESULTS=%PROJECT%\results"
-set "PV_EXAMPLES=%PROJECT%\examples"
 set "PV_WORK=%PROJECT%\work"
-set "PV_EXAMPLE_RESULTS=%PV_EXAMPLES%\results"
 
-REM Python-Pfad erweitern (nur wenn noch nicht vorhanden)
-echo %PYTHONPATH% | find /i "%PV_LIB%" >nul
-if errorlevel 1 (
-    set "PYTHONPATH=%PV_LIB%;%PYTHONPATH%"
-) else (
-    REM Path ist bereits in PYTHONPATH enthalten, nicht erneut hinzufügen
-)
+REM moncapro (Rechenkern) schreibt in dieselben Ordner. MONCAPRO_CFG bleibt ungesetzt:
+REM die Berechnungs-Konfiguration kommt aus dem Paket, PV_CFG enthaelt nur gui.cfg und Themes.
+set "MONCAPRO_DATA=%PV_DATA%"
+set "MONCAPRO_LOG=%PV_LOG%"
+set "MONCAPRO_RESULTS=%PV_RESULTS%"
+set "MONCAPRO_WORK=%PV_WORK%"
+
 
 REM Ordner erstellen falls sie nicht existieren
 if not exist "%PV_BIN%" mkdir "%PV_BIN%"
 if not exist "%PV_CFG%" mkdir "%PV_CFG%"
-if not exist "%PV_LIB%" mkdir "%PV_LIB%"
 if not exist "%PV_DATA%" mkdir "%PV_DATA%"
 if not exist "%PV_LOG%" mkdir "%PV_LOG%"
 if not exist "%PV_RESULTS%" mkdir "%PV_RESULTS%"
-if not exist "%PV_EXAMPLES%" mkdir "%PV_EXAMPLES%"
 if not exist "%PV_WORK%" mkdir "%PV_WORK%"
 
 REM Umgebungsvariablen anzeigen
@@ -50,12 +45,9 @@ echo ================================================================
 echo PROJECT         = %PROJECT%
 echo PV_BIN          = %PV_BIN%
 echo PV_CFG         = %PV_CFG%
-echo PV_LIB          = %PV_LIB%
 echo PV_DATA         = %PV_DATA%
 echo PV_RESULTS      = %PV_RESULTS%
 echo PV_LOG          = %PV_LOG%
-echo PV_EXAMPLES     = %PV_EXAMPLES%
-echo PYTHONPATH      = %PYTHONPATH%
 echo ================================================================
 echo.
 echo Ready to use! Run: bin\create_reports.bat

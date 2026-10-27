@@ -1,10 +1,10 @@
 # ============================================================
 # Makefile Code Quality Targets
-# Quellcode liegt in: lib/
+# Quellcode liegt in: gui/
 # Tools: vulture, skylos, pyright, mypy
 # ============================================================
 
-SRC_DIR := lib
+SRC_DIR := gui
 
 .PHONY: lint lint-dead lint-types vulture skylos pyright mypy help
 

@@ -18,7 +18,7 @@ import dearpygui.dearpygui as dpg
 from gui.colors import resource_color_map
 from gui.gui_config import load_gui_config
 from gui.i18n import t
-from lib.models.dependencies import DepType, Dependency, format_dependencies, parse_dependencies
+from moncapro.models.dependencies import DepType, Dependency, format_dependencies, parse_dependencies
 
 _CFG = load_gui_config()
 _COLORS = _CFG.section("colors")

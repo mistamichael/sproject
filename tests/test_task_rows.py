@@ -2,14 +2,13 @@
 Tests für gui/task_rows.py – verlustfreier Round-Trip Tasks ↔ Tabellenzeilen.
 """
 
-from pathlib import Path
-
 import pytest
 
 from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
-from lib.models import InstanceTask, LoopTask, SimpleTask, SubTask, load_project
+from moncapro.models import InstanceTask, LoopTask, SimpleTask, SubTask, load_project
+from moncapro.paths import get_examples_dir
 
-EXAMPLES = sorted((Path(__file__).resolve().parent.parent / "examples").glob("*.json"))
+EXAMPLES = sorted(get_examples_dir().glob("*.json"))
 
 
 def _dump(tasks):

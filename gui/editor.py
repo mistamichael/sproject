@@ -3,8 +3,8 @@ ProjectEditorApp – Zentrale Applikationsklasse (Dear PyGui)
 ============================================================
 
 Hält das Pydantic-Project-Modell als Single Source of Truth und verbindet
-GUI-Events mit lib/. Berechnung und Exporte laufen über dieselben Funktionen
-wie die CLI (lib.schedule.build_schedule, lib.exporters).
+GUI-Events mit moncapro. Berechnung und Exporte laufen über dieselben Funktionen
+wie die CLI (moncapro.schedule.build_schedule, moncapro.exporters).
 
 Datenfluss:
     sync_to_model()  Widgets → Modell   (Stammdaten, Task-Tabelle, Sektionen)
@@ -26,18 +26,18 @@ from gui.components.sidebar import TOGGLE_TAGS
 from gui.components.task_table import rebuild_task_table
 from gui.i18n import get_language, t
 from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
-from lib.baseline import create_baseline
-from lib.exporters import ExportOptions, export_schedule
-from lib.models import Project, load_project, load_project_from_dict, save_project
-from lib.paths import get_cfg_dir, get_results_dir, get_work_dir
-from lib.charts import build_simulation_figures, write_html
-from lib.scenarios import compare_scenarios
-from lib.simulation import SimulationResult, has_uncertainty, simulate
-from lib.schedule import Schedule, build_schedule
+from moncapro.baseline import create_baseline
+from moncapro.exporters import ExportOptions, export_schedule
+from moncapro.models import Project, load_project, load_project_from_dict, save_project
+from moncapro.paths import get_cfg_dir, get_results_dir, get_work_dir
+from moncapro.charts import build_simulation_figures, write_html
+from moncapro.scenarios import compare_scenarios
+from moncapro.simulation import SimulationResult, has_uncertainty, simulate
+from moncapro.schedule import Schedule, build_schedule
 
 SECTIONS = ("resources", "persons", "resting_times", "uncertainty", "scenarios")
 
-# Report-Formate, die die GUI anbietet (Schlüssel aus lib.exporters.EXPORTERS)
+# Report-Formate, die die GUI anbietet (Schlüssel aus moncapro.exporters.EXPORTERS)
 REPORT_FORMATS: Dict[str, str] = {
     "md":   "Markdown",
     "xlsx": "Excel",

@@ -10,7 +10,7 @@ if [ $? -ne 0 ]; then
 fi
 
 pushd "$PROJECT" > /dev/null
-python -m lib.sproject "$@"
+python -m moncapro "$@"
 PYTHON_EXIT=$?
 popd > /dev/null
 

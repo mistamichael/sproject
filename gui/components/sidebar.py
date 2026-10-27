@@ -10,6 +10,7 @@ import dearpygui.dearpygui as dpg
 from pathlib import Path
 
 from gui.gui_config import load_gui_config
+from moncapro.paths import get_examples_dir
 from gui.i18n import t
 
 _CFG = load_gui_config()
@@ -80,7 +81,7 @@ def build_sidebar(app) -> None:
     dpg.add_text(t("sidebar.examples"), tag="sidebar_examples", color=_COL.get("sidebar_examples", (140, 140, 160)))
     dpg.add_spacer(height=2)
 
-    examples_dir = Path(__file__).parent.parent.parent / "examples"
+    examples_dir = get_examples_dir()
     if examples_dir.exists():
         for jf in sorted(examples_dir.glob("*.json")):
             dpg.add_button(

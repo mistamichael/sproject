@@ -8,8 +8,8 @@ from gui.analysis_rows import (
     ChangeRow, build_change, format_change, format_percent, parse_percent, set_change_target,
     set_change_text, set_range, set_risk_delay, set_risk_note, set_risk_probability,
 )
-from lib.models import SimpleTask
-from lib.models.scenario import Scenario, ScenarioChange
+from moncapro.models import SimpleTask
+from moncapro.models.scenario import Scenario, ScenarioChange
 
 
 def _task(**kwargs):

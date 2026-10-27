@@ -13,9 +13,9 @@ import dearpygui.dearpygui as dpg
 from gui.colors import resource_color_map
 from gui.gui_config import load_gui_config
 from gui.i18n import t
-from lib.report_data import collect_deadline_violations, tracking_summary
-from lib.scenarios import comparison_rows
-from lib.schedule import Schedule
+from moncapro.report_data import collect_deadline_violations, tracking_summary
+from moncapro.scenarios import comparison_rows
+from moncapro.schedule import Schedule
 
 _CFG = load_gui_config()
 _COLORS = _CFG.section("colors")
@@ -188,7 +188,7 @@ def _simulation(sim) -> None:
     """Kennzahlen und kritischste Tasks der Monte-Carlo-Simulation."""
     if sim is None:
         return
-    from lib.simulation import summary_rows, top_critical
+    from moncapro.simulation import summary_rows, top_critical
 
     with dpg.collapsing_header(label=t("result.header.simulation"), parent=_PARENT, default_open=True):
         for rows, header in [(summary_rows(sim), [t("result.col.metric"), t("result.col.value")]),

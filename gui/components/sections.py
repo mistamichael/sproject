@@ -27,11 +27,11 @@ from gui.components.list_section import (
 )
 from gui.gui_config import load_gui_config
 from gui.i18n import t
-from lib.simulation import planned_outside_range
-from lib.models.resources import (
+from moncapro.simulation import planned_outside_range
+from moncapro.models.resources import (
     RESOURCE_TYPES, Person, Resource, RestInterval, TimeRange, VacationEntry, WorkHoursOverride,
 )
-from lib.models.scenario import Scenario
+from moncapro.models.scenario import Scenario
 
 _COLORS = load_gui_config().section("colors")
 

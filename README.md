@@ -25,7 +25,7 @@ plans, e.g. straight from an Excel task list.
 - **Realistic resource planning** – one person or machine can only do one task at a time; vacations, part-time and
   rest breaks stretch the plan; fixed dates (`not_before`, `deadline`); plan vs. actual with a baseline.
 - **AI interface (MCP)** – Claude Code or Claude Desktop builds, checks and calculates projects through one shared
-  sproject server, e.g. from an Excel task list; the GUI can watch live.
+  moncapro server, e.g. from an Excel task list; the GUI can watch live.
 - **Desktop GUI, CLI and reports** – Markdown/HTML with Gantt and network diagrams, Excel, TXT, JSON and interactive
   charts.
 
@@ -35,6 +35,9 @@ Look at the results without installing anything: [example results](doc/result_ex
 
 Requires Python 3.10 or higher.
 
+sproject is the desktop editor. The calculation core, the command line and the MCP server come from the
+separate package [moncapro](https://github.com/mistamichael/moncapro) and are installed automatically.
+
 1. Get the code: `git clone https://github.com/mistamichael/sproject.git` (or download the ZIP)
 2. Install: double-click `bin\install_py.bat` – Linux/macOS: `bash bin/install_py.sh`
    (creates `.venv` and installs everything from `requirements.txt`)
@@ -43,7 +46,7 @@ Requires Python 3.10 or higher.
 Command line instead of the GUI (with `.venv` active):
 
 ```bash
-python lib/sproject.py --project examples/software_simple.json --export md,html --simulate 300
+moncapro --project my_project.json --export md,html --simulate 300
 ```
 
 Building a project with Claude: see [Three ways to use sproject](#three-ways-to-use-sproject).
@@ -53,8 +56,8 @@ Building a project with Claude: see [Three ways to use sproject](#three-ways-to-
 | | |
 | --- | --- |
 | **Desktop GUI** | `bin\gui.bat` – edit tasks, resources, uncertainties and scenarios, calculate, export. [GUI guide](doc/en/gui.md) |
-| **Command line** | `python lib/sproject.py --project <file> --export md,html,xlsx --simulate 300` – batch reports. [CLI guide](doc/en/cli.md) |
-| **AI / Claude (MCP)** | start `bin\mcp_server.bat`, then ask Claude Code e.g. *"Read `data/simple_software_project.xlsx` and build a sproject project from it"* – the GUI can watch live. [AI interface](doc/en/ai-interface.md) |
+| **Command line** | `moncapro --project <file> --export md,html,xlsx --simulate 300` – batch reports. [CLI guide](https://github.com/mistamichael/moncapro/blob/main/doc/en/cli.md) |
+| **AI / Claude (MCP)** | start `bin\mcp_server.bat`, then ask Claude Code e.g. *"Read `data/simple_software_project.xlsx` and build a sproject project from it"* – the GUI can watch live. [AI interface](https://github.com/mistamichael/moncapro/blob/main/doc/en/ai-interface.md) |
 
 ![What-if scenarios compared with the base plan](doc/img/scenarios_en.svg)
 
@@ -83,13 +86,13 @@ browser. The interactive pages load the Plotly library from the internet.
 | Topic | Document |
 | --- | --- |
 | Desktop editor | [doc/en/gui.md](doc/en/gui.md) |
-| Command line, export formats, output | [doc/en/cli.md](doc/en/cli.md) |
-| AI interface (MCP server, Claude, Excel import) | [doc/en/ai-interface.md](doc/en/ai-interface.md) |
-| Project file format: durations, dependencies, resources, loops, uncertainties, scenarios | [doc/en/project-format.md](doc/en/project-format.md) |
-| Configuration, public holidays | [doc/en/configuration.md](doc/en/configuration.md) |
-| Example projects | [doc/en/examples.md](doc/en/examples.md) |
+| Command line, export formats, output | [doc/en/cli.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/cli.md) |
+| AI interface (MCP server, Claude, Excel import) | [doc/en/ai-interface.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/ai-interface.md) |
+| Project file format: durations, dependencies, resources, loops, uncertainties, scenarios | [doc/en/project-format.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/project-format.md) |
+| Configuration, public holidays | [doc/en/configuration.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/configuration.md) |
+| Example projects | [doc/en/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/examples.md) |
 | Tests, development, project structure | [doc/en/development.md](doc/en/development.md) |
-| Dates, resources, plan vs. actual, scenarios, Monte Carlo (German) | [doc/de/termine-und-ist.md](doc/de/termine-und-ist.md) |
+| Dates, resources, plan vs. actual, scenarios, Monte Carlo (German) | [doc/de/termine-und-ist.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/termine-und-ist.md) |
 
 ## License
 

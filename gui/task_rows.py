@@ -14,8 +14,8 @@ Kein Dear-PyGui-Code – die Umwandlung ist ohne GUI testbar.
 from dataclasses import dataclass
 from typing import Any, List, Literal, Optional, Union
 
-from lib.models.dependencies import format_dependencies, parse_dependencies, parse_task_id
-from lib.models.tasks import InstanceTask, LoopTask, SimpleTask, SubTask
+from moncapro.models.dependencies import format_dependencies, parse_dependencies, parse_task_id
+from moncapro.models.tasks import InstanceTask, LoopTask, SimpleTask, SubTask
 
 RowType = Literal["simple", "loop", "subtask"]
 AnyTask = Union[SimpleTask, InstanceTask, LoopTask]

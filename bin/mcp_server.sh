@@ -2,7 +2,7 @@
 # ================================================================
 # SPROJECT - MCP-Server (KI-Schnittstelle, siehe doc/de/ki-schnittstelle.md)
 # ================================================================
-# Es läuft genau EIN sproject-Server. Claude Code (.mcp.json) und die GUI
+# Es läuft genau EIN moncapro-Server. Claude Code (.mcp.json) und die GUI
 # (Menü Server -> Verbinden) verbinden sich beide mit ihm.
 #
 #   bin/mcp_server.sh                   HTTP auf http://127.0.0.1:8765/mcp (Standard)
@@ -50,6 +50,6 @@ fi
 
 cd "$PROJECT" || exit 1
 if [ "$MODE" = http ]; then
-    exec "$PROJECT/.venv/bin/python" -m mcp_server --http --port "$PORT" "${EXTRA[@]}"
+    exec "$PROJECT/.venv/bin/python" -m moncapro.mcp --http --port "$PORT" "${EXTRA[@]}"
 fi
-exec "$PROJECT/.venv/bin/python" -m mcp_server "${EXTRA[@]}"
+exec "$PROJECT/.venv/bin/python" -m moncapro.mcp "${EXTRA[@]}"

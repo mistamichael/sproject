@@ -25,7 +25,7 @@ oder Claude – Pläne aufbauen, z. B. direkt aus einer Excel-Aufgabenliste.
   zum Basisplan nach Dauer, Kosten und verfehlten Deadlines.
 - **Realistische Ressourcenplanung** – eine Person bzw. Maschine macht eine Aufgabe zugleich; Urlaub, Teilzeit und
   Ruhepausen strecken den Plan; feste Termine (`not_before`, `deadline`); Plan gegen Ist mit Baseline.
-- **KI-Schnittstelle (MCP)** – Claude Code oder Claude Desktop bauen Projekte über einen gemeinsamen sproject-Server
+- **KI-Schnittstelle (MCP)** – Claude Code oder Claude Desktop bauen Projekte über einen gemeinsamen moncapro-Server
   auf, prüfen und berechnen sie, z. B. aus einer Excel-Aufgabenliste; die GUI kann live zusehen.
 - **Desktop-GUI, CLI und Berichte** – Markdown/HTML mit Gantt- und Netzplan-Diagrammen, Excel, TXT, JSON und
   interaktive Charts.
@@ -36,6 +36,9 @@ Ergebnisse ohne Installation ansehen: [Beispielergebnisse](doc/result_examples/R
 
 Voraussetzung: Python 3.10 oder höher.
 
+sproject ist der Desktop-Editor. Rechenkern, Kommandozeile und MCP-Server stammen aus dem eigenen Paket
+[moncapro](https://github.com/mistamichael/moncapro) und werden automatisch mitinstalliert.
+
 1. Code holen: `git clone https://github.com/mistamichael/sproject.git` (oder ZIP herunterladen)
 2. Installieren: Doppelklick auf `bin\install_py.bat` – Linux/macOS: `bash bin/install_py.sh`
    (legt `.venv` an und installiert alles aus `requirements.txt`)
@@ -44,7 +47,7 @@ Voraussetzung: Python 3.10 oder höher.
 Kommandozeile statt GUI (mit aktivem `.venv`):
 
 ```bash
-python lib/sproject.py --project examples/software_simple.json --export md,html --simulate 300
+moncapro --project my_project.json --export md,html --simulate 300
 ```
 
 Projekt mit Claude aufbauen: siehe [Drei Wege, sproject zu nutzen](#drei-wege-sproject-zu-nutzen).
@@ -54,8 +57,8 @@ Projekt mit Claude aufbauen: siehe [Drei Wege, sproject zu nutzen](#drei-wege-sp
 | | |
 | --- | --- |
 | **Desktop-GUI** | `bin\gui.bat` – Aufgaben, Ressourcen, Unsicherheiten und Szenarien bearbeiten, berechnen, exportieren. [Anleitung GUI](doc/de/gui.md) |
-| **Kommandozeile** | `python lib/sproject.py --project <datei> --export md,html,xlsx --simulate 300` – Berichte im Stapel. [Anleitung CLI](doc/de/cli.md) |
-| **KI / Claude (MCP)** | `bin\mcp_server.bat` starten, dann Claude Code z. B. bitten: *„Lies `data/simple_software_project.xlsx` und baue daraus ein sproject-Projekt“* – die GUI kann live zusehen. [KI-Schnittstelle](doc/de/ki-schnittstelle.md) |
+| **Kommandozeile** | `moncapro --project <datei> --export md,html,xlsx --simulate 300` – Berichte im Stapel. [Anleitung CLI](https://github.com/mistamichael/moncapro/blob/main/doc/de/cli.md) |
+| **KI / Claude (MCP)** | `bin\mcp_server.bat` starten, dann Claude Code z. B. bitten: *„Lies `data/simple_software_project.xlsx` und baue daraus ein sproject-Projekt“* – die GUI kann live zusehen. [KI-Schnittstelle](https://github.com/mistamichael/moncapro/blob/main/doc/de/ki-schnittstelle.md) |
 
 ![Was-wäre-wenn-Szenarien im Vergleich zum Basisplan](doc/img/scenarios_de.svg)
 
@@ -84,13 +87,13 @@ und im Browser öffnen. Die interaktiven Seiten laden die Plotly-Bibliothek aus 
 | Thema | Dokument |
 | --- | --- |
 | Desktop-Editor | [doc/de/gui.md](doc/de/gui.md) |
-| Kommandozeile, Exportformate, Ausgabe | [doc/de/cli.md](doc/de/cli.md) |
-| KI-Schnittstelle (MCP-Server, Claude, Excel-Import) | [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md) |
-| Projektdatei-Format: Dauern, Abhängigkeiten, Ressourcen, Loops, Unsicherheiten, Szenarien | [doc/de/projektformat.md](doc/de/projektformat.md) |
-| Termine, Ressourcen, Plan gegen Ist, Szenarien, Monte-Carlo im Detail | [doc/de/termine-und-ist.md](doc/de/termine-und-ist.md) |
-| Abhängigkeitstypen EA/AA/EE/AE | [doc/de/dependency_types.md](doc/de/dependency_types.md) |
-| Konfiguration, Feiertage | [doc/de/config_doc.md](doc/de/config_doc.md) |
-| Beispielprojekte | [doc/de/examples.md](doc/de/examples.md) |
+| Kommandozeile, Exportformate, Ausgabe | [doc/de/cli.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/cli.md) |
+| KI-Schnittstelle (MCP-Server, Claude, Excel-Import) | [doc/de/ki-schnittstelle.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/ki-schnittstelle.md) |
+| Projektdatei-Format: Dauern, Abhängigkeiten, Ressourcen, Loops, Unsicherheiten, Szenarien | [doc/de/projektformat.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/projektformat.md) |
+| Termine, Ressourcen, Plan gegen Ist, Szenarien, Monte-Carlo im Detail | [doc/de/termine-und-ist.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/termine-und-ist.md) |
+| Abhängigkeitstypen EA/AA/EE/AE | [doc/de/dependency_types.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/dependency_types.md) |
+| Konfiguration, Feiertage | [doc/de/config_doc.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/config_doc.md) |
+| Beispielprojekte | [doc/de/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/examples.md) |
 | Tests, Entwicklung, Projektstruktur | [doc/de/entwicklung.md](doc/de/entwicklung.md) |
 
 ## Lizenz

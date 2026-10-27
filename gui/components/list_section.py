@@ -18,7 +18,7 @@ import dearpygui.dearpygui as dpg
 
 from gui.gui_config import load_gui_config
 from gui.i18n import t
-from lib.colors import hex_to_rgb, rgb_to_hex
+from moncapro.colors import hex_to_rgb, rgb_to_hex
 
 _COLORS = load_gui_config().section("colors")
 _EMPTY_COLOR = (160, 160, 170)

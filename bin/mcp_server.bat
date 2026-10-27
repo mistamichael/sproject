@@ -2,7 +2,7 @@
 REM ================================================================
 REM SPROJECT - MCP-Server (KI-Schnittstelle, siehe doc/de/ki-schnittstelle.md)
 REM ================================================================
-REM Es laeuft genau EIN sproject-Server. Claude Code (.mcp.json) und die GUI
+REM Es laeuft genau EIN moncapro-Server. Claude Code (.mcp.json) und die GUI
 REM (Menue Server -> Verbinden) verbinden sich beide mit ihm.
 REM
 REM   bin\mcp_server.bat                  HTTP auf http://127.0.0.1:8765/mcp (Standard)
@@ -57,9 +57,9 @@ if not exist "%PROJECT%\.venv\Scripts\python.exe" (
 
 pushd "%PROJECT%"
 if "%MODE%"=="http" (
-    "%PROJECT%\.venv\Scripts\python.exe" -m mcp_server --http --port %PORT% %EXTRA%
+    "%PROJECT%\.venv\Scripts\python.exe" -m moncapro.mcp --http --port %PORT% %EXTRA%
 ) else (
-    "%PROJECT%\.venv\Scripts\python.exe" -m mcp_server %EXTRA%
+    "%PROJECT%\.venv\Scripts\python.exe" -m moncapro.mcp %EXTRA%
 )
 set "PYTHON_EXIT=%ERRORLEVEL%"
 popd

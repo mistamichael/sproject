@@ -9,8 +9,8 @@ gui.cfg [resources_colours] (Fallback: defaults.cfg [ResourceAutoColor]).
 import configparser
 from typing import Dict, List, Optional, Tuple
 
-from lib.colors import DEFAULT_PALETTE, hex_to_rgb, interpolate_palette
-from lib.paths import get_cfg_dir
+from moncapro.colors import DEFAULT_PALETTE, hex_to_rgb, interpolate_palette
+from moncapro.paths import get_cfg_dir
 
 RGB = Tuple[int, int, int]
 

@@ -3,16 +3,15 @@
 ## Projektübersicht
 
 **sproject** ist ein Projektplanungstool mit CPM-Berechnung (Critical Path Method).
-Projekte werden als JSON-Dateien gespeichert und können über eine GUI oder CLI bearbeitet werden.
+Projekte werden als JSON-Dateien gespeichert und können über eine GUI (dieses Repo) oder die CLI/den MCP-Server des Pakets **moncapro** bearbeitet werden. sproject ist der Desktop-Editor.
 
 ## Projektstruktur
 
 ```text
 sproject/
 ├── bin/              # Start-Skripte (.bat/.sh): setenv, install_py, activate_venv, gui, mcp_server
-├── cfg/              # Konfiguration: gui.cfg, defaults.cfg, themes/
+├── cfg/              # GUI-Konfiguration: gui.cfg, themes/ (Berechnungs-cfg liegt im Paket moncapro)
 ├── doc/              # Dokumentation
-├── examples/         # Beispiel-JSON-Projektdateien
 ├── gui/              # Dear PyGui GUI-Anwendung
 │   ├── app.py        # Hauptlayout, Menüs, Toolbar, Dialoge, Viewport-Aufbau
 │   ├── editor.py     # ProjectEditorApp – State, Datei-Ops, sync/refresh, Exporte
@@ -21,7 +20,7 @@ sproject/
 │   ├── colors.py     # Ressourcen-Farbzuordnung (eigene Farbe vor Palette)
 │   ├── i18n.py       # Internationalisierung (de/en), t()-Funktion
 │   ├── gui_config.py # Konfigurationslader (gui.cfg → Farben, Größen, Themes)
-│   ├── server_link.py # Explizite Verbindung zum sproject-Server (MCP-Client), Abgleich im DPG-Hauptthread
+│   ├── server_link.py # Explizite Verbindung zum moncapro-Server (MCP-Client), Abgleich im DPG-Hauptthread
 │   └── components/   # UI-Komponenten
 │       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection), Formular-Dialog, Farbwähler
 │       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit, Unsicherheiten, Szenarien
@@ -29,22 +28,13 @@ sproject/
 │       ├── result_panel.py # Ergebnis-Tab
 │       ├── sidebar.py      # Wizard-Navigation + Beispielliste
 │       └── file_browser.py # Datei-Öffnen-Dialog
-├── lib/              # Kernlogik (kein GUI-Code), Paket "lib" – nur relative Imports
-│   ├── schedule.py   # build_schedule(): Expansion → CPM → Gantt → Kosten (einziger Rechenweg)
-│   ├── exporters.py  # EXPORTERS-Registry, export_schedule()
-│   ├── durations.py  # Dauer-Parsing/Formatierung, hours_per_day aus defaults.cfg
-│   ├── work_calendar.py # WorkCalendar: Arbeitstage, Wochenenden, Feiertage
-│   ├── models/       # Pydantic-Modelle: Project, Tasks, Dependencies, Resources, CPM, Gantt
-│   ├── *_export.py, excel_reports.py  # Exporte
-│   ├── api.py        # ProjectSession: Operationen für KI/Skripte (dict rein/raus, validiert)
-│   └── sproject.py   # CLI
-├── mcp_server/       # sproject-Server (KI-Schnittstelle): Tools = lib/api.py, HTTP (stdio nur Skripte/Tests)
 ├── results/          # Export-Ausgaben (in .gitignore)
-├── tests/            # pytest; tests/golden/ = Referenz-Exporte aller Beispiele
+├── tests/            # pytest: GUI-Tests ohne Fenster (Rechenkern-Tests liegen in moncapro)
 └── work/             # Arbeitsdateien, Default-Speicherort für neue Projekte (PV_WORK)
 ```
 
-- Quellcode: `lib/` (Kernlogik), `gui/` (GUI-Schicht)
+- Rechenkern: eigenes Paket **moncapro** ([github.com/mistamichael/moncapro](https://github.com/mistamichael/moncapro), `pip install moncapro`) mit CPM, Leveling, Szenarien, Simulation, Exporten, CLI und MCP-Server – dort steht auch dessen `CLAUDE.md` mit der Kern-Architektur. Änderungen daran gehören in dieses Repo, nicht hierher.
+- Quellcode hier: `gui/` (GUI-Schicht)
 - Sprache: Python
 - GUI-Framework: **Dear PyGui** (dearpygui)
 - Datenmodelle: **Pydantic** (BaseModel)
@@ -53,23 +43,23 @@ sproject/
 
 ### Datenfluss
 
-1. **JSON-Datei** → `lib.models.load_project()` → **Pydantic `Project`-Modell**
+1. **JSON-Datei** → `moncapro.models.load_project()` → **Pydantic `Project`-Modell**
 2. **GUI** liest/schreibt über `ProjectEditorApp` (Single Source of Truth = `self.project`)
 3. **UI → Modell:** `sync_to_model()` liest Stammdaten, Task-Tabelle (`TaskRow`) und alle `ListSection`s
 4. **Modell → UI:** `refresh_all()` aktualisiert alle DPG-Widgets aus dem Pydantic-Objekt
-5. **Berechnung:** `lib.schedule.build_schedule(project)` → `Schedule` (expandiertes Projekt, CPM, Gantt, Kosten) – GUI und CLI identisch
+5. **Berechnung:** `moncapro.schedule.build_schedule(project)` → `Schedule` (expandiertes Projekt, CPM, Gantt, Kosten) – GUI und CLI identisch
    - Zeitumrechnung CPM-Arbeitstage → Kalender **nur** über `CPMResult.date_at(workdays, is_end)` (Bruchteile = Arbeitsstunden, Enden = Ende des letzten Arbeitstags; Datum ohne Uhrzeit = Arbeitsbeginn aus `morning_shift`).
-   - CPM rechnet in Arbeitstagen; danach plant `lib/models/leveling.py` mit Ressourcen (eine Person/ein LKW = eine Aufgabe zugleich, `Resource.slots`), Urlaub und Teilzeit (strecken Tasks) sowie `not_before`/`deadline`. Mehrere Prioritätsregeln, der kürzeste Plan gewinnt.
+   - CPM rechnet in Arbeitstagen; danach plant `moncapro/models/leveling.py` mit Ressourcen (eine Person/ein LKW = eine Aufgabe zugleich, `Resource.slots`), Urlaub und Teilzeit (strecken Tasks) sowie `not_before`/`deadline`. Mehrere Prioritätsregeln, der kürzeste Plan gewinnt.
    - Ruhepausen werden nach dem berechneten Zeitplan eingefügt (zweiter CPM-Lauf).
-   - Plan gegen Ist: `status_date`, `actuals`, `baseline` im Projekt (`lib/models/tracking.py`, `lib/baseline.py`); Doku: `doc/de/termine-und-ist.md`.
-   - Szenarien: `scenarios` im Projekt (`lib/models/scenario.py`), angewendet und verglichen in `lib/scenarios.py`.
-   - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `lib/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel). Liegt die geplante Dauer außerhalb von `duration_range`, nimmt die Simulation den Rand und meldet den Task (`planned_outside_range()`, `SimulationResult.clamped`); die GUI markiert ihn in Sektion 6.
-6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
-7. **KI-Schnittstelle:** `lib/api.py` (`ProjectSession`) → `mcp_server/server.py` (`build_server(session)`); Doku: `doc/de/ki-schnittstelle.md`
-   - **Genau ein sproject-Server** (HTTP, `bin/mcp_server.* --port`, Standard 8765) hält das Projekt. Claude Code (`.mcp.json`, HTTP) und GUI sind nur Clients. Ein zweiter Start auf demselben Port bricht ab (`port_in_use`). Nie wieder einen Server im GUI-Prozess starten – das ergibt zwei Projekte.
+   - Plan gegen Ist: `status_date`, `actuals`, `baseline` im Projekt (`moncapro/models/tracking.py`, `moncapro/baseline.py`); Doku: `doc/de/termine-und-ist.md`.
+   - Szenarien: `scenarios` im Projekt (`moncapro/models/scenario.py`), angewendet und verglichen in `moncapro/scenarios.py`.
+   - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `moncapro/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel). Liegt die geplante Dauer außerhalb von `duration_range`, nimmt die Simulation den Rand und meldet den Task (`planned_outside_range()`, `SimulationResult.clamped`); die GUI markiert ihn in Sektion 6.
+6. **Export:** `moncapro.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
+7. **KI-Schnittstelle:** `moncapro/api.py` (`ProjectSession`) → `moncapro/mcp/server.py` (`build_server(session)`); Doku: `doc/de/ki-schnittstelle.md`
+   - **Genau ein moncapro-Server** (HTTP, `bin/mcp_server.* --port` = `moncapro-mcp --http`, Standard 8765) hält das Projekt. Claude Code (`.mcp.json`, HTTP) und GUI sind nur Clients. Ein zweiter Start auf demselben Port bricht ab (`port_in_use`). Nie wieder einen Server im GUI-Prozess starten – das ergibt zwei Projekte.
    - Änderungen laufen über das Projekt-dict und werden neu validiert (`_commit`, zählt `revision` hoch) – ungültige Eingaben ändern nichts.
    - GUI: `gui/server_link.py` (`ServerLink`) verbindet sich nur explizit (Menü *Server*), MCP-Client im Hintergrund-Thread; `process()` läuft pro Frame in der Render-Schleife von `gui/app.py`. Abgleich ca. 1 s: GUI → `replace_project(data, base_revision)`, Server → `get_revision()`/`get_state()` → `editor.apply_external_project()`. Konflikt: Server gewinnt. Nicht synchronisieren, solange ein Eingabefeld aktiv ist.
-   - **Projektwechsel** (`new_project`, `load`, `replace_project` ohne `base_revision` → `ProjectSession._switch`): vorher `write_backup()` nach `$PV_WORK/backup`, `generation` + `last_switch` setzen, Antwort mit `warning`. Der Server merkt sich je MCP-Sitzung den gesehenen `generation`-Stand (`run()` in `build_server`) und lehnt den nächsten Aufruf eines Clients ab, wenn ein *anderer* Client gewechselt hat. Die GUI meldet fremde Wechsel per Hinweis-Dialog, eigene (`editor.project_generation`) sendet sie ohne `base_revision`; verlorene GUI-Eingaben sichert `ServerLink._backup_local()`.
+   - **Projektwechsel** (`new_project`, `load`, `replace_project` ohne `base_revision` → `ProjectSession._switch`): vorher `write_backup()` nach `$MONCAPRO_WORK/backup`, `generation` + `last_switch` setzen, Antwort mit `warning`. Der Server merkt sich je MCP-Sitzung den gesehenen `generation`-Stand (`run()` in `build_server`) und lehnt den nächsten Aufruf eines Clients ab, wenn ein *anderer* Client gewechselt hat. Die GUI meldet fremde Wechsel per Hinweis-Dialog, eigene (`editor.project_generation`) sendet sie ohne `base_revision`; verlorene GUI-Eingaben sichert `ServerLink._backup_local()`.
    - Tests mit Projektwechsel müssen `backup_dir` auf ein Temp-Verzeichnis setzen – sonst landen Sicherungen in `work/backup`.
    - Im stdio-Modus nichts auf stdout schreiben – `print()` der Bibliothek wird im Server nach stderr umgeleitet.
    - Beispiel-Eingabe für den Projektaufbau per KI: `data/simple_software_project.xlsx` (per Ausnahme in `.gitignore` versioniert).
@@ -97,32 +87,34 @@ Viewport
 
 ### Umgebungsvariablen (gesetzt durch `bin/setenv.*`)
 
+`MONCAPRO_CFG` bleibt bewusst ungesetzt: die Berechnungs-Konfiguration kommt aus dem Paket (ein eigenes Verzeichnis ersetzt sie vollständig). `PV_CFG` gilt nur für `gui.cfg` und Themes.
+
 | Variable             | Pfad                | Verwendung                        |
 |----------------------|---------------------|-----------------------------------|
 | `PROJECT`            | Projekt-Root        | Basispfad                         |
 | `PV_BIN`             | `bin/`              | Skripte                           |
-| `PV_LIB`             | `lib/`              | PYTHONPATH                        |
-| `PV_CFG`             | `cfg/`              | GUI-Konfiguration laden           |
+| `PV_CFG`             | `cfg/`              | GUI-Konfiguration (nur gui.cfg)   |
 | `PV_THEMES`          | `cfg/themes/`       | Theme-Dateien                     |
 | `PV_DATA`            | `data/`             | Eingabe-JSON (CLI)                |
 | `PV_LOG`             | `log/`              | Logdateien                        |
 | `PV_RESULTS`         | `results/`          | Export-Ausgaben                   |
-| `PV_EXAMPLES`        | `examples/`         | Beispieldateien                   |
-| `PV_EXAMPLE_RESULTS` | `examples/results/` | Beispiel-Exporte                  |
 | `PV_WORK`            | `work/`             | Arbeitsdateien, Default für "Neu" |
 | `PV_TESTS`           | `tests/`            | Tests                             |
+| `MONCAPRO_DATA/LOG/RESULTS/WORK` | wie `PV_DATA/LOG/RESULTS/WORK` | für den Rechenkern, gesetzt durch `setenv` |
 
 ### Wichtige Klassen und Dateien
+
+(`moncapro/…` = Paket moncapro, nicht in diesem Repo)
 
 | Klasse/Datei                       | Zweck                                    |
 |------------------------------------|------------------------------------------|
 | `gui/editor.py: ProjectEditorApp`  | Zentraler GUI-State, Datei-Ops, Exporte  |
-| `lib/schedule.py: build_schedule`  | Kompletter Rechenweg (CLI + GUI)         |
-| `lib/models/leveling.py`           | Ressourcenplanung, Urlaub, Teilzeit      |
-| `lib/time_axis.py`, `lib/charts.py`| Zeitachse (Kalender) und Plotly-Charts   |
-| `lib/models/project.py: Project`   | Pydantic-Modell (Daten + Validierung)    |
-| `lib/models/tasks.py`              | SimpleTask, LoopTask, SubTask            |
-| `lib/models/resources.py`          | Resource, Person, VacationEntry, etc.    |
+| `moncapro/schedule.py: build_schedule`  | Kompletter Rechenweg (CLI + GUI)         |
+| `moncapro/models/leveling.py`           | Ressourcenplanung, Urlaub, Teilzeit      |
+| `moncapro/time_axis.py`, `moncapro/charts.py`| Zeitachse (Kalender) und Plotly-Charts   |
+| `moncapro/models/project.py: Project`   | Pydantic-Modell (Daten + Validierung)    |
+| `moncapro/models/tasks.py`              | SimpleTask, LoopTask, SubTask            |
+| `moncapro/models/resources.py`          | Resource, Person, VacationEntry, etc.    |
 | `gui/i18n.py`                      | `t(key, **kwargs)` – Übersetzungen de/en |
 | `gui/app.py`                       | `build_gui(editor)` – DPG-Layout         |
 

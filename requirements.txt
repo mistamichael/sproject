@@ -1,31 +1,9 @@
-# Core dependencies
-pydantic>=2.0.0
-
-# Excel export
-openpyxl>=3.0.0
-
-# Holiday calculations
-holidays>=0.93
-
-# HTTP requests for kroki-API (SVG export)
-requests>=2.31.0
-
-# Markdown → HTML conversion (HTML export)
-markdown>=3.0
-
-# Charts (Gantt-Diagramm, Ressourcenauslastung)
-# plotly: interaktive Charts; kaleido: SVG/PNG-Export (benötigt lokalen Chrome,
-# sonst einmalig: plotly_get_chrome)
-plotly>=6.1
-kaleido>=1.0
-matplotlib>=3.7.0
-Pillow>=10.0.0
+# Rechenkern: CPM, Ressourcenplanung, Simulation, Szenarien, Exporte, MCP-Server
+# (eigenes Paket, https://github.com/mistamichael/moncapro; nach der PyPI-Veröffentlichung: moncapro[all]>=0.1)
+moncapro[all] @ git+https://github.com/mistamichael/moncapro.git
 
 # GUI (Dear PyGui-basierter Editor)
 dearpygui>=1.11.0
-
-# KI-Schnittstelle (MCP-Server, mcp_server/)
-mcp>=1.26,<2    # v2 benennt FastMCP um (MCPServer) – Umstellung steht noch aus
 
 # Testing
 pytest>=9.0.0

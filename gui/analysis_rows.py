@@ -12,12 +12,12 @@ Kein Dear-PyGui-Code – die Umwandlung ist ohne GUI testbar.
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from lib.durations import parse_duration_to_days, validate_duration_string
-from lib.models.base import TaskBase, TaskRisk
-from lib.models.dependencies import parse_task_id
-from lib.models.resources import VacationEntry
-from lib.models.scenario import Scenario, ScenarioChange
-from lib.models.tasks import InstanceTask, SimpleTask
+from moncapro.durations import parse_duration_to_days, validate_duration_string
+from moncapro.models.base import TaskBase, TaskRisk
+from moncapro.models.dependencies import parse_task_id
+from moncapro.models.resources import VacationEntry
+from moncapro.models.scenario import Scenario, ScenarioChange
+from moncapro.models.tasks import InstanceTask, SimpleTask
 
 _RANGE_SEPARATORS = (" – ", " - ")
 

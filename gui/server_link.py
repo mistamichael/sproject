@@ -2,7 +2,7 @@
 Server-Verbindung
 =================
 
-Verbindet die GUI explizit mit dem einen sproject-Server (MCP über HTTP,
+Verbindet die GUI explizit mit dem einen moncapro-Server (MCP über HTTP,
 gestartet mit bin/mcp_server.* --port). Der Server hält das Projekt; GUI und
 Claude Code sind beide Clients. So gibt es nie zwei Projekte nebeneinander.
 
@@ -36,10 +36,12 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from gui.i18n import t
-from lib.api import write_backup
-from lib.models import load_project_from_dict
-from lib.paths import PROJECT_ROOT
-from mcp_server.server import SERVER_NAME, port_in_use
+from moncapro.api import write_backup
+from moncapro.models import load_project_from_dict
+from moncapro.mcp.server import SERVER_NAME, port_in_use
+
+# Projektordner von sproject (hier liegen bin/mcp_server.*)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 if TYPE_CHECKING:
     from mcp import ClientSession
@@ -59,7 +61,7 @@ class ServerError(Exception):
 
 
 class ServerLink:
-    """Verbindung der GUI zum sproject-Server: disconnected → (starting →) connecting → connected."""
+    """Verbindung der GUI zum moncapro-Server: disconnected → (starting →) connecting → connected."""
 
     def __init__(self, editor: "ProjectEditorApp", host: str = "127.0.0.1", port: int = 8765,
                  confirm: Optional[Confirm] = None, inform: Optional[Inform] = None,
@@ -69,7 +71,7 @@ class ServerLink:
         self.port = port
         self.confirm: Confirm = confirm or (lambda _message, yes, _no: yes())   # ohne GUI: immer ja
         self.inform: Inform = inform or (lambda _message: None)
-        self.backup_dir: Optional[Path] = None   # None = $PV_WORK/backup (lib.api.backup_dir)
+        self.backup_dir: Optional[Path] = None   # None = $PV_WORK/backup (moncapro.api.backup_dir)
         self.on_status_change = on_status_change
         self.state = "disconnected"
         self._loop: Optional[asyncio.AbstractEventLoop] = None
@@ -199,7 +201,7 @@ class ServerLink:
     def _on_result(self, kind: str, result: Any) -> None:
         if kind == "init":
             if result != SERVER_NAME:
-                self.disconnect("status.server_not_sproject", url=self.url)
+                self.disconnect("status.server_not_moncapro", url=self.url)
                 return
             self._request("initial", "get_state", {})
         elif kind == "initial":

@@ -14,11 +14,11 @@ import pytest
 dpg = pytest.importorskip("dearpygui.dearpygui")
 
 from gui.i18n import t                                   # noqa: E402
-from lib.models import load_project                     # noqa: E402
-from lib.schedule import build_schedule                  # noqa: E402
+from moncapro.models import load_project                     # noqa: E402
+from moncapro.paths import get_cfg_dir, get_examples_dir   # noqa: E402
+from moncapro.schedule import build_schedule                  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
-EXAMPLES = ROOT / "examples"
+EXAMPLES = get_examples_dir()
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def test_gui_calculation_matches_cli(editor):
     editor.run_calculation()
     # run_calculation fängt Fehler ab (z. B. beim Zeichnen der Diagramme) und meldet sie nur in der Statuszeile
     assert not dpg.get_value("statusbar_text").startswith(t("status.calc_error", error="")),         dpg.get_value("statusbar_text")
-    expected = build_schedule(load_project(example), cfg_dir=ROOT / "cfg")
+    expected = build_schedule(load_project(example), cfg_dir=get_cfg_dir())
     assert editor.schedule is not None
     assert editor.schedule.cpm.project_duration == expected.cpm.project_duration
     assert len(editor.schedule.cpm.tasks) == len(expected.cpm.tasks) > 2
@@ -235,8 +235,8 @@ class _Server:
 
         import uvicorn
 
-        from lib.api import ProjectSession
-        from mcp_server.server import build_server
+        from moncapro.api import ProjectSession
+        from moncapro.mcp.server import build_server
 
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))

@@ -32,7 +32,7 @@ import dearpygui.dearpygui as dpg
 
 from gui.editor import ProjectEditorApp, REPORT_FORMATS
 from gui.server_link import ServerLink
-from lib.paths import get_results_dir
+from moncapro.paths import get_examples_dir, get_results_dir
 from gui.icons import setup_icon_textures, add_icon_button
 from gui.components.sidebar import LABEL_TAGS as SIDEBAR_LABEL_TAGS, TEXT_TAGS as SIDEBAR_TEXT_TAGS, build_sidebar
 from gui.components.task_table import build_task_section
@@ -206,7 +206,7 @@ def _switch_language(editor: ProjectEditorApp, lang: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Verbindung zum sproject-Server (gui/server_link.py)
+# Verbindung zum moncapro-Server (gui/server_link.py)
 # ---------------------------------------------------------------------------
 
 _server_link: Optional[ServerLink] = None
@@ -301,7 +301,7 @@ def _show_open_browser(app: ProjectEditorApp) -> None:
     start = (
         app._last_save_path.parent
         if app._last_save_path
-        else Path(__file__).parent.parent / "examples"
+        else get_examples_dir()
     )
     open_file_browser(
         callback=app.load_from_file,
@@ -989,7 +989,7 @@ def main() -> None:
     dpg.set_primary_window(TAG_MAIN_WIN, True)
     dpg.set_viewport_resize_callback(_resize_callback)
     dpg.show_viewport()
-    # Eigene Render-Schleife statt start_dearpygui(): Abgleich mit dem sproject-Server im Hauptthread
+    # Eigene Render-Schleife statt start_dearpygui(): Abgleich mit dem moncapro-Server im Hauptthread
     while dpg.is_dearpygui_running():
         if _server_link is not None:
             _server_link.process()
