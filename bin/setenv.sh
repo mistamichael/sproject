@@ -20,6 +20,8 @@ export PV_LOG="$PROJECT/log"
 export PV_TESTS="$PROJECT/tests"
 export PV_RESULTS="$PROJECT/results"
 export PV_WORK="$PROJECT/work"
+export PV_EXAMPLES="$PROJECT/examples"
+export PV_EXAMPLE_RESULTS="$PV_EXAMPLES/results"
 
 # moncapro (Rechenkern) schreibt in dieselben Ordner. MONCAPRO_CFG bleibt ungesetzt:
 # die Berechnungs-Konfiguration kommt aus dem Paket, PV_CFG enthält nur gui.cfg und Themes.
@@ -30,7 +32,7 @@ export MONCAPRO_WORK="$PV_WORK"
 
 
 # Ordner erstellen falls sie nicht existieren
-mkdir -p "$PV_BIN" "$PV_CFG" "$PV_DATA" "$PV_LOG" "$PV_RESULTS" "$PV_WORK"
+mkdir -p "$PV_BIN" "$PV_CFG" "$PV_DATA" "$PV_LOG" "$PV_RESULTS" "$PV_WORK" "$PV_EXAMPLES"
 
 echo ""
 echo "================================================================"
@@ -43,6 +45,7 @@ echo "PV_DATA         = $PV_DATA"
 echo "PV_RESULTS      = $PV_RESULTS"
 echo "PV_LOG          = $PV_LOG"
 echo "PV_WORK         = $PV_WORK"
+echo "PV_EXAMPLES     = $PV_EXAMPLES"
 echo "================================================================"
 echo ""
 echo "Ready to use! Run: bin/create_reports.sh"

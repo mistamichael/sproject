@@ -9,8 +9,8 @@ per Checkbox ein- und ausgeschaltet werden.
 import dearpygui.dearpygui as dpg
 from pathlib import Path
 
+from gui.examples import examples_dir
 from gui.gui_config import load_gui_config
-from moncapro.paths import get_examples_dir
 from gui.i18n import t
 
 _CFG = load_gui_config()
@@ -31,6 +31,7 @@ SECTIONS = [
 
 # Tags der Sidebar-Beschriftungen → i18n-Schlüssel (für den Sprachwechsel in gui/app.py)
 LABEL_TAGS = {f"sidebar_label_{section_id}": f"section.{section_id}" for section_id, _ in SECTIONS}
+EXAMPLE_LIST_TAG = "sidebar_example_list"
 TEXT_TAGS = {"sidebar_wizard": "sidebar.wizard", "sidebar_examples": "sidebar.examples"}
 
 # Toggle-Tag-Map für die optionalen Abschnitte
@@ -81,16 +82,28 @@ def build_sidebar(app) -> None:
     dpg.add_text(t("sidebar.examples"), tag="sidebar_examples", color=_COL.get("sidebar_examples", (140, 140, 160)))
     dpg.add_spacer(height=2)
 
-    examples_dir = get_examples_dir()
-    if examples_dir.exists():
-        for jf in sorted(examples_dir.glob("*.json")):
-            dpg.add_button(
-                label=jf.stem,
-                width=-1,
-                callback=lambda s, a, u: u[0].load_from_file(u[1]),
-                user_data=(app, jf),
-            )
-            dpg.add_spacer(height=1)
+    with dpg.group(tag=EXAMPLE_LIST_TAG):
+        _fill_example_list(app)
+
+
+def _fill_example_list(app) -> None:
+    """Ein Knopf je Beispieldatei der aktiven Sprache (Ordner siehe gui/examples.py)."""
+    for jf in sorted(examples_dir().glob("*.json")):
+        dpg.add_button(
+            label=jf.stem,
+            width=-1,
+            parent=EXAMPLE_LIST_TAG,
+            callback=lambda s, a, u: u[0].load_from_file(u[1]),
+            user_data=(app, jf),
+        )
+        dpg.add_spacer(height=1, parent=EXAMPLE_LIST_TAG)
+
+
+def refresh_example_list(app) -> None:
+    """Baut die Beispielliste neu auf (nach einem Sprachwechsel)."""
+    if dpg.does_item_exist(EXAMPLE_LIST_TAG):
+        dpg.delete_item(EXAMPLE_LIST_TAG, children_only=True)
+        _fill_example_list(app)
 
 
 def _on_toggle(sender, value: bool, user_data) -> None:

@@ -1,0 +1,76 @@
+{
+  "project": "Single-family house construction",
+  "project_start": "2026-04-01",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Dig excavation",
+      "duration": "3d",
+      "successors": [3],
+      "successors_aa": [2],
+      "note": "EA: pour foundation after excavation, AA: haul-away in parallel"
+    },
+    {
+      "id": 2,
+      "name": "Haul away soil",
+      "duration": "4d",
+      "successors": [],
+      "note": "AA to task 1: starts as soon as excavation starts"
+    },
+    {
+      "id": 3,
+      "name": "Pour foundation",
+      "duration": "2d",
+      "successors": [4]
+    },
+    {
+      "id": 4,
+      "name": "Let foundation dry",
+      "duration": "7d",
+      "successors": [5]
+    },
+    {
+      "id": 5,
+      "name": "Build masonry",
+      "duration": "10d",
+      "successors": [10],
+      "successors_aa": [6, 7],
+      "note": "AA: electrical and plumbing start as soon as masonry starts"
+    },
+    {
+      "id": 6,
+      "name": "Electrical installation",
+      "duration": "5d",
+      "successors": [8],
+      "note": "Needed for interior finishing"
+    },
+    {
+      "id": 7,
+      "name": "Plumbing installation",
+      "duration": "6d",
+      "successors": [8],
+      "note": "Needed for interior finishing"
+    },
+    {
+      "id": 8,
+      "name": "Interior finishing (drywall/floors)",
+      "duration": "12d",
+      "successors": [10],
+      "successors_ee": [9],
+      "note": "EE: cleanup only ends when the finishing is done"
+    },
+    {
+      "id": 9,
+      "name": "Ongoing construction debris cleanup",
+      "duration": "14d",
+      "successors": [10],
+      "note": "EE to task 8: the final cleanup happens at the same time as the completion of the finishing"
+    },
+    {
+      "id": 10,
+      "name": "Acceptance",
+      "duration": "1d",
+      "successors": []
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "project": "Software Entwicklung Projekt",
+  "project_start": "2026-03-03 09:00:00",
+  "total_hours": 160,
+  "unit": "hours",
+  "persons": [
+    {
+      "id": "DEV1",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "role": "Senior Developer",
+      "hourly_rate": 85.0,
+      "vacation": [
+        {
+          "from": "2026-04-01",
+          "to": "2026-04-05",
+          "description": "Urlaub Alice"
+        }
+      ]
+    },
+    {
+      "id": "DEV2",
+      "name": "Bob",
+      "email": "bob@example.com",
+      "role": "Junior Developer",
+      "hourly_rate": 55.0,
+      "workinghours_override": {
+        "description": "Teilzeit - nur Vormittags",
+        "days": ["mon", "tue", "wed", "thu", "fri"],
+        "hours": [
+          {
+            "from": "08:00",
+            "to": "12:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": "DES1",
+      "name": "Charlie",
+      "email": "charlie@example.com",
+      "role": "UI/UX Designer",
+      "hourly_rate": 70.0,
+      "vacation": [
+        {
+          "date": "2026-03-16",
+          "description": "Fortbildung"
+        }
+      ]
+    },
+    {
+      "id": "PM1",
+      "name": "Diana",
+      "email": "diana@example.com",
+      "role": "Project Manager",
+      "hourly_rate": 95.0
+    }
+  ],
+  "resources": [
+    {
+      "id": "R_DEV1",
+      "name": "Senior Developer",
+      "type": "person",
+      "person_id": "DEV1"
+    },
+    {
+      "id": "R_DEV2",
+      "name": "Junior Developer",
+      "type": "person",
+      "person_id": "DEV2"
+    },
+    {
+      "id": "R_DES1",
+      "name": "UI/UX Designer",
+      "type": "person",
+      "person_id": "DES1"
+    },
+    {
+      "id": "R_PM1",
+      "name": "Project Manager",
+      "type": "person",
+      "person_id": "PM1"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Projektinitialisierung",
+      "duration": "4h",
+      "resources": ["R_PM1"],
+      "successors": [2]
+    },
+    {
+      "id": 2,
+      "name": "Requirements Analyse",
+      "duration": "16h",
+      "resources": ["R_PM1", "R_DEV1"],
+      "successors": [3,4]
+    },
+    {
+      "id": 3,
+      "name": "UI/UX Design",
+      "duration": "24h",
+      "resources": ["R_DES1"],
+      "successors": [5]
+    },
+    {
+      "id": 4,
+      "name": "Backend Entwicklung",
+      "duration": "40h",
+      "duration_range": ["32h", "72h"],
+      "risk": { "probability": 0.2, "delay": "16h", "note": "API des Kunden noch instabil" },
+      "resources": ["R_DEV1"],
+      "successors": [5]
+    },
+    {
+      "id": 5,
+      "name": "Frontend Entwicklung",
+      "duration": "32h",
+      "duration_range": ["24h", "48h"],
+      "resources": ["R_DEV2"],
+      "successors": [6]
+    },
+    {
+      "id": 6,
+      "name": "Testing & QA",
+      "duration": "20h",
+      "duration_range": ["16h", "40h"],
+      "resources": ["R_DEV1", "R_DEV2"],
+      "successors": [7]
+    },
+    {
+      "id": 7,
+      "name": "Deployment",
+      "duration": "8h",
+      "resources": ["R_DEV1"],
+      "successors": [8]
+    },
+    {
+      "id": 8,
+      "name": "Projektabschluss",
+      "duration": "4h",
+      "resources": ["R_PM1"],
+      "successors": []
+    }
+  ],
+  "scenarios": [
+    { "name": "Alice eine Woche krank", "probability": 0.15,
+      "changes": [ { "person": "DEV1", "vacation": [ { "from": "2026-03-09", "to": "2026-03-13", "description": "krank" } ] } ] },
+    { "name": "Backend 50 % aufwendiger",
+      "changes": [ { "task": 4, "duration_factor": 1.5 } ] },
+    { "name": "Abnahme bis 27.03.", "description": "Kunde fordert Abnahme bis Ende März",
+      "changes": [ { "task": 8, "deadline": "2026-03-27" } ] }
+  ]
+}

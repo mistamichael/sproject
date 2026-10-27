@@ -36,8 +36,9 @@ pip install -e ../moncapro[all]     # lokalen Checkout statt der Git-/PyPI-Versi
 ### Modelle und Exporte erweitern
 
 Task-Modelle, Ressourcen, CPM, Gantt und die Export-Module liegen in `src/moncapro/` im
-[moncapro-Repository](https://github.com/mistamichael/moncapro). Die Beispielprojekte gehören zu diesem Paket
-(`moncapro.paths.get_examples_dir()`); die Seitenleiste der GUI listet sie auf.
+[moncapro-Repository](https://github.com/mistamichael/moncapro). Die Beispielprojekte der GUI liegen in diesem Repository in `examples/de` (deutsch) und `examples/en` (englisch);
+die Seitenleiste zeigt die der aktiven Sprache. `tests/test_examples.py` stellt sicher, dass beide Fassungen
+synchron bleiben. moncapro liefert zusätzlich eigene Kopien als Testdaten mit (`moncapro.paths.get_examples_dir()`).
 
 ## Projektstruktur
 
@@ -54,11 +55,13 @@ sproject/
 ├── cfg/                        # GUI-Konfiguration
 │   ├── gui.cfg                 # Farben, Größen, Server-Vorgaben
 │   └── themes/                 # Theme-Dateien
+├── examples/                   # Beispielprojekte: de/ (deutsch) und en/ (englisch), results/ (vorberechnet)
 ├── gui/                        # GUI-Editor (Dear PyGui)
 │   ├── app.py                  # Layout, Menüs, Toolbar, Dialoge
 │   ├── editor.py               # Editor-Zustand, Dateioperationen, Berechnung, Exporte
 │   ├── task_rows.py            # Verlustfreie Umwandlung Tasks ↔ Tabellenzeilen
 │   ├── analysis_rows.py        # Text ↔ Modell für Unsicherheiten und Szenarien
+│   ├── examples.py             # Welcher Beispielordner angezeigt wird (Sprache, PV_EXAMPLES, Rückfall)
 │   ├── server_link.py          # Verbindung der GUI zum moncapro-Server (Menü Server)
 │   └── components/             # Sektionen, Tabellen, Ergebnis-Panel, Seitenleiste
 ├── tests/                      # pytest: GUI-Tests ohne Fenster

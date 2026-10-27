@@ -1,0 +1,54 @@
+{
+  "project": "Tank-Design-Projekt",
+  "project_start": "2026-03-03 07:00:00",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Tank entwerfen",
+      "duration": "10d",
+      "successors": [2, 3]
+    },
+    {
+      "id": 2,
+      "name": "Tanklieferanten auswählen",
+      "duration": "8d",
+      "successors": [4, 5]
+    },
+    {
+      "id": 3,
+      "name": "Tankfundament errichten",
+      "duration": "25d",
+      "successors": [7]
+    },
+    {
+      "id": 4,
+      "name": "Tankkomponenten fertigen",
+      "duration": "10d",
+      "successors": [6]
+    },
+    {
+      "id": 5,
+      "name": "Montagezeichnungen erstellen",
+      "duration": "3d",
+      "successors": [7]
+    },
+    {
+      "id": 6,
+      "name": "Tankkomponenten liefern",
+      "duration": "4d",
+      "successors": [7]
+    },
+    {
+      "id": 7,
+      "name": "Tank montieren",
+      "duration": "15d",
+      "successors": [8]
+    },
+    {
+      "id": 8,
+      "name": "Tank testen und in Betrieb nehmen",
+      "duration": "0d",
+      "successors": []
+    }
+  ]
+}

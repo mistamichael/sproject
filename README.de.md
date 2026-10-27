@@ -42,7 +42,7 @@ sproject ist der Desktop-Editor. Rechenkern, Kommandozeile und MCP-Server stamme
 1. Code holen: `git clone https://github.com/mistamichael/sproject.git` (oder ZIP herunterladen)
 2. Installieren: Doppelklick auf `bin\install_py.bat` – Linux/macOS: `bash bin/install_py.sh`
    (legt `.venv` an und installiert alles aus `requirements.txt`)
-3. Starten: Doppelklick auf `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – und links ein Beispiel öffnen
+3. Starten: Doppelklick auf `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – und links ein Beispiel öffnen (deutsche Dateien in `examples/de`, englische in `examples/en`)
 
 Kommandozeile statt GUI (mit aktivem `.venv`):
 
@@ -93,7 +93,7 @@ und im Browser öffnen. Die interaktiven Seiten laden die Plotly-Bibliothek aus 
 | Termine, Ressourcen, Plan gegen Ist, Szenarien, Monte-Carlo im Detail | [doc/de/termine-und-ist.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/termine-und-ist.md) |
 | Abhängigkeitstypen EA/AA/EE/AE | [doc/de/dependency_types.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/dependency_types.md) |
 | Konfiguration, Feiertage | [doc/de/config_doc.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/config_doc.md) |
-| Beispielprojekte | [doc/de/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/examples.md) |
+| Beispielprojekte | [`examples/`](examples/) – `de/` deutsch, `en/` englisch; Beschreibung: [doc/de/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/examples.md) |
 | Tests, Entwicklung, Projektstruktur | [doc/de/entwicklung.md](doc/de/entwicklung.md) |
 
 ## Lizenz

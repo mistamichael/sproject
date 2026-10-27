@@ -1,6 +1,6 @@
 # Beispielergebnisse
 
-Fertig berechnete Ergebnisse der Beispielprojekte aus [`examples/`](https://github.com/mistamichael/moncapro/tree/main/src/moncapro/examples) (Paket moncapro) – zum Anschauen,
+Fertig berechnete Ergebnisse der Beispielprojekte aus [`examples/de/`](../../examples/de) – zum Anschauen,
 ohne sproject zu installieren. Am schnellsten: die `.md`-Berichte anklicken und die Diagramm-Bilder in
 [doc/de/termine-und-ist.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/termine-und-ist.md) ansehen – beides ohne Download.
 
@@ -18,7 +18,7 @@ ohne sproject zu installieren. Am schnellsten: die `.md`-Berichte anklicken und 
 | `.xlsx` | herunterladen und mit Excel/LibreOffice öffnen |
 | `.txt`, `*_network_plan.json` | direkt im Browser |
 
-## Software-Entwicklungsprojekt (`software_simple.json`, Paket moncapro)
+## Software-Entwicklungsprojekt (`examples/de/software_simple.json`)
 
 Acht Aufgaben, Personen mit Urlaub und Teilzeit, Ressourcenplanung, Kosten, Unsicherheiten und Szenarien.
 
@@ -33,7 +33,7 @@ Acht Aufgaben, Personen mit Urlaub und Teilzeit, Ressourcenplanung, Kosten, Unsi
 | [software_simple.txt](software_simple.txt) | Textbericht |
 | [software_simple_network_plan.json](software_simple_network_plan.json) | Rechenergebnis als JSON (FAZ/FEZ/SAZ/SEZ, Puffer, Termine) |
 
-## Maschinenmontage (`simpleproject.json`, Paket moncapro)
+## Maschinenmontage (`examples/de/simpleproject.json`)
 
 Einfaches Projekt in Arbeitstagen.
 
@@ -46,7 +46,7 @@ Einfaches Projekt in Arbeitstagen.
 | [simpleproject.txt](simpleproject.txt) | Textbericht |
 | [simpleproject_network_plan.json](simpleproject_network_plan.json) | Rechenergebnis als JSON |
 
-## Pizza backen (`pizza.json`, Paket moncapro)
+## Pizza backen (`examples/de/pizza.json`)
 
 Kleines Projekt in Minuten.
 
@@ -64,9 +64,9 @@ Kleines Projekt in Minuten.
 Nach Änderungen an Rechenweg oder Berichten (im Projektordner, `.venv` aktiv):
 
 ```bash
-moncapro --project <moncapro>/src/moncapro/examples/software_simple.json --export json,txt,md,html,xlsx,plotly,scenarios,simulation --seed 1 --plotly-cdn --output-dir doc/result_examples
-moncapro --project <moncapro>/src/moncapro/examples/simpleproject.json --export json,txt,md,html,xlsx,plotly --plotly-cdn --output-dir doc/result_examples
-moncapro --project <moncapro>/src/moncapro/examples/pizza.json --export json,txt,md,html,xlsx,plotly --plotly-cdn --output-dir doc/result_examples
+moncapro --project examples/de/software_simple.json --export json,txt,md,html,xlsx,plotly,scenarios,simulation --seed 1 --plotly-cdn --output-dir doc/result_examples
+moncapro --project examples/de/simpleproject.json --export json,txt,md,html,xlsx,plotly --plotly-cdn --output-dir doc/result_examples
+moncapro --project examples/de/pizza.json --export json,txt,md,html,xlsx,plotly --plotly-cdn --output-dir doc/result_examples
 ```
 
 `--seed 1` macht die Simulation reproduzierbar; `--plotly-cdn` hält die interaktiven Seiten klein

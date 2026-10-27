@@ -32,9 +32,11 @@ import dearpygui.dearpygui as dpg
 
 from gui.editor import ProjectEditorApp, REPORT_FORMATS
 from gui.server_link import ServerLink
-from moncapro.paths import get_examples_dir, get_results_dir
+from moncapro.paths import get_results_dir
 from gui.icons import setup_icon_textures, add_icon_button
-from gui.components.sidebar import LABEL_TAGS as SIDEBAR_LABEL_TAGS, TEXT_TAGS as SIDEBAR_TEXT_TAGS, build_sidebar
+from gui.components.sidebar import (LABEL_TAGS as SIDEBAR_LABEL_TAGS, TEXT_TAGS as SIDEBAR_TEXT_TAGS, build_sidebar,
+                                    refresh_example_list)
+from gui.examples import examples_dir
 from gui.components.task_table import build_task_section
 from gui.components.file_browser import open_file_browser
 from gui.components.list_section import FormField, open_form_dialog
@@ -202,6 +204,7 @@ def _switch_language(editor: ProjectEditorApp, lang: str) -> None:
         if dpg.does_item_exist(tag):
             dpg.set_value(tag, code == lang)
     _update_ui_language()
+    refresh_example_list(editor)
     editor._set_status(t("status.language_changed", lang=lang))
 
 
@@ -301,7 +304,7 @@ def _show_open_browser(app: ProjectEditorApp) -> None:
     start = (
         app._last_save_path.parent
         if app._last_save_path
-        else get_examples_dir()
+        else examples_dir()
     )
     open_file_browser(
         callback=app.load_from_file,

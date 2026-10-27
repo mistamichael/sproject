@@ -1,0 +1,240 @@
+{
+  "project": "Software Entwicklung Projekt (Ist-Stand)",
+  "project_start": "2026-03-03 09:00:00",
+  "status_date": "2026-03-13",
+  "actuals": {
+    "1": {
+      "start": "2026-03-03 09:00",
+      "finish": "2026-03-03 13:00"
+    },
+    "2": {
+      "start": "2026-03-03 13:00",
+      "finish": "2026-03-05 17:00",
+      "note": "Abstimmung mit Kunde dauerte länger"
+    },
+    "3": {
+      "start": "2026-03-06",
+      "finish": "2026-03-11"
+    },
+    "4": {
+      "start": "2026-03-06",
+      "progress": 0.6
+    }
+  },
+  "baseline": {
+    "created": "2026-10-17 23:25",
+    "project_end": "2026-04-07 17:00",
+    "tasks": {
+      "1": {
+        "start": "2026-03-03 09:00",
+        "finish": "2026-03-03 13:00"
+      },
+      "2": {
+        "start": "2026-03-03 13:00",
+        "finish": "2026-03-05 13:00"
+      },
+      "3": {
+        "start": "2026-03-05 13:00",
+        "finish": "2026-03-10 13:00"
+      },
+      "4": {
+        "start": "2026-03-05 13:00",
+        "finish": "2026-03-12 13:00"
+      },
+      "5": {
+        "start": "2026-03-12 13:00",
+        "finish": "2026-03-24 13:00"
+      },
+      "6": {
+        "start": "2026-03-24 13:00",
+        "finish": "2026-03-31 13:00"
+      },
+      "7": {
+        "start": "2026-03-31 13:00",
+        "finish": "2026-04-07 13:00"
+      },
+      "8": {
+        "start": "2026-04-07 13:00",
+        "finish": "2026-04-07 17:00"
+      }
+    }
+  },
+  "total_hours": 160,
+  "unit": "hours",
+  "resources": [
+    {
+      "id": "R_DEV1",
+      "name": "Senior Developer",
+      "type": "person",
+      "person_id": "DEV1"
+    },
+    {
+      "id": "R_DEV2",
+      "name": "Junior Developer",
+      "type": "person",
+      "person_id": "DEV2"
+    },
+    {
+      "id": "R_DES1",
+      "name": "UI/UX Designer",
+      "type": "person",
+      "person_id": "DES1"
+    },
+    {
+      "id": "R_PM1",
+      "name": "Project Manager",
+      "type": "person",
+      "person_id": "PM1"
+    }
+  ],
+  "persons": [
+    {
+      "id": "DEV1",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "role": "Senior Developer",
+      "hourly_rate": 85.0,
+      "vacation": [
+        {
+          "from": "2026-04-01",
+          "to": "2026-04-05",
+          "description": "Urlaub Alice"
+        }
+      ]
+    },
+    {
+      "id": "DEV2",
+      "name": "Bob",
+      "email": "bob@example.com",
+      "role": "Junior Developer",
+      "hourly_rate": 55.0,
+      "workinghours_override": {
+        "description": "Teilzeit - nur Vormittags",
+        "days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "hours": [
+          {
+            "from": "08:00",
+            "to": "12:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": "DES1",
+      "name": "Charlie",
+      "email": "charlie@example.com",
+      "role": "UI/UX Designer",
+      "hourly_rate": 70.0,
+      "vacation": [
+        {
+          "date": "2026-03-16",
+          "description": "Fortbildung"
+        }
+      ]
+    },
+    {
+      "id": "PM1",
+      "name": "Diana",
+      "email": "diana@example.com",
+      "role": "Project Manager",
+      "hourly_rate": 95.0
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Projektinitialisierung",
+      "duration": "4h",
+      "successors": [
+        2
+      ],
+      "resources": [
+        "R_PM1"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Requirements Analyse",
+      "duration": "16h",
+      "successors": [
+        3,
+        4
+      ],
+      "resources": [
+        "R_PM1",
+        "R_DEV1"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "UI/UX Design",
+      "duration": "24h",
+      "successors": [
+        5
+      ],
+      "resources": [
+        "R_DES1"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Backend Entwicklung",
+      "duration": "40h",
+      "successors": [
+        5
+      ],
+      "resources": [
+        "R_DEV1"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Frontend Entwicklung",
+      "duration": "32h",
+      "successors": [
+        6
+      ],
+      "resources": [
+        "R_DEV2"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Testing & QA",
+      "duration": "20h",
+      "successors": [
+        7
+      ],
+      "resources": [
+        "R_DEV1",
+        "R_DEV2"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Deployment",
+      "duration": "8h",
+      "successors": [
+        8
+      ],
+      "resources": [
+        "R_DEV1"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Projektabschluss",
+      "duration": "4h",
+      "successors": [],
+      "resources": [
+        "R_PM1"
+      ]
+    }
+  ]
+}

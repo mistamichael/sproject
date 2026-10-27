@@ -1,0 +1,54 @@
+{
+  "project": "Complete system assembly",
+  "project_start": "2026-03-09 08:00:00",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Transport/delivery",
+      "duration": "3d",
+      "successors": [2, 3, 4]
+    },
+    {
+      "id": 2,
+      "name": "Pre-assembly of process stations",
+      "duration": "10d",
+      "successors": [6]
+    },
+    {
+      "id": 3,
+      "name": "Pre-assembly of conveyor belt",
+      "duration": "7d",
+      "successors": [6]
+    },
+    {
+      "id": 4,
+      "name": "Adaptation of control units",
+      "duration": "2d",
+      "successors": [5, 6]
+    },
+    {
+      "id": 5,
+      "name": "Programming of control units",
+      "duration": "8d",
+      "successors": [7]
+    },
+    {
+      "id": 6,
+      "name": "Complete system assembly",
+      "duration": "10d",
+      "successors": [7]
+    },
+    {
+      "id": 7,
+      "name": "Complete system test",
+      "duration": "5d",
+      "successors": [8]
+    },
+    {
+      "id": 8,
+      "name": "Training of production staff",
+      "duration": "2d",
+      "successors": []
+    }
+  ]
+}

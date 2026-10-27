@@ -12,6 +12,7 @@ sproject/
 ├── bin/              # Start-Skripte (.bat/.sh): setenv, install_py, activate_venv, gui, mcp_server
 ├── cfg/              # GUI-Konfiguration: gui.cfg, themes/ (Berechnungs-cfg liegt im Paket moncapro)
 ├── doc/              # Dokumentation
+├── examples/         # Beispielprojekte der GUI: de/ und en/ (je Sprache eine Fassung), results/ (vorberechnet)
 ├── gui/              # Dear PyGui GUI-Anwendung
 │   ├── app.py        # Hauptlayout, Menüs, Toolbar, Dialoge, Viewport-Aufbau
 │   ├── editor.py     # ProjectEditorApp – State, Datei-Ops, sync/refresh, Exporte
@@ -19,6 +20,7 @@ sproject/
 │   ├── analysis_rows.py # Text ↔ Modell für Unsicherheiten und Szenarien (ohne DPG)
 │   ├── colors.py     # Ressourcen-Farbzuordnung (eigene Farbe vor Palette)
 │   ├── i18n.py       # Internationalisierung (de/en), t()-Funktion
+│   ├── examples.py   # examples_dir(): Beispielordner je GUI-Sprache (PV_EXAMPLES, Rückfall de → examples/ → Paket moncapro)
 │   ├── gui_config.py # Konfigurationslader (gui.cfg → Farben, Größen, Themes)
 │   ├── server_link.py # Explizite Verbindung zum moncapro-Server (MCP-Client), Abgleich im DPG-Hauptthread
 │   └── components/   # UI-Komponenten
@@ -99,6 +101,8 @@ Viewport
 | `PV_LOG`             | `log/`              | Logdateien                        |
 | `PV_RESULTS`         | `results/`          | Export-Ausgaben                   |
 | `PV_WORK`            | `work/`             | Arbeitsdateien, Default für "Neu" |
+| `PV_EXAMPLES`        | `examples/`         | Beispiele (`de/`, `en/`)          |
+| `PV_EXAMPLE_RESULTS` | `examples/results/` | Beispiel-Exporte                  |
 | `PV_TESTS`           | `tests/`            | Tests                             |
 | `MONCAPRO_DATA/LOG/RESULTS/WORK` | wie `PV_DATA/LOG/RESULTS/WORK` | für den Rechenkern, gesetzt durch `setenv` |
 
@@ -136,6 +140,7 @@ Datei
   - Neue optionale Sektion zusätzlich eintragen in: `SECTIONS` (`gui/editor.py`), `_detect_active_sections()`, `SECTIONS`/`TOGGLE_TAGS` (`gui/components/sidebar.py`), `_build_*_section()` + `_label_map` (`gui/app.py`)
   - Optionen: `Column(color=True)` = Farbfeld + Farbwähler, `Column(text_color=…)` = Warnfarbe je Spalte, `ListSection(on_double_click=…)` = Zeile im Formular bearbeiten, `ListSection(warning=…)` = Hinweis unter der Tabelle
   - Hinzufügen und Bearbeiten nutzen dasselbe `open_form_dialog()` (`confirm_label="button.apply"` beim Bearbeiten)
+- **Beispiele:** `examples/de` und `examples/en` müssen dieselben Dateien, Struktur und Rechenergebnisse haben, nur die Anzeigetexte unterscheiden sich (`tests/test_examples.py`). Neue Beispiele immer in beiden Sprachen anlegen. Tests lesen Namen aus den Dateien, nicht als Text im Test.
 - **IDs** in Sektionstabellen sind nur Anzeige (andere Objekte verweisen darauf)
 - **Text ↔ Modell** ohne DPG in eigene Module (`task_rows.py`, `analysis_rows.py`), damit testbar
 

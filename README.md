@@ -41,7 +41,7 @@ separate package [moncapro](https://github.com/mistamichael/moncapro) and are in
 1. Get the code: `git clone https://github.com/mistamichael/sproject.git` (or download the ZIP)
 2. Install: double-click `bin\install_py.bat` – Linux/macOS: `bash bin/install_py.sh`
    (creates `.venv` and installs everything from `requirements.txt`)
-3. Start: double-click `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – and open an example from the sidebar
+3. Start: double-click `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – and open an example from the sidebar (English files in `examples/en`, German ones in `examples/de`)
 
 Command line instead of the GUI (with `.venv` active):
 
@@ -90,7 +90,7 @@ browser. The interactive pages load the Plotly library from the internet.
 | AI interface (MCP server, Claude, Excel import) | [doc/en/ai-interface.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/ai-interface.md) |
 | Project file format: durations, dependencies, resources, loops, uncertainties, scenarios | [doc/en/project-format.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/project-format.md) |
 | Configuration, public holidays | [doc/en/configuration.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/configuration.md) |
-| Example projects | [doc/en/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/examples.md) |
+| Example projects | [`examples/`](examples/) – `en/` English, `de/` German; description: [doc/en/examples.md](https://github.com/mistamichael/moncapro/blob/main/doc/en/examples.md) |
 | Tests, development, project structure | [doc/en/development.md](doc/en/development.md) |
 | Dates, resources, plan vs. actual, scenarios, Monte Carlo (German) | [doc/de/termine-und-ist.md](https://github.com/mistamichael/moncapro/blob/main/doc/de/termine-und-ist.md) |
 

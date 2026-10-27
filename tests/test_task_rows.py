@@ -6,16 +6,16 @@ import pytest
 
 from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
 from moncapro.models import InstanceTask, LoopTask, SimpleTask, SubTask, load_project
-from moncapro.paths import get_examples_dir
+from gui.examples import examples_root
 
-EXAMPLES = sorted(get_examples_dir().glob("*.json"))
+EXAMPLES = sorted(f for lang in ("de", "en") for f in (examples_root() / lang).glob("*.json"))
 
 
 def _dump(tasks):
     return [t.model_dump(by_alias=True, exclude_none=True) for t in tasks]
 
 
-@pytest.mark.parametrize("example", EXAMPLES, ids=lambda p: p.stem)
+@pytest.mark.parametrize("example", EXAMPLES, ids=lambda p: f"{p.parent.name}-{p.stem}")
 def test_round_trip_without_edits_is_lossless(example):
     project = load_project(example)
     assert _dump(rows_to_tasks(tasks_to_rows(project.tasks))) == _dump(project.tasks)

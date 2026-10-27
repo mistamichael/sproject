@@ -1,0 +1,67 @@
+{
+  "project": "Pizza Project",
+  "project_start": "2026-03-03 09:00:00",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Zutaten abwiegen & bereitstellen",
+      "duration": "5m",
+      "successors": [2, 4, 5]
+    },
+    {
+      "id": 2,
+      "name": "Teig mischen & kneten",
+      "duration": "10m",
+      "successors": [3]
+    },
+    {
+      "id": 3,
+      "name": "Teig gehen lassen (Gare)",
+      "duration": "60m",
+      "successors": [7]
+    },
+    {
+      "id": 4,
+      "name": "Soße zubereiten",
+      "duration": "10m",
+      "successors": [8]
+    },
+    {
+      "id": 5,
+      "name": "Belag schneiden (Käse, Gemüse, etc.)",
+      "duration": "10m",
+      "successors": [8]
+    },
+    {
+      "id": 6,
+      "name": "Ofen vorheizen",
+      "duration": "20m",
+      "successors": [9]
+    },
+    {
+      "id": 7,
+      "name": "Teig ausrollen / formen",
+      "duration": "1m",
+      "successors": [8]
+    },
+    {
+      "id": 8,
+      "name": "Pizza belegen (Soße + Belag)",
+      "duration": "2m",
+      "successors": [9]
+    },
+    {
+      "id": 9,
+      "name": "Pizza backen",
+      "duration": "5m",
+      "successors": [10]
+    },
+    {
+      "id": 10,
+      "name": "Pizza servieren",
+      "duration": "1m",
+      "successors": []
+    }
+  ]
+}
+

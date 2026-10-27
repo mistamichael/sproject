@@ -20,6 +20,8 @@ set "PV_LOG=%PROJECT%\log"
 set "PV_TESTS=%PROJECT%\tests"
 set "PV_RESULTS=%PROJECT%\results"
 set "PV_WORK=%PROJECT%\work"
+set "PV_EXAMPLES=%PROJECT%\examples"
+set "PV_EXAMPLE_RESULTS=%PV_EXAMPLES%\results"
 
 REM moncapro (Rechenkern) schreibt in dieselben Ordner. MONCAPRO_CFG bleibt ungesetzt:
 REM die Berechnungs-Konfiguration kommt aus dem Paket, PV_CFG enthaelt nur gui.cfg und Themes.
@@ -36,6 +38,7 @@ if not exist "%PV_DATA%" mkdir "%PV_DATA%"
 if not exist "%PV_LOG%" mkdir "%PV_LOG%"
 if not exist "%PV_RESULTS%" mkdir "%PV_RESULTS%"
 if not exist "%PV_WORK%" mkdir "%PV_WORK%"
+if not exist "%PV_EXAMPLES%" mkdir "%PV_EXAMPLES%"
 
 REM Umgebungsvariablen anzeigen
 echo.
@@ -48,6 +51,7 @@ echo PV_CFG         = %PV_CFG%
 echo PV_DATA         = %PV_DATA%
 echo PV_RESULTS      = %PV_RESULTS%
 echo PV_LOG          = %PV_LOG%
+echo PV_EXAMPLES     = %PV_EXAMPLES%
 echo ================================================================
 echo.
 echo Ready to use! Run: bin\create_reports.bat

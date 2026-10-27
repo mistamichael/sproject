@@ -1,0 +1,88 @@
+{
+  "project": "Pizza Service Express",
+  "total_volume": 10,
+  "unit": "pizzas",
+  "project_start": "2026-03-03 09:00:00",
+
+  "persons": [
+    {
+      "id": "PERS1",
+      "name": "Max Mustermann",
+      "email": "max@pizzabaecker.com",
+      "role": "Baker",
+      "hourly_rate": 45.0
+    },
+    {
+      "id": "PERS2",
+      "name": "Heinz Müller",
+      "email": "heinz@pizzabaecker.com",
+      "role": "Salesperson",
+      "hourly_rate": 35.0
+    }
+  ],
+  "resources": [
+    {
+      "id": "R_BAECKER",
+      "person_id": "PERS1",
+      "name": "Baker Max"
+    },
+    {
+      "id": "R_VERKAEUFER",
+      "person_id": "PERS2",
+      "name": "Salesperson Heinz"
+    },
+    {
+      "id": "R_OFEN",
+      "name": "Stone oven",
+      "type": "machine",
+      "capacity": 4,
+      "unit": "pizzas"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Dough preparation (batch for all pizzas)",
+      "duration": "60m",
+      "resources": ["R_BAECKER"],
+      "successors": [2],
+      "description": "One-time step: prepare dough for 12 pizzas"
+    },
+    {
+      "id": 2,
+      "name": "Pizza production cycle",
+      "is_loop": true,
+      "loop_until": "total_volume <= 0",
+      "cycle_prefix": "P",
+      "successors": [],
+      "subtasks": [
+        {
+          "name": "Shape and top pizza",
+          "duration": "3m",
+          "resources": ["R_BAECKER"]
+        },
+        {
+          "name": "Put pizza in oven",
+          "duration": "0.5m",
+          "resources": ["R_BAECKER"]
+        },
+        {
+          "name": "Bake pizza",
+          "duration": "7m",
+          "resources": ["R_OFEN"]
+        },
+        {
+          "name": "Take pizza out of oven",
+          "duration": "0.5m",
+          "resources": ["R_BAECKER"]
+        },
+        {
+          "name": "Sell pizza",
+          "duration": "2m",
+          "resources": ["R_VERKAEUFER"]
+        }
+      ],
+      "volume_per_cycle": 1
+    }
+  ]
+}

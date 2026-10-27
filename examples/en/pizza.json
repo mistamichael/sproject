@@ -1,0 +1,67 @@
+{
+  "project": "Pizza project",
+  "project_start": "2026-03-03 09:00:00",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Weigh and prepare ingredients",
+      "duration": "5m",
+      "successors": [2, 4, 5]
+    },
+    {
+      "id": 2,
+      "name": "Mix and knead dough",
+      "duration": "10m",
+      "successors": [3]
+    },
+    {
+      "id": 3,
+      "name": "Let dough rise (proofing)",
+      "duration": "60m",
+      "successors": [7]
+    },
+    {
+      "id": 4,
+      "name": "Prepare sauce",
+      "duration": "10m",
+      "successors": [8]
+    },
+    {
+      "id": 5,
+      "name": "Cut toppings (cheese, vegetables, etc.)",
+      "duration": "10m",
+      "successors": [8]
+    },
+    {
+      "id": 6,
+      "name": "Preheat oven",
+      "duration": "20m",
+      "successors": [9]
+    },
+    {
+      "id": 7,
+      "name": "Roll out / shape dough",
+      "duration": "1m",
+      "successors": [8]
+    },
+    {
+      "id": 8,
+      "name": "Top pizza (sauce + toppings)",
+      "duration": "2m",
+      "successors": [9]
+    },
+    {
+      "id": 9,
+      "name": "Bake pizza",
+      "duration": "5m",
+      "successors": [10]
+    },
+    {
+      "id": 10,
+      "name": "Serve pizza",
+      "duration": "1m",
+      "successors": []
+    }
+  ]
+}
+

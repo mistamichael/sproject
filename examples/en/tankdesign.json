@@ -1,0 +1,54 @@
+{
+  "project": "Tank Design Project",
+  "project_start": "2026-03-03 07:00:00",
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Design tank project",
+      "duration": "10d",
+      "successors": [2, 3]
+    },
+    {
+      "id": 2,
+      "name": "Select tank supplier",
+      "duration": "8d",
+      "successors": [4, 5]
+    },
+    {
+      "id": 3,
+      "name": "Construct tank foundation",
+      "duration": "25d",
+      "successors": [7]
+    },
+    {
+      "id": 4,
+      "name": "Manufacture tank components",
+      "duration": "10d",
+      "successors": [6]
+    },
+    {
+      "id": 5,
+      "name": "Prepare installation drawings",
+      "duration": "3d",
+      "successors": [7]
+    },
+    {
+      "id": 6,
+      "name": "Deliver tank components",
+      "duration": "4d",
+      "successors": [7]
+    },
+    {
+      "id": 7,
+      "name": "Assemble tank",
+      "duration": "15d",
+      "successors": [8]
+    },
+    {
+      "id": 8,
+      "name": "Test and commission tank",
+      "duration": "0d",
+      "successors": []
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "project": "Facade renovation & basement insulation",
+  "scope": "Earthworks, perimeter insulation, timber frame construction, blown-in cellulose insulation",
+  "resting_times": [
+    {
+      "after_hours": 4.5,
+      "duration": "45m",
+      "note": "Driving-time interruption (if materials need to be transported)"
+    },
+    {
+      "after_hours": 6,
+      "duration": "30m",
+      "note": "Requirement under the German working time act (ArbZG) for all trades"
+    }
+  ],
+  "persons": [
+    {
+      "id": "PERS_ERD",
+      "name": "Thomas Tiefbau",
+      "role": "Excavator operator / earthworker",
+      "hourly_rate": 60.0,
+      "rest_intervals": "resting_times"
+    },
+    {
+      "id": "PERS_ZIM",
+      "name": "Stefan Schnitt",
+      "role": "Carpenter (timber construction)",
+      "hourly_rate": 65.0,
+      "rest_intervals": "resting_times"
+    },
+    {
+      "id": "PERS_ISO",
+      "name": "Klaus Flocke",
+      "role": "Insulation technician",
+      "hourly_rate": 55.0,
+      "rest_intervals": "resting_times"
+    }
+  ],
+  "resources": [
+        {
+      "id": "R_PERS_ERD",
+      "name": "Earthworker Thomas",
+      "type": "person",
+      "person_id": "PERS_ERD",
+      "color": "5B9BD5"
+    },
+    {
+      "id": "R_PERS_ZIM",
+      "name": "Carpenter Stefan",
+      "type": "person",
+      "person_id": "PERS_ZIM",
+      "color": "4472C4"
+    },
+    {
+      "id": "R_PERS_ISO",
+      "name": "Insulation technician Klaus",
+      "type": "person",
+      "person_id": "PERS_ISO",
+      "color": "2F5597"
+    },
+    {
+      "id": "MB1",
+      "name": "Mini excavator 3.5t",
+      "type": "machine",
+      "hourly_rate": 85.0,
+      "provisioning_costs": 120.0,
+      "note": "For excavations in the edge area"
+    },
+    {
+      "id": "EB1",
+      "name": "Cellulose blowing machine",
+      "type": "machine",
+      "hourly_rate": 45.0,
+      "provisioning_costs": 50.0,
+      "performance_m3_per_h": 15
+    },
+    {
+      "id": "MAT_XPS",
+      "name": "Perimeter insulation XPS",
+      "type": "material",
+      "unit": "m2"
+    },
+    {
+      "id": "MAT_WOOD",
+      "name": "Wood fiber boards & stud framing",
+      "type": "material",
+      "unit": "m2"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Earthworks & exposure",
+      "duration": "8h",
+      "successors": [2],
+      "resources": ["R_PERS_ERD", "MB1"],
+      "note": "Digging up the soil down to the foundation edge"
+    },
+    {
+      "id": 2,
+      "name": "Basement insulation (perimeter)",
+      "duration": "6h",
+      "successors": [3],
+      "resources": ["R_PERS_ERD", "MAT_XPS"],
+      "note": "Cleaning, waterproofing and gluing on the XPS boards"
+    },
+    {
+      "id": 3,
+      "name": "Timber stud framing & wood fiber boards",
+      "duration": "16h",
+      "successors": [4],
+      "resources": ["R_PERS_ZIM", "MAT_WOOD"],
+      "note": "Installation of the substructure and outer shell"
+    },
+    {
+      "id": 4,
+      "name": "Blown-in cellulose insulation",
+      "duration": "4h",
+      "successors": [5],
+      "resources": ["R_PERS_ISO", "EB1"],
+      "note": "Seamless blowing-in of the cavities"
+    },
+    {
+      "id": 5,
+      "name": "Backfilling & completion",
+      "duration": "4h",
+      "successors": [],
+      "resources": ["R_PERS_ERD", "MB1"],
+      "note": "Backfilling with gravel/soil and terrain adjustment"
+    }
+  ]
+}

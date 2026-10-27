@@ -15,10 +15,15 @@ dpg = pytest.importorskip("dearpygui.dearpygui")
 
 from gui.i18n import t                                   # noqa: E402
 from moncapro.models import load_project                     # noqa: E402
-from moncapro.paths import get_cfg_dir, get_examples_dir   # noqa: E402
+from gui.examples import examples_dir                  # noqa: E402
+from moncapro.paths import get_cfg_dir                  # noqa: E402
 from moncapro.schedule import build_schedule                  # noqa: E402
 
-EXAMPLES = get_examples_dir()
+EXAMPLES = examples_dir("de")
+
+# Projektnamen aus den Dateien lesen, nicht als Text im Test festschreiben
+TANK_NAME = load_project(EXAMPLES / "tankdesign.json").project
+PIZZA_NAME = load_project(EXAMPLES / "pizza.json").project
 
 
 @pytest.fixture
@@ -28,6 +33,28 @@ def editor():
     app = create_app()
     yield app
     dpg.destroy_context()
+
+
+def _sidebar_example_paths():
+    children = dpg.get_item_children("sidebar_example_list", 1)
+    return [dpg.get_item_user_data(c)[1] for c in children if dpg.get_item_user_data(c)]
+
+
+def test_sidebar_examples_follow_the_language(editor):
+    """Die Beispielliste zeigt die Fassung der aktiven Sprache und wird beim Wechsel neu aufgebaut."""
+    from gui.components.sidebar import refresh_example_list
+    from gui.i18n import get_language, set_language
+
+    previous = get_language()      # nicht über _switch_language: das würde gui.cfg überschreiben
+    try:
+        for lang in ("en", "de"):
+            set_language(lang)
+            refresh_example_list(editor)
+            paths = _sidebar_example_paths()
+            assert paths and all(p.parent.name == lang for p in paths), lang
+            assert [p.name for p in paths] == sorted(f.name for f in examples_dir(lang).glob("*.json"))
+    finally:
+        set_language(previous)
 
 
 def test_load_save_round_trip_is_lossless(editor, tmp_path):
@@ -312,7 +339,7 @@ def test_server_link_shares_one_project(editor, server):
 
     # 1. Server war leer → das GUI-Projekt landet auf dem Server
     _pump(link, lambda: server.session.project is not None, "GUI-Projekt nicht übertragen")
-    assert server.session.project.project == "Tank Design Project"
+    assert server.session.project.project == TANK_NAME
     count = len(server.session.project.tasks)
 
     # 2. Claude fügt einen Task hinzu → erscheint in der GUI
@@ -342,7 +369,7 @@ def test_server_link_takes_server_project_and_resolves_conflict(editor, server):
     link.connect()
     _pump(link, lambda: link.connected, "verbindet nicht")
     assert asked, "ungespeicherte GUI-Änderungen ohne Rückfrage verworfen"
-    assert editor.project.project == "Pizza Project"
+    assert editor.project.project == PIZZA_NAME
 
     # gleichzeitig: GUI ändert lokal, Claude ändert auf dem Server
     dpg.set_value("inp_project_name", "GUI-Name")
@@ -381,13 +408,13 @@ def test_claude_replaces_project_while_gui_connected(editor, server):
     dpg.set_value("inp_project_name", "Ungesendete GUI-Eingabe")       # noch nicht übertragen
     result, = _claude(server.port, ("new_project", {"name": "Aus Excel"}))
     warning = result.structuredContent["result"]["warning"]
-    assert "Tank Design Project" in warning and "Aus Excel" in warning   # Claude erfährt es
+    assert TANK_NAME in warning and "Aus Excel" in warning   # Claude erfährt es
 
     _pump(link, lambda: infos, "kein Hinweis in der GUI")
     assert editor.project.project == "Aus Excel"
     switch = server.session.last_switch
     assert switch["backup"] in infos[0]
-    assert load_project(switch["backup"]).project == "Tank Design Project"   # Server-Sicherung
+    assert load_project(switch["backup"]).project == TANK_NAME   # Server-Sicherung
     local = [p for p in server.session.backup_dir.glob("*.json") if "Ungesendete" in p.name]
     assert len(local) == 1 and str(local[0]) in infos[0]                  # GUI-Eingaben gesichert
     link.disconnect()
@@ -426,10 +453,10 @@ def test_gui_opens_other_file_while_connected(editor, server):
     _pump(link, lambda: results, "Claude-Aufruf fehlt")
 
     editor.load_from_file(EXAMPLES / "pizza.json")                       # Wechsel in der GUI
-    _pump(link, lambda: server.session.project.project == "Pizza Project", "GUI-Wechsel nicht übertragen")
+    _pump(link, lambda: server.session.project.project == PIZZA_NAME, "GUI-Wechsel nicht übertragen")
     switch = server.session.last_switch
-    assert switch["old"] == "Tank Design Project" and switch["reason"] == "replace_project"
-    assert load_project(switch["backup"]).project == "Tank Design Project"
+    assert switch["old"] == TANK_NAME and switch["reason"] == "replace_project"
+    assert load_project(switch["backup"]).project == TANK_NAME
     _pump(link, lambda: dpg.get_value("statusbar_text").startswith(t("status.server_replaced_by_gui", text="")[:20]),
           "keine Meldung in der GUI")
 
@@ -438,5 +465,5 @@ def test_gui_opens_other_file_while_connected(editor, server):
     blocked, retried = results[1], results[2]
     assert blocked.isError and "NICHT ausgeführt" in blocked.content[0].text and switch["backup"] in blocked.content[0].text
     assert not retried.isError                                            # zweiter Versuch läuft
-    assert server.session.project.project == "Pizza Project"
+    assert server.session.project.project == PIZZA_NAME
     link.disconnect()
