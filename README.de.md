@@ -199,6 +199,13 @@ Die Sektionen 3–7 sind optional und lassen sich in der Sidebar einschalten; si
 - **Menü Analyse / Toolbar:** berechnen, Szenarien vergleichen, Monte-Carlo-Simulation starten. Ergebnisse erscheinen im Tab *Ergebnis*, Reports landen in `results/`.
 - **Sprache:** Deutsch / Englisch über *Einstellungen*.
 
+## KI-Schnittstelle (MCP)
+
+Claude Code, Claude Desktop oder ein Chatbot können Projekte über einen MCP-Server aufbauen,
+prüfen, berechnen und speichern – ohne GUI (`.mcp.json` / `bin\mcp_server.bat`) oder live in der
+laufenden GUI (*Einstellungen → KI-Schnittstelle (MCP) aktiv*, `http://127.0.0.1:8765/mcp`).
+Python-Skripte nutzen direkt `lib.api.ProjectSession`. Details: [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md).
+
 ## Projektdatei-Format (JSON)
 
 ### Minimales Beispiel

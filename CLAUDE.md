@@ -9,7 +9,7 @@ Projekte werden als JSON-Dateien gespeichert und können über eine GUI oder CLI
 
 ```text
 sproject/
-├── bin/              # Start-Skripte (.bat/.sh): setenv, install_py, activate_venv, gui
+├── bin/              # Start-Skripte (.bat/.sh): setenv, install_py, activate_venv, gui, mcp_server
 ├── cfg/              # Konfiguration: gui.cfg, defaults.cfg, themes/
 ├── doc/              # Dokumentation
 ├── examples/         # Beispiel-JSON-Projektdateien
@@ -21,6 +21,7 @@ sproject/
 │   ├── colors.py     # Ressourcen-Farbzuordnung (eigene Farbe vor Palette)
 │   ├── i18n.py       # Internationalisierung (de/en), t()-Funktion
 │   ├── gui_config.py # Konfigurationslader (gui.cfg → Farben, Größen, Themes)
+│   ├── ai_bridge.py  # MCP-Server aus der laufenden GUI (HTTP), Aufträge im DPG-Hauptthread
 │   └── components/   # UI-Komponenten
 │       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection), Formular-Dialog, Farbwähler
 │       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit, Unsicherheiten, Szenarien
@@ -35,7 +36,9 @@ sproject/
 │   ├── work_calendar.py # WorkCalendar: Arbeitstage, Wochenenden, Feiertage
 │   ├── models/       # Pydantic-Modelle: Project, Tasks, Dependencies, Resources, CPM, Gantt
 │   ├── *_export.py, excel_reports.py  # Exporte
+│   ├── api.py        # ProjectSession: Operationen für KI/Skripte (dict rein/raus, validiert)
 │   └── sproject.py   # CLI
+├── mcp_server/       # MCP-Server (KI-Schnittstelle): Tools = lib/api.py, stdio oder HTTP
 ├── results/          # Export-Ausgaben (in .gitignore)
 ├── tests/            # pytest; tests/golden/ = Referenz-Exporte aller Beispiele
 └── work/             # Arbeitsdateien, Default-Speicherort für neue Projekte (PV_WORK)
@@ -62,7 +65,11 @@ sproject/
    - Szenarien: `scenarios` im Projekt (`lib/models/scenario.py`), angewendet und verglichen in `lib/scenarios.py`.
    - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `lib/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel). Liegt die geplante Dauer außerhalb von `duration_range`, nimmt die Simulation den Rand und meldet den Task (`planned_outside_range()`, `SimulationResult.clamped`); die GUI markiert ihn in Sektion 6.
 6. **Export:** `lib.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
-7. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
+7. **KI-Schnittstelle:** `lib/api.py` (`ProjectSession`) → `mcp_server/server.py` (`build_server(session, runner)`); Doku: `doc/de/ki-schnittstelle.md`
+   - Änderungen laufen über das Projekt-dict und werden neu validiert (`_commit`) – ungültige Eingaben ändern nichts.
+   - GUI: `gui/ai_bridge.py` stellt Tool-Aufrufe in eine Queue; `gui/app.py` arbeitet sie in der eigenen Render-Schleife ab (`process_pending()`), danach `editor.apply_external_project()`.
+   - Im stdio-Modus nichts auf stdout schreiben – `print()` der Bibliothek wird im Server nach stderr umgeleitet.
+8. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 
 ### GUI-Layout (Dear PyGui)
 
@@ -149,6 +156,7 @@ Datei
 - **Dear PyGui: kein zweites modales Fenster über einem offenen modalen Dialog** – es bleibt unsichtbar. In Formular-Dialogen deshalb Inhalte aufklappen (`add_color_input(inline=True)`).
 - **Dear PyGui-Tabellen:** Jedes Kind einer `table_row` ist eine eigene Spalte – mehrere Widgets für eine Zelle in eine `dpg.group()` packen.
 - **Dear PyGui-Tabellen mit `mvTable_SizingStretchProp`:** Dehnbare Spalten brauchen ein festes Gewicht (`init_width_or_weight=1.0`), sonst wandert bei jeder Größenänderung Breite in die letzte Spalte.
+- **Dear PyGui nie aus einem Fremd-Thread ändern:** Hintergrund-Threads (MCP-Server) übergeben Arbeit per Queue an den Hauptthread (`AiBridge.process_pending()`).
 - **Headless-Tests rendern nicht:** Ob etwas sichtbar ist (Modals, Layout), nur per Screenshot prüfbar (`dpg.output_frame_buffer()` mit Viewport).
 
 ## Code-Qualität / Linting

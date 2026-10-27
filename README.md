@@ -201,6 +201,13 @@ Sections 3–7 are optional and can be switched on in the sidebar; they appear a
 - **Analysis menu / toolbar:** calculate, compare scenarios, run the Monte Carlo simulation. Results appear in the *Result* tab; reports go to `results/`.
 - **Language:** German / English via *Settings*.
 
+## AI Interface (MCP)
+
+Claude Code, Claude Desktop or a chatbot can build, check, calculate and save projects through an
+MCP server – headless (`.mcp.json` / `bin/mcp_server.bat`) or live in the running GUI
+(*Settings → AI interface (MCP) active*, `http://127.0.0.1:8765/mcp`). Python scripts can use
+`lib.api.ProjectSession` directly. Details (in German): [doc/de/ki-schnittstelle.md](doc/de/ki-schnittstelle.md).
+
 ## Project File Format (JSON)
 
 ### Minimal Example

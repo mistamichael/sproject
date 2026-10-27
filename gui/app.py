@@ -24,12 +24,13 @@ Layout:
 
 import sys
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import dearpygui.dearpygui as dpg
 
+from gui.ai_bridge import AiBridge
 from gui.editor import ProjectEditorApp, REPORT_FORMATS
 from lib.paths import get_results_dir
 from gui.icons import setup_icon_textures, add_icon_button
@@ -134,6 +135,7 @@ def _update_ui_language() -> None:
         "menu_help":        "menu.help",
         "menu_theme":       "menu.settings.theme",
         "menu_language":    "menu.settings.language",
+        "mi_ai_server":     "menu.settings.ai_server",
         # Menuepunkte
         "mi_open":          "menu.file.open",
         "mi_save":          "menu.file.save",
@@ -191,6 +193,31 @@ def _switch_language(editor: ProjectEditorApp, lang: str) -> None:
             dpg.set_value(tag, code == lang)
     _update_ui_language()
     editor._set_status(t("status.language_changed", lang=lang))
+
+
+# ---------------------------------------------------------------------------
+# KI-Schnittstelle (MCP-Server, gui/ai_bridge.py)
+# ---------------------------------------------------------------------------
+
+_ai_bridge: Optional[AiBridge] = None
+
+
+def _toggle_ai_server(editor: ProjectEditorApp, enable: bool) -> None:
+    """Startet/stoppt den MCP-Server, über den Claude das geöffnete Projekt bearbeitet."""
+    if _ai_bridge is None:
+        return
+    try:
+        if enable:
+            _ai_bridge.start()
+            editor._set_status(t("status.ai_started", url=_ai_bridge.url))
+        else:
+            _ai_bridge.stop()
+            editor._set_status(t("status.ai_stopped"))
+    except Exception as e:
+        editor._set_status(t("status.ai_error", error=e))
+    if dpg.does_item_exist("mi_ai_server"):
+        dpg.set_value("mi_ai_server", _ai_bridge.running)
+
 
 VIEWPORT_W = CFG.base_width
 VIEWPORT_H = CFG.base_height
@@ -608,7 +635,9 @@ def _build_scenarios_section(app: ProjectEditorApp) -> None:
 
 def create_app() -> ProjectEditorApp:
     """Baut das vollständige DPG-Layout auf."""
+    global _ai_bridge
     editor = ProjectEditorApp()
+    _ai_bridge = AiBridge(editor, port=int(CFG.get("ai", "mcp_port", 8765)))
 
     # --- About-Fenster ---
     _s = "dialog.about"
@@ -722,6 +751,13 @@ def create_app() -> ProjectEditorApp:
                             callback=lambda s, a, u: _switch_language(editor, u),
                             user_data=lang_code,
                         )
+                dpg.add_menu_item(
+                    label=t("menu.settings.ai_server"),
+                    tag="mi_ai_server",
+                    check=True,
+                    default_value=False,
+                    callback=lambda s, a: _toggle_ai_server(editor, a),
+                )
 
             with dpg.menu(label=t("menu.help"), tag="menu_help"):
                 dpg.add_menu_item(
@@ -863,7 +899,7 @@ def main() -> None:
                     dpg.add_font_range(start, end)
         dpg.bind_font(default_font)
 
-    create_app()
+    editor = create_app()
 
     dpg.create_viewport(
         title=CFG.get("viewport", "title", "sproject Editor"),
@@ -876,7 +912,15 @@ def main() -> None:
     dpg.set_primary_window(TAG_MAIN_WIN, True)
     dpg.set_viewport_resize_callback(_resize_callback)
     dpg.show_viewport()
-    dpg.start_dearpygui()
+    if str(CFG.get("ai", "mcp_autostart", "false")).lower() in ("1", "true", "yes"):
+        _toggle_ai_server(editor, True)
+    # Eigene Render-Schleife statt start_dearpygui(): Aufträge der KI-Schnittstelle im Hauptthread abarbeiten
+    while dpg.is_dearpygui_running():
+        if _ai_bridge is not None:
+            _ai_bridge.process_pending()
+        dpg.render_dearpygui_frame()
+    if _ai_bridge is not None:
+        _ai_bridge.stop()
     dpg.destroy_context()
 
 

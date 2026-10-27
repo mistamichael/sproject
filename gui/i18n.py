@@ -21,6 +21,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "menu.settings.theme": "Theme",
         "menu.settings.language": "Sprache",
         "menu.help.about": "Über …",
+        "menu.settings.ai_server": "KI-Schnittstelle (MCP) aktiv",
 
         # ── Theme-Namen ───────────────────────────────────────────────────
         "theme.default": "Standard",
@@ -155,6 +156,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "status.no_uncertainty": "Keine Unsicherheiten definiert (duration_range, risk oder Szenario mit probability).",
         "status.simulation_running": "Monte-Carlo-Simulation läuft ({runs} Läufe) …",
         "status.simulation_done": "Simulation fertig – zu 80 % fertig bis {p80}",
+        "status.ai_started": "KI-Schnittstelle aktiv: {url}",
+        "status.ai_stopped": "KI-Schnittstelle beendet",
+        "status.ai_error": "KI-Schnittstelle: {error}",
+        "status.ai_changed": "Projekt von der KI-Schnittstelle geändert: {name}",
         "result.header.simulation": "Monte-Carlo-Simulation",
         "result.col.critical_share": "kritisch in",
         "result.col.metric": "Kennzahl",
@@ -291,6 +296,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "menu.settings.theme": "Theme",
         "menu.settings.language": "Language",
         "menu.help.about": "About …",
+        "menu.settings.ai_server": "AI interface (MCP) active",
 
         # ── Theme names ───────────────────────────────────────────────────
         "theme.default": "Default",
@@ -425,6 +431,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "status.no_uncertainty": "No uncertainties defined (duration_range, risk or scenario with probability).",
         "status.simulation_running": "Monte Carlo simulation running ({runs} runs) …",
         "status.simulation_done": "Simulation done – 80 % finished by {p80}",
+        "status.ai_started": "AI interface active: {url}",
+        "status.ai_stopped": "AI interface stopped",
+        "status.ai_error": "AI interface: {error}",
+        "status.ai_changed": "Project changed via AI interface: {name}",
         "result.header.simulation": "Monte Carlo simulation",
         "result.col.critical_share": "critical in",
         "result.col.metric": "Metric",

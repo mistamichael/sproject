@@ -216,3 +216,67 @@ def test_report_export_uses_shared_exporters(editor, tmp_path):
     with pytest.raises(RuntimeError):
         editor.dirty = True     # invalidiert das Ergebnis
         editor.export_report("txt", tmp_path)
+
+
+def test_ai_bridge_edits_open_project_over_http(editor):
+    """KI-Schnittstelle: ein MCP-Client ändert das geöffnete Projekt, die GUI übernimmt es."""
+    import asyncio
+    import socket
+    import threading
+    import time
+
+    from mcp import ClientSession
+    from mcp.client.streamable_http import streamable_http_client
+
+    from gui.ai_bridge import AiBridge
+
+    editor.load_from_file(EXAMPLES / "tankdesign.json")
+    dpg.set_value("inp_project_name", "Aus der GUI")      # ungespeicherte Eingabe muss die KI sehen
+    task_count = len(editor.project.tasks)
+
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    bridge = AiBridge(editor, port=port)
+    bridge.start()
+    results: dict = {}
+
+    async def client() -> None:
+        for _ in range(50):                               # warten, bis uvicorn lauscht
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=0.2):
+                    break
+            except OSError:
+                await asyncio.sleep(0.1)
+        async with streamable_http_client(bridge.url) as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                overview = await session.call_tool("get_overview", {})
+                results["name"] = overview.structuredContent["result"]["project"]
+                added = await session.call_tool("add_task", {"task": {"name": "Abnahme durch KI", "duration": "1d"}})
+                results["added"] = added.structuredContent["result"]
+                bad = await session.call_tool("add_dependency", {"predecessor": 1, "successor": 999})
+                results["bad_is_error"] = bad.isError
+
+    def run_client() -> None:
+        try:
+            asyncio.run(client())
+        except BaseException as e:      # noqa: BLE001 – im Testthread sammeln
+            results["error"] = e
+
+    thread = threading.Thread(target=run_client)
+    thread.start()
+    deadline = time.time() + 30
+    while thread.is_alive() and time.time() < deadline:
+        bridge.process_pending()                          # wie die Render-Schleife in gui/app.py
+        time.sleep(0.01)
+    bridge.stop()
+    thread.join(timeout=5)
+
+    assert "error" not in results, results.get("error")
+    assert results["name"] == "Aus der GUI"
+    assert results["bad_is_error"] is True
+    assert len(editor.project.tasks) == task_count + 1
+    assert editor.project.tasks[-1].name == "Abnahme durch KI"
+    assert editor.dirty
+    assert any(row.name == "Abnahme durch KI" for row in editor.task_rows)

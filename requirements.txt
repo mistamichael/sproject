@@ -24,5 +24,8 @@ Pillow>=10.0.0
 # GUI (Dear PyGui-basierter Editor)
 dearpygui>=1.11.0
 
+# KI-Schnittstelle (MCP-Server, mcp_server/)
+mcp>=1.26
+
 # Testing
 pytest>=9.0.0
