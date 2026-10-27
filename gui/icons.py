@@ -115,12 +115,9 @@ def add_icon_button(
             **kwargs,
         )
     else:
-        # Fallback: Text-Button mit Emoji
-        _emoji = {"open": "📂", "save": "💾", "save_as": "📄",
-                  "export": "⬇", "calculate": "▶", "scenarios": "⛰", "roulette": "🎲"}
+        # Fallback ohne Bild: Text-Button (die Schrift hat keine Emoji/Symbole, sie erschienen als Platzhalter)
         btn = dpg.add_button(
-            label=_emoji.get(name, "?"),
-            width=ICON_SIZE + 4,
+            label=name.replace("_", " ").title(),
             height=ICON_SIZE + 4,
             **kwargs,
         )

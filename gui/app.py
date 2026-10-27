@@ -966,17 +966,21 @@ def main() -> None:
     _create_and_bind_theme()
 
     # Font aus Config laden
+    import importlib.metadata
     import os
     _font_cfg = CFG.section("font")
     font_path = _font_cfg.get("path", "")
     if font_path and os.path.exists(font_path):
         font_size = _font_cfg.get("size", 15)
         font_ranges = _font_cfg.get("ranges", [])
+        # Ab Dear PyGui 2.0 sind die Zeichenbereiche automatisch (die Aufrufe sind wirkungslos und warnen)
+        needs_ranges = int(importlib.metadata.version("dearpygui").split(".")[0]) < 2
         with dpg.font_registry():
             with dpg.font(font_path, font_size) as default_font:
-                dpg.add_font_range_hint(dpg.mvFontRangeHint_Default)
-                for start, end in font_ranges:
-                    dpg.add_font_range(start, end)
+                if needs_ranges:
+                    dpg.add_font_range_hint(dpg.mvFontRangeHint_Default)
+                    for start, end in font_ranges:
+                        dpg.add_font_range(start, end)
         dpg.bind_font(default_font)
 
     create_app()

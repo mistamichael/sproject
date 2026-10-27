@@ -89,7 +89,7 @@ class _FileBrowser:
         # ".." – Elternverzeichnis (nur wenn nicht Wurzel)
         if parent != self.current_dir:
             dpg.add_button(
-                label="📁   ..",
+                label="..",
                 width=-1,
                 parent=_LIST_TAG,
                 callback=lambda s, a, u: self._navigate(u),
@@ -99,7 +99,7 @@ class _FileBrowser:
         # Unterverzeichnisse
         for d in dirs:
             dpg.add_button(
-                label=f"📁   {d.name}",
+                label=f"{d.name}/",
                 width=-1,
                 parent=_LIST_TAG,
                 callback=lambda s, a, u: self._navigate(u),
@@ -113,7 +113,7 @@ class _FileBrowser:
         # Dateien
         for f in files:
             dpg.add_button(
-                label=f"📄   {f.name}",
+                label=f"{f.name}",
                 width=-1,
                 parent=_LIST_TAG,
                 callback=lambda s, a, u: self._select_file(u),
@@ -227,14 +227,14 @@ class _FileBrowser:
             # ── Aktions-Buttons (doppelte Höhe) ─────────────────────────
             with dpg.group(horizontal=True):
                 dpg.add_button(
-                    label="  ✔  Öffnen  ",
+                    label="  Öffnen  ",
                     height=_BTN_H,
                     width=_BTN_W,
                     callback=lambda: self._confirm(),
                 )
                 dpg.add_spacer(width=12)
                 dpg.add_button(
-                    label="  ✕  Abbrechen  ",
+                    label="  Abbrechen  ",
                     height=_BTN_H,
                     width=_BTN_W,
                     callback=lambda: self._cancel(),
