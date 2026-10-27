@@ -25,7 +25,7 @@ Pillow>=10.0.0
 dearpygui>=1.11.0
 
 # KI-Schnittstelle (MCP-Server, mcp_server/)
-mcp>=1.26
+mcp>=1.26,<2    # v2 benennt FastMCP um (MCPServer) – Umstellung steht noch aus
 
 # Testing
 pytest>=9.0.0

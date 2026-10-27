@@ -393,9 +393,8 @@ results_dir    = results  # Output directory
 
 Public holidays work for **any country and region**: set `country` and `region` in the `[Holidays]` section of
 `cfg/defaults.cfg` (uses the [holidays](https://pypi.org/project/holidays/) library). The setting applies to all
-projects. `holidays_file` can optionally point to your own JSON file instead – `cfg/holidays_BY_2026.json` is just
-an example of that format. **Note:** the shipped `defaults.cfg` sets `holidays_file = holidays_BY_2026.json`, and
-the file takes precedence – clear `holidays_file` to use `country`/`region`.
+projects. Optionally, `holidays_file` can point to your own JSON file instead (format: see
+[doc/de/config_doc.md](doc/de/config_doc.md#feiertage)).
 
 ```ini
 [Holidays]
@@ -543,8 +542,7 @@ sproject/
 │   ├── excel_export.cfg        # XLSX tab order and names
 │   ├── txt_export.cfg          # TXT output structure
 │   ├── json_export.cfg         # JSON export settings
-│   ├── markdown_export.cfg     # Markdown/Mermaid options (also used for HTML and ZIP)
-│   └── holidays_BY_2026.json   # Example holiday file (any country via [Holidays] in defaults.cfg)
+│   └── markdown_export.cfg     # Markdown/Mermaid options (also used for HTML and ZIP)
 ├── examples/                   # Sample project files
 │   ├── pizza.json              # Simple example (minutes)
 │   ├── pizzas.json             # Loop-task example

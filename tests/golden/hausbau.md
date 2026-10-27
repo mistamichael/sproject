@@ -101,7 +101,7 @@ gantt
     section Feiertage
     03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
     06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
-    01.05 Tag der Arbeit :crit, 2026-05-01, 2026-05-01
+    01.05 Erster Mai :crit, 2026-05-01, 2026-05-01
     14.05 Christi Himmelfahrt :crit, 2026-05-14, 2026-05-14
     section Tasks
     [1] Grube ausheben (KRIT) :crit, 2026-04-01, 2026-04-08

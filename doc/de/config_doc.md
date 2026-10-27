@@ -184,18 +184,40 @@ Die Diagramme werden über [kroki.io](https://kroki.io) aus Mermaid-Syntax geren
 
 ---
 
-## Feiertage (holidays_*.json)
+## Feiertage
 
-Feiertage können als JSON-Datei im `cfg/`-Ordner hinterlegt werden:
+Feiertage kommen im Normalfall aus der Python-Bibliothek [holidays](https://pypi.org/project/holidays/) –
+für **jedes Land und jede Region**. Eingestellt wird das global (für alle Projekte) in `cfg/defaults.cfg`:
 
-```json
-[
-  {"date": "2026-01-01", "name": "Neujahr"},
-  {"date": "2026-04-03", "name": "Karfreitag"}
-]
+```ini
+[Holidays]
+consider_holidays = true   # Feiertage berücksichtigen
+country = DE               # z. B. DE, AT, CH, US, GB …
+region  = NW               # Bundesland/Region, z. B. BY, BW, NW …
+holidays_file =            # leer = holidays-Bibliothek (Normalfall)
+
+[CPM]
+skip_holidays = true       # Feiertage bei der Terminberechnung überspringen
 ```
 
-Dateiname-Konvention: `holidays_<Region>_<Jahr>.json`. Aktiviert wird die Feiertags-Berücksichtigung über `skip_holidays = true` in `defaults.cfg`.
+### Eigene Feiertagsdatei (optional)
+
+Für Sonderfälle (z. B. Betriebsferien, Brückentage, regionale Feste) kann statt der Bibliothek eine eigene
+JSON-Datei im `cfg/`-Ordner verwendet werden – `holidays_file = meine_feiertage.json`. Ist sie gesetzt, gelten
+**nur** die Tage aus der Datei (die Bibliothek wird dann nicht verwendet). Fehlt die Datei oder ist sie ungültig,
+erscheint eine Warnung und die Bibliothek springt ein.
+
+```json
+{
+  "holidays": [
+    {"date": "2026-01-01", "name": "Neujahr"},
+    {"date": "2026-04-03", "name": "Karfreitag"},
+    {"date": "2026-12-24", "name": "Betriebsferien"}
+  ]
+}
+```
+
+Pflichtfelder je Eintrag: `date` (`YYYY-MM-DD`) und `name`; weitere Felder werden ignoriert.
 
 ---
 
