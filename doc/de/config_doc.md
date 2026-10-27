@@ -194,6 +194,7 @@ für **jedes Land und jede Region**. Eingestellt wird das global (für alle Proj
 consider_holidays = true   # Feiertage berücksichtigen
 country = DE               # z. B. DE, AT, CH, US, GB …
 region  = NW               # Bundesland/Region, z. B. BY, BW, NW …
+language =                 # Sprache der Feiertagsnamen (z. B. de, en); leer = Landessprache
 holidays_file =            # leer = holidays-Bibliothek (Normalfall)
 
 [CPM]

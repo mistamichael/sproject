@@ -120,7 +120,7 @@ python lib/sproject.py --project mein_projekt.json --scenario "LKW L1 defekt" --
 
 In der GUI erscheint der Vergleich im Ergebnis-Tab (Abschnitt „Szenarien“).
 
-![Szenario-Vergleich für examples/software_simple.json](img/Szenarien.png)
+![Szenario-Vergleich für examples/software_simple.json](../img/scenarios_de.svg)
 
 *Szenario-Vergleich (`--export scenarios`) für `examples/software_simple.json`:* Jeder Balken ist die
 Projektdauer einer Variante, blau der Basisplan, rot die Abweichungen mit ihrem Mehraufwand gegenüber dem
@@ -158,7 +158,7 @@ P50/P80/P90 („zu 80 % fertig bis …“), frühestes/spätestes Ende und die *
 ein Task auf dem kritischen Pfad lag. Das HTML zeigt Histogramm und Summenkurve. `--seed` macht
 Läufe reproduzierbar. In der GUI: Exportdialog „Simulation (HTML)“.
 
-![Monte-Carlo-Simulation für examples/software_simple.json](img/MonteCarlo.png)
+![Monte-Carlo-Simulation für examples/software_simple.json](../img/simulation_de.svg)
 
 *Simulation mit 300 Läufen (`--export simulation`) für `examples/software_simple.json`:*
 
@@ -169,8 +169,8 @@ Läufe reproduzierbar. In der GUI: Exportdialog „Simulation (HTML)“.
   eignet sich eher P80 oder P90 als der Plan.
 - Die Tabelle nennt dieselben Kennzahlen und, wie oft ein Szenario mit `probability` eingetreten ist.
 
-![Kritikalität der Tasks](img/Kritikalität.png)
+![Kritikalität der Tasks](../img/criticality_de.svg)
 
 **Kritikalität:** Anteil der Läufe, in denen ein Task auf dem kritischen Pfad lag. Tasks mit 100 %
-bestimmen das Projektende immer; Tasks mit hohem Anteil (hier Backend und Frontend mit 93 %) lohnen
+bestimmen das Projektende immer; Tasks mit hohem Anteil (hier Backend und Frontend mit 90 %) lohnen
 sich am meisten für Puffer, zusätzliche Leute oder genauere Schätzungen.

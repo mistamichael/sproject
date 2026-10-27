@@ -42,6 +42,11 @@ _LABELS = {
         'missed': 'VERFEHLT', 'deadline': 'Deadline',
         'baseline': 'Baseline', 'done': 'Erledigt', 'status_date': 'Stichtag',
         'variance': 'Abweichung zur Baseline', 'remaining': 'Restarbeit',
+        'runs': 'Läufe', 'cumulative': 'Summenkurve', 'prob_done': 'Wahrscheinlichkeit fertig',
+        'simulation': 'Monte-Carlo-Simulation', 'plan': 'Plan',
+        'criticality': 'Kritikalität: Anteil der Läufe auf dem kritischen Pfad',
+        'metric': 'Kennzahl', 'value': 'Wert', 'scenarios': 'Szenarien', 'workdays': 'Arbeitstage',
+        'base_plan': 'Basisplan', 'n_runs': 'Läufe',
     },
     'en': {
         'critical': 'Critical', 'normal': 'Normal', 'break': 'Break', 'float': 'Float',
@@ -51,6 +56,11 @@ _LABELS = {
         'missed': 'MISSED', 'deadline': 'Deadline',
         'baseline': 'Baseline', 'done': 'Done', 'status_date': 'Status date',
         'variance': 'Variance to baseline', 'remaining': 'Remaining work',
+        'runs': 'Runs', 'cumulative': 'Cumulative', 'prob_done': 'Probability done',
+        'simulation': 'Monte Carlo simulation', 'plan': 'Plan',
+        'criticality': 'Criticality: share of runs on the critical path',
+        'metric': 'Metric', 'value': 'Value', 'scenarios': 'Scenarios', 'workdays': 'Working days',
+        'base_plan': 'Base plan', 'n_runs': 'runs',
     },
 }
 
@@ -298,12 +308,13 @@ def write_image(fig: go.Figure, path: Path, width: int = 1400) -> Path:
 # Szenarien
 # ---------------------------------------------------------------------------
 
-def build_scenario_figures(outcomes, title: str) -> List[go.Figure]:
+def build_scenario_figures(outcomes, title: str, lang: str = 'de') -> List[go.Figure]:
     """Vergleichsbalken (Projektdauer je Szenario) und Tabelle mit allen Kennzahlen."""
     from .scenarios import comparison_rows
 
+    lb = _LABELS.get(lang, _LABELS['de'])
     unit = outcomes[0].schedule.cpm.time_unit
-    names = [o.name for o in outcomes]
+    names = [lb['base_plan'] if i == 0 else o.name for i, o in enumerate(outcomes)]   # erster Eintrag = Basisplan
     def color(i: int, o) -> str:
         if i == 0:
             return "#4472C4"                                   # Basisplan
@@ -316,8 +327,8 @@ def build_scenario_figures(outcomes, title: str) -> List[go.Figure]:
         text=[f"{format_time_value(o.duration_days, unit)}  ({o.delta_text(unit)})" for o in outcomes],
         textposition="auto", hovertext=[o.description for o in outcomes], hoverinfo="text+x",
     ))
-    bars.update_layout(title=f"{title} – Szenarien", height=max(250, 110 + 45 * len(outcomes)),
-                       margin=dict(l=10, r=10, t=60, b=40), xaxis_title="Arbeitstage")
+    bars.update_layout(title=f"{title} – {lb['scenarios']}", height=max(250, 110 + 45 * len(outcomes)),
+                       margin=dict(l=10, r=10, t=60, b=40), xaxis_title=lb['workdays'])
     bars.update_yaxes(autorange="reversed")
 
     rows = comparison_rows(outcomes)
@@ -338,6 +349,7 @@ def build_simulation_figures(sim, title: str, lang: str = 'de') -> List[go.Figur
     from plotly.subplots import make_subplots
     from .simulation import PERCENTILES, summary_rows, top_critical
 
+    lb = _LABELS.get(lang, _LABELS['de'])
     result = sim.result
     end = max(sim.ends[-1], result.project_end_days)
     bins = min(30, max(5, len(set(round(e, 3) for e in sim.ends))))
@@ -348,38 +360,38 @@ def build_simulation_figures(sim, title: str, lang: str = 'de') -> List[go.Figur
     centers = [sim.ends[0] + (i + 0.5) * width for i in range(bins)]
 
     hist = make_subplots(specs=[[{"secondary_y": True}]])
-    hist.add_trace(go.Bar(x=centers, y=counts, width=width * 0.95, name="Läufe", marker=dict(color="#4472C4")),
+    hist.add_trace(go.Bar(x=centers, y=counts, width=width * 0.95, name=lb['runs'], marker=dict(color="#4472C4")),
                    secondary_y=False)
     hist.add_trace(go.Scatter(x=sim.ends, y=[(i + 1) / len(sim.ends) for i in range(len(sim.ends))],
-                              mode="lines", name="Summenkurve", line=dict(color="#C0392B")),
+                              mode="lines", name=lb['cumulative'], line=dict(color="#C0392B")),
                    secondary_y=True)
     marks = [(f"P{p}", sim.percentile(p), "#7F7F7F") for p in PERCENTILES]
-    marks.append(("Plan", result.project_end_days, "#2E7D32"))
+    marks.append((lb['plan'], result.project_end_days, "#2E7D32"))
     if result.baseline_end is not None:
-        marks.append(("Baseline", result.baseline_end, "#000000"))
+        marks.append((lb['baseline'], result.baseline_end, "#000000"))
     for label, x, color in marks:
         hist.add_vline(x=x, line=dict(color=color, dash="dash"), annotation_text=label, annotation_position="top")
     values, labels = axis_ticks(result, lang, end=end + width)
     hist.update_xaxes(tickvals=values, ticktext=labels, tickangle=-45,
                       range=[min(sim.ends[0], result.project_end_days) - width, end + width])
-    hist.update_yaxes(title_text="Läufe", secondary_y=False)
-    hist.update_yaxes(title_text="Wahrscheinlichkeit fertig", tickformat=".0%", range=[0, 1.02], dtick=0.2,
+    hist.update_yaxes(title_text=lb['runs'], secondary_y=False)
+    hist.update_yaxes(title_text=lb['prob_done'], tickformat=".0%", range=[0, 1.02], dtick=0.2,
                       secondary_y=True)
-    hist.update_layout(title=f"{title} – Monte-Carlo-Simulation ({sim.runs} Läufe)", height=480,
+    hist.update_layout(title=f"{title} – {lb['simulation']} ({sim.runs} {lb['n_runs']})", height=480,
                        margin=dict(l=10, r=10, t=80, b=100), legend=dict(orientation="h", y=1.08))
 
     critical = top_critical(sim, limit=15)
     crit = go.Figure(go.Bar(orientation="h", y=[f"[{tid}] {name}" for tid, name, _ in critical],
                             x=[sim.criticality[_task_key(sim, tid)] for tid, _, _ in critical],
                             marker=dict(color="#C0392B"), text=[r for _, _, r in critical], textposition="auto"))
-    crit.update_layout(title="Kritikalität: Anteil der Läufe auf dem kritischen Pfad",
+    crit.update_layout(title=lb['criticality'],
                        height=max(250, 100 + 28 * len(critical)), margin=dict(l=10, r=10, t=60, b=40))
     crit.update_xaxes(tickformat=".0%", range=[0, 1])
     crit.update_yaxes(autorange="reversed")
 
     rows = summary_rows(sim)
     table = go.Figure(go.Table(
-        header=dict(values=["Kennzahl", "Wert"], fill_color="#4472C4", font=dict(color="white"), align="left"),
+        header=dict(values=[lb['metric'], lb['value']], fill_color="#4472C4", font=dict(color="white"), align="left"),
         cells=dict(values=[[r[0] for r in rows], [r[1] for r in rows]], align="left"),
     ))
     table.update_layout(height=max(200, 60 + 28 * len(rows)), margin=dict(l=10, r=10, t=10, b=10))

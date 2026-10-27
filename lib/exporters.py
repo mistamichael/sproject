@@ -94,7 +94,7 @@ def _scenarios(s: Schedule, o: ExportOptions) -> Path:
     if not source.scenarios:
         raise ValueError("Das Projekt enthält keine Szenarien")
     outcomes = compare_scenarios(source, start_date=s.cpm.project_start, cfg_dir=o.cfg_dir)
-    return write_html(build_scenario_figures(outcomes, s.name), o.out_dir / f"{o.file_stem}_scenarios.html", s.name,
+    return write_html(build_scenario_figures(outcomes, s.name, o.lang), o.out_dir / f"{o.file_stem}_scenarios.html", s.name,
                       o.embed_plotlyjs)
 
 

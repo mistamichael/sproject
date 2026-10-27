@@ -4,13 +4,18 @@
 
 Die Beispielprojekte demonstrieren verschiedene Funktionen und Anwendungsfälle von sproject:
 
-| Projekt | Hauptmerkmale | Verwendungszweck |
-|---------|---------------|------------------|
-| **hausbau.json** | AA, EE, AE Abhängigkeiten | Verschiedene Abhängigkeitstypen |
-| **erdaushub.json** | Loop-Tasks, Subtasks, Pausen | Baustellenplanung mit Pausen |
-| **tankdesign.json** | Klassische EA-Abhängigkeiten | Standard-Projektplanung |
-| **pizzas.json** | Instance-Tasks | Produktionsplanung |
-| **fassadenbau.json** | PersonProject mit Ressourcen | Ressourcenplanung |
+| Datei                  | Beschreibung               | Besonderheiten                    |
+| ---------------------- | -------------------------- | --------------------------------- |
+| `pizza.json`           | Pizza zubereiten (Minuten) | Kurze Dauern in `m`               |
+| `pizzas.json`          | Pizza-Service mit Volumen  | Loop-Tasks, Ressourcen, Maschinen |
+| `simpleproject.json`   | Maschinenmontage           | Klassisches CPM-Beispiel          |
+| `tankdesign.json`      | Tank-Design Projekt        | Einfaches Ingenieurprojekt        |
+| `hausbau.json`         | Einfamilienhaus-Bau        | AA/EE-Abhängigkeiten              |
+| `erdaushub.json`       | Erdaushub                  | Parallel laufende Tätigkeiten     |
+| `fassadenbau.json`     | Fassadenbau                | Abschnittweise Montage            |
+| `software_simple.json` | Software-Entwicklung       | Personen, Ressourcen, Kosten      |
+
+Fertig berechnete Ergebnisse: [doc/result_examples/](../result_examples/README.md).
 
 ---
 

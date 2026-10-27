@@ -264,7 +264,12 @@ class ConfigLoader:
             import holidays as holidays_lib
 
             years_to_load = list(range(year - year_range, year + year_range + 1))
-            country_holidays = holidays_lib.country_holidays(country, subdiv=region, years=years_to_load)
+            # Sprache der Feiertagsnamen ausdrücklich setzen – sonst richtet sich die Bibliothek nach $LANG
+            # (z. B. "C.UTF-8" auf Linux → englische Namen) und Ergebnisse hängen vom System ab
+            language = (self.get('Holidays', 'language', '')
+                        or getattr(holidays_lib.country_holidays(country, subdiv=region), 'default_language', None))
+            country_holidays = holidays_lib.country_holidays(country, subdiv=region, years=years_to_load,
+                                                             language=language)
             for holiday_date, name in country_holidays.items():
                 holidays_dict[holiday_date.strftime('%Y-%m-%d')] = name
 
