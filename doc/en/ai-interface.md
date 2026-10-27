@@ -76,7 +76,8 @@ While the GUI is connected:
   (nothing is overwritten while typing).
 - Changes made by Claude appear in the tables just as quickly; optional sections are shown.
 - **Conflict** (GUI and Claude change at the same time): the server version wins, the status bar reports
-  "Conflict …". The GUI change has to be entered again.
+  "Conflict …". The lost GUI input is backed up to `work/backup/` first (path in the status bar).
+- **Project switch** (someone replaces the whole project): see [Project switches and backups](#project-switches-and-backups).
 - If the server rejects a GUI state (e.g. invalid duration), the reason appears in the status bar; the GUI
   stays connected.
 - *Save* in the GUI writes the file locally as before. When Claude saves (`save_project`), the server writes the file.
@@ -97,6 +98,63 @@ The server listens on `127.0.0.1` only and is therefore reachable from the local
 `bin\mcp_server.bat --claude` starts a server over stdio, e.g. for an MCP client that launches the server
 itself, or for tests. Such a server is **private** to that one client – the GUI cannot connect to it.
 To work together with the GUI, always use the HTTP server.
+
+## Quick Start: New Project from an Excel File
+
+For a first try, [`data/simple_software_project.xlsx`](../../data/simple_software_project.xlsx) is included –
+a small web shop relaunch with three sheets (content in German):
+
+| Sheet | Content |
+| --- | --- |
+| Projekt | project name "Webshop Relaunch", start 2 Nov 2026 |
+| Aufgaben | no., activity, duration (days), predecessors (e.g. "4, 5"), responsible, min/max (days), remark |
+| Team | short code, name, role, hourly rate (€/h) |
+
+How to:
+
+1. Start the server: `bin\mcp_server.bat`
+2. Optionally connect the GUI (*Server → Connect to sproject server …*) to watch.
+3. Start Claude Code in the project folder and check with `/mcp` that `sproject` is connected.
+4. Ask Claude, for example:
+
+   > Read `data/simple_software_project.xlsx` and build a new sproject project from it: master data from the
+   > sheet "Projekt", persons and resources from "Team", tasks with dependencies from "Aufgaben". Assign each
+   > task to the responsible person, use min/max as uncertainty and set the deadline 15 Dec 2026 for the
+   > go-live. Check the project, calculate it, tell me end date, costs and critical path, simulate 300 runs
+   > and save it as `webshop.json`.
+
+Claude reads the Excel file itself and then calls the tools one after another: `new_project`, `upsert_item`
+(persons and resources), `add_task` (the response contains the task id), `add_dependency` (predecessor →
+successor with these ids), `set_uncertainty`, `update_task` (deadline), `validate`, `calculate`, `simulate`
+and `save_project` (the file ends up in `work/webshop.json`). If the GUI is connected, you watch the project grow.
+
+Expected result: end on 3 Dec 2026 (24 working days), costs 23,240 €, critical path kick-off → UX concept →
+frontend → integration → test & QA → go-live, deadline met. The simulation shows that the plan is rarely met
+(P80 around 9 Dec 2026) – a good starting point for questions like "What does a second frontend developer gain?".
+
+Your own Excel files need no fixed format: describe sheets and columns to Claude in the request; Claude asks
+if something is unclear.
+
+## Project Switches and Backups
+
+The server holds exactly one project. If it is **replaced as a whole**, the server first backs up the
+previous state to `work/backup/<timestamp>_<project name>.json` (folder: `$PV_WORK/backup`) and reports the
+switch on both sides:
+
+| Trigger | Message to Claude | Message in the GUI |
+| --- | --- | --- |
+| Claude: `new_project`, `load_project`, `replace_project` without `base_revision` | response contains `warning` with old/new project and backup path | notice dialog "Another client replaced the project …" with backup path |
+| GUI: *File → New* or *Open* while connected | the **next** call is **not executed** and reports the switch with the backup path; calling again then works | status bar "Project replaced on the server …" with backup path |
+
+In addition:
+
+- If the GUI had input not yet sent when the project was replaced (or on a conflict, or when discarding
+  unsaved changes while connecting), the GUI backs that up to `work/backup/` as well.
+- The server window logs every switch (`[sproject] Projekt ersetzt: …`).
+- The project is only replaced if the new data is valid – otherwise nothing changes (no backup).
+- A backup is loaded like any project file: in the GUI via *File → Open*, or by Claude with `load_project`
+  (e.g. "Load the latest backup from work/backup").
+- To change the existing project Claude uses `patch_project`, `add_task` etc. – that is not a switch.
 
 ## Example Requests to Claude
 
@@ -128,7 +186,8 @@ with the complete project in JSON format (schema: `sproject://schema`).
 | `new_project`, `load_project` | create / open a project → overview |
 | `save_project` | save (relative paths → `work/`) → file path |
 | `get_overview`, `get_project` | overview or complete JSON |
-| `replace_project`, `patch_project` | set the whole project / top-level fields (bulk build); `replace_project` optionally with `base_revision` |
+| `replace_project` | replace the whole project (project switch with backup and `warning`); with `base_revision` only a change of a known state (GUI sync) |
+| `patch_project` | set top-level fields (bulk build in the existing project, not a switch) |
 | `add_task` | create a task → stored task **incl. `id`** (without `id` the next number is assigned) |
 | `get_task`, `update_task`, `remove_task` | read, change (`null` removes a field), delete a task |
 | `add_dependency`, `remove_dependency` | dependencies EA (default, finish-to-start), AA, EE, AE |
@@ -201,7 +260,9 @@ Errors are raised as `ApiError` (subclass of `ValueError`) with a readable messa
 | Claude Code: server `sproject` failed | the server is not running → start `bin\mcp_server.bat`, reconnect in `/mcp` |
 | GUI: "No sproject server at …" | choose *Yes* in the dialog (starts it) or start `bin\mcp_server.bat` by hand |
 | GUI: "sproject server could not be started" | read the message in the server window; does `.venv` exist? (`bin\install_py.bat`) |
-| GUI: "Conflict …" | GUI and Claude changed at the same time; the server version applies, re-enter the GUI change |
+| GUI: "Conflict …" | GUI and Claude changed at the same time; the server version applies. The GUI input is in `work/backup/` |
+| GUI: notice "Another client replaced the project …" | Claude created/loaded a new project. The previous one is in `work/backup/` (path in the notice) |
+| Claude: "Das Projekt wurde inzwischen von einem anderen Client … ersetzt" | another project was opened in the GUI. Claude should check with `get_overview` and ask the user; the old project is in `work/backup/` |
 | GUI: "Server rejected the change …" | the GUI input is invalid (reason shown) – correct it |
 | `.venv nicht gefunden` | run `bin\install_py.bat` (also installs the `mcp` package) |
 | own extension breaks the stdio connection | in stdio mode never `print()` to stdout – write to stderr or the log |

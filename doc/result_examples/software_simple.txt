@@ -1,0 +1,112 @@
+======================================================================
+Software Entwicklung Projekt - CPM REPORT
+Erstellt am: 2026-10-27 09:53:33
+======================================================================
+
+======================================================================
+PROJEKTZUSAMMENFASSUNG
+======================================================================
+
+Projekt:            Software Entwicklung Projekt
+Projektdauer:       24.0d
+Zeiteinheit:        hours
+Startdatum:         2026-03-03
+Enddatum:           2026-04-07
+Anzahl Tasks:       8
+Kritische Tasks:    7
+Erstellt am:        2026-10-27 09:53
+
+======================================================================
+KRITISCHER PFAD
+======================================================================
+
+  [1] Projektinitialisierung              Dauer: 4.0h
+  [2] Requirements Analyse                Dauer: 16.0h
+  [4] Backend Entwicklung                 Dauer: 40.0h
+  [5] Frontend Entwicklung                Dauer: 32.0h
+  [6] Testing & QA                        Dauer: 20.0h
+  [7] Deployment                          Dauer: 8.0h
+  [8] Projektabschluss                    Dauer: 4.0h
+
+======================================================================
+NETZPLAN TABELLE
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Nachfolger           Krit.
+----------------------------------------------------------------------
+1       Projektinitialisierung         0.5      0.0      0.5      0.0      0.5      0.0      0.0      2                    JA
+2       Requirements Analyse           2.0      0.5      2.5      0.5      2.5      0.0      0.0      3, 4                 JA
+3       UI/UX Design                   3.0      2.5      5.5      4.5      7.5      2.0      2.0      5                    
+4       Backend Entwicklung            5.0      2.5      7.5      2.5      7.5      0.0      0.0      5                    JA
+5       Frontend Entwicklung           4.0      7.5      15.5     7.5      15.5     0.0      0.0      6                    JA
+6       Testing & QA                   2.5      15.5     20.5     15.5     20.5     0.0      0.0      7                    JA
+7       Deployment                     1.0      20.5     23.5     20.5     23.5     0.0      0.0      8                    JA
+8       Projektabschluss               0.5      23.5     24.0     23.5     24.0     0.0      0.0                           JA
+----------------------------------------------------------------------
+
+======================================================================
+ALLE TASKS
+======================================================================
+
+ID      Name                           Dauer    FAZ      FEZ      SAZ      SEZ      GP       FP       Krit.
+----------------------------------------------------------------------
+1       Projektinitialisierung         4.0h     0.0h     4.0h     0.0h     4.0h     0.0h     0.0h     JA
+2       Requirements Analyse           16.0h    4.0h     20.0h    4.0h     20.0h    0.0h     0.0h     JA
+3       UI/UX Design                   24.0h    20.0h    44.0h    36.0h    60.0h    16.0h    16.0h    
+4       Backend Entwicklung            40.0h    20.0h    60.0h    20.0h    60.0h    0.0h     0.0h     JA
+5       Frontend Entwicklung           32.0h    60.0h    124.0h   60.0h    124.0h   0.0h     0.0h     JA
+6       Testing & QA                   20.0h    124.0h   164.0h   124.0h   164.0h   0.0h     0.0h     JA
+7       Deployment                     8.0h     164.0h   188.0h   164.0h   188.0h   0.0h     0.0h     JA
+8       Projektabschluss               4.0h     188.0h   192.0h   188.0h   192.0h   0.0h     0.0h     JA
+----------------------------------------------------------------------
+
+======================================================================
+VERANTWORTLICHE
+======================================================================
+
+  Ressource                 Tasks                     Frühester Start 
+  ----------------------------------------------------------------------
+  UI/UX Designer            [3]
+    [3] UI/UX Design                  FAZ: 20.0h    FEZ: 44.0h    
+
+  Senior Developer          [2, 4, 6, 7]
+    [2] Requirements Analyse          FAZ: 4.0h     FEZ: 20.0h    Krit.
+    [4] Backend Entwicklung           FAZ: 20.0h    FEZ: 60.0h    Krit.
+    [6] Testing & QA                  FAZ: 124.0h   FEZ: 164.0h   Krit.
+    [7] Deployment                    FAZ: 164.0h   FEZ: 188.0h   Krit.
+
+  Junior Developer          [5, 6]
+    [5] Frontend Entwicklung          FAZ: 60.0h    FEZ: 124.0h   Krit.
+    [6] Testing & QA                  FAZ: 124.0h   FEZ: 164.0h   Krit.
+
+  Project Manager           [1, 2, 8]
+    [1] Projektinitialisierung        FAZ: 0.0h     FEZ: 4.0h     Krit.
+    [2] Requirements Analyse          FAZ: 4.0h     FEZ: 20.0h    Krit.
+    [8] Projektabschluss              FAZ: 188.0h   FEZ: 192.0h   Krit.
+
+----------------------------------------------------------------------
+Personen:
+
+  Alice                     Kosten: 85.00 €/h    Abwesenheiten: 2026-04-01 – 2026-04-05 (Urlaub Alice), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)
+                                                   Puffer-Abwesenheiten: keine
+  Bob                       Kosten: 55.00 €/h    Abwesenheiten: 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)
+                                                   Puffer-Abwesenheiten: keine
+  Charlie                   Kosten: 70.00 €/h    Abwesenheiten: 2026-03-16 (Fortbildung), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)
+                                                   Puffer-Abwesenheiten: keine
+  Diana                     Kosten: 95.00 €/h    Abwesenheiten: 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)
+                                                   Puffer-Abwesenheiten: keine
+
+======================================================================
+KOSTENÜBERSICHT
+======================================================================
+
+  Ressource                     Stunden       €/h   Bereitst.€   Lohnkosten€      Gesamt €
+  ----------------------------------------------------------------------
+  UI/UX Designer                   24.0     70.00         0.00       1680.00       1680.00
+  Senior Developer                 84.0     85.00         0.00       7140.00       7140.00
+  Junior Developer                 52.0     55.00         0.00       2860.00       2860.00
+  Project Manager                  24.0     95.00         0.00       2280.00       2280.00
+  ----------------------------------------------------------------------
+  Personalkosten:                                                                   13960.00
+  ----------------------------------------------------------------------
+  GESAMTKOSTEN:                                                                     13960.00 €

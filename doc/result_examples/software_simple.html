@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Software Entwicklung Projekt – CPM Report</title>
+  <style>
+    body { font-family: sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.5; }
+    h1, h2, h3 { color: #1a3a5c; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1em; font-size: 0.9em; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #4472c4; color: #fff; }
+    tr:nth-child(even) { background: #f5f7fa; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
+    pre.mermaid { background: transparent; padding: 0; }
+    code { font-family: monospace; font-size: 0.9em; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</head>
+<body>
+<h1>Software Entwicklung Projekt - CPM Report</h1>
+<p>Erstellt am: 2026-10-27 09:53:34</p>
+<h2>CPM Analyse</h2>
+<h3>Projektzusammenfassung</h3>
+<ul>
+<li><strong>Projekt:</strong> Software Entwicklung Projekt</li>
+<li><strong>Projektdauer:</strong> 192.0h</li>
+<li><strong>Startdatum:</strong> 2026-03-03 09:00</li>
+<li><strong>Enddatum (geschätzt):</strong> 2026-04-07 17:00</li>
+<li><strong>Zeiteinheit:</strong> hours</li>
+<li><strong>Anzahl Tasks:</strong> 8</li>
+<li><strong>Kritische Tasks:</strong> 7</li>
+</ul>
+<hr />
+<h3>Kritischer Pfad</h3>
+<p>Der kritische Pfad besteht aus folgenden Tasks:</p>
+<ul>
+<li><strong>[1]</strong> Projektinitialisierung (Dauer: 4.0h)</li>
+<li><strong>[2]</strong> Requirements Analyse (Dauer: 16.0h)</li>
+<li><strong>[4]</strong> Backend Entwicklung (Dauer: 40.0h)</li>
+<li><strong>[5]</strong> Frontend Entwicklung (Dauer: 32.0h)</li>
+<li><strong>[6]</strong> Testing &amp; QA (Dauer: 20.0h)</li>
+<li><strong>[7]</strong> Deployment (Dauer: 8.0h)</li>
+<li><strong>[8]</strong> Projektabschluss (Dauer: 4.0h)</li>
+</ul>
+<hr />
+<h3>Netzplan</h3>
+<pre class="mermaid">graph TD
+
+    N1["<b>[1] | Projektinitialisierung<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N2["<b>[2] | Requirements Analyse<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N3["[3] | UI/UX Design<br/>GP:16.0h | FP:16.0h"]
+    N4["<b>[4] | Backend Entwicklung<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N5["<b>[5] | Frontend Entwicklung<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N6["<b>[6] | Testing & QA<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N7["<b>[7] | Deployment<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+    N8["<b>[8] | Projektabschluss<br/>GP:0.0h | FP:0.0h</b>"]:::critical
+
+    N1 --> N2
+    N2 --> N3
+    N2 --> N4
+    N3 --> N5
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
+    N7 --> N8
+
+    classDef critical fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:3px
+    classDef normal   fill:#4472c4,stroke:#2f5496,color:#fff
+</pre>
+<hr />
+<h3>Alle Tasks</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Dauer</th>
+<th>FAZ</th>
+<th>FEZ</th>
+<th>SAZ</th>
+<th>SEZ</th>
+<th>GP</th>
+<th>FP</th>
+<th>Krit.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Projektinitialisierung</td>
+<td>4.0h</td>
+<td>0.0h</td>
+<td>4.0h</td>
+<td>0.0h</td>
+<td>4.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Requirements Analyse</td>
+<td>16.0h</td>
+<td>4.0h</td>
+<td>20.0h</td>
+<td>4.0h</td>
+<td>20.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>3</td>
+<td>UI/UX Design</td>
+<td>24.0h</td>
+<td>20.0h</td>
+<td>44.0h</td>
+<td>36.0h</td>
+<td>60.0h</td>
+<td>16.0h</td>
+<td>16.0h</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Backend Entwicklung</td>
+<td>40.0h</td>
+<td>20.0h</td>
+<td>60.0h</td>
+<td>20.0h</td>
+<td>60.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Frontend Entwicklung</td>
+<td>32.0h</td>
+<td>60.0h</td>
+<td>124.0h</td>
+<td>60.0h</td>
+<td>124.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Testing &amp; QA</td>
+<td>20.0h</td>
+<td>124.0h</td>
+<td>164.0h</td>
+<td>124.0h</td>
+<td>164.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Deployment</td>
+<td>8.0h</td>
+<td>164.0h</td>
+<td>188.0h</td>
+<td>164.0h</td>
+<td>188.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Projektabschluss</td>
+<td>4.0h</td>
+<td>188.0h</td>
+<td>192.0h</td>
+<td>188.0h</td>
+<td>192.0h</td>
+<td>0.0h</td>
+<td>0.0h</td>
+<td>JA</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Gantt Chart (mit Wochenenden)</h3>
+<pre class="mermaid">gantt
+    title Software Entwicklung Projekt
+    dateFormat  YYYY-MM-DD HH:mm
+    axisFormat  %d.%m
+
+    section Feiertage
+    03.04 Karfreitag :crit, 2026-04-03, 2026-04-03
+    06.04 Ostermontag :crit, 2026-04-06, 2026-04-06
+    section Tasks
+    [1] Projektinitialisierung (KRIT) :crit, 2026-03-03 09:00, 2026-03-03 13:00
+    [2] Requirements Analyse (KRIT) :crit, 2026-03-03 13:00, 2026-03-05 13:00
+    [3] UI/UX Design :2026-03-05 13:00, 2026-03-10 13:00
+    [4] Backend Entwicklung (KRIT) :crit, 2026-03-05 13:00, 2026-03-12 13:00
+    [5] Frontend Entwicklung (KRIT) :crit, 2026-03-12 13:00, 2026-03-24 13:00
+    [6] Testing & QA (KRIT) :crit, 2026-03-24 13:00, 2026-03-31 13:00
+    [7] Deployment (KRIT) :crit, 2026-03-31 13:00, 2026-04-07 13:00
+    [8] Projektabschluss (KRIT) :crit, 2026-04-07 13:00, 2026-04-07 17:00
+</pre>
+<hr />
+<h3>Resource List</h3>
+<h4>Ressourcenauslastung (Textform)</h4>
+<table>
+<thead>
+<tr>
+<th>Farbe</th>
+<th>Name</th>
+<th>Ressource</th>
+<th>Anzahl Tasks</th>
+<th>Tasks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span style="background-color:#4472C4;padding:2px 6px;color:#fff;border-radius:3px;">■</span></td>
+<td>Charlie</td>
+<td>UI/UX Designer (R_DES1)</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td><span style="background-color:#5B74C0;padding:2px 6px;color:#fff;border-radius:3px;">■</span></td>
+<td>Alice</td>
+<td>Senior Developer (R_DEV1)</td>
+<td>4</td>
+<td>2, 4, 6, 7</td>
+</tr>
+<tr>
+<td><span style="background-color:#7377BC;padding:2px 6px;color:#fff;border-radius:3px;">■</span></td>
+<td>Bob</td>
+<td>Junior Developer (R_DEV2)</td>
+<td>2</td>
+<td>5, 6</td>
+</tr>
+<tr>
+<td><span style="background-color:#8B7AB8;padding:2px 6px;color:#fff;border-radius:3px;">■</span></td>
+<td>Diana</td>
+<td>Project Manager (R_PM1)</td>
+<td>3</td>
+<td>1, 2, 8</td>
+</tr>
+</tbody>
+</table>
+<h4>Ressourcenauslastung (Gantt-Diagramm)</h4>
+<pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': {'taskBkgColor': '#4472C4', 'taskBorderColor': '#333', 'taskTextColor': '#fff'}}}%%
+gantt
+    title Ressourcen-Auslastung: UI/UX Designer
+    dateFormat  YYYY-MM-DD HH:mm
+    axisFormat  %d.%m
+    excludes    weekends, 2026-01-01, 2026-01-06, 2026-04-03, 2026-04-06, 2026-05-01, 2026-05-14, 2026-05-25, 2026-06-04, 2026-08-15, 2026-10-03, 2026-11-01, 2026-12-25, 2026-12-26
+
+    section UI/UX Designer
+
+    UI/UX Design                :t0, 2026-03-05 13:00, 2026-03-10 13:00
+</pre>
+<pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': {'taskBkgColor': '#5B74C0', 'taskBorderColor': '#333', 'taskTextColor': '#fff'}}}%%
+gantt
+    title Ressourcen-Auslastung: Senior Developer
+    dateFormat  YYYY-MM-DD HH:mm
+    axisFormat  %d.%m
+    excludes    weekends, 2026-01-01, 2026-01-06, 2026-04-03, 2026-04-06, 2026-05-01, 2026-05-14, 2026-05-25, 2026-06-04, 2026-08-15, 2026-10-03, 2026-11-01, 2026-12-25, 2026-12-26
+
+    section Senior Developer
+
+    Requirements Analyse        :t0, 2026-03-03 13:00, 2026-03-05 13:00
+    Backend Entwicklung         :t1, 2026-03-05 13:00, 2026-03-12 13:00
+    Testing & QA                :t2, 2026-03-24 13:00, 2026-03-31 13:00
+    Deployment                  :t3, 2026-03-31 13:00, 2026-04-07 13:00
+</pre>
+<pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': {'taskBkgColor': '#7377BC', 'taskBorderColor': '#333', 'taskTextColor': '#fff'}}}%%
+gantt
+    title Ressourcen-Auslastung: Junior Developer
+    dateFormat  YYYY-MM-DD HH:mm
+    axisFormat  %d.%m
+    excludes    weekends, 2026-01-01, 2026-01-06, 2026-04-03, 2026-04-06, 2026-05-01, 2026-05-14, 2026-05-25, 2026-06-04, 2026-08-15, 2026-10-03, 2026-11-01, 2026-12-25, 2026-12-26
+
+    section Junior Developer
+
+    Frontend Entwicklung        :t0, 2026-03-12 13:00, 2026-03-24 13:00
+    Testing & QA                :t1, 2026-03-24 13:00, 2026-03-31 13:00
+</pre>
+<pre class="mermaid">%%{init: {'theme': 'base', 'themeVariables': {'taskBkgColor': '#8B7AB8', 'taskBorderColor': '#333', 'taskTextColor': '#fff'}}}%%
+gantt
+    title Ressourcen-Auslastung: Project Manager
+    dateFormat  YYYY-MM-DD HH:mm
+    axisFormat  %d.%m
+    excludes    weekends, 2026-01-01, 2026-01-06, 2026-04-03, 2026-04-06, 2026-05-01, 2026-05-14, 2026-05-25, 2026-06-04, 2026-08-15, 2026-10-03, 2026-11-01, 2026-12-25, 2026-12-26
+
+    section Project Manager
+
+    Projektinitialisierung      :t0, 2026-03-03 09:00, 2026-03-03 13:00
+    Requirements Analyse        :t1, 2026-03-03 13:00, 2026-03-05 13:00
+    Projektabschluss            :t2, 2026-04-07 13:00, 2026-04-07 17:00
+</pre>
+<h4>Personen</h4>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Kosten/Stunde</th>
+<th>Abwesenheiten im Projektzeitraum</th>
+<th>Abwesenheiten kurz nach dem Projektzeitraum</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alice</td>
+<td>85.00 €/h</td>
+<td>2026-04-01 – 2026-04-05 (Urlaub Alice), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)</td>
+<td>keine</td>
+</tr>
+<tr>
+<td>Bob</td>
+<td>55.00 €/h</td>
+<td>2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)</td>
+<td>keine</td>
+</tr>
+<tr>
+<td>Charlie</td>
+<td>70.00 €/h</td>
+<td>2026-03-16 (Fortbildung), 2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)</td>
+<td>keine</td>
+</tr>
+<tr>
+<td>Diana</td>
+<td>95.00 €/h</td>
+<td>2026-04-03 (Karfreitag), 2026-04-06 (Ostermontag)</td>
+<td>keine</td>
+</tr>
+</tbody>
+</table>
+<h4>Ressourcen-Details</h4>
+<table>
+<thead>
+<tr>
+<th>Ressource</th>
+<th>Person</th>
+<th>Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Senior Developer (R_DEV1)</td>
+<td>Alice</td>
+<td>person</td>
+</tr>
+<tr>
+<td>Junior Developer (R_DEV2)</td>
+<td>Bob</td>
+<td>person</td>
+</tr>
+<tr>
+<td>UI/UX Designer (R_DES1)</td>
+<td>Charlie</td>
+<td>person</td>
+</tr>
+<tr>
+<td>Project Manager (R_PM1)</td>
+<td>Diana</td>
+<td>person</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Kostenübersicht</h3>
+<table>
+<thead>
+<tr>
+<th>Ressource</th>
+<th>Typ</th>
+<th>Stunden</th>
+<th>€/h</th>
+<th>Bereitst. €</th>
+<th>Lohnkosten €</th>
+<th>Gesamt €</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI/UX Designer</td>
+<td>person</td>
+<td>24.0</td>
+<td>70.00</td>
+<td>—</td>
+<td>1680.00</td>
+<td><strong>1680.00</strong></td>
+</tr>
+<tr>
+<td>Senior Developer</td>
+<td>person</td>
+<td>84.0</td>
+<td>85.00</td>
+<td>—</td>
+<td>7140.00</td>
+<td><strong>7140.00</strong></td>
+</tr>
+<tr>
+<td>Junior Developer</td>
+<td>person</td>
+<td>52.0</td>
+<td>55.00</td>
+<td>—</td>
+<td>2860.00</td>
+<td><strong>2860.00</strong></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td>person</td>
+<td>24.0</td>
+<td>95.00</td>
+<td>—</td>
+<td>2280.00</td>
+<td><strong>2280.00</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Zusammenfassung:</strong></p>
+<ul>
+<li>Personalkosten: <strong>13960.00 €</strong></li>
+<li><strong>Gesamtkosten: 13960.00 €</strong></li>
+</ul>
+</body>
+</html>

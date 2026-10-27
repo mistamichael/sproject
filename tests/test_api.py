@@ -154,7 +154,42 @@ def test_revision_and_conflict(session):
 
 
 def test_state_without_project():
-    assert ProjectSession().state() == {"revision": 0, "project": None, "path": None}
+    assert ProjectSession().state() == {"revision": 0, "generation": 0, "last_switch": None,
+                                        "project": None, "path": None}
+
+
+def test_switch_backs_up_and_warns(session, tmp_path):
+    """Ersetzt ein Aufruf das ganze Projekt, wird der bisherige Stand gesichert und gemeldet."""
+    session.backup_dir = tmp_path
+    generation = session.generation
+    info = session.new_project("Neubau")
+    assert session.generation == generation + 1
+    switch = session.last_switch
+    assert switch["old"] == "Garage" and switch["new"] == "Neubau" and switch["reason"] == "new_project"
+    assert "Garage" in info["warning"] and switch["backup"] in info["warning"]
+    backup = Path(switch["backup"])
+    assert backup.parent == tmp_path
+    assert [t["name"] for t in load_project(backup).model_dump()["tasks"]] == ["Fundament", "Mauern", "Dach"]
+
+    session.load(EXAMPLES[0])                                   # load ist ebenfalls ein Wechsel
+    assert session.last_switch["old"] == "Neubau" and len(list(tmp_path.glob("*.json"))) == 2
+
+    data = session.get_project()
+    session.replace_project(data)                              # ohne base_revision = Wechsel
+    assert session.last_switch["reason"] == "replace_project"
+    rev = session.revision
+    session.replace_project(data, base_revision=rev)            # mit base_revision = normale Änderung
+    assert session.last_switch["reason"] == "replace_project" and len(list(tmp_path.glob("*.json"))) == 3
+
+
+def test_switch_without_previous_project_or_with_invalid_data(tmp_path):
+    s = ProjectSession()
+    s.backup_dir = tmp_path
+    assert "warning" not in s.new_project("Erstes")              # nichts ersetzt → keine Sicherung
+    assert s.last_switch is None and not list(tmp_path.iterdir())
+    with pytest.raises(ApiError):
+        s.replace_project({"tasks": "kaputt"})                   # ungültig → kein Wechsel, keine Sicherung
+    assert s.get_project()["project"] == "Erstes" and not list(tmp_path.iterdir())
 
 
 def test_second_http_server_refuses_busy_port():

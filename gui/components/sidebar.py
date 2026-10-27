@@ -16,16 +16,21 @@ _CFG = load_gui_config()
 _COL = _CFG.section("colors")
 
 
-# (section_id, Anzeige-Label, immer_aktiv)
+# (section_id, immer_aktiv) – Beschriftung: t("section.<id>"), erst beim Aufbau übersetzt
+# (beim Import steht die Sprache aus gui.cfg noch nicht fest)
 SECTIONS = [
-    ("stammdaten",    t("section.stammdaten"), True),
-    ("tasks",         t("section.tasks"),    True),
-    ("resources",     t("section.resources"),  False),
-    ("persons",       t("section.persons"),    False),
-    ("resting_times", t("section.resting_times"),  False),
-    ("uncertainty",   t("section.uncertainty"),  False),
-    ("scenarios",     t("section.scenarios"),  False),
+    ("stammdaten",    True),
+    ("tasks",         True),
+    ("resources",     False),
+    ("persons",       False),
+    ("resting_times", False),
+    ("uncertainty",   False),
+    ("scenarios",     False),
 ]
+
+# Tags der Sidebar-Beschriftungen → i18n-Schlüssel (für den Sprachwechsel in gui/app.py)
+LABEL_TAGS = {f"sidebar_label_{section_id}": f"section.{section_id}" for section_id, _ in SECTIONS}
+TEXT_TAGS = {"sidebar_wizard": "sidebar.wizard", "sidebar_examples": "sidebar.examples"}
 
 # Toggle-Tag-Map für die optionalen Abschnitte
 TOGGLE_TAGS = {
@@ -39,15 +44,17 @@ TOGGLE_TAGS = {
 
 def build_sidebar(app) -> None:
     """Baut die Wizard-Navigations-Sidebar auf."""
-    dpg.add_text("WIZARD", color=_COL.get("sidebar_wizard", (160, 160, 180)))
+    dpg.add_text(t("sidebar.wizard"), tag="sidebar_wizard", color=_COL.get("sidebar_wizard", (160, 160, 180)))
     dpg.add_separator()
     dpg.add_spacer(height=4)
 
-    for section_id, label, always_active in SECTIONS:
+    for section_id, always_active in SECTIONS:
+        label, tag = t(f"section.{section_id}"), f"sidebar_label_{section_id}"
         if always_active:
             # Klickbarer Text scrollt zur Sektion
             dpg.add_button(
                 label=label,
+                tag=tag,
                 width=-1,
                 callback=lambda s, a, u: dpg.focus_item(u),
                 user_data=f"section_{section_id}",
@@ -62,7 +69,7 @@ def build_sidebar(app) -> None:
                     callback=lambda s, v, u: _on_toggle(s, v, u),
                     user_data=(app, section_id),
                 )
-                dpg.add_text(label, color=_COL.get("sidebar_inactive", (180, 180, 200)) if not is_active else _COL.get("sidebar_active", (220, 220, 255)))
+                dpg.add_text(label, tag=tag, color=_COL.get("sidebar_inactive", (180, 180, 200)) if not is_active else _COL.get("sidebar_active", (220, 220, 255)))
 
         dpg.add_spacer(height=2)
 
@@ -70,7 +77,7 @@ def build_sidebar(app) -> None:
     dpg.add_spacer(height=6)
 
     # Beispieldateien
-    dpg.add_text("Beispiele:", color=_COL.get("sidebar_examples", (140, 140, 160)))
+    dpg.add_text(t("sidebar.examples"), tag="sidebar_examples", color=_COL.get("sidebar_examples", (140, 140, 160)))
     dpg.add_spacer(height=2)
 
     examples_dir = Path(__file__).parent.parent.parent / "examples"

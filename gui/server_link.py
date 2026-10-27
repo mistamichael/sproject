@@ -14,6 +14,13 @@ Abgleich (ca. jede Sekunde, nicht während ein Eingabefeld aktiv ist):
 - GUI → Server: geänderter GUI-Stand → replace_project(data, base_revision)
 - Server → GUI: get_revision() geändert → get_state() → editor.apply_external_project()
 - Konflikt (beide geändert): der Server gewinnt, die Statuszeile meldet es.
+
+Projektwechsel (das ganze Projekt wird ersetzt):
+- Öffnet/legt die GUI ein anderes Projekt an, geht es OHNE base_revision an den Server –
+  der sichert den bisherigen Stand und lehnt Claudes nächsten Aufruf mit einer Meldung ab.
+- Ersetzt Claude das Projekt, zeigt die GUI einen Hinweis-Dialog mit dem Sicherungspfad.
+- Gehen dabei (oder bei einem Konflikt) noch nicht übertragene GUI-Eingaben verloren,
+  sichert die GUI sie vorher in $PV_WORK/backup.
 """
 
 import asyncio
@@ -29,6 +36,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from gui.i18n import t
+from lib.api import write_backup
 from lib.models import load_project_from_dict
 from lib.paths import PROJECT_ROOT
 from mcp_server.server import SERVER_NAME, port_in_use
@@ -41,8 +49,9 @@ if TYPE_CHECKING:
 POLL_INTERVAL_S = 1.0
 START_TIMEOUT_S = 15.0
 
-# confirm(nachricht, bei_ja, bei_nein) – zeigt eine Rückfrage (in der GUI ein modaler Dialog)
+# confirm(nachricht, bei_ja, bei_nein) – Rückfrage; inform(nachricht) – Hinweis (in der GUI modale Dialoge)
 Confirm = Callable[[str, Callable[[], None], Callable[[], None]], None]
+Inform = Callable[[str], None]
 
 
 class ServerError(Exception):
@@ -53,12 +62,14 @@ class ServerLink:
     """Verbindung der GUI zum sproject-Server: disconnected → (starting →) connecting → connected."""
 
     def __init__(self, editor: "ProjectEditorApp", host: str = "127.0.0.1", port: int = 8765,
-                 confirm: Optional[Confirm] = None,
+                 confirm: Optional[Confirm] = None, inform: Optional[Inform] = None,
                  on_status_change: Optional[Callable[[bool], None]] = None):
         self.editor = editor
         self.host = host
         self.port = port
         self.confirm: Confirm = confirm or (lambda _message, yes, _no: yes())   # ohne GUI: immer ja
+        self.inform: Inform = inform or (lambda _message: None)
+        self.backup_dir: Optional[Path] = None   # None = $PV_WORK/backup (lib.api.backup_dir)
         self.on_status_change = on_status_change
         self.state = "disconnected"
         self._loop: Optional[asyncio.AbstractEventLoop] = None
@@ -67,6 +78,9 @@ class ServerLink:
         self._closed: Optional[asyncio.Event] = None
         self._pending: Optional[Tuple[str, Future]] = None
         self._revision = 0                       # zuletzt bekannter Server-Stand
+        self._generation = 0                     # zuletzt bekannter Wechselzähler des Servers
+        self._editor_generation = 0              # editor.project_generation beim letzten Abgleich
+        self._conflict_backup: Optional[str] = None
         self._synced: Optional[str] = None       # GUI-Stand (JSON), der diesem Server-Stand entspricht
         self._rejected: Optional[str] = None     # vom Server abgelehnter GUI-Stand (nicht erneut senden)
         self._push: Tuple[int, str] = (0, "")    # (base_revision, JSON) des laufenden Sendens
@@ -168,10 +182,18 @@ class ServerLink:
             self._apply_pulled(state)
             return
         local = self._local_json()
-        if local is not None and local != self._synced and local != self._rejected:
-            self._push = (self._revision, local)
-            self._request("push", "replace_project", {"data": json.loads(local), "base_revision": self._revision})
-            return
+        if local is not None and local != self._rejected:
+            if self.editor.project_generation != self._editor_generation:
+                # In der GUI wurde ein anderes Projekt geöffnet/angelegt → Projektwechsel auf dem Server
+                self._editor_generation = self.editor.project_generation
+                self._push = (self._revision, local)
+                self._request("switch", "replace_project", {"data": json.loads(local)})
+                return
+            if local != self._synced:
+                self._push = (self._revision, local)
+                self._request("push", "replace_project",
+                              {"data": json.loads(local), "base_revision": self._revision})
+                return
         self._request("poll", "get_revision", {})
 
     def _on_result(self, kind: str, result: Any) -> None:
@@ -195,12 +217,24 @@ class ServerLink:
             self._revision = base + 1
             self._synced = sent
             self._rejected = None
+        elif kind == "switch":
+            self._synced = self._push[1]
+            self._rejected = None
+            self._request("resync", "get_state", {})
+        elif kind == "resync":
+            self._revision = result["revision"]          # eigener Wechsel: nur Zähler übernehmen
+            replaced = result["generation"] != self._generation and result.get("last_switch")
+            self._generation = result["generation"]
+            if replaced:
+                switch = result["last_switch"]
+                text = t("text.server_switch", old=switch["old"], new=switch["new"], backup=switch["backup"])
+                self.editor._set_status(t("status.server_replaced_by_gui", text=text))
 
     def _on_server_error(self, kind: str, message: str) -> None:
         if kind == "push" and "Konflikt" in message:
             self._conflict = True                    # Meldung erst nach dem Übernehmen (_apply)
             self._request("pull", "get_state", {})
-        elif kind == "push":
+        elif kind in ("push", "switch"):
             self._rejected = self._push[1]
             self.editor._set_status(t("status.server_rejected", error=message))
         else:
@@ -215,26 +249,44 @@ class ServerLink:
             self.editor._set_status(t("status.server_connected", url=self.url, name=name))
 
         self._revision = state["revision"]
+        self._generation = state.get("generation", 0)
+        self._editor_generation = self.editor.project_generation
         if state["project"] is None:
             # Server noch leer → GUI-Projekt wird beim ersten Abgleich übertragen
             self._synced = None
             connected()
             return
 
-        def take_server_project() -> None:
+        def take_server_project(discard_local: bool = False) -> None:
+            backup = self._backup_local() if discard_local else None
             self._apply(state)
             connected()
+            if backup:
+                self.editor._set_status(t("status.server_local_backup", path=backup))
 
         if self.editor.project is not None and self.editor.dirty:
-            self.confirm(t("dialog.server.discard"), take_server_project,
+            self.confirm(t("dialog.server.discard"), lambda: take_server_project(discard_local=True),
                          lambda: self.disconnect(status_key=None))
         else:
             take_server_project()
 
     def _apply_pulled(self, state: Dict[str, Any]) -> None:
-        if self._local_json() != self._synced:
-            self._conflict = True                    # GUI-Änderung seit dem letzten Abgleich geht verloren
+        switch = state.get("last_switch")
+        foreign_switch = switch is not None and switch["generation"] > self._generation
+        local_backup = None
+        if self._local_json() != self._synced:      # noch nicht übertragene GUI-Eingaben gingen verloren
+            local_backup = self._backup_local()
+            if not foreign_switch:
+                self._conflict = True
+                self._conflict_backup = local_backup
         self._apply(state)
+        if foreign_switch and switch is not None:
+            text = t("text.server_switch", old=switch["old"], new=switch["new"], backup=switch["backup"])
+            self.editor._set_status(t("status.server_switched", text=text))
+            message = t("dialog.server.switched", text=text)
+            if local_backup:
+                message += "\n\n" + t("dialog.server.local_backup", path=local_backup)
+            self.inform(message)
 
     def _apply(self, state: Dict[str, Any]) -> None:
         if state["project"] is None:
@@ -242,11 +294,14 @@ class ServerLink:
         path = Path(state["path"]) if state.get("path") else None
         self.editor.apply_external_project(load_project_from_dict(state["project"]), path)
         self._revision = state["revision"]
+        self._generation = state.get("generation", self._generation)
         self._synced = self._local_json()            # GUI-Darstellung dieses Stands
         self._rejected = None
         if self._conflict:
             self._conflict = False
-            self.editor._set_status(t("status.server_conflict"))
+            backup, self._conflict_backup = self._conflict_backup, None
+            self.editor._set_status(t("status.server_conflict") +
+                                    (" " + t("status.server_local_backup", path=backup) if backup else ""))
 
     # ------------------------------------------------------------------
     # Hilfen
@@ -260,6 +315,16 @@ class ServerLink:
             return None
         data = project.model_dump(mode="json", by_alias=True, exclude_none=True, exclude_unset=True)
         return json.dumps(data, sort_keys=True, ensure_ascii=False)
+
+    def _backup_local(self) -> Optional[str]:
+        """Sichert den aktuellen GUI-Stand (vor dem Verwerfen) – Pfad oder None."""
+        if self.editor.project is None:
+            return None
+        try:
+            return str(write_backup(self.editor.project, self.backup_dir))
+        except OSError as e:
+            self.editor._set_status(t("status.server_backup_failed", error=e))
+            return None
 
     @staticmethod
     def _input_active() -> bool:
@@ -335,7 +400,12 @@ class ServerLink:
 
 
 def _short(error: BaseException) -> str:
-    """Erste aussagekräftige Fehlermeldung (auch aus ExceptionGroups von anyio)."""
-    while isinstance(error, BaseExceptionGroup) and error.exceptions:
-        error = error.exceptions[0]
+    """Erste aussagekräftige Fehlermeldung (auch aus ExceptionGroups von anyio).
+
+    Ohne BaseExceptionGroup (erst ab Python 3.11) – erkennt Gruppen am Attribut "exceptions".
+    """
+    inner = getattr(error, "exceptions", None)
+    while isinstance(inner, tuple) and inner:
+        error = inner[0]
+        inner = getattr(error, "exceptions", None)
     return str(error) or type(error).__name__

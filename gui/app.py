@@ -34,7 +34,7 @@ from gui.editor import ProjectEditorApp, REPORT_FORMATS
 from gui.server_link import ServerLink
 from lib.paths import get_results_dir
 from gui.icons import setup_icon_textures, add_icon_button
-from gui.components.sidebar import build_sidebar
+from gui.components.sidebar import LABEL_TAGS as SIDEBAR_LABEL_TAGS, TEXT_TAGS as SIDEBAR_TEXT_TAGS, build_sidebar
 from gui.components.task_table import build_task_section
 from gui.components.file_browser import open_file_browser
 from gui.components.list_section import FormField, open_form_dialog
@@ -160,6 +160,13 @@ def _update_ui_language() -> None:
     for tag, key in _label_map.items():
         if dpg.does_item_exist(tag):
             dpg.configure_item(tag, label=t(key))
+    # Sidebar: Buttons (immer aktive Sektionen) per Label, Checkbox-Beschriftungen per Text
+    for tag, key in SIDEBAR_LABEL_TAGS.items():
+        if dpg.does_item_exist(tag):
+            if dpg.get_item_type(tag) == "mvAppItemType::mvButton":
+                dpg.configure_item(tag, label=t(key))
+            else:
+                dpg.set_value(tag, t(key))
 
     # Theme-Menuepunkte (dynamisch aus verfuegbaren Themes)
     for name in CFG.available_themes():
@@ -178,6 +185,7 @@ def _update_ui_language() -> None:
         "lbl_status_date":  "label.status_date",
         "section_uncertainty_hint": "hint.section.uncertainty",
         "section_scenarios_hint":   "hint.section.scenarios",
+        **SIDEBAR_TEXT_TAGS,
     }
     for tag, key in _text_map.items():
         if dpg.does_item_exist(tag):
@@ -224,6 +232,18 @@ def _open_confirm_dialog(message: str, on_yes: Callable[[], None],
         with dpg.group(horizontal=True):
             dpg.add_button(label=t("button.yes"), width=90, callback=lambda: answer(on_yes))
             dpg.add_button(label=t("button.no"), width=90, callback=lambda: answer(on_no))
+
+
+def _open_info_dialog(message: str) -> None:
+    """Modaler Hinweis mit OK (z. B. Projekt wurde auf dem Server ersetzt)."""
+    tag = "dlg_info"
+    if dpg.does_item_exist(tag):
+        dpg.delete_item(tag)
+    with dpg.window(label=t("dialog.info.title"), tag=tag, modal=True, width=520,
+                    pos=[380, 260], no_resize=True, autosize=True):
+        dpg.add_text(message, wrap=490)
+        dpg.add_spacer(height=6)
+        dpg.add_button(label=t("button.ok"), width=90, callback=lambda: dpg.delete_item(tag))
 
 
 def _open_connect_dialog(editor: ProjectEditorApp) -> None:
@@ -687,7 +707,8 @@ def create_app() -> ProjectEditorApp:
     editor = ProjectEditorApp()
     _server_link = ServerLink(editor, host=str(CFG.get("server", "host", "127.0.0.1")),
                               port=int(CFG.get("server", "port", 8765)),
-                              confirm=_open_confirm_dialog, on_status_change=_update_server_ui)
+                              confirm=_open_confirm_dialog, inform=_open_info_dialog,
+                              on_status_change=_update_server_ui)
 
     # --- About-Fenster ---
     _s = "dialog.about"

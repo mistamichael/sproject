@@ -21,13 +21,14 @@ alle geänderten Felder (keine In-place-Änderungen an Pydantic-Listen).
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 from .exporters import EXPORTERS, ExportOptions, export_schedule
 from .models import Project, load_project_from_dict, save_project
 from .models.dependencies import SUCCESSOR_FIELDS, DepType, parse_task_id
-from .paths import get_cfg_dir, get_results_dir
+from .paths import get_cfg_dir, get_results_dir, get_work_dir
 from .report_data import deadline_warning_lines, tracking_summary
 from .scenarios import compare_scenarios, comparison_rows
 from .schedule import Schedule, build_schedule
@@ -43,6 +44,25 @@ class ApiError(ValueError):
 
 def _same_id(a: Any, b: Any) -> bool:
     return str(a) == str(b)
+
+
+def backup_dir() -> Path:
+    """Ordner für Sicherungskopien ersetzter Projektstände ($PV_WORK/backup)."""
+    return get_work_dir() / "backup"
+
+
+def write_backup(project: Project, target_dir: Optional[Path] = None) -> Path:
+    """Sichert project als <Zeitstempel>_<Projektname>.json und gibt den Pfad zurück."""
+    target_dir = target_dir or backup_dir()
+    stem = re.sub(r"[^A-Za-z0-9_-]+", "_", project.project).strip("_") or "projekt"
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    path = target_dir / f"{stamp}_{stem}.json"
+    n = 2
+    while path.exists():
+        path = target_dir / f"{stamp}_{stem}_{n}.json"
+        n += 1
+    save_project(project, path)
+    return path
 
 
 class ProjectSession:
@@ -62,6 +82,10 @@ class ProjectSession:
         self.on_change = on_change
         # Zählt jede Änderung – Clients (z. B. die GUI) erkennen daran neue Stände und Konflikte
         self.revision = 0
+        # Zählt Projektwechsel (das ganze Projekt wurde ersetzt); last_switch beschreibt den letzten
+        self.generation = 0
+        self.last_switch: Optional[Dict[str, Any]] = None
+        self.backup_dir: Optional[Path] = None      # None = backup_dir()
 
     # ------------------------------------------------------------------
     # Projekt anlegen, laden, speichern
@@ -69,24 +93,20 @@ class ProjectSession:
 
     def new_project(self, name: str, project_start: Optional[str] = None,
                     unit: Optional[str] = None) -> Dict[str, Any]:
-        """Neues, leeres Projekt (ersetzt das aktuelle)."""
+        """Neues, leeres Projekt (ersetzt das aktuelle – das wird vorher gesichert)."""
         data: Dict[str, Any] = {"project": name, "tasks": []}
         if project_start:
             data["project_start"] = project_start
         if unit:
             data["unit"] = unit
-        self.path = None
-        self._commit(data)
-        return self.overview()
+        return self._switch(data, None, "new_project")
 
     def load(self, path: Union[str, Path]) -> Dict[str, Any]:
-        """Lädt eine Projekt-JSON-Datei."""
+        """Lädt eine Projekt-JSON-Datei (ersetzt das aktuelle – das wird vorher gesichert)."""
         file_path = Path(path)
         if not file_path.exists():
             raise ApiError(f"Datei nicht gefunden: {file_path}")
-        self._commit(json.loads(file_path.read_text(encoding="utf-8")))
-        self.path = file_path
-        return self.overview()
+        return self._switch(json.loads(file_path.read_text(encoding="utf-8")), file_path, "load")
 
     def save(self, path: Union[str, Path, None] = None) -> str:
         """Speichert als sproject-JSON; ohne Pfad unter dem zuletzt verwendeten."""
@@ -104,19 +124,45 @@ class ProjectSession:
     def replace_project(self, data: Dict[str, Any], base_revision: Optional[int] = None) -> Dict[str, Any]:
         """
         Ersetzt das ganze Projekt durch data (Format wie die JSON-Datei).
-        Mit base_revision nur, wenn seitdem niemand anders geändert hat – sonst ApiError (Konflikt).
+
+        - ohne base_revision: Projektwechsel – der bisherige Stand wird gesichert, die Antwort
+          enthält eine Warnung (Feld "warning").
+        - mit base_revision: Änderung eines bekannten Stands (z. B. Abgleich der GUI); nur wenn
+          seitdem niemand anders geändert hat – sonst ApiError (Konflikt).
         """
-        if base_revision is not None and base_revision != self.revision:
+        if base_revision is None:
+            return self._switch(dict(data), self.path, "replace_project")
+        if base_revision != self.revision:
             raise ApiError(f"Konflikt: Projekt wurde inzwischen geändert "
                            f"(Stand {self.revision}, erwartet {base_revision})")
         self._commit(dict(data))
         return self.overview()
 
     def state(self) -> Dict[str, Any]:
-        """Revision, Projekt-JSON (None ohne Projekt) und Dateipfad – für Clients, die den Stand spiegeln."""
+        """Revision, Wechselzähler, letzter Wechsel, Projekt-JSON (None ohne Projekt) und Dateipfad."""
         return {"revision": self.revision,
+                "generation": self.generation,
+                "last_switch": self.last_switch,
                 "project": self._data() if self.project is not None else None,
                 "path": str(self.path) if self.path else None}
+
+    def _switch(self, data: Dict[str, Any], path: Optional[Path], reason: str) -> Dict[str, Any]:
+        """
+        Projektwechsel: bisheriges Projekt sichern, data übernehmen, Wechsel festhalten.
+        Ungültige Daten ändern nichts (auch keine Sicherung, kein Wechsel).
+        """
+        old = self.project
+        new = self._validate(data)
+        backup = write_backup(old, self.backup_dir) if old is not None else None
+        self._commit(data, new)
+        self.path = path
+        self.generation += 1
+        info = self.overview()
+        if old is not None and backup is not None:
+            self.last_switch = {"generation": self.generation, "reason": reason,
+                                "old": old.project, "new": new.project, "backup": str(backup)}
+            info["warning"] = switch_message(self.last_switch)
+        return info
 
     def patch_project(self, fields: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -385,12 +431,16 @@ class ProjectSession:
     def _data(self) -> Dict[str, Any]:
         return self._require().model_dump(mode="json", by_alias=True, exclude_none=True, exclude_unset=True)
 
-    def _commit(self, data: Dict[str, Any]) -> None:
-        """Validiert data als Projekt und übernimmt es – bei Fehlern bleibt alles unverändert."""
+    @staticmethod
+    def _validate(data: Dict[str, Any]) -> Project:
         try:
-            project = load_project_from_dict(data)
+            return load_project_from_dict(data)
         except Exception as e:
             raise ApiError(f"Ungültige Projektdaten: {e}") from None
+
+    def _commit(self, data: Dict[str, Any], project: Optional[Project] = None) -> None:
+        """Validiert data als Projekt und übernimmt es – bei Fehlern bleibt alles unverändert."""
+        project = project or self._validate(data)
         self.project = project
         self.revision += 1
         if self.on_change:
@@ -457,3 +507,9 @@ def schedule_summary(schedule: Schedule) -> Dict[str, Any]:
         "tracking": dict(tracking_summary(result)),
         "tasks": tasks,
     }
+
+
+def switch_message(switch: Dict[str, Any]) -> str:
+    """Meldung zu einem Projektwechsel (für Claude, GUI und Server-Fenster)."""
+    return (f"Projekt ersetzt: '{switch['old']}' → '{switch['new']}'. "
+            f"Sicherung des bisherigen Stands: {switch['backup']}")

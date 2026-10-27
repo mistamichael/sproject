@@ -84,6 +84,8 @@ class ProjectEditorApp:
         self.sections = OptionalSections(self)
         self._dirty = False
         self._last_save_path: Optional[Path] = None
+        # Zählt, wie oft in der GUI ein anderes Projekt geöffnet/angelegt wurde (gui/server_link.py)
+        self.project_generation = 0
 
     # ------------------------------------------------------------------
     # State
@@ -113,6 +115,7 @@ class ProjectEditorApp:
         return self.project
 
     def _set_project(self, project: Project, path: Optional[Path]) -> None:
+        self.project_generation += 1
         self.project = project
         self.task_rows = tasks_to_rows(project.tasks)
         self._detect_active_sections()

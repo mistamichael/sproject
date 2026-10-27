@@ -6,8 +6,8 @@
     "num_tasks": 8,
     "num_critical": 5,
     "project_start": "2026-03-09",
-    "project_end": "2026-04-20",
-    "calculation_date": "2026-03-19 14:39:59"
+    "project_end": "2026-04-21",
+    "calculation_date": "2026-10-27 09:53:35"
   },
   "critical_path": [
     {
@@ -44,16 +44,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-09",
-        "fez": "2026-03-12",
+        "fez": "2026-03-11",
         "saz": "2026-03-09",
-        "sez": "2026-03-12",
+        "sez": "2026-03-11",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-09",
-          "fez_date": "2026-03-12",
+          "fez_date": "2026-03-11",
           "saz_date": "2026-03-09",
-          "sez_date": "2026-03-12"
+          "sez_date": "2026-03-11"
         }
       }
     },
@@ -64,16 +64,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-12",
-        "fez": "2026-03-26",
+        "fez": "2026-03-25",
         "saz": "2026-03-12",
-        "sez": "2026-03-26",
+        "sez": "2026-03-25",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-12",
-          "fez_date": "2026-03-26",
+          "fez_date": "2026-03-25",
           "saz_date": "2026-03-12",
-          "sez_date": "2026-03-26"
+          "sez_date": "2026-03-25"
         }
       }
     },
@@ -84,16 +84,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-03-12",
-        "fez": "2026-03-23",
+        "fez": "2026-03-20",
         "saz": "2026-03-17",
-        "sez": "2026-03-26",
+        "sez": "2026-03-25",
         "gp": "3.0d",
         "fp": "3.0d",
         "dates": {
           "faz_date": "2026-03-12",
-          "fez_date": "2026-03-23",
+          "fez_date": "2026-03-20",
           "saz_date": "2026-03-17",
-          "sez_date": "2026-03-26"
+          "sez_date": "2026-03-25"
         }
       }
     },
@@ -104,16 +104,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-03-12",
-        "fez": "2026-03-16",
+        "fez": "2026-03-13",
         "saz": "2026-03-24",
-        "sez": "2026-03-26",
+        "sez": "2026-03-25",
         "gp": "8.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-12",
-          "fez_date": "2026-03-16",
+          "fez_date": "2026-03-13",
           "saz_date": "2026-03-24",
-          "sez_date": "2026-03-26"
+          "sez_date": "2026-03-25"
         }
       }
     },
@@ -124,16 +124,16 @@
       "is_critical": false,
       "cpm": {
         "faz": "2026-03-16",
-        "fez": "2026-03-26",
+        "fez": "2026-03-25",
         "saz": "2026-03-30",
-        "sez": "2026-04-09",
+        "sez": "2026-04-10",
         "gp": "10.0d",
         "fp": "10.0d",
         "dates": {
           "faz_date": "2026-03-16",
-          "fez_date": "2026-03-26",
+          "fez_date": "2026-03-25",
           "saz_date": "2026-03-30",
-          "sez_date": "2026-04-09"
+          "sez_date": "2026-04-10"
         }
       }
     },
@@ -144,16 +144,16 @@
       "is_critical": true,
       "cpm": {
         "faz": "2026-03-26",
-        "fez": "2026-04-09",
+        "fez": "2026-04-10",
         "saz": "2026-03-26",
-        "sez": "2026-04-09",
+        "sez": "2026-04-10",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
           "faz_date": "2026-03-26",
-          "fez_date": "2026-04-09",
+          "fez_date": "2026-04-10",
           "saz_date": "2026-03-26",
-          "sez_date": "2026-04-09"
+          "sez_date": "2026-04-10"
         }
       }
     },
@@ -163,17 +163,17 @@
       "duration": "5.0d",
       "is_critical": true,
       "cpm": {
-        "faz": "2026-04-09",
-        "fez": "2026-04-16",
-        "saz": "2026-04-09",
-        "sez": "2026-04-16",
+        "faz": "2026-04-13",
+        "fez": "2026-04-17",
+        "saz": "2026-04-13",
+        "sez": "2026-04-17",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
-          "faz_date": "2026-04-09",
-          "fez_date": "2026-04-16",
-          "saz_date": "2026-04-09",
-          "sez_date": "2026-04-16"
+          "faz_date": "2026-04-13",
+          "fez_date": "2026-04-17",
+          "saz_date": "2026-04-13",
+          "sez_date": "2026-04-17"
         }
       }
     },
@@ -183,17 +183,17 @@
       "duration": "2.0d",
       "is_critical": true,
       "cpm": {
-        "faz": "2026-04-16",
-        "fez": "2026-04-20",
-        "saz": "2026-04-16",
-        "sez": "2026-04-20",
+        "faz": "2026-04-20",
+        "fez": "2026-04-21",
+        "saz": "2026-04-20",
+        "sez": "2026-04-21",
         "gp": "0.0d",
         "fp": "0.0d",
         "dates": {
-          "faz_date": "2026-04-16",
-          "fez_date": "2026-04-20",
-          "saz_date": "2026-04-16",
-          "sez_date": "2026-04-20"
+          "faz_date": "2026-04-20",
+          "fez_date": "2026-04-21",
+          "saz_date": "2026-04-20",
+          "sez_date": "2026-04-21"
         }
       }
     }
@@ -210,7 +210,7 @@
         "name": "Transport/Anlieferung",
         "network_duration_days": 3.0,
         "calendar_start_date": "2026-03-09T08:00:00",
-        "calendar_end_date": "2026-03-11T08:00:00",
+        "calendar_end_date": "2026-03-11T16:00:00",
         "working_days": 3.0,
         "calendar_days": 3,
         "is_critical": true,
@@ -221,7 +221,7 @@
         "name": "Vormontage Prozessstationen",
         "network_duration_days": 10.0,
         "calendar_start_date": "2026-03-12T08:00:00",
-        "calendar_end_date": "2026-03-25T08:00:00",
+        "calendar_end_date": "2026-03-25T16:00:00",
         "working_days": 10.0,
         "calendar_days": 14,
         "is_critical": true,
@@ -232,7 +232,7 @@
         "name": "Vormontage Transportband",
         "network_duration_days": 7.0,
         "calendar_start_date": "2026-03-12T08:00:00",
-        "calendar_end_date": "2026-03-20T08:00:00",
+        "calendar_end_date": "2026-03-20T16:00:00",
         "working_days": 7.0,
         "calendar_days": 9,
         "is_critical": false,
@@ -243,7 +243,7 @@
         "name": "Anpassung Steuereinheiten",
         "network_duration_days": 2.0,
         "calendar_start_date": "2026-03-12T08:00:00",
-        "calendar_end_date": "2026-03-13T08:00:00",
+        "calendar_end_date": "2026-03-13T16:00:00",
         "working_days": 2.0,
         "calendar_days": 2,
         "is_critical": false,
@@ -254,7 +254,7 @@
         "name": "Programmierung Steuereinheiten",
         "network_duration_days": 8.0,
         "calendar_start_date": "2026-03-16T08:00:00",
-        "calendar_end_date": "2026-03-25T08:00:00",
+        "calendar_end_date": "2026-03-25T16:00:00",
         "working_days": 8.0,
         "calendar_days": 10,
         "is_critical": false,
@@ -265,7 +265,7 @@
         "name": "Montage Gesamtsystem",
         "network_duration_days": 10.0,
         "calendar_start_date": "2026-03-26T08:00:00",
-        "calendar_end_date": "2026-04-10T08:00:00",
+        "calendar_end_date": "2026-04-10T16:00:00",
         "working_days": 10.0,
         "calendar_days": 16,
         "is_critical": true,
@@ -275,10 +275,10 @@
         "id": "7",
         "name": "Test Gesamtsystem",
         "network_duration_days": 5.0,
-        "calendar_start_date": "2026-04-09T08:00:00",
-        "calendar_end_date": "2026-04-15T08:00:00",
+        "calendar_start_date": "2026-04-13T08:00:00",
+        "calendar_end_date": "2026-04-17T16:00:00",
         "working_days": 5.0,
-        "calendar_days": 7,
+        "calendar_days": 5,
         "is_critical": true,
         "puffer_days": 0.0
       },
@@ -286,8 +286,8 @@
         "id": "8",
         "name": "Einweisung der Produktionsmitarbeiter",
         "network_duration_days": 2.0,
-        "calendar_start_date": "2026-04-16T08:00:00",
-        "calendar_end_date": "2026-04-17T08:00:00",
+        "calendar_start_date": "2026-04-20T08:00:00",
+        "calendar_end_date": "2026-04-21T16:00:00",
         "working_days": 2.0,
         "calendar_days": 2,
         "is_critical": true,

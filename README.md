@@ -1,124 +1,59 @@
-# sproject.py – CPM Project Planning
+# sproject – Project Schedules with Probabilities
 
-**sproject.py** calculates the critical path (CPM – Critical Path Method) from simple JSON project files and exports the results in various formats.
+**When will the project really be done?** sproject plans projects with the critical path method (CPM), levels
+resources, vacations and part-time work – and then answers with a **Monte Carlo simulation**: *"done by 16 April
+with 80 % probability"* instead of a single, usually too optimistic date. What-if **scenarios** show the effect
+of a sick colleague or a late delivery. A desktop GUI, a CLI and an **MCP server** let you – or Claude – build
+plans, e.g. straight from an Excel task list.
 
- ![svg example](doc/de/img/software_simple_gantt.svg)
+[![tests](https://github.com/mistamichael/sproject/actions/workflows/tests.yml/badge.svg)](https://github.com/mistamichael/sproject/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 
 > Deutsche Dokumentation: [README.de.md](README.de.md)
 
-## Purpose
+![Monte Carlo simulation: distribution of the project end, P50/P80/P90](doc/de/img/MonteCarlo.png)
 
-- **CPM Calculation**: Earliest/latest start and finish, total float, free float, critical path
-- **Calendar Integration**: Weekends and public holidays are skipped in date calculations
-- **Resource Management**: Optional persons, hourly rates, and cost overview
-- **Gantt Chart**: Schedule visualization based on working days
-- **Scenarios**: What-if variants (e.g. "task takes 50 % longer", "person sick for a week") compared with the base plan
-- **Monte Carlo Simulation**: Duration ranges, risks and scenario probabilities → "80 % finished by …"
-- **GUI Editor**: Edit projects in a desktop app (Dear PyGui), calculate and export
-- **Multiple Export Formats**: JSON, TXT, XLSX, Markdown, HTML, SVG-ZIP, interactive charts
-- **AI Interface (MCP)**: Claude Code, Claude Desktop or a chatbot builds, checks and calculates projects – on its own or together with the GUI, via one shared sproject server
+![sproject editor: Gantt chart and resource utilization](doc/de/img/gui_editor_en.png)
 
-## Project Structure
+## Why sproject
 
-```text
-sproject/
-├── bin/                        # Windows batch scripts
-│   ├── setenv.bat              # Set environment variables
-│   ├── activate_venv.bat       # Activate virtual environment
-│   ├── create_reports.bat      # Generate reports
-│   ├── gui.bat                 # Start the GUI editor
-│   ├── mcp_server.bat          # Start the sproject server (AI interface): --port [N] | --claude
-│   └── run_unittests.bat       # Run unit tests
-├── cfg/                        # Configuration files
-│   ├── defaults.cfg            # Main config (calendar, CPM, costs)
-│   ├── excel_export.cfg        # XLSX tab order and names
-│   ├── txt_export.cfg          # TXT output structure
-│   ├── json_export.cfg         # JSON export settings
-│   ├── markdown_export.cfg     # Markdown/Mermaid options (also used for HTML and ZIP)
-│   └── holidays_BY_2026.json   # Bavaria public holidays 2026
-├── examples/                   # Sample project files
-│   ├── pizza.json              # Simple example (minutes)
-│   ├── pizzas.json             # Loop-task example
-│   ├── hausbau.json            # AA/EE dependency example
-│   ├── simpleproject.json      # Machine assembly (days)
-│   ├── software_simple.json    # Software project with resources
-│   ├── tankdesign.json         # Engineering project
-│   └── results/                # Pre-computed reference results
-├── gui/                        # GUI editor (Dear PyGui)
-│   ├── app.py                  # Layout, menus, toolbar, dialogs
-│   ├── editor.py               # Editor state, file operations, calculation, exports
-│   ├── task_rows.py            # Lossless conversion tasks ↔ table rows
-│   ├── analysis_rows.py        # Text ↔ model for uncertainties and scenarios
-│   ├── server_link.py          # GUI connection to the sproject server (menu Server)
-│   └── components/             # Sections, tables, result panel, sidebar
-├── lib/                        # Python source code (package "lib")
-│   ├── sproject.py             # CLI entry point
-│   ├── api.py                  # ProjectSession: project operations for AI tools and scripts
-│   ├── schedule.py             # build_schedule(): expand → CPM → Gantt → costs
-│   ├── scenarios.py            # Apply and compare scenarios
-│   ├── simulation.py           # Monte Carlo simulation
-│   ├── charts.py               # Plotly charts (Gantt, resources, simulation)
-│   ├── exporters.py            # Export registry (shared by CLI and GUI)
-│   ├── models/                 # Pydantic models
-│   │   ├── project.py          # Project root model (data + validation)
-│   │   ├── tasks.py            # Task models (incl. loop/cycle)
-│   │   ├── dependencies.py     # Dependency types EA/AA/EE/AE
-│   │   ├── resources.py        # Resources and persons
-│   │   ├── expander.py         # Expansion of instance/loop tasks
-│   │   ├── rest_breaks.py      # Rest breaks for persons
-│   │   ├── cpm.py              # CPM calculation
-│   │   ├── gantt.py            # Gantt scheduling (calendar dates)
-│   │   └── loader.py           # JSON loader
-│   ├── durations.py            # Duration parsing/formatting (hours_per_day from defaults.cfg)
-│   ├── work_calendar.py        # Working days, weekends, holidays
-│   ├── cost_calculator.py      # Cost calculation
-│   ├── report_data.py          # Data preparation shared by the exports
-│   ├── excel_reports.py        # XLSX export
-│   ├── json_export.py          # JSON export
-│   ├── txt_export.py           # TXT export
-│   ├── markdown_export.py      # Markdown/HTML/ZIP export
-│   ├── mermaid_export.py       # SVG via Mermaid/kroki
-│   ├── colors.py, paths.py, export_config.py, config_loader.py
-├── mcp_server/                 # MCP server (AI interface): tools on top of lib/api.py
-├── tests/                      # pytest (incl. golden-file tests in tests/golden/)
-├── .mcp.json                   # Registers the MCP server for Claude Code
-├── requirements.txt            # Python dependencies
-├── log/                        # Log files (auto-created)
-├── results/                    # Generated reports (auto-created)
-└── README.md
-```
+- **Probabilities instead of a single date** – duration ranges, risks and scenario probabilities feed a Monte Carlo
+  simulation: P50/P80/P90, the chance to meet the plan or a deadline, and which tasks are most often critical.
+- **What-if scenarios** – "backend takes 50 % longer", "Alice sick for a week", "truck broken" – compared with the
+  base plan in duration, costs and missed deadlines.
+- **Realistic resource planning** – one person or machine can only do one task at a time; vacations, part-time and
+  rest breaks stretch the plan; fixed dates (`not_before`, `deadline`); plan vs. actual with a baseline.
+- **AI interface (MCP)** – Claude Code or Claude Desktop builds, checks and calculates projects through one shared
+  sproject server, e.g. from an Excel task list; the GUI can watch live.
+- **Desktop GUI, CLI and reports** – Markdown/HTML with Gantt and network diagrams, Excel, TXT, JSON and interactive
+  charts.
 
-## Installation
+Look at the results without installing anything: [example results](doc/result_examples/README.md).
 
-### Requirements
+## Quickstart
 
-- Python 3.10 or higher
+Requires Python 3.10 or higher.
 
-### Dependencies
+1. Get the code: `git clone https://github.com/mistamichael/sproject.git` (or download the ZIP)
+2. Install: double-click `bin\install_py.bat` – Linux/macOS: `bash bin/install_py.sh`
+   (creates `.venv` and installs everything from `requirements.txt`)
+3. Start: double-click `bin\gui.bat` – Linux/macOS: `bash bin/gui.sh` – and open an example from the sidebar
 
-create a virtual environment and install pip dependencies: 
-
-#### Windows
-double click on 
-
-```dos
-bin/install_py.bat
-```
-#### Linux/Mac
-
-call 
+Command line instead of the GUI (with `.venv` active):
 
 ```bash
-bash bin/install_py.sh
+python lib/sproject.py --project examples/software_simple.json --export md,html --simulate 300
 ```
+
+Building a project with Claude: see [AI Interface (MCP)](#ai-interface-mcp).
 
 ## Usage
 
 ### Process a single project
 
-put your new newproj.json file in the sproject/data folder. Then call
-call the create_reports.bat/.sh in the bin folder
-or call direct
+Put your project file (e.g. `newproj.json`) into the `data/` folder (`$PV_DATA`) and run
+`bin/create_reports.bat` (`.sh`) – it processes all project files there – or call directly:
 
 ```bash
 python lib/sproject.py --project newproj.json
@@ -164,6 +99,9 @@ python lib/sproject.py --project examples/software_simple.json --scenario "Alice
 
 # Monte Carlo simulation with 500 runs (reproducible with --seed)
 python lib/sproject.py --project examples/software_simple.json --simulate 500 --seed 42
+
+# Small interactive HTML charts: load plotly.js from the internet instead of embedding it (~4 MB)
+python lib/sproject.py --project examples/software_simple.json --export plotly,simulation --plotly-cdn
 
 # Help
 python lib/sproject.py --help
@@ -231,8 +169,22 @@ Switches: `--port [N]` (HTTP on port N, default 8765), `--project FILE` (open a 
 `--claude` (stdio for scripts/tests only – the GUI cannot connect to it), `--help`;
 on Linux/macOS `bin/mcp_server.sh`.
 
-Example request to Claude: *"Read `data/bauplan.xlsx` and build an sproject project starting on 4 May 2026.
-Check it, calculate it and save it as `bauplan.json`."*
+**Build a new project with Claude – try it with the included example
+[`data/simple_software_project.xlsx`](data/simple_software_project.xlsx)** (web shop relaunch: sheets
+*Projekt*, *Aufgaben* with durations, predecessors and min/max, *Team* with hourly rates):
+
+1. Start the server with `bin\mcp_server.bat` (optionally connect the GUI to watch).
+2. Start Claude Code in the project folder; `/mcp` shows `sproject` as connected.
+3. Ask: *"Read `data/simple_software_project.xlsx` and build a new sproject project from it (persons and
+   resources from 'Team', tasks and dependencies from 'Aufgaben', min/max as uncertainty). Check and calculate
+   it, simulate 300 runs and save it as `webshop.json`."*
+
+Claude reads the Excel file itself and builds the project step by step with the tools (`new_project`,
+`add_task` → task id, `add_dependency`, …). Expected: end 3 Dec 2026, 23,240 € costs.
+
+When a project is replaced as a whole (`new_project`, `load_project`, or opening another file in the
+connected GUI), the server first backs up the previous state to `work/backup/` and both Claude and the GUI
+are told.
 
 ```python
 from lib.api import ProjectSession
@@ -405,7 +357,16 @@ Uncertainties for the Monte Carlo simulation are set per task; scenarios are nam
 | `scenarios[].changes` | Exactly one of `task` (ID or pattern like `2-F*.1`), `resource` (`unavailable`), `person` (`vacation`); task changes: `duration_factor` or any task field |
 | `scenarios[].probability` | The scenario occurs with this probability in the simulation; without it the scenario is only compared |
 
-Details (in German): [doc/de/termine-und-ist.md](doc/de/termine-und-ist.md). Example: `examples/software_simple.json`.
+Scenario comparison (`--export scenarios`) and Monte Carlo simulation with criticality (`--export simulation`)
+for `examples/software_simple.json` (labels in German):
+
+![Scenario comparison](doc/de/img/Szenarien.png)
+
+![Monte Carlo simulation](doc/de/img/MonteCarlo.png)
+
+![Criticality](doc/de/img/Kritikalität.png)
+
+Details and how to read the charts (in German): [doc/de/termine-und-ist.md](doc/de/termine-und-ist.md). Example: `examples/software_simple.json`.
 
 ## Configuration
 
@@ -414,7 +375,7 @@ All defaults are read from `cfg/defaults.cfg`:
 ```ini
 [CPM]
 skip_weekends  = true     # Skip weekends
-skip_holidays  = true     # Skip public holidays (Bavaria 2026)
+skip_holidays  = true     # Skip public holidays (country/region: see below)
 
 [WorkingHours]
 hours_per_day  = 8        # Working hours per day
@@ -428,6 +389,20 @@ overhead_factor = 1.5     # Overhead multiplier
 
 [Output]
 results_dir    = results  # Output directory
+```
+
+Public holidays work for **any country and region**: set `country` and `region` in the `[Holidays]` section of
+`cfg/defaults.cfg` (uses the [holidays](https://pypi.org/project/holidays/) library). The setting applies to all
+projects. `holidays_file` can optionally point to your own JSON file instead – `cfg/holidays_BY_2026.json` is just
+an example of that format. **Note:** the shipped `defaults.cfg` sets `holidays_file = holidays_BY_2026.json`, and
+the file takes precedence – clear `holidays_file` to use `country`/`region`.
+
+```ini
+[Holidays]
+consider_holidays = true
+country = DE        # e.g. AT, CH, US, GB …
+region  = NW        # state/region, e.g. BY, BW …
+holidays_file =     # optional: own JSON file in cfg/ instead of the library
 ```
 
 ## CPM Output Structure
@@ -463,7 +438,25 @@ ID      Name                           Duration  ES     EF     LS     LF     TF 
 | `software_simple.json` | Software development         | Persons, resources, costs         |
 
 
- Here an example for an ouptut as [markdown with mermaid diagramm](doc/result_examples/software_simple.md) or as [html](doc/result_examples/software_simple.html)
+### Example Results (without installing)
+
+![Gantt chart from the Markdown report of software_simple.json](doc/de/img/software_simple_gantt.svg)
+
+Pre-computed results of the examples are in [doc/result_examples/](doc/result_examples/README.md), e.g. for
+`software_simple.json`. **Readable with one click:** the Markdown report (Gantt chart and network diagram render
+directly on GitHub/Gitea) and the chart images above under *Uncertainties and Scenarios*.
+
+| File | Content |
+| --- | --- |
+| [software_simple.md](doc/result_examples/software_simple.md) | report with Gantt chart and network diagram (renders directly on GitHub/Gitea) |
+| [software_simple.html](doc/result_examples/software_simple.html) | the same report as HTML – *download and open* |
+| [software_simple_charts.html](doc/result_examples/software_simple_charts.html) | interactive Gantt chart and resource utilization – *download and open, needs internet* |
+| [software_simple_scenarios.html](doc/result_examples/software_simple_scenarios.html) | scenario comparison – *download and open, needs internet* |
+| [software_simple_simulation.html](doc/result_examples/software_simple_simulation.html) | Monte Carlo simulation with criticality – *download and open, needs internet* |
+| [software_simple.xlsx](doc/result_examples/software_simple.xlsx) | Excel report – *download and open* |
+
+On GitHub/Gitea, clicking an HTML file only shows its source code – use *Download raw file* and open it in a
+browser. The interactive pages load the Plotly library from the internet.
 
 ## Tests
 
@@ -532,6 +525,78 @@ Log files are created automatically under `log/`:
 - Format: `sproject_YYYYMMDD_HHMMSS.log`
 - Console: INFO level (key messages)
 - File: DEBUG level (full details)
+
+## Project Structure
+
+```text
+sproject/
+├── bin/                        # Start scripts, each as .bat (Windows) and .sh (Linux/macOS)
+│   ├── install_py.bat          # Install: create .venv and pip install (double-click)
+│   ├── setenv.bat              # Set environment variables
+│   ├── activate_venv.bat       # Activate virtual environment
+│   ├── create_reports.bat      # Generate reports
+│   ├── gui.bat                 # Start the GUI editor
+│   ├── mcp_server.bat          # Start the sproject server (AI interface): --port [N] | --claude
+│   └── run_unittests.bat       # Run unit tests
+├── cfg/                        # Configuration files
+│   ├── defaults.cfg            # Main config (calendar, CPM, costs)
+│   ├── excel_export.cfg        # XLSX tab order and names
+│   ├── txt_export.cfg          # TXT output structure
+│   ├── json_export.cfg         # JSON export settings
+│   ├── markdown_export.cfg     # Markdown/Mermaid options (also used for HTML and ZIP)
+│   └── holidays_BY_2026.json   # Example holiday file (any country via [Holidays] in defaults.cfg)
+├── examples/                   # Sample project files
+│   ├── pizza.json              # Simple example (minutes)
+│   ├── pizzas.json             # Loop-task example
+│   ├── hausbau.json            # AA/EE dependency example
+│   ├── simpleproject.json      # Machine assembly (days)
+│   ├── software_simple.json    # Software project with resources
+│   ├── tankdesign.json         # Engineering project
+│   └── results/                # Pre-computed reference results
+├── gui/                        # GUI editor (Dear PyGui)
+│   ├── app.py                  # Layout, menus, toolbar, dialogs
+│   ├── editor.py               # Editor state, file operations, calculation, exports
+│   ├── task_rows.py            # Lossless conversion tasks ↔ table rows
+│   ├── analysis_rows.py        # Text ↔ model for uncertainties and scenarios
+│   ├── server_link.py          # GUI connection to the sproject server (menu Server)
+│   └── components/             # Sections, tables, result panel, sidebar
+├── lib/                        # Python source code (package "lib")
+│   ├── sproject.py             # CLI entry point
+│   ├── api.py                  # ProjectSession: project operations for AI tools and scripts
+│   ├── schedule.py             # build_schedule(): expand → CPM → Gantt → costs
+│   ├── scenarios.py            # Apply and compare scenarios
+│   ├── simulation.py           # Monte Carlo simulation
+│   ├── charts.py               # Plotly charts (Gantt, resources, simulation)
+│   ├── exporters.py            # Export registry (shared by CLI and GUI)
+│   ├── models/                 # Pydantic models
+│   │   ├── project.py          # Project root model (data + validation)
+│   │   ├── tasks.py            # Task models (incl. loop/cycle)
+│   │   ├── dependencies.py     # Dependency types EA/AA/EE/AE
+│   │   ├── resources.py        # Resources and persons
+│   │   ├── expander.py         # Expansion of instance/loop tasks
+│   │   ├── rest_breaks.py      # Rest breaks for persons
+│   │   ├── cpm.py              # CPM calculation
+│   │   ├── gantt.py            # Gantt scheduling (calendar dates)
+│   │   └── loader.py           # JSON loader
+│   ├── durations.py            # Duration parsing/formatting (hours_per_day from defaults.cfg)
+│   ├── work_calendar.py        # Working days, weekends, holidays
+│   ├── cost_calculator.py      # Cost calculation
+│   ├── report_data.py          # Data preparation shared by the exports
+│   ├── excel_reports.py        # XLSX export
+│   ├── json_export.py          # JSON export
+│   ├── txt_export.py           # TXT export
+│   ├── markdown_export.py      # Markdown/HTML/ZIP export
+│   ├── mermaid_export.py       # SVG via Mermaid/kroki
+│   ├── colors.py, paths.py, export_config.py, config_loader.py
+├── mcp_server/                 # MCP server (AI interface): tools on top of lib/api.py
+├── tests/                      # pytest (incl. golden-file tests in tests/golden/)
+├── data/                       # Your project files for the CLI (example: simple_software_project.xlsx)
+├── .mcp.json                   # Registers the MCP server for Claude Code
+├── requirements.txt            # Python dependencies
+├── log/                        # Log files (auto-created)
+├── results/                    # Generated reports (auto-created)
+└── README.md
+```
 
 ## License
 

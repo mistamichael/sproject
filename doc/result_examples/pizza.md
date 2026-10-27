@@ -1,6 +1,6 @@
 # Pizza Project - CPM Report
 
-Erstellt am: 2026-03-19 14:39:57
+Erstellt am: 2026-10-27 09:53:37
 
 ## CPM Analyse
 
@@ -9,7 +9,7 @@ Erstellt am: 2026-03-19 14:39:57
 - **Projekt:** Pizza Project
 - **Projektdauer:** 84.0m
 - **Startdatum:** 2026-03-03 09:00
-- **Enddatum (geschätzt):** 2026-03-03 13:12
+- **Enddatum (geschätzt):** 2026-03-03 10:24
 - **Zeiteinheit:** minutes
 - **Anzahl Tasks:** 10
 - **Kritische Tasks:** 7

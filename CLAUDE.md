@@ -69,7 +69,10 @@ sproject/
    - **Genau ein sproject-Server** (HTTP, `bin/mcp_server.* --port`, Standard 8765) hält das Projekt. Claude Code (`.mcp.json`, HTTP) und GUI sind nur Clients. Ein zweiter Start auf demselben Port bricht ab (`port_in_use`). Nie wieder einen Server im GUI-Prozess starten – das ergibt zwei Projekte.
    - Änderungen laufen über das Projekt-dict und werden neu validiert (`_commit`, zählt `revision` hoch) – ungültige Eingaben ändern nichts.
    - GUI: `gui/server_link.py` (`ServerLink`) verbindet sich nur explizit (Menü *Server*), MCP-Client im Hintergrund-Thread; `process()` läuft pro Frame in der Render-Schleife von `gui/app.py`. Abgleich ca. 1 s: GUI → `replace_project(data, base_revision)`, Server → `get_revision()`/`get_state()` → `editor.apply_external_project()`. Konflikt: Server gewinnt. Nicht synchronisieren, solange ein Eingabefeld aktiv ist.
+   - **Projektwechsel** (`new_project`, `load`, `replace_project` ohne `base_revision` → `ProjectSession._switch`): vorher `write_backup()` nach `$PV_WORK/backup`, `generation` + `last_switch` setzen, Antwort mit `warning`. Der Server merkt sich je MCP-Sitzung den gesehenen `generation`-Stand (`run()` in `build_server`) und lehnt den nächsten Aufruf eines Clients ab, wenn ein *anderer* Client gewechselt hat. Die GUI meldet fremde Wechsel per Hinweis-Dialog, eigene (`editor.project_generation`) sendet sie ohne `base_revision`; verlorene GUI-Eingaben sichert `ServerLink._backup_local()`.
+   - Tests mit Projektwechsel müssen `backup_dir` auf ein Temp-Verzeichnis setzen – sonst landen Sicherungen in `work/backup`.
    - Im stdio-Modus nichts auf stdout schreiben – `print()` der Bibliothek wird im Server nach stderr umgeleitet.
+   - Beispiel-Eingabe für den Projektaufbau per KI: `data/simple_software_project.xlsx` (per Ausnahme in `.gitignore` versioniert).
 8. **Speichern:** `save_project()` schreibt nur explizit gesetzte Felder (`exclude_unset`) → Laden/Speichern ist verlustfrei
 
 ### GUI-Layout (Dear PyGui)

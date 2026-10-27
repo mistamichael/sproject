@@ -13,6 +13,7 @@ import pytest
 
 dpg = pytest.importorskip("dearpygui.dearpygui")
 
+from gui.i18n import t                                   # noqa: E402
 from lib.models import load_project                     # noqa: E402
 from lib.schedule import build_schedule                  # noqa: E402
 
@@ -43,6 +44,8 @@ def test_gui_calculation_matches_cli(editor):
     example = EXAMPLES / "erdaushub.json"
     editor.load_from_file(example)
     editor.run_calculation()
+    # run_calculation fängt Fehler ab (z. B. beim Zeichnen der Diagramme) und meldet sie nur in der Statuszeile
+    assert not dpg.get_value("statusbar_text").startswith(t("status.calc_error", error="")),         dpg.get_value("statusbar_text")
     expected = build_schedule(load_project(example), cfg_dir=ROOT / "cfg")
     assert editor.schedule is not None
     assert editor.schedule.cpm.project_duration == expected.cpm.project_duration
@@ -227,6 +230,7 @@ class _Server:
 
     def __init__(self):
         import socket
+        import tempfile
         import threading
 
         import uvicorn
@@ -238,6 +242,7 @@ class _Server:
             sock.bind(("127.0.0.1", 0))
             self.port = sock.getsockname()[1]
         self.session = ProjectSession()
+        self.session.backup_dir = Path(tempfile.mkdtemp(prefix="sproject_backup_"))
         app = build_server(self.session, port=self.port).streamable_http_app()
         self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=self.port, log_level="warning"))
         self.thread = threading.Thread(target=self.server.run, daemon=True)
@@ -301,6 +306,7 @@ def test_server_link_shares_one_project(editor, server):
 
     editor.load_from_file(EXAMPLES / "tankdesign.json")
     link = ServerLink(editor, port=server.port)
+    link.backup_dir = server.session.backup_dir
     assert link.connect()
     _pump(link, lambda: link.connected, "verbindet nicht")
 
@@ -332,6 +338,7 @@ def test_server_link_takes_server_project_and_resolves_conflict(editor, server):
     editor.dirty = True
     asked = []
     link = ServerLink(editor, port=server.port, confirm=lambda msg, yes, no: (asked.append(msg), yes()))
+    link.backup_dir = server.session.backup_dir
     link.connect()
     _pump(link, lambda: link.connected, "verbindet nicht")
     assert asked, "ungespeicherte GUI-Änderungen ohne Rückfrage verworfen"
@@ -342,7 +349,7 @@ def test_server_link_takes_server_project_and_resolves_conflict(editor, server):
     _claude(server.port, ("patch_project", {"fields": {"project": "Claude-Name"}}))
     _pump(link, lambda: editor.project.project == "Claude-Name", "Server-Stand nicht übernommen")
     assert server.session.project.project == "Claude-Name"
-    assert "Konflikt" in dpg.get_value("statusbar_text")
+    assert dpg.get_value("statusbar_text").startswith(t("status.server_conflict"))
     link.disconnect()
 
 
@@ -356,4 +363,80 @@ def test_server_link_without_server_offers_start(editor):
     link = ServerLink(editor, port=port)
     assert link.connect() is False
     assert link.state == "disconnected"
-    assert "Kein sproject-Server" in dpg.get_value("statusbar_text")
+    assert dpg.get_value("statusbar_text") == t("status.server_not_found", url=link.url)
+
+
+def test_claude_replaces_project_while_gui_connected(editor, server):
+    """Claude legt ein neues Projekt an: Server sichert, Claude bekommt eine Warnung, die GUI einen Hinweis
+    – und noch nicht übertragene GUI-Eingaben werden ebenfalls gesichert."""
+    from gui.server_link import ServerLink
+
+    editor.load_from_file(EXAMPLES / "tankdesign.json")
+    infos = []
+    link = ServerLink(editor, port=server.port, inform=infos.append)
+    link.backup_dir = server.session.backup_dir
+    link.connect()
+    _pump(link, lambda: link.connected and server.session.project is not None, "verbindet nicht")
+
+    dpg.set_value("inp_project_name", "Ungesendete GUI-Eingabe")       # noch nicht übertragen
+    result, = _claude(server.port, ("new_project", {"name": "Aus Excel"}))
+    warning = result.structuredContent["result"]["warning"]
+    assert "Tank Design Project" in warning and "Aus Excel" in warning   # Claude erfährt es
+
+    _pump(link, lambda: infos, "kein Hinweis in der GUI")
+    assert editor.project.project == "Aus Excel"
+    switch = server.session.last_switch
+    assert switch["backup"] in infos[0]
+    assert load_project(switch["backup"]).project == "Tank Design Project"   # Server-Sicherung
+    local = [p for p in server.session.backup_dir.glob("*.json") if "Ungesendete" in p.name]
+    assert len(local) == 1 and str(local[0]) in infos[0]                  # GUI-Eingaben gesichert
+    link.disconnect()
+
+
+def test_gui_opens_other_file_while_connected(editor, server):
+    """Die GUI öffnet eine andere Datei: Server sichert, Claudes nächster Aufruf wird abgelehnt und gemeldet."""
+    import asyncio
+    import threading
+
+    from mcp import ClientSession
+    from mcp.client.streamable_http import streamable_http_client
+
+    from gui.server_link import ServerLink
+
+    editor.load_from_file(EXAMPLES / "tankdesign.json")
+    link = ServerLink(editor, port=server.port)
+    link.backup_dir = server.session.backup_dir
+    link.connect()
+    _pump(link, lambda: link.connected and server.session.project is not None, "verbindet nicht")
+
+    # Claude hält eine Sitzung offen: erst ein Aufruf, dann wechselt die GUI, dann zwei weitere Aufrufe
+    gui_switched, results = threading.Event(), []
+
+    async def claude():
+        async with streamable_http_client(f"http://127.0.0.1:{server.port}/mcp") as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                results.append(await session.call_tool("get_overview", {}))
+                await asyncio.get_running_loop().run_in_executor(None, gui_switched.wait, 30)
+                results.append(await session.call_tool("add_task", {"task": {"name": "X", "duration": "1d"}}))
+                results.append(await session.call_tool("add_task", {"task": {"name": "X", "duration": "1d"}}))
+
+    thread = threading.Thread(target=lambda: asyncio.run(claude()))
+    thread.start()
+    _pump(link, lambda: results, "Claude-Aufruf fehlt")
+
+    editor.load_from_file(EXAMPLES / "pizza.json")                       # Wechsel in der GUI
+    _pump(link, lambda: server.session.project.project == "Pizza Project", "GUI-Wechsel nicht übertragen")
+    switch = server.session.last_switch
+    assert switch["old"] == "Tank Design Project" and switch["reason"] == "replace_project"
+    assert load_project(switch["backup"]).project == "Tank Design Project"
+    _pump(link, lambda: dpg.get_value("statusbar_text").startswith(t("status.server_replaced_by_gui", text="")[:20]),
+          "keine Meldung in der GUI")
+
+    gui_switched.set()
+    thread.join(timeout=30)
+    blocked, retried = results[1], results[2]
+    assert blocked.isError and "NICHT ausgeführt" in blocked.content[0].text and switch["backup"] in blocked.content[0].text
+    assert not retried.isError                                            # zweiter Versuch läuft
+    assert server.session.project.project == "Pizza Project"
+    link.disconnect()

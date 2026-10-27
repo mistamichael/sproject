@@ -120,6 +120,13 @@ python lib/sproject.py --project mein_projekt.json --scenario "LKW L1 defekt" --
 
 In der GUI erscheint der Vergleich im Ergebnis-Tab (Abschnitt „Szenarien“).
 
+![Szenario-Vergleich für examples/software_simple.json](img/Szenarien.png)
+
+*Szenario-Vergleich (`--export scenarios`) für `examples/software_simple.json`:* Jeder Balken ist die
+Projektdauer einer Variante, blau der Basisplan, rot die Abweichungen mit ihrem Mehraufwand gegenüber dem
+Basisplan. Die Tabelle darunter nennt Ende, Dauer, Kosten und verfehlte Deadlines – „Abnahme bis 27.03.“
+ändert die Dauer nicht, verfehlt aber eine Deadline.
+
 ## Monte-Carlo-Simulation (Wie sicher ist der Termin?)
 
 sproject rechnet den Plan viele Male mit zufälligen Abweichungen. Unsicherheit wird an drei Stellen
@@ -150,3 +157,20 @@ Ergebnis: mit welcher Wahrscheinlichkeit der Plan (und die Baseline, Deadlines) 
 P50/P80/P90 („zu 80 % fertig bis …“), frühestes/spätestes Ende und die **Kritikalität** – wie oft
 ein Task auf dem kritischen Pfad lag. Das HTML zeigt Histogramm und Summenkurve. `--seed` macht
 Läufe reproduzierbar. In der GUI: Exportdialog „Simulation (HTML)“.
+
+![Monte-Carlo-Simulation für examples/software_simple.json](img/MonteCarlo.png)
+
+*Simulation mit 300 Läufen (`--export simulation`) für `examples/software_simple.json`:*
+
+- **Balken** – wie viele Läufe an welchem Tag fertig wurden.
+- **Rote Summenkurve** (rechte Achse) – mit welcher Wahrscheinlichkeit das Projekt bis zu diesem Tag fertig ist.
+- **Grüne Linie „Plan“** – das Ende des Plans ohne Streuung; hier wird es nur in 3 % der Läufe gehalten.
+- **P50 / P80 / P90** – bis dahin sind 50 / 80 / 90 % der Läufe fertig. Für eine verlässliche Zusage
+  eignet sich eher P80 oder P90 als der Plan.
+- Die Tabelle nennt dieselben Kennzahlen und, wie oft ein Szenario mit `probability` eingetreten ist.
+
+![Kritikalität der Tasks](img/Kritikalität.png)
+
+**Kritikalität:** Anteil der Läufe, in denen ein Task auf dem kritischen Pfad lag. Tasks mit 100 %
+bestimmen das Projektende immer; Tasks mit hohem Anteil (hier Backend und Frontend mit 93 %) lohnen
+sich am meisten für Puffer, zusätzliche Leute oder genauere Schätzungen.

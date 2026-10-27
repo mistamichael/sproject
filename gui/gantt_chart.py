@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.figure import Figure
 
-from gui.i18n import get_language
+from gui.i18n import get_language, t as tr
 from lib.durations import format_time_value
 from lib.models.cpm import CPMResult
 from lib.time_axis import axis_ticks
@@ -140,13 +140,13 @@ def render_gantt_png(
     _apply_time_axis(ax, result)
     if result.status_date is not None:
         ax.axvline(result.status_date, color="#2E7D32", linestyle="--", linewidth=1.5)
-    ax.set_title("Gantt-Diagramm", fontsize=11, fontweight="bold")
+    ax.set_title(tr("chart.gantt.title"), fontsize=11, fontweight="bold")
 
     # Legende
     legend_patches = [
-        mpatches.Patch(color=crit_color, label="Kritischer Pfad"),
-        mpatches.Patch(color=normal_color, label="Normal"),
-        mpatches.Patch(color=buffer_color, label="Puffer"),
+        mpatches.Patch(color=crit_color, label=tr("chart.legend.critical")),
+        mpatches.Patch(color=normal_color, label=tr("chart.legend.normal")),
+        mpatches.Patch(color=buffer_color, label=tr("chart.legend.slack")),
     ]
     if result.baseline_end is not None:
         legend_patches.append(mpatches.Patch(color="#9E9E9E", label="Baseline"))
@@ -271,7 +271,7 @@ def render_resource_chart_png(
     ax.set_yticks(list(range(n - 1, -1, -1)))
     ax.set_yticklabels(res_labels, fontsize=8)
     _apply_time_axis(ax, result)
-    ax.set_title("Ressourcenauslastung", fontsize=11, fontweight="bold")
+    ax.set_title(tr("chart.resources.title"), fontsize=11, fontweight="bold")
 
     fig.tight_layout()
     buf = BytesIO()

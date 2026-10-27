@@ -156,6 +156,8 @@ Beispiele:
                         help="Monte-Carlo-Simulation mit N Läufen (Unsicherheiten aus duration_range, risk, "
                              "Szenarien mit probability)")
     parser.add_argument("--seed", type=int, help="Zufallsstartwert für reproduzierbare Simulationen")
+    parser.add_argument("--plotly-cdn", action="store_true",
+                        help="Interaktive HTML-Charts laden plotly.js aus dem Netz (klein) statt es einzubetten (~4 MB)")
     parser.add_argument("--save-baseline", action="store_true",
                         help="Berechneten Plan als Baseline in die Projektdatei schreiben (Plan/Ist-Vergleich)")
     parser.add_argument("--lang", type=str, default="de", choices=["de", "en"],
@@ -199,6 +201,7 @@ def _process(project_file: Path, args: argparse.Namespace, formats: List[str], l
         lang=args.lang,
         simulation_runs=args.simulate or 300,
         seed=args.seed,
+        embed_plotlyjs=not args.plotly_cdn,
     )
     ok = True
     for fmt in formats:

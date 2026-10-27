@@ -162,7 +162,8 @@ cython_debug/
 /site-packages
 
 # Benutzerdefiniert
-/data
+/data/*
+!/data/simple_software_project.xlsx
 /work
 /log
 /results
