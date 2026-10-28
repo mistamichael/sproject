@@ -368,11 +368,11 @@ class ServerLink:
         closed = asyncio.Event()
         self._closed = closed
         try:
-            async with streamable_http_client(self.url) as (read, write, _):
+            async with streamable_http_client(self.url) as (read, write):
                 async with ClientSession(read, write) as session:
                     info = await session.initialize()
                     self._session = session
-                    ready.set_result(info.serverInfo.name)
+                    ready.set_result(info.server_info.name)
                     await closed.wait()
         except BaseException as e:      # noqa: BLE001 – Fehler gehen über ready bzw. offene Aufrufe an process()
             if not ready.done():
@@ -394,9 +394,9 @@ class ServerLink:
             from mcp.types import TextContent
 
             result = await session.call_tool(tool, args)
-            if result.isError:
+            if result.is_error:
                 raise ServerError(" ".join(c.text for c in result.content if isinstance(c, TextContent)) or tool)
-            return (result.structuredContent or {}).get("result")
+            return (result.structured_content or {}).get("result")
 
         return asyncio.run_coroutine_threadsafe(run(), loop)
 

@@ -270,7 +270,7 @@ class _Server:
             self.port = sock.getsockname()[1]
         self.session = ProjectSession()
         self.session.backup_dir = Path(tempfile.mkdtemp(prefix="sproject_backup_"))
-        app = build_server(self.session, port=self.port).streamable_http_app()
+        app = build_server(self.session).streamable_http_app()
         self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=self.port, log_level="warning"))
         self.thread = threading.Thread(target=self.server.run, daemon=True)
         self.thread.start()
@@ -309,7 +309,7 @@ def _claude(port, *calls):
 
     async def run():
         results = []
-        async with streamable_http_client(f"http://127.0.0.1:{port}/mcp") as (read, write, _):
+        async with streamable_http_client(f"http://127.0.0.1:{port}/mcp") as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 for tool, args in calls:
@@ -344,7 +344,7 @@ def test_server_link_shares_one_project(editor, server):
 
     # 2. Claude fügt einen Task hinzu → erscheint in der GUI
     added, = _claude(server.port, ("add_task", {"task": {"name": "Abnahme durch Claude", "duration": "1d"}}))
-    assert not added.isError
+    assert not added.is_error
     _pump(link, lambda: any(r.name == "Abnahme durch Claude" for r in editor.task_rows), "Claude-Task fehlt in der GUI")
     assert len(editor.project.tasks) == count + 1
 
@@ -407,7 +407,7 @@ def test_claude_replaces_project_while_gui_connected(editor, server):
 
     dpg.set_value("inp_project_name", "Ungesendete GUI-Eingabe")       # noch nicht übertragen
     result, = _claude(server.port, ("new_project", {"name": "Aus Excel"}))
-    warning = result.structuredContent["result"]["warning"]
+    warning = result.structured_content["result"]["warning"]
     assert TANK_NAME in warning and "Aus Excel" in warning   # Claude erfährt es
 
     _pump(link, lambda: infos, "kein Hinweis in der GUI")
@@ -440,7 +440,7 @@ def test_gui_opens_other_file_while_connected(editor, server):
     gui_switched, results = threading.Event(), []
 
     async def claude():
-        async with streamable_http_client(f"http://127.0.0.1:{server.port}/mcp") as (read, write, _):
+        async with streamable_http_client(f"http://127.0.0.1:{server.port}/mcp") as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 results.append(await session.call_tool("get_overview", {}))
@@ -463,7 +463,7 @@ def test_gui_opens_other_file_while_connected(editor, server):
     gui_switched.set()
     thread.join(timeout=30)
     blocked, retried = results[1], results[2]
-    assert blocked.isError and "NICHT ausgeführt" in blocked.content[0].text and switch["backup"] in blocked.content[0].text
-    assert not retried.isError                                            # zweiter Versuch läuft
+    assert blocked.is_error and "NICHT ausgeführt" in blocked.content[0].text and switch["backup"] in blocked.content[0].text
+    assert not retried.is_error                                           # zweiter Versuch läuft
     assert server.session.project.project == PIZZA_NAME
     link.disconnect()
