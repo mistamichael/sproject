@@ -1,4 +1,4 @@
-# sproject – Project Schedules with Probabilities
+# sproject – Project Schedules with Probabilities, AI supported build
 
 **When will the project really be done?** sproject plans projects with the critical path method (CPM), levels
 resources, vacations and part-time work – and then answers with a **Monte Carlo simulation**: *"done by 16 April
