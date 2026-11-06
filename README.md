@@ -9,7 +9,7 @@ of a sick colleague or a late delivery. The desktop editor sproject – and, thr
 [![tests](https://github.com/mistamichael/sproject/actions/workflows/tests.yml/badge.svg)](https://github.com/mistamichael/sproject/actions/workflows/tests.yml)
 [![moncapro on PyPI](https://img.shields.io/pypi/v/moncapro.svg?label=moncapro)](https://pypi.org/project/moncapro/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)
 
 > Deutsche Dokumentation: [README.de.md](README.de.md)
 
@@ -34,7 +34,7 @@ Look at the results without installing anything: [example results](doc/result_ex
 
 ## Quickstart
 
-Requires Python 3.10 or higher.
+Requires Python 3.12 or higher.
 
 sproject is the desktop editor. The calculation core, the command line and the MCP server come from the
 separate package [moncapro](https://github.com/mistamichael/moncapro) and are installed automatically.

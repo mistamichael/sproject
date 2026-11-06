@@ -9,7 +9,7 @@ Kollegin oder eine verspätete Lieferung bewirkt. Der Desktop-Editor sproject �
 [![tests](https://github.com/mistamichael/sproject/actions/workflows/tests.yml/badge.svg)](https://github.com/mistamichael/sproject/actions/workflows/tests.yml)
 [![moncapro on PyPI](https://img.shields.io/pypi/v/moncapro.svg?label=moncapro)](https://pypi.org/project/moncapro/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)
 
 > English documentation: [README.md](README.md)
 
@@ -35,7 +35,7 @@ Ergebnisse ohne Installation ansehen: [Beispielergebnisse](doc/result_examples/R
 
 ## Schnellstart
 
-Voraussetzung: Python 3.10 oder höher.
+Voraussetzung: Python 3.12 oder höher.
 
 sproject ist der Desktop-Editor. Rechenkern, Kommandozeile und MCP-Server stammen aus dem eigenen Paket
 [moncapro](https://github.com/mistamichael/moncapro) und werden automatisch mitinstalliert.

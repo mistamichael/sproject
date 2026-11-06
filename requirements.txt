@@ -1,12 +1,21 @@
 # Rechenkern: CPM, Ressourcenplanung, Simulation, Szenarien, Exporte, MCP-Server
 # (eigenes Paket, https://pypi.org/project/moncapro/)
-moncapro[all]>=0.1,<0.2
+# VORÜBERGEHEND die Git-Version: Meilensteine (moncapro.milestones) und schema_version gibt es erst ab 0.2.0.
+# Nach der Veröffentlichung von moncapro 0.2.0 wieder: moncapro[all]>=0.2,<0.3
+moncapro[all] @ git+https://github.com/mistamichael/moncapro.git@main
 
 # GUI (Dear PyGui-basierter Editor)
 dearpygui>=1.11.0
+# Gantt- und Ressourcen-Diagramm im Ergebnis-Tab (gui/gantt_chart.py, bringt Pillow mit)
+matplotlib>=3.7.0
 
 # Testing
 pytest>=9.0.0
 
 # Schriftprüfung in tests/test_font_glyphs.py (liest den Glyphenvorrat der Schriftdatei)
 fonttools>=4.50
+
+# Code-Qualität: Dead-Code-Erkennung (make vulture, Einstellungen in pyproject.toml)
+vulture>=2.16
+# Code-Qualität: Type Checking (make mypy, läuft als python -m mypy in der .venv)
+mypy>=2.4
