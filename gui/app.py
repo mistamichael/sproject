@@ -155,6 +155,7 @@ def _update_ui_language() -> None:
         "section_resting_times_header": "section.resting_times",
         "section_uncertainty_header":   "section.uncertainty",
         "section_scenarios_header":     "section.scenarios",
+        "section_milestones_header":    "section.milestones",
         "section_result_header":        "section.result",
         "tab_input":                    "result.tab.input",
         "tab_result":                   "result.tab.result",
@@ -187,6 +188,7 @@ def _update_ui_language() -> None:
         "lbl_status_date":  "label.status_date",
         "section_uncertainty_hint": "hint.section.uncertainty",
         "section_scenarios_hint":   "hint.section.scenarios",
+        "section_milestones_hint":  "hint.section.milestones",
         **SIDEBAR_TEXT_TAGS,
     }
     for tag, key in _text_map.items():
@@ -430,7 +432,7 @@ def _show_ac_popup(app: ProjectEditorApp, matches: list[str]) -> None:
         )
 
 
-def _ac_tab_handler(sender, app_data, user_data: ProjectEditorApp) -> None:
+def _ac_tab_handler(_sender, app_data, user_data: ProjectEditorApp) -> None:
     if not dpg.does_item_exist("exp_dir_input"):
         return
     if dpg.is_item_focused("exp_dir_input"):
@@ -451,7 +453,7 @@ def _ac_tab_handler(sender, app_data, user_data: ProjectEditorApp) -> None:
             _ac_select(user_data, val)
 
 
-def _ac_enter_handler(sender, app_data, user_data: ProjectEditorApp) -> None:
+def _ac_enter_handler(_sender, app_data, user_data: ProjectEditorApp) -> None:
     if dpg.does_item_exist(TAG_AC_POPUP) and dpg.does_item_exist(TAG_AC_LIST):
         val = dpg.get_value(TAG_AC_LIST)
         if val:
@@ -700,6 +702,12 @@ def _build_scenarios_section(app: ProjectEditorApp) -> None:
     ], ["scenarios_content", "scenario_changes_content"], hint="hint.section.scenarios")
 
 
+def _build_milestones_section(app: ProjectEditorApp) -> None:
+    _build_optional_section("milestones", [
+        ("button.add_milestone", lambda: app.sections.add_milestone()),
+    ], ["milestones_content"], hint="hint.section.milestones")
+
+
 # ---------------------------------------------------------------------------
 # Haupt-App zusammensetzen
 # ---------------------------------------------------------------------------
@@ -928,6 +936,7 @@ def create_app() -> ProjectEditorApp:
                         _build_resting_times_section(editor)
                         _build_uncertainty_section(editor)
                         _build_scenarios_section(editor)
+                        _build_milestones_section(editor)
 
                     # ── Tab 2: Ergebnis (initial unsichtbar) ──
                     with dpg.tab(
@@ -945,7 +954,7 @@ def create_app() -> ProjectEditorApp:
 # Viewport-Resize
 # ---------------------------------------------------------------------------
 
-def _resize_callback(sender, app_data) -> None:
+def _resize_callback(_sender, app_data) -> None:
     vp_w = dpg.get_viewport_client_width()
     vp_h = dpg.get_viewport_client_height()
     dpg.set_item_width(TAG_MAIN_WIN,  vp_w)

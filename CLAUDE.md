@@ -25,7 +25,7 @@ sproject/
 │   ├── server_link.py # Explizite Verbindung zum moncapro-Server (MCP-Client), Abgleich im DPG-Hauptthread
 │   └── components/   # UI-Komponenten
 │       ├── list_section.py # Generische bearbeitbare Tabelle (Column, ListSection), Formular-Dialog, Farbwähler
-│       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit, Unsicherheiten, Szenarien
+│       ├── sections.py     # Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit, Unsicherheiten, Szenarien, Meilensteine
 │       ├── task_table.py   # Aufgaben-Tabelle
 │       ├── result_panel.py # Ergebnis-Tab
 │       ├── sidebar.py      # Wizard-Navigation + Beispielliste
@@ -37,7 +37,7 @@ sproject/
 
 - Rechenkern: eigenes Paket **moncapro** ([github.com/mistamichael/moncapro](https://github.com/mistamichael/moncapro), `pip install moncapro`) mit CPM, Leveling, Szenarien, Simulation, Exporten, CLI und MCP-Server – dort steht auch dessen `CLAUDE.md` mit der Kern-Architektur. Änderungen daran gehören in dieses Repo, nicht hierher.
 - Quellcode hier: `gui/` (GUI-Schicht)
-- Sprache: Python
+- Sprache: Python ≥ 3.12 (CI-Matrix 3.12/3.13; `bin/install_py.*` prüft die Version)
 - GUI-Framework: **Dear PyGui** (dearpygui)
 - Datenmodelle: **Pydantic** (BaseModel)
 
@@ -55,6 +55,7 @@ sproject/
    - Ruhepausen werden nach dem berechneten Zeitplan eingefügt (zweiter CPM-Lauf).
    - Plan gegen Ist: `status_date`, `actuals`, `baseline` im Projekt (`moncapro/models/tracking.py`, `moncapro/baseline.py`); Doku: `doc/de/termine-und-ist.md`.
    - Szenarien: `scenarios` im Projekt (`moncapro/models/scenario.py`), angewendet und verglichen in `moncapro/scenarios.py`.
+   - Meilensteine: `milestones` im Projekt (`{id, name, ref, at: start|end, note}`, `moncapro/models/milestone.py`), aufgelöst in `moncapro/milestones.py` (Loop-/Instanz-Tasks über `original_id`: erster Anfang/letztes Ende). Plotly-Charts zeichnen Linien mit Hover; in der GUI liefert `gui/gantt_chart.py` die Pixelpositionen (`ChartImage.spots`), `result_panel._milestone_tooltip()` zeigt den Tooltip.
    - Monte-Carlo: `duration_range`/`risk` am Task, `probability` am Szenario → `moncapro/simulation.py` (nutzt die im Basisplan gewählte Leveling-Regel). Liegt die geplante Dauer außerhalb von `duration_range`, nimmt die Simulation den Rand und meldet den Task (`planned_outside_range()`, `SimulationResult.clamped`); die GUI markiert ihn in Sektion 6.
 6. **Export:** `moncapro.exporters.export_schedule()` – JSON, Markdown, HTML, Excel (.xlsx), TXT, SVG-ZIP
 7. **KI-Schnittstelle:** `moncapro/api.py` (`ProjectSession`) → `moncapro/mcp/server.py` (`build_server(session)`); Doku: `doc/de/ki-schnittstelle.md`
@@ -84,6 +85,7 @@ Viewport
         ├── 5. Ruhezeiten/Urlaub/Teilzeit (optional, togglebar)
         ├── 6. Unsicherheiten: duration_range, risk je Task (optional, togglebar)
         ├── 7. Szenarien + Szenario-Änderungen (optional, togglebar)
+        ├── 8. Meilensteine: Anfang/Ende eines Tasks, Linie in den Diagrammen (optional, togglebar)
         └── Ergebnis-Panel (nach Berechnung)
 ```
 

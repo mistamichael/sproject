@@ -72,5 +72,10 @@
       "duration": "1d",
       "successors": []
     }
+  ],
+  "milestones": [
+    { "id": "M1", "name": "Fundament fertig", "ref": 3, "at": "end" },
+    { "id": "M2", "name": "Rohbau fertig", "ref": 5, "at": "end", "note": "Übergabe an die Ausbaugewerke" },
+    { "id": "M3", "name": "Abnahme", "ref": 10, "at": "start" }
   ]
 }

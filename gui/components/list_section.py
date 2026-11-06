@@ -75,7 +75,7 @@ def float_setter(key: str) -> Setter:
     return _set
 
 
-def _focus_next(sender, app_data, user_data) -> None:
+def _focus_next(_sender, app_data, user_data) -> None:
     if user_data and dpg.does_item_exist(user_data):
         dpg.focus_item(user_data)
 
@@ -267,7 +267,7 @@ class ListSection:
             self._row_handler = registry
         return self._row_handler
 
-    def _on_row_double_click(self, sender, app_data) -> None:
+    def _on_row_double_click(self, _sender, app_data) -> None:
         item = app_data[1]
         row = self._row_of_item.get(item, self._row_of_item.get(dpg.get_item_alias(item)))
         if row is not None and self.on_double_click:

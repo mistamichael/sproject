@@ -40,6 +40,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "section.resting_times": "5. Ruhezeiten und Urlaub",
         "section.uncertainty": "6. Unsicherheiten",
         "section.scenarios": "7. Szenarien",
+        "section.milestones": "8. Meilensteine",
         "section.result": "CPM-Ergebnis",
 
         # ── Labels (Stammdaten) ───────────────────────────────────────────
@@ -119,6 +120,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "result.header.gantt": "Gantt-Diagramm",
         "result.header.resource_chart": "Ressourcenauslastung",
         "result.header.scenarios": "Szenarien",
+        "result.header.milestones": "Meilensteine",
         "result.cost.person_costs": "Personalkosten",
         "result.cost.machine_costs": "Maschinenkosten (Lohn)",
         "result.cost.provisioning_costs": "Bereitstellungskosten",
@@ -149,6 +151,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "chart.legend.critical": "Kritischer Pfad",
         "chart.legend.normal": "Normal",
         "chart.legend.slack": "Puffer",
+        "chart.legend.milestones": "Meilenstein",
         "menu.analysis": "Analyse",
         "menu.analysis.calculate": "Berechnen",
         "menu.analysis.scenarios": "Szenarien vergleichen",
@@ -293,6 +296,21 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "hint.change": "Task: duration_factor=1.5; deadline=2026-03-27 · "
                        "Ressource/Person: 2026-03-09 – 2026-03-13 (krank)",
         "default.scenario_name": "Neues Szenario",
+        # ── Meilensteine ──────────────────────────────────────────────────
+        "hint.section.milestones": "Benannter Zeitpunkt am Anfang oder Ende eines Tasks – erscheint als senkrechte "
+                                   "Linie im Gantt- und Ressourcen-Diagramm (Maus darüber: Details). "
+                                   "Doppelklick auf eine Zeile: bearbeiten.",
+        "button.add_milestone": "+ Meilenstein",
+        "dlg.add_milestone": "Meilenstein hinzufügen",
+        "dlg.edit_milestone": "Meilenstein bearbeiten",
+        "col.anchor": "Anfang/Ende",
+        "col.reference": "Bezug",
+        "list.no_milestones": "Keine Meilensteine definiert.",
+        "default.milestone_name": "Neuer Meilenstein",
+        "warn.milestone_ref": "Achtung: Meilenstein {ids} verweist auf keinen vorhandenen Task und wird nicht angezeigt.",
+        "error.no_task_for_milestone": "Bitte zuerst Aufgaben anlegen.",
+        "anchor.start": "Anfang",
+        "anchor.end": "Ende",
         "default.absence": "Ausfall",
         "error.invalid_input": "Ungültige Eingabe: {error}",
         "error.no_scenario": "Bitte zuerst ein Szenario anlegen.",
@@ -348,6 +366,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "section.resting_times": "5. Rest Periods & Vacation",
         "section.uncertainty": "6. Uncertainties",
         "section.scenarios": "7. Scenarios",
+        "section.milestones": "8. Milestones",
         "section.result": "CPM Result",
 
         # ── Labels (Master Data) ──────────────────────────────────────────
@@ -427,6 +446,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "result.header.gantt": "Gantt Chart",
         "result.header.resource_chart": "Resource Utilization",
         "result.header.scenarios": "Scenarios",
+        "result.header.milestones": "Milestones",
         "result.cost.person_costs": "Personnel Costs",
         "result.cost.machine_costs": "Machine Costs (Labor)",
         "result.cost.provisioning_costs": "Provisioning Costs",
@@ -457,6 +477,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "chart.legend.critical": "Critical path",
         "chart.legend.normal": "Normal",
         "chart.legend.slack": "Slack",
+        "chart.legend.milestones": "Milestone",
         "menu.analysis": "Analysis",
         "menu.analysis.calculate": "Calculate",
         "menu.analysis.scenarios": "Compare scenarios",
@@ -601,6 +622,21 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "hint.change": "Task: duration_factor=1.5; deadline=2026-03-27 · "
                        "Resource/person: 2026-03-09 – 2026-03-13 (sick)",
         "default.scenario_name": "New scenario",
+        # ── Milestones ────────────────────────────────────────────────────
+        "hint.section.milestones": "Named point in time at the start or end of a task – shown as a vertical line "
+                                   "in the Gantt and resource chart (hover for details). "
+                                   "Double-click a row to edit.",
+        "button.add_milestone": "+ Milestone",
+        "dlg.add_milestone": "Add milestone",
+        "dlg.edit_milestone": "Edit milestone",
+        "col.anchor": "Start/End",
+        "col.reference": "Reference",
+        "list.no_milestones": "No milestones defined.",
+        "default.milestone_name": "New milestone",
+        "warn.milestone_ref": "Warning: milestone {ids} refers to no existing task and is not shown.",
+        "error.no_task_for_milestone": "Please add tasks first.",
+        "anchor.start": "Start",
+        "anchor.end": "End",
         "default.absence": "Absence",
         "error.invalid_input": "Invalid input: {error}",
         "error.no_scenario": "Please add a scenario first.",

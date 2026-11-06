@@ -134,5 +134,9 @@
       "changes": [ { "task": "2-F*.2", "duration_factor": 1.2 } ] },
     { "name": "Bagger langsamer (harter Boden)", "description": "Beladen dauert 50 % länger", "probability": 0.2,
       "changes": [ { "task": "2-F*.1", "duration_factor": 1.5 } ] }
+  ],
+  "milestones": [
+    { "id": "M1", "name": "Baustelle eingerichtet", "ref": 1, "at": "end" },
+    { "id": "M2", "name": "Aushub abgeschlossen", "ref": 2, "at": "end", "note": "Letzte Fuhre abgefahren" }
   ]
 }

@@ -2,7 +2,7 @@
 Sidebar – Wizard-Navigation (Dear PyGui)
 =========================================
 
-Linke Sidebar mit 7 Wizard-Schritten.  Optionale Abschnitte können
+Linke Sidebar mit 8 Wizard-Schritten.  Optionale Abschnitte können
 per Checkbox ein- und ausgeschaltet werden.
 """
 
@@ -27,6 +27,7 @@ SECTIONS = [
     ("resting_times", False),
     ("uncertainty",   False),
     ("scenarios",     False),
+    ("milestones",    False),
 ]
 
 # Tags der Sidebar-Beschriftungen → i18n-Schlüssel (für den Sprachwechsel in gui/app.py)
@@ -41,6 +42,7 @@ TOGGLE_TAGS = {
     "resting_times": "sidebar_rest_toggle",
     "uncertainty":   "sidebar_uncertainty_toggle",
     "scenarios":     "sidebar_scenarios_toggle",
+    "milestones":    "sidebar_milestones_toggle",
 }
 
 
@@ -106,7 +108,7 @@ def refresh_example_list(app) -> None:
         _fill_example_list(app)
 
 
-def _on_toggle(sender, value: bool, user_data) -> None:
+def _on_toggle(_sender, value: bool, user_data) -> None:
     """Callback für den Toggle-Checkbox einer optionalen Sektion."""
     app, section_id = user_data
     app.active_sections[section_id] = value

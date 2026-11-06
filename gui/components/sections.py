@@ -1,6 +1,6 @@
 """
 Optionale Sektionen: Ressourcen, Personen, Ruhezeiten, Urlaub, Teilzeit,
-Unsicherheiten, Szenarien
+Unsicherheiten, Szenarien, Meilensteine
 =======================================================================
 
 Jede Sektion ist eine ListSection mit Spaltenbeschreibung plus ein
@@ -27,6 +27,9 @@ from gui.components.list_section import (
 )
 from gui.gui_config import load_gui_config
 from gui.i18n import t
+from moncapro.milestones import unresolved_milestones
+from moncapro.models.dependencies import parse_task_id
+from moncapro.models.milestone import MILESTONE_ANCHORS, Milestone
 from moncapro.simulation import planned_outside_range
 from moncapro.models.resources import (
     RESOURCE_TYPES, Person, Resource, RestInterval, TimeRange, VacationEntry, WorkHoursOverride,
@@ -95,6 +98,18 @@ def _set_scenario_probability(scenario: Scenario, text: str) -> None:
         scenario.probability = parse_percent(text)
     except ValueError:
         pass
+
+
+def _set_anchor(milestone: Milestone, text: str) -> None:
+    """Anfang/Ende: übersetzte Anzeige oder 'start'/'end' → Modellwert."""
+    anchor = next((a for a in MILESTONE_ANCHORS if text in (a, t(f"anchor.{a}"))), None)
+    if anchor:
+        milestone.at = anchor
+
+
+def _set_ref(milestone: Milestone, text: str) -> None:
+    if text.strip():
+        milestone.ref = parse_task_id(text.strip())
 
 
 def _target_label(row: ChangeRow) -> str:
@@ -232,8 +247,24 @@ class OptionalSections:
             empty_text="list.no_changes",
             on_double_click=self.edit_change,
         )
+        self.milestones = ListSection(
+            "milestones_content", [
+                Column("id", "col.id", width=70, editable=False),
+                Column("name", "col.name", set=_required("name")),
+                Column("ref", "col.task", width=70, set=_set_ref),
+                Column("at", "col.anchor", width=100, get=lambda m: t(f"anchor.{m.at}"), set=_set_anchor,
+                       items=[t(f"anchor.{a}") for a in MILESTONE_ANCHORS]),
+                Column("reference", "col.reference", editable=False, get=self._milestone_task),
+                Column("note", "col.note", set=lambda m, v: setattr(m, "note", v or None)),
+            ],
+            get_rows=lambda: self._project_list("milestones"),
+            on_remove=lambda i: self._remove_milestone(i),
+            empty_text="list.no_milestones",
+            on_double_click=self.edit_milestone,
+            warning=self._milestone_warning,
+        )
         self.all = [self.resources, self.persons, self.resting_times, self.vacation, self.workinghours,
-                    self.uncertainty, self.scenarios, self.scenario_changes]
+                    self.uncertainty, self.scenarios, self.scenario_changes, self.milestones]
 
     # -- gemeinsame Helfer ----------------------------------------------------
 
@@ -630,4 +661,76 @@ class OptionalSections:
             if row is not None:
                 row.scenario.changes = [c for c in row.scenario.changes if c is not row.change]
             scenario.changes = scenario.changes + [change]
+        self._changed()
+
+    # -- Meilensteine: ein Formular für Hinzufügen und Bearbeiten (Doppelklick) --
+
+    def _milestone_task(self, milestone: Milestone) -> str:
+        task = next((x for x in self._project_list("tasks") if str(x.id) == str(milestone.ref)), None)
+        return task.name if task is not None else "?"
+
+    def _milestone_warning(self) -> Optional[str]:
+        if not self.project:
+            return None
+        ids = [m.id for m in unresolved_milestones(self.project)]
+        return t("warn.milestone_ref", ids=", ".join(ids)) if ids else None
+
+    def _remove_milestone(self, index: int) -> None:
+        self.sync()
+        items = self._project_list("milestones")
+        if 0 <= index < len(items):
+            self.project.milestones = items[:index] + items[index + 1:]
+            self._changed()
+
+    def _milestone_fields(self, milestone: Optional[Milestone] = None) -> List[FormField]:
+        labels = [self._task_label(task) for task in self._project_list("tasks")]
+        current = next((label for label in labels if milestone and label.split(":", 1)[0] == str(milestone.ref)),
+                       labels[-1])
+        ids = {m.id for m in self._project_list("milestones")}
+        next_id = next(f"M{n}" for n in range(1, len(ids) + 2) if f"M{n}" not in ids)
+        anchors = [t(f"anchor.{a}") for a in MILESTONE_ANCHORS]
+        return [
+            FormField("id", "col.id", default=milestone.id if milestone else next_id, no_spaces=True),
+            FormField("name", "col.name", default=milestone.name if milestone else t("default.milestone_name")),
+            FormField("task", "col.task", default=current, items=labels),
+            FormField("at", "col.anchor", default=t(f"anchor.{milestone.at if milestone else 'end'}"),
+                      items=anchors),
+            FormField("note", "col.note", default=(milestone.note or "") if milestone else ""),
+        ]
+
+    def add_milestone(self) -> None:
+        self.app.sync_to_model()   # neue Zeilen der Aufgaben-Tabelle erst so als Task im Modell
+        if not self._project_list("tasks"):
+            show_error("milestones_content", t("error.no_task_for_milestone"))
+            return
+        open_form_dialog("add_milestone_dialog", "dlg.add_milestone", self._milestone_fields(),
+                         lambda v: self._apply_milestone(None, v), width=420)
+
+    def edit_milestone(self, index: int) -> None:
+        self.app.sync_to_model()
+        milestones = self._project_list("milestones")
+        if not 0 <= index < len(milestones) or not self._project_list("tasks"):
+            return
+        milestone = milestones[index]
+        open_form_dialog("edit_milestone_dialog", "dlg.edit_milestone", self._milestone_fields(milestone),
+                         lambda v: self._apply_milestone(milestone, v), width=420, confirm_label="button.apply")
+
+    def _apply_milestone(self, milestone: Optional[Milestone], v: Dict[str, str]) -> None:
+        """milestone None → neu anlegen, sonst die Werte übernehmen."""
+        if not v.get("id") or not v.get("task") or not self.project:
+            return
+        if v["id"] in {m.id for m in self._project_list("milestones") if m is not milestone}:
+            show_error("milestones_content", t("error.duplicate_id", id=v["id"]))
+            return
+        self.sync()
+        values = {"id": v["id"], "name": v.get("name") or t("default.milestone_name"),
+                  "ref": parse_task_id(v["task"].split(":", 1)[0].strip()),
+                  "at": next((a for a in MILESTONE_ANCHORS if v.get("at") == t(f"anchor.{a}")), "end")}
+        if v.get("note"):
+            values["note"] = v["note"]
+        new = Milestone.model_validate(values)
+        # Liste neu zuweisen statt in place ändern: das Feld gilt dann als gesetzt (Speichern)
+        items = self._project_list("milestones")
+        self.project.milestones = ([new if m is milestone else m for m in items] if milestone is not None
+                                   else items + [new])
         self._changed()

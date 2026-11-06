@@ -12,7 +12,8 @@ import dearpygui.dearpygui as dpg
 
 from gui.colors import resource_color_map
 from gui.gui_config import load_gui_config
-from gui.i18n import t
+from gui.i18n import get_language, t
+from moncapro.milestones import resolve_milestones
 from moncapro.report_data import collect_deadline_violations, tracking_summary
 from moncapro.scenarios import comparison_rows
 from moncapro.schedule import Schedule
@@ -63,6 +64,7 @@ def show_result(schedule: Schedule, export_actions: Dict[str, Callable[[], None]
     _all_tasks(schedule)
     dpg.add_spacer(parent=_PARENT, height=6)
     _costs(schedule)
+    _milestones(schedule)
     _scenarios(scenario_outcomes or [])
     _simulation(simulation)
     _charts(schedule)
@@ -168,6 +170,22 @@ def _costs(schedule: Schedule) -> None:
                      color=_COLORS.get("result_critical_path", (220, 80, 80)))
 
 
+def _milestones(schedule: Schedule) -> None:
+    """Meilensteine mit Datum und Bezug (nur wenn das Projekt welche enthält)."""
+    points = resolve_milestones(schedule)
+    if not points:
+        return
+    with dpg.collapsing_header(label=t("result.header.milestones"), parent=_PARENT, default_open=True):
+        with _table():
+            for title in ("col.id", "col.name", "col.date", "col.reference", "col.note"):
+                dpg.add_table_column(label=t(title))
+            for p in points:
+                with dpg.table_row():
+                    for cell in (p.id, p.milestone.name, *p.describe(get_language())[1:3], p.milestone.note or ""):
+                        dpg.add_text(cell)
+        dpg.add_spacer(height=6)
+
+
 def _scenarios(outcomes: list) -> None:
     """Vergleich Basisplan ↔ Szenarien (nur wenn das Projekt Szenarien enthält)."""
     if len(outcomes) < 2:
@@ -211,14 +229,40 @@ def _charts(schedule: Schedule) -> None:
         return
 
     colors = resource_color_map(schedule.project)
-    charts = [("result.header.gantt", "_gantt_chart_tex",
-               lambda: render_gantt_png(schedule.cpm, resource_colors=colors))]
+    milestones = resolve_milestones(schedule)
+    charts = [("result.header.gantt", "_gantt_chart",
+               lambda: render_gantt_png(schedule.cpm, resource_colors=colors, milestones=milestones))]
     if schedule.project.resources:
-        charts.append(("result.header.resource_chart", "_resource_chart_tex",
+        charts.append(("result.header.resource_chart", "_resource_chart",
                        lambda: render_resource_chart_png(schedule.cpm, project=schedule.project,
-                                                         resource_colors=colors)))
-    for header, tex_tag, render in charts:
-        png = render()
-        if png and load_png_as_dpg_texture(png, tex_tag):
+                                                         resource_colors=colors, milestones=milestones)))
+    for header, tag, render in charts:
+        image = render()
+        if image.png and load_png_as_dpg_texture(image.png, f"{tag}_tex"):
             with dpg.collapsing_header(label=t(header), parent=_PARENT, default_open=True):
-                dpg.add_image(tex_tag)
+                dpg.add_image(f"{tag}_tex", tag=f"{tag}_img")
+                if image.spots:
+                    _milestone_tooltip(f"{tag}_img", image.spots)
+
+
+def _milestone_tooltip(image_tag: str, spots) -> None:
+    """Tooltip über dem Bild, nur sichtbar, solange die Maus auf einer Meilenstein-Linie steht."""
+    from gui.gantt_chart import milestone_at
+
+    tooltip, text, handlers = f"{image_tag}_tip", f"{image_tag}_tip_text", f"{image_tag}_handlers"
+    with dpg.tooltip(image_tag, tag=tooltip, show=False):
+        dpg.add_text("", tag=text)
+
+    def _on_hover(*_args) -> None:
+        mx, my = dpg.get_mouse_pos(local=False)
+        x0, y0 = dpg.get_item_rect_min(image_tag)
+        spot = milestone_at(spots, mx - x0, my - y0)
+        if spot is not None:
+            dpg.set_value(text, "\n".join(spot.lines))
+        dpg.configure_item(tooltip, show=spot is not None)
+
+    if dpg.does_item_exist(handlers):
+        dpg.delete_item(handlers)
+    with dpg.item_handler_registry(tag=handlers):
+        dpg.add_item_hover_handler(callback=_on_hover)
+    dpg.bind_item_handler_registry(image_tag, handlers)

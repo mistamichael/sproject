@@ -21,7 +21,7 @@ NAMES = sorted(p.name for p in DE.glob("*.json"))
 
 # Felder, deren Werte Logik tragen (IDs, Dauern, Abhängigkeiten, Formeln) und nicht übersetzt werden
 LOGIC_KEYS = ("id", "duration", "successors", "successors_aa", "successors_ee", "resources", "person_id",
-              "duration_formula", "loop_until")
+              "duration_formula", "loop_until", "ref", "at")
 
 
 def _skeleton(obj):

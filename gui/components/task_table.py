@@ -36,7 +36,7 @@ SUCC_TYPES = [d.value for d in DepType]
 _RE_RESOURCE_TOKENS = re.compile(r'([A-Za-z_]\w*)')
 
 
-def _on_enter_focus_next(sender, app_data, user_data) -> None:
+def _on_enter_focus_next(_sender, app_data, user_data) -> None:
     """Bei Enter: Fokus auf das gleichnamige Feld der nächsten Zeile."""
     if user_data and dpg.does_item_exist(user_data):
         dpg.focus_item(user_data)
@@ -210,7 +210,7 @@ def _open_pick_dialog(title: str, prompt: str, labels: List[str], confirm_label:
 # Nachfolger
 # ---------------------------------------------------------------------------
 
-def _open_add_successor(sender, app_data, user_data) -> None:
+def _open_add_successor(_sender, app_data, user_data) -> None:
     """Dialog: Task-ID und Abhängigkeitstyp für einen neuen Nachfolger."""
     app, row_idx = user_data
     if dpg.does_item_exist(_SUCC_ADD_TAG):
@@ -253,7 +253,7 @@ def _confirm_add_successor(app, row_idx: int) -> None:
         _update_row(app, row_idx, successors_str=format_dependencies(deps + new_dep))
 
 
-def _open_remove_successor(sender, app_data, user_data) -> None:
+def _open_remove_successor(_sender, app_data, user_data) -> None:
     app, row_idx = user_data
     deps: List[Dependency] = parse_dependencies(app.task_rows[row_idx].successors_str)
 
@@ -270,7 +270,7 @@ def _open_remove_successor(sender, app_data, user_data) -> None:
 # Ressourcen
 # ---------------------------------------------------------------------------
 
-def _open_add_resource(sender, app_data, user_data) -> None:
+def _open_add_resource(_sender, app_data, user_data) -> None:
     app, row_idx = user_data
     if row_idx >= len(app.task_rows):
         return
@@ -285,7 +285,7 @@ def _open_add_resource(sender, app_data, user_data) -> None:
                       t("tt.all_assigned"), "dialog.resource_add")
 
 
-def _open_remove_resource(sender, app_data, user_data) -> None:
+def _open_remove_resource(_sender, app_data, user_data) -> None:
     app, row_idx = user_data
     if row_idx >= len(app.task_rows):
         return

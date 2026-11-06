@@ -237,6 +237,70 @@ def test_range_warning_follows_task_table_edits(editor):
     assert not dpg.does_item_exist("uncertainty_content_warning")
 
 
+def test_milestones_add_edit_remove_and_save(editor, tmp_path):
+    editor.load_from_file(EXAMPLES / "tankdesign.json")
+    assert not editor.active_sections["milestones"]
+    sections = editor.sections
+    task = editor.project.tasks[2]
+    sections.add_milestone()
+    assert dpg.get_value("add_milestone_dialog_id") == "M1"
+    dpg.set_value("add_milestone_dialog_name", "Fundament steht")
+    dpg.set_value("add_milestone_dialog_task", f"{task.id}: {task.name}")
+    _press("add_milestone_dialog", t("button.add"))
+
+    _double_click_row(sections.milestones, 0)
+    assert dpg.get_value("edit_milestone_dialog_task") == f"{task.id}: {task.name}"
+    dpg.set_value("edit_milestone_dialog_at", t("anchor.start"))
+    _press("edit_milestone_dialog", t("button.apply"))
+    dpg.set_value("milestones_content_0_note", "Abnahme Statik")
+
+    data = json.loads(editor.save_to_file(tmp_path / "out.json").read_text(encoding="utf-8"))
+    assert data["milestones"] == [{"id": "M1", "name": "Fundament steht", "ref": task.id, "at": "start",
+                                   "note": "Abnahme Statik"}]
+
+    dpg.set_value("milestones_content_0_ref", "99")                  # unbekannter Task → Warnung
+    editor.sync_to_model()
+    editor.sections.refresh()
+    assert "M1" in dpg.get_value("milestones_content_warning")
+
+    sections._remove_milestone(0)
+    data = json.loads(editor.save_to_file(tmp_path / "out.json").read_text(encoding="utf-8"))
+    assert "milestones" not in data or data["milestones"] == []
+
+
+def test_milestones_in_result_and_charts(editor):
+    pytest.importorskip("matplotlib")
+    editor.load_from_file(EXAMPLES / "hausbau.json")
+    assert editor.active_sections["milestones"]
+    editor.run_calculation()
+    assert editor.schedule is not None
+    names = [m.name for m in editor.project.milestones]
+    texts = [dpg.get_value(i) for i in dpg.get_all_items() if dpg.get_item_type(i) == "mvAppItemType::mvText"]
+    assert all(name in texts for name in names)
+    assert dpg.does_item_exist("_gantt_chart_img_tip") and not dpg.get_item_configuration(
+        "_gantt_chart_img_tip")["show"]
+
+
+def test_milestone_spots_match_the_png():
+    """Die Pixelposition jedes Meilensteins trifft im PNG die gezeichnete Linie."""
+    pytest.importorskip("matplotlib")
+    from io import BytesIO
+    from PIL import Image
+    from gui.gantt_chart import milestone_at, render_gantt_png
+    from moncapro.milestones import resolve_milestones
+
+    schedule = build_schedule(load_project(EXAMPLES / "hausbau.json"), cfg_dir=get_cfg_dir())
+    points = resolve_milestones(schedule)
+    image = render_gantt_png(schedule.cpm, milestones=points)
+    png = Image.open(BytesIO(image.png)).convert("RGB")
+    assert len(image.spots) == len(points) == 3
+    for spot in image.spots:
+        column = [png.getpixel((spot.x + dx, y)) for y in range(spot.top, spot.bottom) for dx in (-1, 0, 1)]
+        assert sum(abs(r - 0xB0) + abs(g - 0x7C) + abs(b - 0xD8) < 60 for r, g, b in column) > 20
+        assert milestone_at(image.spots, spot.x + 3, spot.top + 10) is spot
+    assert milestone_at(image.spots, image.spots[0].x, image.spots[0].bottom + 20) is None
+
+
 def test_report_export_uses_shared_exporters(editor, tmp_path):
     """B8: GUI-Exporte entsprechen den CLI-Exporten."""
     editor.load_from_file(EXAMPLES / "software_simple.json")

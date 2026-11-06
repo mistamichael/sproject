@@ -11,7 +11,6 @@ Datenfluss:
     refresh_all()    Modell  → Widgets
 """
 
-import json
 import threading
 import webbrowser
 from datetime import date
@@ -28,14 +27,14 @@ from gui.i18n import get_language, t
 from gui.task_rows import TaskRow, new_subtask_row, new_task_row, rows_to_tasks, tasks_to_rows
 from moncapro.baseline import create_baseline
 from moncapro.exporters import ExportOptions, export_schedule
-from moncapro.models import Project, load_project, load_project_from_dict, save_project
+from moncapro.models import Project, load_project, save_project
 from moncapro.paths import get_cfg_dir, get_results_dir, get_work_dir
 from moncapro.charts import build_simulation_figures, write_html
 from moncapro.scenarios import compare_scenarios
 from moncapro.simulation import SimulationResult, has_uncertainty, simulate
 from moncapro.schedule import Schedule, build_schedule
 
-SECTIONS = ("resources", "persons", "resting_times", "uncertainty", "scenarios")
+SECTIONS = ("resources", "persons", "resting_times", "uncertainty", "scenarios", "milestones")
 
 # Report-Formate, die die GUI anbietet (Schlüssel aus moncapro.exporters.EXPORTERS)
 REPORT_FORMATS: Dict[str, str] = {
@@ -159,14 +158,6 @@ class ProjectEditorApp:
         except Exception as e:
             self._set_status(t("status.load_error", error=e))
 
-    def load_from_bytes(self, content: bytes, filename: str = "") -> None:
-        try:
-            project = load_project_from_dict(json.loads(content.decode("utf-8")))
-            self._set_project(project, None)
-            self._set_status(t("status.loaded", name=project.project))
-        except Exception as e:
-            self._set_status(t("status.load_error", error=e))
-
     def save_to_file(self, file_path: Optional[Path] = None) -> Path:
         """Speichert das Projekt als sproject-JSON."""
         self.sync_to_model()
@@ -268,6 +259,7 @@ class ProjectEditorApp:
                              or any(x.vacation or x.workinghours_override for x in persons),
             "uncertainty": any(task.duration_range or task.risk for task in p.tasks),
             "scenarios": bool(p.scenarios),
+            "milestones": bool(p.milestones),
         }
 
     def _update_section_visibility(self) -> None:

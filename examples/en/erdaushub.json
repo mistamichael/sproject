@@ -134,5 +134,9 @@
       "changes": [ { "task": "2-F*.2", "duration_factor": 1.2 } ] },
     { "name": "Slower excavator (hard ground)", "description": "Loading takes 50 % longer", "probability": 0.2,
       "changes": [ { "task": "2-F*.1", "duration_factor": 1.5 } ] }
+  ],
+  "milestones": [
+    { "id": "M1", "name": "Site set up", "ref": 1, "at": "end" },
+    { "id": "M2", "name": "Excavation complete", "ref": 2, "at": "end", "note": "Last load hauled away" }
   ]
 }

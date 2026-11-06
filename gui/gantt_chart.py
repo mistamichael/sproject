@@ -3,11 +3,13 @@ Gantt-Diagramm und Ressourcenauslastung via matplotlib
 =======================================================
 
 Erzeugt PNG-Bilder in-memory (BytesIO), die von Dear PyGui als Texture
-angezeigt werden können.
+angezeigt werden können. Meilensteine sind senkrechte Linien; ihre
+Pixelposition im PNG (MilestoneSpot) nutzt das Ergebnis-Panel für den Tooltip.
 """
 
+from dataclasses import dataclass, field
 from io import BytesIO
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend
@@ -17,8 +19,34 @@ from matplotlib.figure import Figure
 
 from gui.i18n import get_language, t as tr
 from moncapro.durations import format_time_value
+from moncapro.milestones import MilestonePoint
 from moncapro.models.cpm import CPMResult
 from moncapro.time_axis import axis_ticks
+
+_MILESTONE_COLOR = "#B07CD8"
+_HOVER_TOLERANCE = 5         # Pixel links/rechts der Linie
+
+
+@dataclass
+class MilestoneSpot:
+    """Meilenstein-Linie im PNG: x-Position und senkrechter Bereich (Pixel, Ursprung oben links)."""
+    x: int
+    top: int
+    bottom: int
+    lines: List[str]
+
+
+@dataclass
+class ChartImage:
+    png: bytes
+    spots: List[MilestoneSpot] = field(default_factory=list)
+
+
+def milestone_at(spots: Sequence[MilestoneSpot], x: float, y: float,
+                 tolerance: int = _HOVER_TOLERANCE) -> Optional[MilestoneSpot]:
+    """Nächstgelegene Meilenstein-Linie zur Mausposition (Pixel im Bild) oder None."""
+    near = [s for s in spots if abs(s.x - x) <= tolerance and s.top - tolerance <= y <= s.bottom]
+    return min(near, key=lambda s: abs(s.x - x), default=None)
 
 
 def _hex_to_mpl(hex_str: str) -> str:
@@ -40,6 +68,31 @@ def _apply_time_axis(ax, result: CPMResult) -> None:
     ax.grid(axis="x", alpha=0.3, linestyle="--")
 
 
+def _draw_milestones(ax, milestones: Sequence[MilestonePoint]) -> None:
+    """Senkrechte Linie je Meilenstein über die ganze Höhe, ID oberhalb der Achse."""
+    for point in milestones:
+        ax.axvline(point.days, color=_MILESTONE_COLOR, linestyle=":", linewidth=1.8, zorder=5)
+        ax.annotate(point.label, xy=(point.days, 1.0), xycoords=("data", "axes fraction"),
+                    xytext=(0, 2), textcoords="offset points", ha="center", va="bottom",
+                    fontsize=7, color=_MILESTONE_COLOR, fontweight="bold")
+
+
+def _save(fig: Figure, ax, dpi: int, milestones: Sequence[MilestonePoint]) -> ChartImage:
+    """PNG wie savefig(bbox_inches="tight") plus Pixelpositionen der Meilensteine im Bild."""
+    fig.canvas.draw()
+    bbox = fig.get_tightbbox().padded(plt.rcParams["savefig.pad_inches"])
+    left, top = bbox.x0 * dpi, bbox.y1 * dpi            # Bildursprung oben links, in Figur-Pixeln
+    area = ax.get_window_extent()
+    spots = [MilestoneSpot(x=round(ax.transData.transform((p.days, 0))[0] - left),
+                           top=round(top - area.y1), bottom=round(top - area.y0),
+                           lines=p.describe(get_language()))
+             for p in milestones]
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi, bbox_inches=bbox)
+    plt.close(fig)
+    return ChartImage(buf.getvalue(), spots)
+
+
 def _label_min_width(result: CPMResult) -> float:
     """Balken unter ~6 % der Projektdauer bekommen keine Beschriftung."""
     return 0.06 * max(result.project_end_days, 1e-9)
@@ -52,8 +105,9 @@ def render_gantt_png(
     height: int = 0,
     dpi: int = 100,
     dark_mode: bool = True,
-) -> bytes:
-    """Rendert ein Gantt-Diagramm als PNG-Bytes.
+    milestones: Sequence[MilestonePoint] = (),
+) -> ChartImage:
+    """Rendert ein Gantt-Diagramm als PNG.
 
     Args:
         result: CPMResult mit Tasks
@@ -62,8 +116,9 @@ def render_gantt_png(
         height: Höhe in Pixeln (0 = auto)
         dpi: Auflösung
         dark_mode: Dunkler Hintergrund
+        milestones: aufgelöste Meilensteine (moncapro.milestones.resolve_milestones)
     Returns:
-        PNG als bytes
+        PNG und Meilenstein-Positionen (png leer ohne Tasks)
     """
     # Tasks filtern (keine Breaks)
     tasks: List[Tuple] = []
@@ -74,7 +129,7 @@ def render_gantt_png(
 
     n = len(tasks)
     if n == 0:
-        return b""
+        return ChartImage(b"")
 
     if height <= 0:
         height = max(200, n * 28 + 80)
@@ -140,7 +195,8 @@ def render_gantt_png(
     _apply_time_axis(ax, result)
     if result.status_date is not None:
         ax.axvline(result.status_date, color="#2E7D32", linestyle="--", linewidth=1.5)
-    ax.set_title(tr("chart.gantt.title"), fontsize=11, fontweight="bold")
+    _draw_milestones(ax, milestones)
+    ax.set_title(tr("chart.gantt.title"), fontsize=11, fontweight="bold", pad=14 if milestones else 6)
 
     # Legende
     legend_patches = [
@@ -152,14 +208,12 @@ def render_gantt_png(
         legend_patches.append(mpatches.Patch(color="#9E9E9E", label="Baseline"))
     if result.status_date is not None:
         legend_patches.append(mpatches.Patch(color="#2E7D32", label="Erledigt / Stichtag"))
+    if milestones:
+        legend_patches.append(mpatches.Patch(color=_MILESTONE_COLOR, label=tr("chart.legend.milestones")))
     ax.legend(handles=legend_patches, loc="upper right", fontsize=7, framealpha=0.7)
 
     fig.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
-    buf.seek(0)
-    return buf.read()
+    return _save(fig, ax, dpi, milestones)
 
 
 def render_resource_chart_png(
@@ -170,8 +224,9 @@ def render_resource_chart_png(
     height: int = 0,
     dpi: int = 100,
     dark_mode: bool = True,
-) -> bytes:
-    """Rendert ein Ressourcenauslastungs-Diagramm als PNG-Bytes.
+    milestones: Sequence[MilestonePoint] = (),
+) -> ChartImage:
+    """Rendert ein Ressourcenauslastungs-Diagramm als PNG.
 
     Zeigt pro Ressource einen horizontalen Balken für jeden Task, dem sie
     zugewiesen ist.
@@ -181,11 +236,12 @@ def render_resource_chart_png(
         project: Projekt-Objekt (für Ressourcen-Info)
         resource_colors: resource_id → (R,G,B) Farben
         width, height, dpi, dark_mode: Render-Optionen
+        milestones: aufgelöste Meilensteine (senkrechte Linien)
     Returns:
-        PNG als bytes, leer wenn keine Ressourcen
+        PNG und Meilenstein-Positionen (png leer, wenn keine Ressourcen)
     """
     if not project or not project.resources:
-        return b""
+        return ChartImage(b"")
 
     # Sammle Ressource → Liste von (task_id, task_name, faz, fez, is_critical)
     res_tasks: Dict[str, List[Tuple]] = {}
@@ -216,7 +272,7 @@ def render_resource_chart_png(
             ))
 
     if not res_tasks:
-        return b""
+        return ChartImage(b"")
 
     res_ids = sorted(res_tasks.keys())
     n = len(res_ids)
@@ -271,14 +327,11 @@ def render_resource_chart_png(
     ax.set_yticks(list(range(n - 1, -1, -1)))
     ax.set_yticklabels(res_labels, fontsize=8)
     _apply_time_axis(ax, result)
-    ax.set_title(tr("chart.resources.title"), fontsize=11, fontweight="bold")
+    _draw_milestones(ax, milestones)
+    ax.set_title(tr("chart.resources.title"), fontsize=11, fontweight="bold", pad=14 if milestones else 6)
 
     fig.tight_layout()
-    buf = BytesIO()
-    fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
-    buf.seek(0)
-    return buf.read()
+    return _save(fig, ax, dpi, milestones)
 
 
 def load_png_as_dpg_texture(png_bytes: bytes, tag: str) -> bool:
